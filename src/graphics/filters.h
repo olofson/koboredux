@@ -2,7 +2,8 @@
 ----------------------------------------------------------------------
 	filters.h - Filters for the sprite manager
 ----------------------------------------------------------------------
- * Copyright (C) 2001, 2003, 2009 David Olofson
+ * Copyright 2001, 2003, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -62,10 +63,9 @@ int s_filter_dither(s_bank_t *b, unsigned first, unsigned frames,
 		s_filter_args_t *args);
 
 /*
- * Convert bank to display format for fast rendering.
+ * Optionally convert bank surfaces into textures.
  *
- * args.x = 1 forces use of SDL_DisplayFormat().
- *          RGBA surfaces get a colorkey of <0,0,0,0>.
+ * args.data = SDL renderer
  */
 int s_filter_displayformat(s_bank_t *b, unsigned first, unsigned frames,
 		s_filter_args_t *args);

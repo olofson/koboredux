@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001-2003, 2005, 2007, 2009 David Olofson
- * Copyright (C) 2008 Robert Schuster
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001-2003, 2005, 2007, 2009 David Olofson
+ * Copyright 2008 Robert Schuster
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -24,7 +25,7 @@
 #ifndef _KOBO_H_
 #define _KOBO_H_
 
-#include <aconfig.h>
+#include "config.h"
 
 #include "gfxengine.h"
 #include "window.h"

@@ -2,8 +2,9 @@
 ----------------------------------------------------------------------
 	gfxengine.h - Graphics Engine
 ----------------------------------------------------------------------
- * Copyright (C) 2001-2003, 2007, 2009 David Olofson
- * Copyright (C) 2008 Robert Schuster
+ * Copyright 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2008 Robert Schuster
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -30,7 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "glSDL.h"
 #include "sprite.h"
 #include "cs.h"
 
@@ -174,8 +174,8 @@ class gfxengine_t
 	void screenshot();
 
 	/* Control */
-	cs_engine_t *cs()	{ return csengine; }
-	SDL_Surface *surface();
+	SDL_Renderer *renderer()	{ return sdlrenderer; }
+	cs_engine_t *cs()		{ return csengine; }
 	void flip();		// Flip pages
 	void update();		// Full update, making current draw page visible
 	void stop();
@@ -183,6 +183,7 @@ class gfxengine_t
 	void free_obj(cs_obj_t *obj);
 	void cursor(int csr);
 
+	s_container_t *get_gfx()	{ return gfx; }
 	s_sprite_t *get_sprite(unsigned bank, int _frame)
 	{
 		return s_get_sprite(gfx, bank, _frame);
@@ -212,16 +213,12 @@ class gfxengine_t
 	gfx_drivers_t		_driver;
 	gfx_scalemodes_t	_scalemode;
 	int			_clamping;
-	SDL_Surface	*screen_surface;
-	SDL_Surface	*softbuf;
-	int		backpage;
-	int		frontpage;
-	int		dirtyrects[MAX_PAGES];
-	SDL_Rect	dirtytable[MAX_PAGES][MAX_DIRTYRECTS];
-	window_t	*dirtywtable[MAX_PAGES][MAX_DIRTYRECTS];
+	SDL_Window	*sdlwindow;
+	SDL_Renderer	*sdlrenderer;
 	window_t	*fullwin;
 	window_t	*window;
 	window_t	*windows;	// Linked list
+	window_t	*selected;	// Currently selected for rendering
 	int		wx, wy;
 	int		xs, ys;		// fix 24:8
 	int		sxs, sys;	// fix 24:8

@@ -2,9 +2,10 @@
 ------------------------------------------------------------
 	SoFont - SDL Object Font Library
 ------------------------------------------------------------
- * Copyright (C) ???? Karl Bartel
- * Copyright (C) ???? Luc-Olivier de Charriere
- * Copyright (C) 2009 David Olofson
+ * Copyright ???? Karl Bartel
+ * Copyright ???? Luc-Olivier de Charriere
+ * Copyright 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -25,9 +26,10 @@
 #include "sofont.h"
 #include "string.h"
 
-SoFont::SoFont()
+SoFont::SoFont(SDL_Renderer *_target)
 {
-	picture = NULL;
+	target = _target;
+	glyphs = NULL;
 	CharPos = NULL;
 	CharOffset = NULL;
 	Spacing = NULL;
@@ -41,16 +43,16 @@ SoFont::SoFont()
 
 SoFont::~SoFont()
 {
-	if(picture)
-		SDL_FreeSurface(picture);
-	delete[]CharPos;
-	delete[]CharOffset;
-	delete[]Spacing;
+	if(glyphs)
+		SDL_DestroyTexture(glyphs);
+	delete [] CharPos;
+	delete [] CharOffset;
+	delete [] Spacing;
 }
 
 namespace SoFontUtilities
 {
-	Uint32 SoFontGetPixel(SDL_Surface * Surface, Sint32 X, Sint32 Y)
+	Uint32 SoFontGetPixel(SDL_Surface *Surface, Sint32 X, Sint32 Y)
 	{
 		Uint8 *bits;
 		Uint32 Bpp;
@@ -98,7 +100,7 @@ namespace SoFontUtilities
 		log_printf(ELOG, "SoFontGetPixel: Unsupported pixel format!\n");
 		return 0;	// David (to get rid of warning)
 	}
-	void SoFontSetPixel(SDL_Surface * Surface, Sint32 X, Sint32 Y,
+	void SoFontSetPixel(SDL_Surface *Surface, Sint32 X, Sint32 Y,
 			Uint32 c)
 	{
 		Uint8 *bits;
@@ -241,33 +243,28 @@ namespace SoFontUtilities
 }
 using namespace SoFontUtilities;
 
-bool SoFont::DoStartNewChar(Sint32 x)
+bool SoFont::DoStartNewChar(SDL_Surface *surface, Sint32 x)
 {
-	if(!picture)
-		return false;
-	return SoFontGetPixel(picture, x, 0) ==
-			SDL_MapRGB(picture->format, 255, 0, 255);
+	return SoFontGetPixel(surface, x, 0) ==
+			SDL_MapRGB(surface->format, 255, 0, 255);
 }
 
-void SoFont::CleanSurface()
+void SoFont::CleanSurface(SDL_Surface *surface)
 {
-	if(!picture)
-		return;
-
 	int x = 0, y = 0;
-	Uint32 pix = SDL_MapRGB(picture->format, 255, 0, 255);
+	Uint32 pix = SDL_MapRGB(surface->format, 255, 0, 255);
 
-	while(x < picture->w)
+	while(x < surface->w)
 	{
 		y = 0;
-		if(SoFontGetPixel(picture, x, y) == pix)
-			SoFontSetPixel(picture, x, y, background);
+		if(SoFontGetPixel(surface, x, y) == pix)
+			SoFontSetPixel(surface, x, y, background);
 		x++;
 	}
 }
 
 
-bool SoFont::load(SDL_Surface * FontSurface)
+bool SoFont::load(SDL_Surface *FontSurface)
 {
 	int x = 0, i = 0, s = 0;
 
@@ -280,18 +277,19 @@ bool SoFont::load(SDL_Surface * FontSurface)
 		log_printf(ELOG, "SoFont recieved a NULL SDL_Surface\n");
 		return false;
 	}
-	if(picture)
-		SDL_FreeSurface(picture);
-	picture = FontSurface;
-	height = picture->h - 1;
-	while(x < picture->w)
+	if(glyphs)
+		SDL_DestroyTexture(glyphs);
+	glyphs = NULL;
+	height = FontSurface->h - 1;
+	while(x < FontSurface->w)
 	{
-		if(DoStartNewChar(x))
+		if(DoStartNewChar(FontSurface, x))
 		{
 			if(i)
 				_Spacing[i - 1] = x - s + xspace;
 			int p = x;
-			while((x < picture->w) && (DoStartNewChar(x)))
+			while((x < FontSurface->w) &&
+					(DoStartNewChar(FontSurface, x)))
 				x++;
 			s = x;
 			_CharPos[i] = (x + p + 1) / 2;
@@ -306,17 +304,25 @@ bool SoFont::load(SDL_Surface * FontSurface)
 		_Spacing[i - 1] = x - s;
 	_Spacing[i] = 0;
 	_CharOffset[i] = 0;
-	_CharPos[i++] = picture->w;
+	_CharPos[i++] = FontSurface->w;
 
 	max_i = START_CHAR + i - 1;
-	background = SoFontGetPixel(picture, 0, height);
+	background = SoFontGetPixel(FontSurface, 0, height);
 // FIXME: Use this when there is no alpha channel?
 //	SDL_SetColorKey(picture, SDL_SRCCOLORKEY, background);
-	CleanSurface();
+	CleanSurface(FontSurface);
 
-	delete[]CharPos;
-	delete[]CharOffset;
-	delete[]Spacing;
+	glyphs = SDL_CreateTextureFromSurface(target, FontSurface);
+	if(!glyphs)
+	{
+		log_printf(ELOG, "SoFont could not create texture from "
+				"surface\n");
+		return false;
+	}
+
+	delete [] CharPos;
+	delete [] CharOffset;
+	delete [] Spacing;
 	CharPos = new int[i];
 	CharOffset = new int[i];
 	Spacing = new int[i];
@@ -344,33 +350,29 @@ bool SoFont::load(SDL_Surface * FontSurface)
 	if('|' > max_i)
 		return true;	//No bar in this font!
 
-	if(background == SoFontGetPixel(picture, CharPos['|' - START_CHAR],
-				height / 2))
+	if(background == SoFontGetPixel(FontSurface, CharPos['|' - START_CHAR],
+			height / 2))
 	{
 		// Up to the first | color
-		for(cursBegin = 0; cursBegin <= TextWidth("|");
-				cursBegin++)
-			if(background != SoFontGetPixel(picture,
-						CharPos['|' - START_CHAR] +
-						cursBegin, height / 2))
+		for(cursBegin = 0; cursBegin <= TextWidth("|"); cursBegin++)
+			if(background != SoFontGetPixel(FontSurface,
+					CharPos['|' - START_CHAR] +
+					cursBegin, height / 2))
 				break;
 		// Up to the end of the | color
-		for(cursWidth = 0; cursWidth <= TextWidth("|");
-				cursWidth++)
-			if(background == SoFontGetPixel(picture,
-						CharPos['|' - START_CHAR] +
-						cursBegin + cursWidth,
-						height / 2))
+		for(cursWidth = 0; cursWidth <= TextWidth("|"); cursWidth++)
+			if(background == SoFontGetPixel(FontSurface,
+					CharPos['|' - START_CHAR] +
+					cursBegin + cursWidth, height / 2))
 				break;
 	}
 	else
 	{
 		// Up to the end of the | color
-		for(cursWidth = 0; cursWidth <= TextWidth("|");
-				cursWidth++)
-			if(background == SoFontGetPixel(picture,
-						CharPos['|' - START_CHAR] +
-						cursWidth, height / 2))
+		for(cursWidth = 0; cursWidth <= TextWidth("|"); cursWidth++)
+			if(background == SoFontGetPixel(FontSurface,
+					CharPos['|' - START_CHAR] +
+					cursWidth, height / 2))
 				break;
 	}
 	cursShift = cursBegin + 1;	// cursWidth could be used if
@@ -379,13 +381,15 @@ bool SoFont::load(SDL_Surface * FontSurface)
 	return true;
 }
 
-void SoFont::PutString(SDL_Surface *Surface, int x, int y,
-		const char *text, SDL_Rect *clip)
+void SoFont::PutString(int x, int y, const char *text, SDL_Rect *clip)
 {
-	if((!picture) || (!Surface) || (!text))
+	if((!glyphs) || (!text))
 		return;
 	int ofs, i = 0;
 	SDL_Rect srcrect, dstrect;
+	int targetw;
+	if(!clip)
+		SDL_GetRendererOutputSize(target, &targetw, NULL);
 	while(text[i] != '\0')
 	{
 		if(text[i] == ' ')
@@ -404,11 +408,12 @@ void SoFont::PutString(SDL_Surface *Surface, int x, int y,
 			srcrect.y = 1;
 			dstrect.x = x - CharOffset[ofs];
 			dstrect.y = y;
+			dstrect.w = srcrect.w;
+			dstrect.h = srcrect.h;
 			x += Spacing[ofs];
 			if(clip)
 				sdcRects(&srcrect, &dstrect, *clip);
-			SDL_BlitSurface(picture, &srcrect, Surface,
-					&dstrect);
+			SDL_RenderCopy(target, glyphs, &srcrect, &dstrect);
 			i++;
 		}
 		else
@@ -422,17 +427,17 @@ void SoFont::PutString(SDL_Surface *Surface, int x, int y,
 		}
 		else
 		{
-			if(x > Surface->w)
+			if(x > targetw)
 				return;
 		}
 	}
 }
 
-void SoFont::PutStringWithCursor(SDL_Surface * Surface, int xs, int y,
+void SoFont::PutStringWithCursor(int xs, int y,
 		const char *text, int cursPos, SDL_Rect * clip,
 		bool showCurs)
 {
-	if((!picture) || (!Surface) || (!text))
+	if((!glyphs) || (!text))
 		return;
 	if('|' > max_i)
 		showCurs = false;
@@ -468,16 +473,19 @@ void SoFont::PutStringWithCursor(SDL_Surface * Surface, int xs, int y,
 		srcrect.y = 1;
 		dstrect.x = x - cursShift;
 		dstrect.y = y;
+		dstrect.w = srcrect.w;
+		dstrect.h = srcrect.h;
 		if(clip)
 			sdcRects(&srcrect, &dstrect, *clip);
-		SDL_BlitSurface(picture, &srcrect, Surface, &dstrect);
+		SDL_RenderCopy(target, glyphs, &srcrect, &dstrect);
 	}
 	// Then the text:
-	PutString(Surface, xs, y, text, clip);
+	PutString(xs, y, text, clip);
 }
+
 int SoFont::TextWidth(const char *text, int min, int max)
 {
-	if(!picture)
+	if(!text)
 		return 0;
 	int ofs, x = 0, i = min;
 	while((text[i] != '\0') && (i < max))
@@ -498,62 +506,48 @@ int SoFont::TextWidth(const char *text, int min, int max)
 	}
 	return x;
 }
-void SoFont::XCenteredString(SDL_Surface * Surface, int y,
-		const char *text, SDL_Rect * clip)
+
+void SoFont::XCenteredString(int y, const char *text, SDL_Rect *clip)
 {
-	if(!picture)
-		return;
-	PutString(Surface, Surface->w / 2 - TextWidth(text) / 2, y, text,
-			clip);
+	int targetw;
+	SDL_GetRendererOutputSize(target, &targetw, NULL);
+	PutString(targetw / 2 - TextWidth(text) / 2, y, text, clip);
 }
 
-void SoFont::CenteredString(SDL_Surface * Surface, int x, int y,
-		const char *text, SDL_Rect * clip)
+void SoFont::CenteredString(int x, int y, const char *text, SDL_Rect *clip)
 {
-	if(!picture)
-		return;
-	PutString(Surface, x - TextWidth(text) / 2, y - height / 2, text,
-			clip);
+	PutString(x - TextWidth(text) / 2, y - height / 2, text, clip);
 }
 
-void SoFont::CenteredString(SDL_Surface * Surface, const char *text,
-		SDL_Rect * clip)
+void SoFont::CenteredString(const char *text, SDL_Rect *clip)
 {
-	if(!picture)
-		return;
-	CenteredString(Surface, Surface->clip_rect.w / 2,
-			Surface->clip_rect.h / 2, text, clip);
+	int targetw, targeth;
+	SDL_GetRendererOutputSize(target, &targetw, &targeth);
+	CenteredString(targetw / 2, targeth / 2, text, clip);
 }
 
-void SoFont::PutStringCleverCursor(SDL_Surface * Surface, const char *text,
-		int cursPos, SDL_Rect * r, SDL_Rect * clip, bool showCurs)
+void SoFont::PutStringCleverCursor(const char *text, int cursPos,
+		SDL_Rect *r, SDL_Rect *clip, bool showCurs)
 {
-	if((!picture) || (!text))
-		return;
-
-	int w1, w2;
-
-	w1 = TextWidth(text, 0, cursPos);
-	w2 = TextWidth(text);
+	int w1 = TextWidth(text, 0, cursPos);
+	int w2 = TextWidth(text);
 
 	if((w2 < r->w) || (w1 < r->w / 2))
-		PutStringWithCursor(Surface, r->x,
+		PutStringWithCursor(r->x,
 				r->y + (r->h - height) / 2, text, cursPos,
 				clip, showCurs);
 	else if(w1 < w2 - r->w / 2)
-		PutStringWithCursor(Surface, r->x - w1 + r->w / 2,
+		PutStringWithCursor(r->x - w1 + r->w / 2,
 				r->y + (r->h - height) / 2, text, cursPos,
 				clip, showCurs);
 	else
-		PutStringWithCursor(Surface, r->x - w2 + r->w,
+		PutStringWithCursor(r->x - w2 + r->w,
 				r->y + (r->h - height) / 2, text, cursPos,
 				clip, showCurs);
 }
 
 int SoFont::TextCursorAt(const char *text, int px)
 {
-	if(!picture)
-		return 0;
 	int ofs, x = 0, i = 0, ax = 0;
 
 	if(px <= 0)
@@ -583,13 +577,10 @@ int SoFont::TextCursorAt(const char *text, int px)
 }
 
 int SoFont::CleverTextCursorAt(const char *text, int px, int cursPos,
-		SDL_Rect * r)
+		SDL_Rect *r)
 {
-	if((!picture) || (!text))
-		return 0;
-	int w1, w2;
-	w1 = TextWidth(text, 0, cursPos);
-	w2 = TextWidth(text);
+	int w1 = TextWidth(text, 0, cursPos);
+	int w2 = TextWidth(text);
 	if((w2 < r->w) || (w1 < r->w / 2))
 		return TextCursorAt(text, px);
 	else if(w1 < w2 - r->w / 2)

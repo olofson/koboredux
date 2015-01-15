@@ -2,7 +2,8 @@
 ------------------------------------------------------------
 	filemap.cpp - Simple Portable File Path Mapper
 ------------------------------------------------------------
- * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -27,11 +28,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <sys/types.h>
 
-#ifdef HAVE_STAT
-#include <sys/stat.h>
-#include <unistd.h>
+#ifdef KOBO_HAVE_STAT
+# include <unistd.h>
+# include <sys/types.h>
+# include <sys/stat.h>
 #endif
 
 
@@ -323,7 +324,7 @@ fm_key_t *filemapper_t::getkey(fm_key_t *key, const char *ref)
  */
 int filemapper_t::probe(const char *syspath)
 {
-#ifdef HAVE_STAT
+#ifdef KOBO_HAVE_STAT
 	struct stat st;
 //	log_printf(DLOG, "probe(\"%s\") (with stat())\n", syspath);
 	if(::stat(syspath, &st) == 0)
@@ -334,7 +335,7 @@ int filemapper_t::probe(const char *syspath)
 			return FM_FILE;
 	}
 #else
-#warning This platform lacks stat(). File/directory probing may be unreliable!
+# warning This platform lacks stat(). File/directory probing may be unreliable!
 	// This is wrong and weird, but *does* in fact
 	// work on Linux... where it isn't needed! *heh*
 	// (Opening a dir with "r" will succeed on Linux, BTW...)

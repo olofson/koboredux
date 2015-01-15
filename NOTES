@@ -1,0 +1,47 @@
+
+* window_t::colorkey() and window_t::alpha() need to be ported to the rendering
+  API.
+
+
+Kobo DL install on Ubuntu:
+	/usr/share/kobo-deluxe/
+		gfx/
+		sfx/
+	/var/games/kobo-deluxe/scores/
+
+	* How do we create the scores dir with correct permissions with CMake?
+
+
+* Remove all load time image filters?
+
+
+MetaRetroScreenFX:
+	"Retro display effects implemented on virtual retro hardware."
+	* Opaque 8 bpp monochrome "surface" object
+		* Size determined on creation
+	* Border value or "wrapped" flag.
+	* FX modes:
+		* 3x3 blur
+		* 3x3 glow (like blur, but non-linear?)
+		* 3x3 raster horizontal
+		* 3x3 raster horizontal
+		* IIR left raster
+		* IIR down raster
+		* IIR left raster + 3x3 blur
+		* IIR down raster + 3x3 blur
+	* Output translation:
+		* Palette with 32 bpp entries
+			* 2..256 entries, assumed to map index to intensity.
+		* Byte index of target channel. (32, 24 and 8 bpp only.)
+	* Methods for rendering all or part of the surface into memory
+		* Target pixel formats:
+			* 32, 24(?), 16 and 8 bpp
+			* Bit level pixel format irrelevant; we just grab
+			  values from the palette!
+			* If no palette is specified, directly output raw bytes
+			  into the specified index of output pixels.
+		* Parameters:
+			* Bytes per pixel
+			* Source position (x, y)
+			* Destination (pointer to top-left pixel)
+			* Destination pitch (bytes per row)

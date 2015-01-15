@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 2001-2003, 2007, 2009 David Olofson
- * Copyright (C) 2005 Erik Auerswald
- * Copyright (C) 2008 Robert Schuster
+ * Copyright 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2005 Erik Auerswald
+ * Copyright 2008 Robert Schuster
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -25,13 +26,12 @@
 #include "prefs.h"
 #include "gfxengine.h"
 #include "gamectl.h"
-#include "a_types.h"
 #include "game.h"
 
 void prefs_t::init()
 {
 	comment("--------------------------------------------");
-	comment(" Kobo Deluxe "VERSION" Configuration File");
+	comment(" Kobo Redux "KOBO_VERSION" Configuration File");
 	comment("--------------------------------------------");
 	comment(" Switches - [no]<switch>");
 	comment(" Values - <key> [<value>|\"<string>\"]");
@@ -73,7 +73,7 @@ void prefs_t::init()
 			 desc("Use OSS Sound Driver");
 	key("samplerate", samplerate, 44100); desc("Sample Rate");
 	key("latency", latency, 50); desc("Sound Latency");
-	key("mixquality", mixquality, AQ_HIGH); desc("Mixing Quality");
+	key("mixquality", mixquality, 4); desc("Mixing Quality");
 	key("vol", volume, 100); desc("Master Volume");
 	key("intro_vol", intro_vol, 100); desc("Intro Music Volume");
 	key("sfx_vol", sfx_vol, 100); desc("Sound Effects Volume");

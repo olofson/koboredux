@@ -2,7 +2,8 @@
 ------------------------------------------------------------
 	filemap.h - Simple Portable File Path Mapper
 ------------------------------------------------------------
- * Copyright (C) 2001, 2009 David Olofson
+ * Copyright 2001, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -53,7 +54,7 @@
 #ifndef	_FILEMAP_H_
 #define	_FILEMAP_H_
 
-#include "aconfig.h"
+#include "config.h"
 
 #define	FM_DEREF_TOKEN	">>"
 

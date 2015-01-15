@@ -2,9 +2,10 @@
 ------------------------------------------------------------
 	SoFont - SDL Object Font Library
 ------------------------------------------------------------
- * Copyright (C) ???? Karl Bartel
- * Copyright (C) ???? Luc-Olivier de Charriere
- * Copyright (C) 2009 David Olofson
+ * Copyright ???? Karl Bartel
+ * Copyright ???? Luc-Olivier de Charriere
+ * Copyright 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -42,67 +43,70 @@
 		  Andreas Sp�ngberg for discovering this one!)
 		* Added ExtraSpace(). (Scaling support hack...)
 		* Disabled colorkeying. (Ruins some RGBA fonts!)
+
+	David Olofson 2015:
+		* SDL 2 port
 */
 
 #ifndef __SOFONT_H
 #define __SOFONT_H
 
-#include "glSDL.h"
+#include "SDL.h"
+
+#define START_CHAR 33
 
 class SoFont
 {
 public:
-	SoFont();
+	SoFont(SDL_Renderer *_target);
 	~SoFont();
 
 	bool load(SDL_Surface *FontSurface);
 
-	// Blits a string to a surface
-	//   Destination: the suface you want to blit to
-	//   text: a string containing the text you want to blit.
-	void PutString(SDL_Surface *Surface, int x, int y, const char *text, SDL_Rect *clip=NULL);
-	void PutStringWithCursor(SDL_Surface *Surface, int x, int y, const char *text, int cursPos, SDL_Rect *clip=NULL, bool showCurs=true);
+	// Renders a string to the target
+	void PutString(int x, int y, const char *text, SDL_Rect *clip = NULL);
+	void PutStringWithCursor(int x, int y, const char *text, int cursPos,
+			SDL_Rect *clip = NULL, bool showCurs = true);
 
 	// Returns the width of "text" in pixels
-	int TextWidth(const char *text, int min=0, int max=255);
+	int TextWidth(const char *text, int min = 0, int max = 255);
 
 	int FontHeight()	{ return height; }
 
 	// Blits a string to with centered x position
-	void XCenteredString(SDL_Surface *Surface, int y, const char *text, SDL_Rect* clip=NULL);
+	void XCenteredString(int y, const char *text, SDL_Rect* clip=NULL);
 	// Blits a string to with centered x & y position
-	void CenteredString(SDL_Surface *Surface, const char *text, SDL_Rect* clip=NULL);
+	void CenteredString(const char *text, SDL_Rect* clip=NULL);
 	// Blits a string to with centered around x & y positions
-	void CenteredString(SDL_Surface *Surface, int x, int y, const char *text, SDL_Rect* clip=NULL);
+	void CenteredString(int x, int y, const char *text,
+			SDL_Rect* clip = NULL);
 	
-	// This was specially developped for GUI
-	void PutStringCleverCursor(SDL_Surface *Surface, const char *text, int cursPos, SDL_Rect *r, SDL_Rect* clip=NULL, bool showCurs=true);
+	// This was specially developed for GUI
+	void PutStringCleverCursor(const char *text, int cursPos, SDL_Rect *r,
+			SDL_Rect* clip = NULL, bool showCurs = true);
 	
 	// Gives the cursor position given a x-axix point in the text
 	int TextCursorAt(const char *text, int px);
-	int CleverTextCursorAt(const char *text, int px, int cursPos, SDL_Rect *r);
-	
-#	define START_CHAR 33
-	int getMinChar(){return START_CHAR;}
-	int getMaxChar(){return max_i;}
+	int CleverTextCursorAt(const char *text, int px, int cursPos,
+			SDL_Rect *r);
 
-	void ExtraSpace(int xs)
-	{
-		xspace = xs;
-	}
+	int getMinChar()	{ return START_CHAR; }
+	int getMaxChar()	{ return max_i; }
+
+	void ExtraSpace(int xs)	{ xspace = xs; }
 
 protected:
+	SDL_Renderer *target;
+	SDL_Texture *glyphs;
 	int height;
-	SDL_Surface *picture;
 	int *CharPos;
 	int *CharOffset;
 	int *Spacing;
 	int xspace;
-	
 	int max_i, spacew, cursShift;
 	Uint32 background;
-	bool DoStartNewChar(Sint32 x);
-	void CleanSurface();
+	bool DoStartNewChar(SDL_Surface *surface, Sint32 x);
+	void CleanSurface(SDL_Surface *surface);
 };
 
 #endif

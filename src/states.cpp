@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 2001-2003 David Olofson
- * Copyright (C) 2002 Jeremy Sheeley
- * Copyright (C) 2005-2007, 2009 David Olofson
+ * Copyright 2001-2003 David Olofson
+ * Copyright 2002 Jeremy Sheeley
+ * Copyright 2005-2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -21,7 +22,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "glSDL.h"
+#include "SDL.h"
 #include <math.h>
 #ifndef M_PI
 # define M_PI 3.14159265358979323846	/* pi */
@@ -140,12 +141,6 @@ void st_introbase_t::press(int button)
 		if(inext)
 			gsm.change(inext);
 		break;
-#ifdef PROFILE_AUDIO
-	  case BTN_F9:
-		run_intro = 0;
-		gsm.push(&st_profile_audio);
-		break;
-#endif
 	  default:
 		break;
 	}
@@ -328,7 +323,9 @@ st_game_t::st_game_t()
 
 void st_game_t::enter()
 {
+#if 0
 	audio_channel_stop(0, -1);	//Stop any music
+#endif
 	run_intro = 0;
 	manage.game_start();
 	if(exit_game || manage.game_stopped())
@@ -338,15 +335,15 @@ void st_game_t::enter()
 		gsm.change(&st_error);
 	}
 	if(prefs->mousecapture)
-		if(SDL_WM_GrabInput(SDL_GRAB_QUERY) != SDL_GRAB_ON)
-			SDL_WM_GrabInput(SDL_GRAB_ON);
+		if(!SDL_GetRelativeMouseMode())
+			SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
 
 void st_game_t::leave()
 {
-	if(SDL_WM_GrabInput(SDL_GRAB_QUERY) == SDL_GRAB_ON)
-		SDL_WM_GrabInput(SDL_GRAB_OFF);
+	if(SDL_GetRelativeMouseMode())
+		SDL_SetRelativeMouseMode(SDL_FALSE);
 	st_intro_title.inext = &st_intro_instructions;
 	st_intro_title.duration = INTRO_TITLE_TIME + 2000;
 	st_intro_title.mode = 0;
@@ -355,16 +352,16 @@ void st_game_t::leave()
 
 void st_game_t::yield()
 {
-	if(SDL_WM_GrabInput(SDL_GRAB_QUERY) == SDL_GRAB_ON)
-		SDL_WM_GrabInput(SDL_GRAB_OFF);
+	if(SDL_GetRelativeMouseMode())
+		SDL_SetRelativeMouseMode(SDL_FALSE);
 }
 
 
 void st_game_t::reenter()
 {
 	if(prefs->mousecapture)
-		if(SDL_WM_GrabInput(SDL_GRAB_QUERY) != SDL_GRAB_ON)
-			SDL_WM_GrabInput(SDL_GRAB_ON);
+		if(!SDL_GetRelativeMouseMode())
+			SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
 
@@ -839,11 +836,6 @@ void st_menu_base_t::press(int button)
 		  case BTN_DOWN:
 			form->next();
 			break;
-#ifdef PROFILE_AUDIO
-		  case BTN_F9:
-			gsm.push(&st_profile_audio);
-			break;
-#endif
 		}
 
 	switch(selection)
@@ -880,12 +872,18 @@ void new_player_t::open()
 	currentIndex = 0;
 	editing = 1;
 	build_all();
+#if 0
+//FIXME:
 	SDL_EnableUNICODE(1);
+#endif
 }
 
 void new_player_t::close()
 {
+#if 0
+//FIXME:
 	SDL_EnableUNICODE(0);
+#endif
 	clean();
 }
 
@@ -1725,7 +1723,9 @@ void st_ask_exit_t::select(int tag)
 	switch(tag)
 	{
 	  case MENU_TAG_OK:
+#if 0
 		audio_channel_stop(0, -1);	//Stop any music
+#endif
 		sound.ui_ok();
 		exit_game = 1;
 		pop();
@@ -1770,228 +1770,3 @@ void st_ask_abort_game_t::select(int tag)
 }
 
 st_ask_abort_game_t st_ask_abort_game;
-
-
-
-/*----------------------------------------------------------
-	Debug: Audio Engine Profiling
-----------------------------------------------------------*/
-#ifdef PROFILE_AUDIO
-
-#include "sound.h"
-#include "a_midicon.h"
-
-st_profile_audio_t::st_profile_audio_t()
-{
-	name = "profile_audio";
-	pan = 0;
-	pitch = 60;
-	shift = 0;
-}
-
-
-void st_profile_audio_t::enter()
-{
-	audio_group_control(SOUND_GROUP_SFX, ACC_PAN, pan);
-	audio_group_control(SOUND_GROUP_SFX, ACC_PITCH, pitch << 16);
-	screen.set_highlight(0, 0);
-	screen.noise(0);
-	sound.sfx_volume(1.0f);
-}
-
-
-void st_profile_audio_t::press(int button)
-{
-	switch (button)
-	{
-	  case BTN_EXIT:
-		pop();
-		break;
-	  case BTN_LEFT:
-		pan -= 8192;
-		if(pan < -65536)
-			pan = -65536;
-		audio_group_control(SOUND_GROUP_SFX, ACC_PAN, pan);
-		break;
-	  case BTN_RIGHT:
-		pan += 8192;
-		if(pan > 65536)
-			pan = 65536;
-		audio_group_control(SOUND_GROUP_SFX, ACC_PAN, pan);
-		break;
-	  case BTN_UP:
-		++pitch;
-		if(pitch > 127)
-			pitch = 127;
-		audio_group_control(SOUND_GROUP_SFX, ACC_PITCH, pitch << 16);
-		break;
-	  case BTN_DOWN:
-		--pitch;
-		if(pitch < 0)
-			pitch = 0;
-		audio_group_control(SOUND_GROUP_SFX, ACC_PITCH, pitch << 16);
-		break;
-	  case BTN_NO:
-	  case BTN_UL:
-	  case BTN_UR:
-	  case BTN_DL:
-	  case BTN_DR:
-		break;
-	  case BTN_INC:
-		shift += 8;
-		if(shift > AUDIO_MAX_WAVES-8)
-			shift = 0;
-		break;
-	  case BTN_DEC:
-		shift -= 8;
-		if(shift < 0)
-			shift = AUDIO_MAX_WAVES-8;
-		break;
-	  case BTN_FIRE:
-	  {
-		audio_channel_stop(-1, -1);
-		int startt = SDL_GetTicks();
-		audio_wave_load(0, "sfx.agw", 0);
-		log_printf(VLOG, "(Loading + processing time: %d ms)\n",
-				SDL_GetTicks() - startt);
-		break;
-	  }
-	  case BTN_START:
-	  case BTN_SELECT:
-		audio_channel_stop(-1, -1);
-		break;
-	  case BTN_YES:
-		break;
-	  case BTN_F1:
-		sound.g_play0(0 + shift);
-		midicon_midisock.program_change(0, 0 + shift);
-		break;
-	  case BTN_F2:
-		sound.g_play0(1 + shift);
-		midicon_midisock.program_change(0, 1 + shift);
-		break;
-	  case BTN_F3:
-		sound.g_play0(2 + shift);
-		midicon_midisock.program_change(0, 2 + shift);
-		break;
-	  case BTN_F4:
-		sound.g_play0(3 + shift);
-		midicon_midisock.program_change(0, 3 + shift);
-		break;
-	  case BTN_F5:
-		sound.g_play0(4 + shift);
-		midicon_midisock.program_change(0, 4 + shift);
-		break;
-	  case BTN_F6:
-		sound.g_play0(5 + shift);
-		midicon_midisock.program_change(0, 5 + shift);
-		break;
-	  case BTN_F7:
-		sound.g_play0(6 + shift);
-		midicon_midisock.program_change(0, 6 + shift);
-		break;
-	  case BTN_F8:
-		sound.g_play0(7 + shift);
-		midicon_midisock.program_change(0, 7 + shift);
-		break;
-	  case BTN_F11:
-		switch(audio_cpu_ticks)
-		{
-		  case 50:
-			audio_cpu_ticks = 100;
-			break;
-		  case 100:
-			audio_cpu_ticks = 250;
-			break;
-		  case 250:
-			audio_cpu_ticks = 500;
-			break;
-		  case 500:
-			audio_cpu_ticks = 1000;
-			break;
-		  default:
-			audio_cpu_ticks = 50;
-			break;
-		}
-		break;
-	}
-}
-
-void st_profile_audio_t::pre_render()
-{
-	/*
-	 * Heeelp! I just *can't* stay away from chances
-	 * like this to play around... :-D
-	 */
-	static int dither = 0;
-	int y = 0;
-	int y2 = wmain->height();
-	float t = SDL_GetTicks()/1000.0;
-	while(y < y2)
-	{
-		float c1 = sin(y*0.11 + t*1.5)*30.0 + 30;
-		float c2 = sin(y*0.07 + t*2.5)*25.0 + 25;
-		float c3 = sin(y*0.03 - t)*40.0 + 40;
-		//Wideband color dither - improves 15/16 bit modes.
-		float c4 = (dither + y) & 1 ? 3.0 : 0.0;
-		int r = (int)(c1 + c2 + c4);
-		int g = (int)(c2 + 3.0 - c4);
-		int b = (int)(c1 + c2 + c3 + c4);
-		wmain->foreground(wmain->map_rgb(r, g, b));
-		wmain->fillrect(0, y, wmain->width(), 1);
-		++y;
-	}
-	dither = 1 - dither;
-}
-
-void st_profile_audio_t::post_render()
-{
-	kobo_basestate_t::post_render();
-
-	wmain->font(B_BIG_FONT);
-	wmain->center(20, "Audio CPU Load");
-
-	wmain->font(B_NORMAL_FONT);
-	Uint32 fgc = wmain->map_rgb(0xffcc00);
-	Uint32 bgc = wmain->map_rgb(0x006600);
-	char buf[40];
-	for(int i = 0; i < AUDIO_CPU_FUNCTIONS; ++i)
-	{
-		int perc = (int)(audio_cpu_function[i] / audio_cpu_total * 100.0);
-		wmain->foreground(fgc);
-		wmain->fillrect(103, 50+i*12+9, (int)audio_cpu_function[i]/2, 2);
-		wmain->fillrect(128+32, 50+i*12+9, (int)perc/2, 2);
-		wmain->foreground(bgc);
-		wmain->fillrect(103 + (int)audio_cpu_function[i]/2, 50+i*12+9,
-				50 - (int)audio_cpu_function[i]/2, 2);
-		wmain->fillrect(128+32 + (int)perc/2, 50+i*12+9, 50 - (int)perc/2, 2);
-		snprintf(buf, sizeof(buf), "%s:%5.2f%% (%1.0f%%)",
-				audio_cpu_funcname[i],
-				audio_cpu_function[i],
-				audio_cpu_function[i] / audio_cpu_total * 100.0);
-		wmain->center_token(120, 50+i*12, buf, ':');
-	}
-
-	wmain->foreground(fgc);
-	wmain->fillrect(80, 178, (int)audio_cpu_total, 4);
-	wmain->foreground(bgc);
-	wmain->fillrect(80 + (int)audio_cpu_total, 178, 100 - (int)audio_cpu_total, 4);
-	wmain->font(B_BIG_FONT);
-	snprintf(buf, sizeof(buf), "Total:%5.2f%%", audio_cpu_total);
-	wmain->center_token(120, 180, buf, ':');
-
-	wmain->font(B_NORMAL_FONT);
-	snprintf(buf, sizeof(buf), "Pan [L/R]:%5.2f  "
-			"Pitch [U/D]: %d  ",
-			(float)pan/65536.0,
-			pitch);
-	wmain->center(200, buf);
-	snprintf(buf, sizeof(buf), "F1..F8 [+/-]: %d..%d",
-			shift, shift + 7);
-	wmain->center(215, buf);
-}
-
-st_profile_audio_t st_profile_audio;
-
-#endif /*PROFILE_AUDIO*/
-

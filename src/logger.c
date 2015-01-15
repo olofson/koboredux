@@ -2,7 +2,8 @@
 ---------------------------------------------------------------------------
 	logger.c - Simple logger with redirection
 ---------------------------------------------------------------------------
- * Copyright (C) 2003, 2009 David Olofson
+ * Copyright 2003, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -25,7 +26,7 @@
 
 #include "config.h"
 #include "logger.h"
-#include "glSDL.h"
+#include "SDL.h"
 
 #define	LOG_BUFFER	1024
 

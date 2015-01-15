@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 2001-2003, 2006-2007, 2009 David Olofson
- * Copyright (C) 2005 Erik Auerswald
+ * Copyright 2001-2003, 2006-2007, 2009 David Olofson
+ * Copyright 2005 Erik Auerswald
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -25,7 +26,6 @@
 #include "options.h"
 #include "gfxengine.h"
 #include "gamectl.h"
-#include "a_types.h"
 #include "kobo.h"
 
 
@@ -299,12 +299,15 @@ void audio_options_t::build()
 			item("96 kHz", 96000);
 			item("176.4 kHz", 176400);
 			item("192 kHz", 192000);
+#if 0
+		// Audiality 2 only has 3 quality levels, set at build time!
 		list("Mixing Quality", &prf->mixquality, OS_UPDATE_AUDIO);
 			item("Very Low", AQ_VERY_LOW);
 			item("Low", AQ_LOW);
 			item("Normal", AQ_NORMAL);
 			item("High", AQ_HIGH);
 			item("Very High", AQ_VERY_HIGH);
+#endif
 		list("Sound Latency", &prf->latency, OS_RESTART_AUDIO);
 		{
 			char buf[10];

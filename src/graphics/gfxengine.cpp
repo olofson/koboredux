@@ -2,8 +2,9 @@
 ----------------------------------------------------------------------
 	gfxengine.cpp - Graphics Engine
 ----------------------------------------------------------------------
- * Copyright (C) 2001-2003, 2006-2007, 2009 David Olofson
- * Copyright (C) 2008 Robert Schuster
+ * Copyright 2001-2003, 2006-2007, 2009 David Olofson
+ * Copyright 2008 Robert Schuster
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,7 +23,7 @@
 
 #define	DBG(x)	x
 
-#include <aconfig.h>
+#include "config.h"
 
 #include "logger.h"
 
@@ -35,26 +36,27 @@
 #include "gfxengine.h"
 #include "filters.h"
 #include "SDL_image.h"
-#include "glSDL.h"
+#include "SDL.h"
 #include "sofont.h"
 #include "window.h"
 
-gfxengine_t *gfxengine;
+gfxengine_t *gfxengine = NULL;
 
 
 gfxengine_t::gfxengine_t()
 {
 	gfxengine = this;	/* Uurgh! Kludge. */
 
-	screen_surface = NULL;
-	softbuf = NULL;
+	sdlwindow = NULL;
+	sdlrenderer = NULL;
 	fullwin = NULL;
 	window = NULL;
 	windows = NULL;
+	selected = NULL;
 	wx = wy = 0;
 	xs = ys = 256;		// 1.0
 	sxs = sys = 256;	// 1.0
-	sf1 = df = dsf = acf = NULL;
+	sf1 = sf2 = acf = bcf = df = dsf = NULL;
 	gfx = NULL;
 	csengine = NULL;
 	_driver = GFX_DRIVER_SDL2D;
@@ -66,7 +68,7 @@ gfxengine_t::gfxengine_t()
 	_centered = 0;
 	use_interpolation = 1;
 	_depth = 0;
-	_title = "GfxEngine v0.4";
+	_title = "GfxEngine v0.5";
 	_icontitle = "GfxEngine";
 	_cursor = 1;
 	_width = 320;
@@ -97,10 +99,6 @@ gfxengine_t::gfxengine_t()
 	for(int i = 0; i < CS_LAYERS ; ++i)
 		xratio[i] = yratio[i] = 0.0;
 
-	dirtyrects[0] = 0;
-	dirtyrects[1] = 0;
-	frontpage = 0;
-	backpage = 1;
 	screenshot_count = 0;
 }
 
@@ -266,10 +264,6 @@ void gfxengine_t::reset_filters()
 {
 	/* Remove all filters */
 	s_remove_filter(NULL);
-	sf1 = df = dsf = acf = NULL;
-
-	/* Set up filter pipeline */
-	s_remove_filter(NULL);
 
 	s_add_filter(s_filter_rgba8);
 	sf1 = s_add_filter(s_filter_scale);
@@ -286,6 +280,8 @@ void gfxengine_t::reset_filters()
 	noalpha(0);
 	brightness(1.0, 1.0);
 	filterflags(0);
+
+	dsf->args.data = sdlrenderer;
 }
 
 
@@ -436,10 +432,11 @@ void gfxengine_t::dither(int type, int _broken_rgba8)
 
 	if(!df)
 		return;
-	if(!screen_surface)
+	if(!sdlrenderer)
 		return;
-
 	if(_dither)
+		log_printf(WLOG, "gfxengine: Dithering not implemented!\n");
+#if 0
 	{
 		if(_driver == GFX_DRIVER_GLSDL)
 		{
@@ -460,6 +457,7 @@ void gfxengine_t::dither(int type, int _broken_rgba8)
 		}
 	}
 	else
+#endif
 		df->args.x = df->args.r = df->args.g = df->args.b = 0;
 	df->args.y = type;
 }
@@ -579,7 +577,7 @@ int gfxengine_t::loadfont(int bank, const char *name)
 	}
 
 	if(!fonts[bank])
-		fonts[bank] = new SoFont;
+		fonts[bank] = new SoFont(sdlrenderer);
 	if(!fonts[bank])
 	{
 		log_printf(ELOG, "  Failed to instantiate SoFont!\n");
@@ -587,7 +585,7 @@ int gfxengine_t::loadfont(int bank, const char *name)
 	}
 
 	fonts[bank]->ExtraSpace((xs + 127) / 256);
-	if(fonts[bank]->load(s_get_sprite(gfx, bank, 0)->surface))
+	if(fonts[bank]->load(s_get_sprite(gfx, bank, 0)->_surface))
 	{
 		s_detach_sprite(gfx, bank, 0);
 		log_printf(DLOG, "  Ok.\n");
@@ -728,7 +726,7 @@ void gfxengine_t::close()
 	cs_engine_delete(csengine);
 	csengine = NULL;
 	s_remove_filter(NULL);
-	sf1 = df = dsf = acf = NULL;
+	sf1 = sf2 = acf = bcf = df = dsf = NULL;
 	s_delete_container(gfx);
 	gfx = NULL;
 	is_open = 0;
@@ -743,8 +741,8 @@ void gfxengine_t::title(const char *win, const char *icon)
 {
 	_title = win;
 	_icontitle = icon;
-	if(screen_surface)
-		SDL_WM_SetCaption(_title, _icontitle);
+	if(sdlwindow)
+		SDL_SetWindowTitle(sdlwindow, _title);
 }
 
 
@@ -759,7 +757,7 @@ void gfxengine_t::title(const char *win, const char *icon)
 int gfxengine_t::video_flags()
 {
 	int flags = 0;
-
+#if 0
 	switch(_driver)
 	{
 	  case GFX_DRIVER_SDL2D:
@@ -802,6 +800,10 @@ int gfxengine_t::video_flags()
 		flags |= SDL_FULLSCREEN;
 
 	glSDL_VSync(_vsync);
+#endif
+	if(_fullscreen)
+		flags |= SDL_WINDOW_FULLSCREEN;
+
 	flags |= xflags;
 
 	return flags;
@@ -809,9 +811,9 @@ int gfxengine_t::video_flags()
 
 bool gfxengine_t::check_mode_autoswap(int *w, int *h)
 {
+#if 0
 	log_printf(VLOG, "Trying display modes %dx%d and %dx%d if the first "
 			"fails.\n", *w, *h, *h, *w);
-
 	int flags = video_flags();
 	SDL_Surface *test_surface = NULL;
 
@@ -834,6 +836,8 @@ bool gfxengine_t::check_mode_autoswap(int *w, int *h)
 		log_printf(VLOG, "Stored display dimension worked. "
 				"Using %dx%d!\n", *w, *h);
 //	SDL_FreeSurface(test_surface);
+#endif
+	log_printf(WLOG, "check_mode_autoswap() not implemented!\n");
 	return true;
 }
 
@@ -845,12 +849,10 @@ int gfxengine_t::show()
 	if(is_showing)
 		return 0;
 
+	int xpos = SDL_WINDOWPOS_UNDEFINED;
+	int ypos = SDL_WINDOWPOS_UNDEFINED;
 	if(_centered && !_fullscreen)
-#ifdef HAVE_DECL_SDL_PUTENV
-		SDL_putenv((char *)"SDL_VIDEO_CENTERED=1");
-#elif defined(HAVE_PUTENV)
-		putenv("SDL_VIDEO_CENTERED=1");
-#endif
+		xpos = ypos = SDL_WINDOWPOS_CENTERED;
 
 	log_printf(DLOG, "Opening screen...\n");
 	if(!SDL_WasInit(SDL_INIT_VIDEO))
@@ -860,71 +862,27 @@ int gfxengine_t::show()
 			return -2;
 		}
 
-	int flags = video_flags();
-
-	screen_surface = SDL_SetVideoMode(_width, _height, _depth, flags);
-	if(!screen_surface)
+	sdlwindow = SDL_CreateWindow(_title, xpos, ypos, _width, _height,
+			video_flags());
+	if(!sdlwindow)
 	{
-		log_printf(ELOG, "Failed to open %dx%d display! "
-				"Giving up.\n", _width, _height);
+		log_printf(ELOG, "Failed to open display! Giving up.\n");
 		return -3;
 	}
 
-	if(_driver != GFX_DRIVER_GLSDL)
+	int rflags = 0;
+	if(_vsync)
+		rflags |= SDL_RENDERER_PRESENTVSYNC;
+	sdlrenderer = SDL_CreateRenderer(sdlwindow, -1, rflags);
+	if(!sdlrenderer)
 	{
-		if((screen_surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF)
-		{
-			if(!_doublebuf)
-			{
-				log_printf(WLOG, "Could not get"
-						" single buffered display.\n");
-				doublebuffer(1);
-			}
-		}
-		else
-		{
-			if(_doublebuf)
-			{
-				log_printf(WLOG, "Could not get"
-						" double buffered display.\n");
-				doublebuffer(0);
-			}
-		}
+		log_printf(ELOG, "Failed to open renderer! Giving up.\n");
+		return -4;
 	}
 
-	if((screen_surface->flags & SDL_HWSURFACE) == SDL_HWSURFACE)
-	{
-		if(_shadow)
-		{
-			softbuf = SDL_CreateRGBSurface(SDL_SWSURFACE,
-					_width, _height,
-					screen_surface->format->BitsPerPixel,
-					screen_surface->format->Rmask,
-					screen_surface->format->Gmask,
-					screen_surface->format->Bmask,
-					screen_surface->format->Amask);
-			if(!softbuf)
-			{
-				log_printf(WLOG, "Failed to create shadow buffer! "
-						"Trying direct rendering.\n");
-				shadow(0);
-			}
-		}
-	}
-	else
-	{
-		if(_shadow)
-			log_printf(WLOG, "Shadow buffer requested; "
-					"relying on SDL's shadow buffer.\n");
-		else
-		{
-			log_printf(WLOG, "Could not get h/w display surface.\n");
-			shadow(0);	//...which means we're using SDL's shadow.
-		}
-	}
-
-	SDL_WM_SetCaption(_title, _icontitle);
+	SDL_SetWindowTitle(sdlwindow, _title);
 	SDL_ShowCursor(_cursor);
+
 	cs_engine_set_size(csengine, _width, _height);
 	csengine->filter = use_interpolation;
 
@@ -967,6 +925,7 @@ void gfxengine_t::hide(void)
 	delete fullwin;
 	fullwin = NULL;
 
+#if 0
 	// Make sure no windows keep old surface pointers!
 	window_t *w = windows;
 	while(w)
@@ -983,6 +942,7 @@ void gfxengine_t::hide(void)
 		softbuf = NULL;
 	}
 	screen_surface = NULL;
+#endif
 
 	is_showing = 0;
 }
@@ -990,6 +950,7 @@ void gfxengine_t::hide(void)
 
 void gfxengine_t::invalidate(SDL_Rect *rect, window_t *window)
 {
+#if 0
 	switch(_pages)
 	{
 	  case -1:
@@ -1010,11 +971,13 @@ void gfxengine_t::invalidate(SDL_Rect *rect, window_t *window)
 		__invalidate(0, rect, window);
 		break;
 	}
+#endif
 }
 
 
 void gfxengine_t::__invalidate(int page, SDL_Rect *rect, window_t *window)
 {
+#if 0
 	if(!screen_surface)
 		return;
 
@@ -1073,6 +1036,7 @@ void gfxengine_t::__invalidate(int page, SDL_Rect *rect, window_t *window)
 	else
 		log_printf(ELOG, "gfxengine: Page %d out of dirtyrects!\n",
 				page);
+#endif
 }
 
 
@@ -1152,8 +1116,7 @@ void gfxengine_t::stop()
 void gfxengine_t::cursor(int csr)
 {
 	_cursor = csr;
-	if(screen_surface)
-		SDL_ShowCursor(csr);
+	SDL_ShowCursor(csr);
 }
 
 
@@ -1232,20 +1195,14 @@ int gfxengine_t::yoffs(int layer)
 }
 
 
-SDL_Surface *gfxengine_t::surface()
-{
-	if(softbuf)
-		return softbuf;
-	else
-		return screen_surface;
-}
-
-
 void gfxengine_t::screenshot()
 {
+#if 0
 	char filename[1024];
 	snprintf(filename, sizeof(filename), "screen%d.bmp", screenshot_count++);
 	SDL_SaveBMP(screen_surface, filename);
+#endif
+	log_printf(WLOG, "gfxengine: screenshot() not implemented!\n");
 }
 
 
@@ -1327,9 +1284,19 @@ void gfxengine_t::refresh_rect(SDL_Rect *r)
 
 void gfxengine_t::flip()
 {
-	if(!screen_surface)
+	if(!sdlrenderer)
 		return;
 
+	SDL_SetRenderDrawColor(sdlrenderer, 0, 0, 0, 255);
+	SDL_RenderClear(sdlrenderer);
+
+	window_t *w = windows;
+	for(w = windows; w; w = w->next)
+		if(w->visible())
+			w->phys_refresh(NULL);
+
+	SDL_RenderPresent(sdlrenderer);
+#if 0
 	// Init dirtyrect table flipping, if necessary.
 	switch(_pages)
 	{
@@ -1403,6 +1370,7 @@ void gfxengine_t::flip()
 		SDL_UpdateRects(screen_surface, dirtyrects[0], dirtytable[0]);
 		dirtyrects[0] = 0;
 	}
+#endif
 }
 
 
@@ -1412,8 +1380,11 @@ void gfxengine_t::flip()
 void gfxengine_t::render_sprite(cs_obj_t *o)
 {
 	SDL_Rect dest_rect;
-	s_sprite_t *s = gfxengine->get_sprite(o->anim.bank, o->anim.frame);
-	if(!s || !s->surface)
+	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), o->anim.bank);
+	if(!b)
+		return;
+	s_sprite_t *s = s_get_sprite_b(b, o->anim.frame);
+	if(!s || !s->texture)
 		return;
 
 	int x = o->point.gx - (s->x << 8);
@@ -1421,15 +1392,13 @@ void gfxengine_t::render_sprite(cs_obj_t *o)
 	dest_rect.x = CS2PIXEL((x * gfxengine->xs + 128) >> 8);
 	dest_rect.y = CS2PIXEL((y * gfxengine->ys + 128) >> 8);
 	dest_rect.x += (gfxengine->window->x() * gfxengine->xs + 128) >> 8;
-	dest_rect.y += (gfxengine->window->y() * gfxengine->xs + 128) >> 8;
-	SDL_BlitSurface(s->surface, NULL, gfxengine->surface(), &dest_rect);
+	dest_rect.y += (gfxengine->window->y() * gfxengine->ys + 128) >> 8;
+	dest_rect.w = (b->w * gfxengine->xs + 128) >> 8;
+	dest_rect.h = (b->h * gfxengine->ys + 128) >> 8;
+	SDL_RenderCopy(gfxengine->renderer(), s->texture, NULL, &dest_rect);
 
 	if(!gfxengine->_autoinvalidate)
-	{
-		dest_rect.w = s->surface->w;
-		dest_rect.h = s->surface->h;
 		gfxengine->invalidate(&dest_rect);
-	}
 }
 
 

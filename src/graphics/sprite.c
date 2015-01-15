@@ -2,7 +2,8 @@
 ----------------------------------------------------------------------
 	sprite.c - Sprite engine for use with cs.h
 ----------------------------------------------------------------------
- * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -29,7 +30,7 @@ TODO: tables as needed when loading banks.
 #include <stdlib.h>
 #include <string.h>
 #include "logger.h"
-#include "glSDL.h"
+#include "SDL.h"
 #include "SDL_image.h"
 #include "sprite.h"
 #include "filters.h"
@@ -158,9 +159,8 @@ void s_delete_container(s_container_t *c)
 
 
 /*
- * Allocates a new sprite.
- * If the sprite exists already, it's surface will be removed, so
- * that one can safely expect to get an *empty* sprite.
+ * Allocates a new sprite. If the sprite exists already, any texture or surface
+ * will be removed, so that one can safely expect to get an *empty* sprite.
  */
 s_sprite_t *s_new_sprite_b(s_bank_t *b, unsigned frame)
 {
@@ -176,21 +176,23 @@ s_sprite_t *s_new_sprite_b(s_bank_t *b, unsigned frame)
 	}
 	else
 	{
-		if(s->surface)
-			SDL_FreeSurface(s->surface);
-		s->surface = NULL;
+		if(s->texture)
+			SDL_DestroyTexture(s->texture);
+		s->texture = NULL;
+		if(s->_surface)
+			SDL_FreeSurface(s->_surface);
+		s->_surface = NULL;
 	}
 	return s;
 }
 
 
 /*
- * Allocates a new sprite.
- * If the sprite exists already, it's surface will be removed, so
- * that one can safely expect to get an *empty* sprite.
+ * Allocates a new sprite. If the sprite exists already, any texture or surface
+ * will be removed, so that one can safely expect to get an *empty* sprite.
  *
- * If the bank does not exist, or if the operation failed for
- * other reasons, this call returns NULL.
+ * If the bank does not exist, or if the operation failed for other reasons,
+ * this call returns NULL.
  */
 s_sprite_t *s_new_sprite(s_container_t *c, unsigned bank, unsigned frame)
 {
@@ -211,9 +213,11 @@ void s_delete_sprite_b(s_bank_t *b, unsigned frame)
 		return;
 	if(!b->sprites[frame])
 		return;
-	if(b->sprites[frame]->surface)
-		SDL_FreeSurface(b->sprites[frame]->surface);
-	b->sprites[frame]->surface = NULL;
+	if(b->sprites[frame]->texture)
+		SDL_DestroyTexture(b->sprites[frame]->texture);
+	if(b->sprites[frame]->_surface)
+		SDL_FreeSurface(b->sprites[frame]->_surface);
+	b->sprites[frame]->texture = NULL;
 	free(b->sprites[frame]);
 	b->sprites[frame] = NULL;
 }
@@ -351,7 +355,7 @@ void s_detach_sprite(s_container_t *c, unsigned bank, unsigned frame)
 	s_sprite_t *s = s_get_sprite(c, bank, frame);
 	if(!s)
 		return;
-	s->surface = NULL;
+	s->texture = NULL;
 }
 
 
@@ -364,6 +368,8 @@ void s_detach_sprite(s_container_t *c, unsigned bank, unsigned frame)
 static int extract_sprite(s_bank_t *bank, unsigned frame,
 				SDL_Surface *src, SDL_Rect *from)
 {
+	Uint32 ck;
+	SDL_BlendMode bm;
 	int y;
 	SDL_Surface	*tmp;
 	if(frame > bank->max)
@@ -385,12 +391,6 @@ static int extract_sprite(s_bank_t *bank, unsigned frame,
 		return -3;
 
 	/* Copy the pixel data */
-	if(SDL_LockSurface(src) < 0)
-	{
-		log_printf(ELOG, "sprite: extract_sprite() failed to lock surface!\n");
-		SDL_FreeSurface(tmp);
-		return -4;
-	}
 	for(y = 0; y < tmp->h; ++y)
 	{
 		char *s = (char *)src->pixels + src->pitch * (y + from->y) +
@@ -398,26 +398,19 @@ static int extract_sprite(s_bank_t *bank, unsigned frame,
 		char *d = (char *)tmp->pixels + tmp->pitch * y;
 		memcpy(d, s, src->format->BytesPerPixel * tmp->w);
 	}
-	SDL_UnlockSurface(src);
 
 	/* Copy palette, if any */
 	if(src->format->palette)
-		SDL_SetColors(tmp, src->format->palette->colors, 0,
-				src->format->palette->ncolors);
-
-	/* Copy alpha and colorkey */
-	if(src->flags & SDL_SRCALPHA)
-		SDL_SetAlpha(tmp, src->flags & (SDL_SRCALPHA | SDL_RLEACCEL),
-				src->format->alpha);
-	if(src->flags & SDL_SRCCOLORKEY)
-		SDL_SetColorKey(tmp, src->flags & (SDL_SRCCOLORKEY | SDL_RLEACCEL),
-				src->format->colorkey);
-
-	bank->sprites[frame]->surface = tmp;
+		SDL_SetSurfacePalette(tmp, src->format->palette);
+	SDL_GetSurfaceBlendMode(src, &bm);
+	SDL_SetSurfaceBlendMode(tmp, bm);
+	if(SDL_GetColorKey(src, &ck) == 0)
+		SDL_SetColorKey(tmp, SDL_TRUE, ck);
+	bank->sprites[frame]->_surface = tmp;
 
 	DBG(log_printf(DLOG, "image %d: (%d,%d)/%dx%d @ %p\n", frame,
 			from->x, from->y, from->w, from->h,
-			bank->sprites[frame]->surface);)
+			bank->sprites[frame]->_surface);)
 	return 0;
 }
 
@@ -425,7 +418,6 @@ static int extract_sprite(s_bank_t *bank, unsigned frame,
 int s_copy_rect(s_container_t *c, unsigned bank,
 		unsigned frombank, unsigned fromframe, SDL_Rect *from)
 {
-	SDL_Surface	*src;
 	s_sprite_t	*s;
 	s_bank_t	*b;
 
@@ -437,8 +429,7 @@ int s_copy_rect(s_container_t *c, unsigned bank,
 				frombank, fromframe);
 		return -1;
 	}
-	src = s->surface;
-	if(!src)
+	if(!s->_surface)
 	{
 		log_printf(ELOG, "sprite: Sprite %d:%d"
 				" does not have a surface!\n",
@@ -454,7 +445,7 @@ int s_copy_rect(s_container_t *c, unsigned bank,
 		return -3;
 	}
 
-	if(extract_sprite(b, 0, src, from) < 0)
+	if(extract_sprite(b, 0, s->_surface, from) < 0)
 	{
 		log_printf(ELOG, "sprite: Something went wrong while "
 				"copying from sprite %d:%d.\n",

@@ -2,7 +2,8 @@
 ---------------------------------------------------------------------------
 	window.cpp - Generic Rendering Window
 ---------------------------------------------------------------------------
- * Copyright (C) 2001-2003, 2006-2007, 2009 David Olofson
+ * Copyright 2001-2003, 2006-2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -24,21 +25,28 @@
 #include "gfxengine.h"
 #include "sofont.h"
 
-#define	SELECT	if(selected != this) _select();
+#define	SELECT	if(engine->selected != this) select();
 
-window_t *window_t::selected = NULL;
+
+enum gfx_offscreen_mode_t
+{
+	OFFSCREEN_RENDER_TARGET =	1,
+	OFFSCREEN_SOFTWARE =		2
+};
+
 
 window_t::window_t()
 {
 	engine = NULL;
-	surface = NULL;
+	renderer = NULL;
+	otexture = NULL;
+	osurface = NULL;
 	next = NULL;
 	prev = NULL;
 	phys_rect.x = phys_rect.y = 0;
 	phys_rect.w = 320;
 	phys_rect.h = 240;
 	fgcolor = bgcolor = 0;
-	selected = 0;
 	xs = ys = 256;
 	bg_bank = -1;
 	bg_frame = -1;
@@ -49,11 +57,15 @@ window_t::window_t()
 
 window_t::~window_t()
 {
-	if(_offscreen && surface)
-		SDL_FreeSurface(surface);
-	if(selected == this)
-		selected = NULL;
+	if(otexture)
+		SDL_DestroyTexture(otexture);
+	if(osurface)
+		SDL_FreeSurface(osurface);
+	if(engine && (engine->selected == this))
+		engine->selected = NULL;
 	unlink();
+	if(renderer)
+		SDL_DestroyRenderer(renderer);
 }
 
 
@@ -62,13 +74,6 @@ void window_t::init(gfxengine_t *e)
 	link(e);
 	xs = engine->xs;
 	ys = engine->ys;
-	if(_offscreen && surface)
-	{
-		SDL_FreeSurface(surface);
-		surface = NULL;
-	}
-	_offscreen = 0;
-	surface = engine->surface();
 }
 
 
@@ -97,6 +102,8 @@ void window_t::link(gfxengine_t *e)
 	}
 	else
 		engine->windows = this;
+	if(!renderer)
+		renderer = engine->renderer();
 }
 
 
@@ -106,8 +113,8 @@ void window_t::unlink(void)
 	{
 		if(engine->windows == this)
 			engine->windows = next;
-		if(engine->surface() == surface)
-			surface = NULL;
+		if(engine->renderer() == renderer)
+			renderer = NULL;
 	}
 	if(next)
 		next->prev = prev;
@@ -127,43 +134,93 @@ void window_t::place(int left, int top, int sizex, int sizey)
 }
 
 
+void window_t::select()
+{
+	if(!engine)
+		return;
+	if(!renderer)
+		return;
+	switch(_offscreen)
+	{
+	  case 0:
+		SDL_SetRenderTarget(renderer, NULL);
+		SDL_RenderSetClipRect(renderer, &phys_rect);
+		break;
+	  case OFFSCREEN_RENDER_TARGET:
+		SDL_SetRenderTarget(renderer, otexture);
+		break;
+	  case OFFSCREEN_SOFTWARE:
+		// Has its own renderer, so nothing needs to be done here!
+		break;
+	}
+	engine->selected = this;
+}
+
+
 int window_t::offscreen()
 {
 	if(!engine)
 		return -1;
-	if(!engine->surface())
-		return -1;
 	if(_offscreen)
 		return 0;	// Already offscreen!
 	visible(0);
-	_offscreen = 1;
-	SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE,
-			phys_rect.w, phys_rect.h,
-			32, 0xff000000, 0x00ff0000,
-			0x0000ff00, 0x000000ff);
-	if(!s)
-		return -1;
-	surface = SDL_DisplayFormat(s);
-	SDL_FreeSurface(s);
-	if(!surface)
-		return -1;
+	if(SDL_RenderTargetSupported(engine->renderer()))
+	{
+		// Texture used as render target
+		otexture = SDL_CreateTexture(engine->renderer(),
+				SDL_PIXELFORMAT_ARGB8888,
+				SDL_TEXTUREACCESS_TARGET,
+				phys_rect.w, phys_rect.h);
+		if(!otexture)
+			return -1;
+		_offscreen = OFFSCREEN_RENDER_TARGET;
+	}
+	else
+	{
+		// Fallback: Texture + surface with software renderer
+		Uint32 fmt = SDL_PIXELFORMAT_ARGB8888;
+		int bpp;
+		Uint32 Rmask, Gmask, Bmask, Amask;
+		SDL_PixelFormatEnumToMasks(fmt,
+				&bpp, &Rmask, &Gmask, &Bmask, &Amask);
+		osurface = SDL_CreateRGBSurface(0,
+				phys_rect.w, phys_rect.h,
+				bpp, Rmask, Gmask, Bmask, Amask);
+		if(!osurface)
+			return -10;
+		renderer = SDL_CreateSoftwareRenderer(osurface);
+		if(!renderer)
+			return -11;
+		otexture = SDL_CreateTexture(engine->renderer(),
+				fmt, SDL_TEXTUREACCESS_STREAMING,
+				phys_rect.w, phys_rect.h);
+		if(!otexture)
+			return -12;
+		_offscreen = OFFSCREEN_SOFTWARE;
+	}
 	return 0;
 }
 
 
-void window_t::select()
+void window_t::offscreen_invalidate(SDL_Rect *r)
 {
-	if(engine)
-		_select();
-}
-
-
-void window_t::_select()
-{
-	SDL_Rect r = phys_rect;
-	selected = this;
-	if(surface)
-		SDL_SetClipRect(surface, &r);
+	switch(_offscreen)
+	{
+	  case OFFSCREEN_RENDER_TARGET:
+		SDL_RenderPresent(renderer);
+		break;
+	  case OFFSCREEN_SOFTWARE:
+		SDL_RenderPresent(renderer);
+		// FIXME: Is this *actually* slower than locking the texture
+		// and copying the pixels? Theoretically, SDL_UpdateTexture()
+		// should have a chance of doing a better job.
+		SDL_UpdateTexture(otexture, r,
+				(Uint8 *)osurface->pixels +
+				r->y * osurface->pitch +
+				r->x * osurface->format->BytesPerPixel,
+				osurface->pitch);
+		break;
+	}
 }
 
 
@@ -171,7 +228,7 @@ void window_t::invalidate(SDL_Rect *r)
 {
 	if(!engine)
 		return;
-	if(!engine->surface())
+	if(!renderer)
 		return;
 
 	SELECT
@@ -186,16 +243,17 @@ void window_t::invalidate(SDL_Rect *r)
 			rr.w = phys_rect.w;
 			rr.h = phys_rect.h;
 			phys_refresh(&rr);
-			glSDL_Invalidate(surface, &rr);
+			offscreen_invalidate(&rr);
 		}
 		else
 		{
 			phys_refresh(r);
-			glSDL_Invalidate(surface, r);
+			offscreen_invalidate(r);
 		}
 		return;
 	}
 
+#if 0
 	if(!r)
 		engine->invalidate(&phys_rect, this);
 	else
@@ -239,38 +297,13 @@ void window_t::invalidate(SDL_Rect *r)
 		if(dr.w && dr.h)
 			engine->invalidate(&dr, this);
 	}
+#endif
 }
 
 
 /*---------------------------------------------------------------
 	Rendering API
 ---------------------------------------------------------------*/
-
-Uint32 window_t::map_rgb(Uint8 r, Uint8 g, Uint8 b)
-{
-	if(!engine)
-		return 0;
-
-	if(surface)
-		return SDL_MapRGB(surface->format, r, g, b);
-	else
-		return 0xffffff;
-}
-
-Uint32 window_t::map_rgb(Uint32 rgb)
-{
-	if(!engine)
-		return 0;
-
-	Uint8 r = (rgb >> 16) & 0xff;
-	Uint8 g = (rgb >> 8) & 0xff;
-	Uint8 b = rgb & 0xff;
-
-	if(surface)
-		return SDL_MapRGB(surface->format, r, g, b);
-	else
-		return 0xffffff;
-}
 
 void window_t::bgimage(int bank, int frame)
 {
@@ -281,6 +314,7 @@ void window_t::bgimage(int bank, int frame)
 
 void window_t::colorkey(Uint32 color)
 {
+#if 0
 	if(!engine)
 		return;
 	if(!engine->surface())
@@ -288,10 +322,12 @@ void window_t::colorkey(Uint32 color)
 	if(!_offscreen)
 		return;
 	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, color);
+#endif
 }
 
 void window_t::colorkey()
 {
+#if 0
 	if(!engine)
 		return;
 	if(!engine->surface())
@@ -299,10 +335,12 @@ void window_t::colorkey()
 	if(!_offscreen)
 		return;
 	SDL_SetColorKey(surface, 0, 0);
+#endif
 }
 
 void window_t::alpha(float a)
 {
+#if 0
 	if(!engine)
 		return;
 	if(!engine->surface())
@@ -310,6 +348,7 @@ void window_t::alpha(float a)
 	if(!_offscreen)
 		return;
 	SDL_SetAlpha(surface, SDL_SRCALPHA, (int)(a * 255.0));
+#endif
 }
 
 
@@ -351,8 +390,7 @@ void window_t::string_fxp(int _x, int _y, const char *txt)
 	SELECT
 	_x += phys_rect.x;
 	_y += phys_rect.y;
-	if(surface)
-		f->PutString(surface, _x, _y, txt);
+	f->PutString(_x, _y, txt);
 }
 
 
@@ -370,8 +408,7 @@ void window_t::center_fxp(int _y, const char *txt)
 	int _x = (phys_rect.w - f->TextWidth(txt) + 1) / 2;
 	_x += phys_rect.x;
 	_y += phys_rect.y;
-	if(surface)
-		f->PutString(surface, _x, _y, txt);
+	f->PutString(_x, _y, txt);
 }
 
 
@@ -412,8 +449,7 @@ void window_t::center_token_fxp(int _x, int _y, const char *txt,
 	}
 	_cx += phys_rect.x;
 	_y += phys_rect.y;
-	if(surface)
-		f->PutString(surface, _cx, _y, txt);
+	f->PutString(_cx, _y, txt);
 }
 
 
@@ -459,9 +495,7 @@ int window_t::fontheight()
 void window_t::clear(SDL_Rect *r)
 {
 	SDL_Rect sr, dr;
-	if(!engine)
-		return;
-	if(!surface)
+	if(!engine || !renderer)
 		return;
 	SELECT
 	if(!r)
@@ -481,17 +515,23 @@ void window_t::clear(SDL_Rect *r)
 		dr.x += phys_rect.x;
 		dr.y += phys_rect.y;
 	}
-	if((-1 == bg_bank) && (-1 == bg_frame))
-		SDL_FillRect(surface, &dr, bgcolor);
+	s_sprite_t *s = NULL;
+	if((-1 != bg_bank) && (-1 != bg_frame))
+	{
+		s = engine->get_sprite(bg_bank, bg_frame);
+		if(s && !s->texture)
+			s = NULL;
+	}
+	if(s)
+	{
+		SDL_RenderCopy(renderer, s->texture, &sr, &dr);
+	}
 	else
 	{
-		s_sprite_t *s = engine->get_sprite(bg_bank, bg_frame);
-		if(!s || !s->surface)
-		{
-			SDL_FillRect(surface, &dr, bgcolor);
-			return;
-		}
-		SDL_BlitSurface(s->surface, &sr, surface, &dr);
+		SDL_SetRenderDrawColor(renderer,
+				get_r(bgcolor), get_g(bgcolor),
+				get_b(bgcolor), get_a(bgcolor));
+		SDL_RenderFillRect(renderer, &dr);
 	}
 }
 
@@ -502,8 +542,7 @@ void window_t::point(int _x, int _y)
 	int y2 = ((_y + 1) * ys + 128) >> 8;
 	_x = (_x * xs + 128) >> 8;
 	_y = (_y * ys + 128) >> 8;
-
-	if(!engine)
+	if(!engine || !renderer)
 		return;
 	SELECT
 	/* Quick hack; slow */
@@ -512,8 +551,9 @@ void window_t::point(int _x, int _y)
 	r.y = phys_rect.y + _y;
 	r.w = x2 - _x;
 	r.h = y2 - _y;
-	if(surface)
-		SDL_FillRect(surface, &r, fgcolor);
+	SDL_SetRenderDrawColor(renderer, get_r(bgcolor), get_g(bgcolor),
+			get_b(bgcolor), get_a(bgcolor));
+	SDL_RenderFillRect(renderer, &r);
 }
 
 
@@ -523,8 +563,7 @@ void window_t::fillrect(int _x, int _y, int w, int h)
 	int y2 = ((_y + h) * ys + 128) >> 8;
 	_x = (_x * xs + 128) >> 8;
 	_y = (_y * ys + 128) >> 8;
-
-	if(!engine)
+	if(!engine || !renderer)
 		return;
 	SELECT
 	SDL_Rect r;
@@ -532,8 +571,9 @@ void window_t::fillrect(int _x, int _y, int w, int h)
 	r.y = phys_rect.y + _y;
 	r.w = x2 - _x;
 	r.h = y2 - _y;
-	if(surface)
-		SDL_FillRect(surface, &r, fgcolor);
+	SDL_SetRenderDrawColor(renderer, get_r(fgcolor), get_g(fgcolor),
+			get_b(fgcolor), get_a(fgcolor));
+	SDL_RenderFillRect(renderer, &r);
 }
 
 
@@ -552,8 +592,7 @@ void window_t::fillrect_fxp(int _x, int _y, int w, int h)
 	int yy = CS2PIXEL((_y * ys + 128) >> 8);
 	w = CS2PIXEL(((w + _x) * xs + 128) >> 8) - xx;
 	h = CS2PIXEL(((h + _y) * ys + 128) >> 8) - yy;
-
-	if(!engine)
+	if(!engine || !renderer)
 		return;
 	SELECT
 	SDL_Rect r;
@@ -561,8 +600,9 @@ void window_t::fillrect_fxp(int _x, int _y, int w, int h)
 	r.y = phys_rect.y + yy;
 	r.w = w;
 	r.h = h;
-	if(surface)
-		SDL_FillRect(surface, &r, fgcolor);
+	SDL_SetRenderDrawColor(renderer, get_r(fgcolor), get_g(fgcolor),
+			get_b(fgcolor), get_a(fgcolor));
+	SDL_RenderFillRect(renderer, &r);
 }
 
 
@@ -574,10 +614,13 @@ void window_t::sprite(int _x, int _y, int bank, int frame, int inval)
 
 void window_t::sprite_fxp(int _x, int _y, int bank, int frame, int inval)
 {
-	if(!engine)
+	if(!engine || !renderer)
 		return;
-	s_sprite_t *s = engine->get_sprite(bank, frame);
-	if(!s || !s->surface)
+	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
+	if(!b)
+		return;
+	s_sprite_t *s = s_get_sprite_b(b, frame);
+	if(!s || !s->texture)
 		return;
 	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 128) >> 8);
 	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 128) >> 8);
@@ -586,13 +629,12 @@ void window_t::sprite_fxp(int _x, int _y, int bank, int frame, int inval)
 	SELECT
 	dest_rect.x = phys_rect.x + _x;
 	dest_rect.y = phys_rect.y + _y;
-	if(surface)
-		SDL_BlitSurface(s->surface, NULL, surface, &dest_rect);
+	SDL_RenderCopy(renderer, s->texture, NULL, &dest_rect);
 
 	if(inval && !engine->autoinvalidate())
 	{
-		dest_rect.w = s->surface->w;
-		dest_rect.h = s->surface->h;
+		dest_rect.w = b->w;
+		dest_rect.h = b->h;
 		engine->invalidate(&dest_rect, this);
 	}
 }
@@ -601,16 +643,10 @@ void window_t::sprite_fxp(int _x, int _y, int bank, int frame, int inval)
 void window_t::blit(int dx, int dy,
 		int sx, int sy, int sw, int sh, window_t *src)
 {
-	if(!engine)
+	if(!engine || !src || !renderer || !src->otexture)
 		return;
-	if(!src)
-		return;
-	if(!surface)
-		return;
-	if(!src->surface)
-		return;
-	SELECT
 
+	SELECT
 	SDL_Rect src_rect;
 	int sx2 = ((sx + sw) * xs + 128) >> 8;
 	int sy2 = ((sy + sh) * ys + 128) >> 8;
@@ -622,20 +658,16 @@ void window_t::blit(int dx, int dy,
 	SDL_Rect dest_rect;
 	dest_rect.x = phys_rect.x + ((dx * xs + 128) >> 8);
 	dest_rect.y = phys_rect.y + ((dy * ys + 128) >> 8);
+	dest_rect.w = src_rect.w;
+	dest_rect.h = src_rect.h;
 
-	SDL_BlitSurface(src->surface, &src_rect, surface, &dest_rect);
+	SDL_RenderCopy(renderer, src->otexture, &src_rect, &dest_rect);
 }
 
 
 void window_t::blit(int dx, int dy, window_t *src)
 {
-	if(!engine)
-		return;
-	if(!src)
-		return;
-	if(!surface)
-		return;
-	if(!src->surface)
+	if(!engine || !src || !renderer || !src->otexture)
 		return;
 
 	SELECT
@@ -645,12 +677,14 @@ void window_t::blit(int dx, int dy, window_t *src)
 	SDL_Rect src_rect;
 	src_rect.x = 0;
 	src_rect.y = 0;
-	src_rect.w = src->surface->w;
-	src_rect.h = src->surface->h;
+	src_rect.w = phys_rect.w;
+	src_rect.h = phys_rect.h;
 
 	SDL_Rect dest_rect;
 	dest_rect.x = phys_rect.x + dx;
 	dest_rect.y = phys_rect.y + dy;
+	dest_rect.w = src_rect.w;
+	dest_rect.h = src_rect.h;
 
-	SDL_BlitSurface(src->surface, &src_rect, surface, &dest_rect);
+	SDL_RenderCopy(renderer, src->otexture, &src_rect, &dest_rect);
 }

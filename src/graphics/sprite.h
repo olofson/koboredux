@@ -2,7 +2,8 @@
 ----------------------------------------------------------------------
 	sprite.h - Sprite engine for use with cs.h
 ----------------------------------------------------------------------
- * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -26,7 +27,7 @@
 extern "C" {
 #endif
 
-#include "glSDL.h"
+#include "SDL.h"
 
 typedef enum
 {
@@ -43,7 +44,9 @@ struct s_container_t;
 typedef struct
 {
 	int		x, y;		/* kern or hot-spot*/
-	SDL_Surface	*surface;
+	SDL_Texture	*texture;
+/*FIXME:*/SDL_Surface	*_surface;
+/*TODO:	SDL_BlendMode	blendmode;	*/
 } s_sprite_t;
 
 /* Bank of sprite images */

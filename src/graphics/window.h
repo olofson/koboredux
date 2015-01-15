@@ -2,7 +2,8 @@
 ---------------------------------------------------------------------------
 	window.h - Generic Rendering Window
 ---------------------------------------------------------------------------
- * Copyright (C) 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -213,7 +214,7 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
-#include "glSDL.h"
+#include "SDL.h"
 
 class gfxengine_t;
 
@@ -251,8 +252,19 @@ class window_t
 	}
 
 	/* Rendering */
-	Uint32 map_rgb(Uint8 r, Uint8 g, Uint8 b);
-	Uint32 map_rgb(Uint32 rgb);
+	Uint32 map_rgb(Uint8 r, Uint8 g, Uint8 b)
+	{
+		return 0xff000000 | (r << 16) | (g << 8) | b;
+	}
+	Uint32 map_rgb(Uint32 c)	{ return 0xff000000 | c; }
+	Uint32 map_rgba(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+	{
+		return (a << 24) | (r << 16) | (g << 8) | b;
+	}
+	Uint8 get_r(Uint32 c)		{ return c >> 16; }
+	Uint8 get_g(Uint32 c)		{ return c >> 8; }
+	Uint8 get_b(Uint32 c)		{ return c; }
+	Uint8 get_a(Uint32 c)		{ return c >> 24; }
 	void foreground(Uint32 color)	{ fgcolor = color; }
 	void background(Uint32 color)	{ bgcolor = color; };
 
@@ -295,24 +307,24 @@ class window_t
 
   protected:
 	window_t	*next, *prev;
-	/*
-	 * Kludge: This is for window selection to work.
-	 * the problem is that this will break (along
-	 * with some other things) if more than one
-	 * gfxengine_t instance is used.
-	 */
-	static window_t	*selected;	//Currently selected window
 
 	gfxengine_t	*engine;
-	SDL_Surface	*surface;
-	int		xs, ys;		//fixp 24:8
+
+	SDL_Renderer	*renderer;	// Can be engine or local renderer!
+
+	SDL_Texture	*otexture;	// Buffer for offscreen windows
+
+	// Fallback for offscreen window, if there's no render target support
+	SDL_Surface	*osurface;
+
+	int		xs, ys;		// fixp 24:8
 	Uint32		fgcolor, bgcolor;
 	int		bg_bank, bg_frame;
 	int		_font;
 	int		_visible;
 	int		_offscreen;
 
-	void _select();		//Internal version
+	void _select();			// Internal version
 	void link(gfxengine_t *e);
 	void unlink(void);
 
@@ -334,6 +346,8 @@ class window_t
 			refresh(&dr);
 		}
 	}
+
+	void offscreen_invalidate(SDL_Rect *r);
 };
 
 #endif

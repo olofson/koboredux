@@ -2,7 +2,8 @@
 ------------------------------------------------------------
    Kobo Deluxe - Wrapper for Sound Control
 ------------------------------------------------------------
- * Copyright (C) 2007, 2009 David Olofson
+ * Copyright 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -24,7 +25,6 @@
 #include "kobo.h"
 #include "kobolog.h"
 #include "random.h"
-#include "audio.h"
 
 int KOBO_sound::sounds_loaded = 0;
 int KOBO_sound::music_loaded = 0;
@@ -68,6 +68,7 @@ int KOBO_sound::load(int (*prog)(const char *msg), int force)
 		log_printf(ELOG, "Couldn't find audio data directory!\n");
 		return -1;
 	}
+#if 0
 	audio_set_path(ap);
 
 	if(!sounds_loaded || force)
@@ -125,13 +126,14 @@ int KOBO_sound::load(int (*prog)(const char *msg), int force)
 	}
 
 	audio_wave_info(-1);
-
+#endif
 	return prog(NULL);
 }
 
 
 void KOBO_sound::prefschange()
 {
+#if 0
 	/* Levels */
 //	audio_master_volume((float)prefs->volume/100.0);
 	audio_group_controlf(SOUND_GROUP_UI, ACC_VOLUME,
@@ -147,6 +149,7 @@ void KOBO_sound::prefschange()
 
 	// Bus 7: Our "Master Reverb Bus"
 	master_reverb((float)prefs->reverb/100.0);
+#endif
 }
 	
 
@@ -157,6 +160,7 @@ int KOBO_sound::open()
 		log_printf(WLOG, "Sound disabled!\n");
 		return 0;
 	}
+#if 0
 
 	if(audio_start(prefs->samplerate, prefs->latency, prefs->use_oss, prefs->cmd_midi,
 			prefs->cmd_pollaudio) < 0)
@@ -196,6 +200,9 @@ int KOBO_sound::open()
 	audio_bus_control(1, 1, ABC_FX_TYPE, AFX_NONE);
 	audio_bus_controlf(1, 0, ABC_SEND_MASTER, 1.0);
 	audio_bus_controlf(1, 0, ABC_SEND_BUS_7, 0.1);
+#else
+	log_printf(WLOG, "Sound not implemented!\n");
+#endif
 
 	prefschange();
 
@@ -206,13 +213,17 @@ int KOBO_sound::open()
 
 void KOBO_sound::stop()
 {
+#if 0
 	audio_stop();
+#endif
 }
 
 
 void KOBO_sound::close()
 {
+#if 0
 	audio_close();
+#endif
 	sounds_loaded = 0;
 	music_loaded = 0;
 }
@@ -225,6 +236,7 @@ void KOBO_sound::close()
 
 void KOBO_sound::master_reverb(float rvb)
 {
+#if 0
 	int master_rvb = (int)(rvb * 65536.0);
 	audio_bus_controlf(7, 0, ABC_SEND_MASTER, 0.0);
 	audio_bus_control(7, 1, ABC_SEND_MASTER, master_rvb);
@@ -232,11 +244,13 @@ void KOBO_sound::master_reverb(float rvb)
 		audio_bus_control(7, 1, ABC_FX_TYPE, AFX_REVERB);
 	else
 		audio_bus_control(7, 1, ABC_FX_TYPE, AFX_NONE);
+#endif
 }
 
 
 void KOBO_sound::set_boost(int boost)
 {
+#if 0
 	switch(boost)
 	{
 	  case 0:
@@ -256,27 +270,34 @@ void KOBO_sound::set_boost(int boost)
 		audio_set_limiter(.25, 3.0);
 		break;
 	}
+#endif
 }
 
 
 void KOBO_sound::sfx_volume(float vol)
 {
+#if 0
 	audio_group_controlf(SOUND_GROUP_SFX, ACC_VOLUME,
 			(float)prefs->sfx_vol * vol / 100.0f);
+#endif
 }
 
 
 void KOBO_sound::intro_volume(float vol)
 {
+#if 0
 	audio_group_controlf(SOUND_GROUP_UIMUSIC, ACC_VOLUME,
 			(float)prefs->intro_vol * vol / 100.0f);
+#endif
 }
 
 
 void KOBO_sound::music_volume(float vol)
 {
+#if 0
 	audio_group_controlf(SOUND_GROUP_BGMUSIC, ACC_VOLUME,
 			(float)prefs->music_vol * vol / 100.0f);
+#endif
 }
 
 
@@ -300,6 +321,7 @@ void KOBO_sound::frame()
 	else if (aaa == 20)
 		g_play(SOUND_OVERHEAT, listener_x - 128, listener_y, 32768, 67<<16);
 #endif
+#if 0
 	// Advance to next game logic frame
 	int nc = audio_next_callback();
 	if(time < nc)
@@ -307,6 +329,7 @@ void KOBO_sound::frame()
 	else
 		time -= 1 + (labs(time - nc) >> 5);
 	audio_bump(time);
+#endif
 	time += _period;
 
 	// Various sound control logic
@@ -316,7 +339,9 @@ void KOBO_sound::frame()
 
 void KOBO_sound::run()
 {
+#if 0
 	audio_run();
+#endif
 }
 
 
@@ -326,17 +351,21 @@ void KOBO_sound::run()
 
 void KOBO_sound::g_music(int wid)
 {
+#if 0
 	audio_channel_control(SOUND_GROUP_BGMUSIC, AVT_FUTURE, ACC_PATCH, wid);
 	audio_channel_control(SOUND_GROUP_BGMUSIC, AVT_FUTURE, ACC_PAN, 0);
 	audio_channel_play(SOUND_GROUP_BGMUSIC, 0, 60<<16, 65536);
+#endif
 }
 
 
 void KOBO_sound::play(int wid, int vol, int pitch, int pan)
 {
+#if 0
 	audio_channel_control(SOUND_GROUP_UI, AVT_FUTURE, ACC_PATCH, wid);
 	audio_channel_control(SOUND_GROUP_UI, AVT_FUTURE, ACC_PAN, pan);
 	audio_channel_play(SOUND_GROUP_UI, 0, pitch, vol);
+#endif
 }
 
 
@@ -401,20 +430,24 @@ void KOBO_sound::g_play(int wid, int x, int y, int vol, int pitch)
 	else if(pan > 65536)
 		pan = 65536;
 
+#if 0
 	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_PATCH, wid);
 	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_PAN, pan);
 	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_VOLUME, volume);
 	audio_channel_play(SOUND_GROUP_SFX, sfx2d_tag, pitch, vol);
+#endif
 	sfx2d_tag = (sfx2d_tag + 1) & 0xffff;
 }
 
 
 void KOBO_sound::g_play0(int wid, int vol, int pitch)
 {
+#if 0
 	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_PATCH, wid);
 	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_PAN, 0);
 	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_VOLUME, 65536);
 	audio_channel_play(SOUND_GROUP_SFX, sfx2d_tag, 60<<16, vol);
+#endif
 	sfx2d_tag = (sfx2d_tag + 1) & 0xffff;
 }
 
@@ -604,6 +637,7 @@ void KOBO_sound::g_m_launch(int x, int y)
 
 void KOBO_sound::ui_music(int wid)
 {
+#if 0
 // KLUDGE UNTIL MIDI SONGS AND FX CONTROL IS FIXED!
 	audio_bus_control(0, 1, ABC_FX_TYPE, AFX_NONE);
 	audio_bus_controlf(0, 0, ABC_SEND_MASTER, 1.0);
@@ -611,11 +645,13 @@ void KOBO_sound::ui_music(int wid)
 // KLUDGE UNTIL MIDI SONGS AND FX CONTROL IS FIXED!
 	audio_channel_control(SOUND_GROUP_UIMUSIC, AVT_FUTURE, ACC_PATCH, wid);
 	audio_channel_play(SOUND_GROUP_UIMUSIC, 0, 60<<16, 65536);
+#endif
 }
 
 
 void KOBO_sound::ui_noise(int n)
 {
+#if 0
 	if(n < 0)
 	{
 		sound.sfx_volume(0.0f);
@@ -635,6 +671,7 @@ void KOBO_sound::ui_noise(int n)
 	}
 	else
 		sound.sfx_volume(1.0f);
+#endif
 }
 
 

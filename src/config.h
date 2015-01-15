@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996, Akira Higuchi
- * Copyright (C) 2001-2003, 2009 David Olofson
- * Copyright (C) 2008 Robert Schuster
+ * Copyright 1995, 1996, Akira Higuchi
+ * Copyright 2001-2003, 2009 David Olofson
+ * Copyright 2008 Robert Schuster
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -24,7 +25,7 @@
 #ifndef _KOBO_CONFIG_H_
 #define _KOBO_CONFIG_H_
 
-#include <aconfig.h>
+#include "buildconfig.h"
 
 #ifndef DEBUG
 #	undef	DBG
@@ -37,32 +38,18 @@
 #	define	DBG4(x)
 #endif
 
-#ifndef HAVE_SNPRINTF
-#ifndef HAVE__SNPRINTF
+#ifndef KOBO_HAVE_SNPRINTF
+#ifndef KOBO_HAVE__SNPRINTF
 #error	Must have snprintf() or _snprintf!
 #endif
 #define snprintf _snprintf
 #endif
 
-#ifndef HAVE_VSNPRINTF
-#ifndef HAVE__VSNPRINTF
+#ifndef KOBO_HAVE_VSNPRINTF
+#ifndef KOBO_HAVE__VSNPRINTF
 #error	Must have vsnprintf() or _vsnprintf!
 #endif
 #define vsnprintf _vsnprintf
-#endif
-
-/*
- * On some platforms, assignments of these "opaque objects" are
- * illegal - while on others, the macro to handle that can be
- * missing... Oh, and this is really only in C99, of course. :-/
- */
-#include <stdarg.h>
-#ifndef va_copy
-#	ifdef __va_copy
-#		define va_copy(to, from) __va_copy(to, from)
-#	else
-#		define va_copy(to, from) (to) = (from)
-#	endif
 #endif
 
 /* Key/button repeat timing */
@@ -134,9 +121,15 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 // Player bolt hit rect size
 #define HIT_BOLT	5
 
-/* Actually, this is not the *full* size in windowed mode any more. */
-#define	SCREEN_WIDTH	320
-#define	SCREEN_HEIGHT	240
+/*
+ * Actually, this is not the *full* size in windowed mode any more. This was
+ * originally 320x240. Kobo Redux changes the "native" resolution to 640x360,
+ * and the tile size is changed from 16x16 to 24x24. However, the game logic
+ * coordinates are NOT changed, which is why those coordinates still deal in
+ * the original 16x16 tile based figures.
+ */
+#define	SCREEN_WIDTH	640
+#define	SCREEN_HEIGHT	360
 
 /* Various size info (DO NOT EDIT!) */
 #define CHIP_SIZEX_LOG2   4

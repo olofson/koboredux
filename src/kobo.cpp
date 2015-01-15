@@ -2,10 +2,11 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001-2003, 2005-2007, 2009, 2011 David Olofson
- * Copyright (C) 2005 Erik Auerswald
- * Copyright (C) 2008 Robert Schuster
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001-2003, 2005-2007, 2009, 2011 David Olofson
+ * Copyright 2005 Erik Auerswald
+ * Copyright 2008 Robert Schuster
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -29,7 +30,7 @@
 // Use this to benchmark and create a new percentage table!
 #undef	TIME_PROGRESS
 
-#include <aconfig.h>
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +53,6 @@ extern "C" {
 #endif
 
 #include "kobolog.h"
-#include "config.h"
 #include "kobo.h"
 #include "states.h"
 #include "screen.h"
@@ -60,7 +60,6 @@ extern "C" {
 #include "score.h"
 #include "gamectl.h"
 #include "random.h"
-#include "version.h"
 #include "options.h"
 #include "myship.h"
 #include "enemies.h"
@@ -99,7 +98,6 @@ display_t		*dhigh = NULL;
 display_t		*dscore = NULL;
 display_t		*dstage = NULL;
 display_t		*dships = NULL;
-RGN_region		*logo_region = NULL;
 
 int mouse_x = 0;
 int mouse_y = 0;
@@ -138,7 +136,7 @@ static void setup_dirs(char *xpath)
 {
 	fmap->exepath(xpath);
 
-	fmap->addpath("DATA", KOBO_DATA_DIR);
+	fmap->addpath("DATA", KOBO_DATADIR);
 
 	/*
 	 * Graphics data
@@ -163,7 +161,7 @@ static void setup_dirs(char *xpath)
 	/*
 	 * Score files (user and global)
 	 */
-	fmap->addpath("SCORES", KOBO_SCORE_DIR);
+	fmap->addpath("SCORES", KOBO_SCOREDIR);
 	/* 'scores' in current dir (For importing scores, perhaps...) */
 // (Disabled for now, since filemapper_t can't tell
 // when it hits the same dir more than once...)
@@ -172,9 +170,11 @@ static void setup_dirs(char *xpath)
 	/*
 	 * Configuration files
 	 */
-	fmap->addpath("CONFIG", KOBO_CONFIG_DIR);
+	fmap->addpath("CONFIG", KOBO_CONFIGDIR);
+#ifdef KOBO_SYSCONFDIR
 	/* System local */
-	fmap->addpath("CONFIG", SYSCONF_DIR);
+	fmap->addpath("CONFIG", KOBO_SYSCONFDIR);
+#endif
 	/* In current dir (last resort) */
 	fmap->addpath("CONFIG", "./");
 }
@@ -446,8 +446,20 @@ int KOBO_main::quit_requested()
 		  case SDL_QUIT:
 			exit_game_fast = 1;
 			break;
-		  case SDL_VIDEOEXPOSE:
-			gengine->invalidate();
+		  case SDL_WINDOWEVENT:
+			switch(e.window.event)
+			{
+			  case SDL_WINDOWEVENT_SHOWN:
+			  case SDL_WINDOWEVENT_EXPOSED:
+			  case SDL_WINDOWEVENT_RESIZED:
+			  case SDL_WINDOWEVENT_MAXIMIZED:
+			  case SDL_WINDOWEVENT_RESTORED:
+				gengine->invalidate();
+				break;
+			  case SDL_WINDOWEVENT_CLOSE:
+				exit_game_fast = 1;
+				break;
+			}
 			break;
 		  case SDL_KEYUP:
 			switch(e.key.keysym.sym)
@@ -639,7 +651,7 @@ int KOBO_main::init_display(prefs_t *p)
 {
 	int dw, dh;		// Display size
 	int gw, gh;		// Game "window" size
-	gengine->title("Kobo Deluxe " VERSION, "kobodl");
+	gengine->title("Kobo Redux " KOBO_VERSION, "kobord");
 	gengine->driver((gfx_drivers_t)p->videodriver);
 
 	dw = p->width;
@@ -1019,16 +1031,19 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "GFX>>bombdeto.png", B_BOMBDETO,	40, 40,	2.0f,	KOBO_CENTER },
 	{ "GFX>>bigship.png", B_BIGSHIP,	72, 72,	2.0f,	KOBO_CENTER },
 
-	// Framework
-	{ "Loading framework graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>screen2.png", B_SCREEN,	0, 0,	2.0f,	KOBO_CLAMP_OPAQUE },
+	// Dashboard
+	{ "Loading dashboard graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
+	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	2.0f,
+			KOBO_CLAMP_OPAQUE },
 
 	// Logo
 	{ "Loading logo", 0, 0,0, 0.0f, KOBO_MESSAGE },
 	{ "GFX>>logo-outline.png", B_LOGO,	0, 0,	2.0f,	0 },
 	{ "GFX>>deluxe.png", B_LOGODELUXE,	0, 0,	2.0f,	0 },
+#if 0
 	{ "GFX>>logomask3.png", B_LOGOMASK,	0, 0,	4.0f,
 			KOBO_NEAREST | KOBO_NODITHER },
+#endif
 
 	// Fonts
 	{ "Loading fonts", 0, 0,0, 0.0f, KOBO_MESSAGE },
@@ -1112,7 +1127,8 @@ int KOBO_main::load_graphics(prefs_t *p)
 		{
 			log_printf(ELOG, "Couldn't get path to \"%s\"!\n",
 					gd->path);
-			return -1;
+//			return -1;
+			continue;
 		}
 		int res;
 		if(gd->flags & KOBO_FONT)
@@ -1124,7 +1140,8 @@ int KOBO_main::load_graphics(prefs_t *p)
 		if(res < 0)
 		{
 			log_printf(ELOG, "Couldn't load \"%s\"!\n", fn);
-			return -1;
+//			return -1;
+			continue;
 		}
 
 		// Hotspot
@@ -1143,81 +1160,79 @@ int KOBO_main::load_graphics(prefs_t *p)
 	r.x = (8 + MARGIN);
 	r.y = MARGIN;
 	if(gengine->copyrect(B_FRAME_TL, B_SCREEN, 0, &r) < 0)
-		return -6;
+//		return -6;
+		;
 	progress();
 	r.x += WSIZE - 16;
 	if(gengine->copyrect(B_FRAME_TR, B_SCREEN, 0, &r) < 0)
-		return -7;
+//		return -7;
+		;
 	progress();
 	r.x = (8 + MARGIN);
 	r.y = MARGIN + WSIZE - 16;
 	if(gengine->copyrect(B_FRAME_BL, B_SCREEN, 0, &r) < 0)
-		return -8;
+//		return -8;
+		;
 	progress();
 	r.x += WSIZE - 16;
 	if(gengine->copyrect(B_FRAME_BR, B_SCREEN, 0, &r) < 0)
-		return -9;
+//		return -9;
+		;
 	progress();
 	r.x = 252;
 	r.y = 4;
 	r.w = 64;
 	r.h = 18;
 	if(gengine->copyrect(B_HIGH_BACK, B_SCREEN, 0, &r) < 0)
-		return -26;
+//		return -26;
+		;
 	progress();
 	r.y += 18 + 4;
 	if(gengine->copyrect(B_SCORE_BACK, B_SCREEN, 0, &r) < 0)
-		return -27;
+//		return -27;
+		;
 	progress();
 	r.x = 244;
 	r.y = (SCREEN_HEIGHT - MAP_SIZEY) / 2;
 	r.w = MAP_SIZEX;
 	r.h = MAP_SIZEY;
 	if(gengine->copyrect(B_RADAR_BACK, B_SCREEN, 0, &r) < 0)
-		return -28;
+//		return -28;
+		;
 	progress();
 	r.x = 264;
 	r.y = 196;
 	r.w = 38;
 	r.h = 18;
 	if(gengine->copyrect(B_SHIPS_BACK, B_SCREEN, 0, &r) < 0)
-		return -29;
+//		return -29;
+		;
 	progress();
 	r.y += 18 + 4;
 	if(gengine->copyrect(B_STAGE_BACK, B_SCREEN, 0, &r) < 0)
-		return -30;
+//		return -30;
+		;
 	progress();
 	r.x = 4;
 	r.y = 92;
 	r.w = 8;
 	r.h = 128;
 	if(gengine->copyrect(B_HEALTH_LID, B_SCREEN, 0, &r) < 0)
-		return -31;
+//		return -31;
+		;
 	progress();
 	r.x = 244;
 	r.y = 188;
 	r.w = 4;
 	r.h = 32;
 	if(gengine->copyrect(B_TEMP_LID, B_SCREEN, 0, &r) < 0)
-		return -32;
+//		return -32;
+		;
 	progress();
 	r.x += 4;
 	if(gengine->copyrect(B_TTEMP_LID, B_SCREEN, 0, &r) < 0)
-		return -33;
-	progress();
-
-	// Prepare the logo region
-	s_sprite_t *s = gengine->get_sprite(B_LOGOMASK, 0);
-	if(!s || !s->surface)
-		return -10;
-	RGN_FreeRegion(logo_region);
-	logo_region = RGN_ScanMask(s->surface,
-			SDL_MapRGB(s->surface->format, 255, 255, 255));
-	if(!logo_region)
-	{
-		log_printf(ELOG, "Could not create logo region!\n");
-		return -92;
-	}
+//		return -33;
+		;
 	progress();
 
 	return 0;
@@ -1298,11 +1313,11 @@ void KOBO_main::close_js()
 
 void KOBO_main::load_config(prefs_t *p)
 {
-	FILE *f = fmap->fopen(KOBO_CONFIG_DIR "/" KOBO_CONFIG_FILE, "r");
+	FILE *f = fmap->fopen(KOBO_CONFIGDIR "/" KOBO_CONFIGFILE, "r");
 	if(f)
 	{
 		log_puts(VLOG, "Loading personal configuration from: "\
-				KOBO_CONFIG_DIR "/" KOBO_CONFIG_FILE);
+				KOBO_CONFIGDIR "/" KOBO_CONFIGFILE);
 		p->read(f);
 		fclose(f);
 	}
@@ -1318,11 +1333,13 @@ void KOBO_main::load_config(prefs_t *p)
 	 */
 	else
 	{
-		f = fmap->fopen(SYSCONF_DIR "/kobo-deluxe/default-config", "r");
+		f = fmap->fopen(KOBO_SYSCONFDIR "/kobo-deluxe/default-config",
+				"r");
 		if(f)
 		{
 			log_puts(VLOG, "Loading configuration defaults from: "\
-					SYSCONF_DIR "/kobo-deluxe/default-config");
+					KOBO_SYSCONFDIR
+					"/kobo-deluxe/default-config");
 			p->read(f);
 			fclose(f);
 		}
@@ -1347,7 +1364,7 @@ void KOBO_main::save_config(prefs_t *p)
 		return;
 	}
 #endif
-	f = fmap->fopen(KOBO_CONFIG_DIR "/" KOBO_CONFIG_FILE, "w");
+	f = fmap->fopen(KOBO_CONFIGDIR "/" KOBO_CONFIGFILE, "w");
 	if(f)
 	{
 		p->write(f);
@@ -1440,8 +1457,6 @@ int KOBO_main::open()
 void KOBO_main::close()
 {
 	close_js();
-	RGN_FreeRegion(logo_region);
-	logo_region = NULL;
 	close_display();
 	if(gengine)
 	{
@@ -1559,8 +1574,6 @@ int KOBO_main::run()
 			if(!(global_status & OS_RESTART_VIDEO))
 				wdash->nibble();
 			gengine->unload();
-			RGN_FreeRegion(logo_region);
-			logo_region = NULL;
 			if(!retry_status)
 			{
 				log_printf(ULOG, "--- Reloading graphics...\n");
@@ -1653,23 +1666,6 @@ void kobo_gfxengine_t::frame()
 		  case SDL_KEYDOWN:
 			switch(ev.key.keysym.sym)
 			{
-#ifdef PROFILE_AUDIO
-			  case SDLK_F10:
-				++km.audio_vismode;
-				break;
-			  case SDLK_F12:
-				audio_print_info();
-				break;
-			  case SDLK_r:
-			  {
-				audio_channel_stop(-1, -1);
-				int startt = SDL_GetTicks();
-				audio_wave_load(0, "sfx.agw", 0);
-				log_printf(VLOG, "(Loading + processing time: %d ms)\n",
-						SDL_GetTicks() - startt);
-				break;
-			  }
-#endif
 			  case SDLK_DELETE:
 				if(prefs->cmd_debug)
 				{
@@ -1679,7 +1675,7 @@ void kobo_gfxengine_t::frame()
 				break;
 			  case SDLK_RETURN:
 				ms = SDL_GetModState();
-				if(ms & (KMOD_CTRL | KMOD_SHIFT | KMOD_META))
+				if(ms & (KMOD_CTRL | KMOD_SHIFT | KMOD_GUI))
 					break;
 				if(!(ms & KMOD_ALT))
 					break;
@@ -1690,7 +1686,7 @@ void kobo_gfxengine_t::frame()
 						OS_RESTART_VIDEO;
 				stop();
 				return;
-			  case SDLK_PRINT:
+			  case SDLK_PRINTSCREEN:
 			  case SDLK_SYSREQ:
 // FIXME: Doesn't this trigger when entering names and stuff...?
 			  case SDLK_s:
@@ -1701,7 +1697,8 @@ void kobo_gfxengine_t::frame()
 			}
 			k = gamecontrol.map(ev.key.keysym.sym);
 			gamecontrol.press(k);
-			gsm.press(k, ev.key.keysym.unicode);
+//FIXME:		gsm.press(k, ev.key.keysym.unicode);
+			gsm.press(k, ev.key.keysym.sym);
 			break;
 		  case SDL_KEYUP:
 			if((ev.key.keysym.sym == SDLK_ESCAPE) && km.escape_hammering())
@@ -1739,13 +1736,28 @@ void kobo_gfxengine_t::frame()
 				gsm.release(k);
 			}
 			break;
-		  case SDL_VIDEOEXPOSE:
-			gengine->invalidate();
-			break;
-		  case SDL_ACTIVEEVENT:
-			// Any type of focus loss should activate pause mode!
-			if(!ev.active.gain)
+		  case SDL_WINDOWEVENT:
+			switch(ev.window.event)
+			{
+			  case SDL_WINDOWEVENT_SHOWN:
+			  case SDL_WINDOWEVENT_EXPOSED:
+			  case SDL_WINDOWEVENT_RESIZED:
+			  case SDL_WINDOWEVENT_MAXIMIZED:
+			  case SDL_WINDOWEVENT_RESTORED:
+				gengine->invalidate();
+				break;
+			  case SDL_WINDOWEVENT_CLOSE:
+				km.brutal_quit();
+				break;
+			  case SDL_WINDOWEVENT_HIDDEN:
+			  case SDL_WINDOWEVENT_MINIMIZED:
+			  case SDL_WINDOWEVENT_LEAVE:
+			  case SDL_WINDOWEVENT_FOCUS_LOST:
+				// Any type of focus loss should activate
+				// pause mode!
 				km.pause_game();
+				break;
+			}
 			break;
 		  case SDL_QUIT:
 			/*gsm.press(BTN_CLOSE);*/
@@ -2161,46 +2173,31 @@ int main(int argc, char *argv[])
 {
 	int cmd_exit = 0;
 
-	puts(PACKAGE " " VERSION " ("
-#ifdef SVN_REVISION
-			"SVN rev: " SVN_REVISION ", "
-#endif
-			"Build date: " __DATE__ " " __TIME__ ")\n"
-			"Build options:"
-#ifdef HAVE_DEBUG
-        		" HAVE_DEBUG"
-#endif
-#ifdef HAVE_OPENGL
-        		" HAVE_OPENGL"
-#endif
-#ifdef PROFILE_AUDIO
-        		" PROFILE_AUDIO"
-#endif
-#ifdef HAVE_OSS
-        		" HAVE_OSS"
-#endif
-#ifdef HAVE_ALSA
-        		" HAVE_ALSA"
-#endif
-#ifdef USE_MIDI
-        		" USE_MIDI"
+	puts(PACKAGE " ("
+		"Build date: " __DATE__ " " __TIME__ ")\n"
+		"Copyright 2015 Olofson Arcade. All rights reserved.\n"
+		"\n"
+		"Build options:"
+#ifdef DEBUG
+        	" DEBUG"
 #endif
 #ifdef ENABLE_TOUCHSCREEN
-        		" ENABLE_TOUCHSCREEN"
+        	" ENABLE_TOUCHSCREEN"
 #endif
-			"\n"
-			"Copyright (c) 1995, 1996 Akira Higuchi\n"
-			"Copyright (C) 1997 Masanao Izumo\n"
-			"Copyright (C) 1999-2001 Simon Peter\n"
-			"Copyright (C) 2002 Florian Schulze\n"
-			"Copyright (C) 2002 Jeremy Sheeley\n"
-			"Copyright (C) 2005 Erik Auerswald\n"
-			"Copyright (C) 2008 Robert Schuster\n"
-			"Copyright (C) 1999-2009 David Olofson\n"
-			"This is free software; see the source for copying "
-				"conditions. There is NO\n"
-			"warranty; not even for MERCHANTABILITY or FITNESS "
-				"FOR A PARTICULAR PURPOSE.\n");
+		"\n\n"
+		"The source code of this game is Free. See the\n"
+		"respective source files for copying conditions.\n"
+		"There is NO warranty; not even for MERCHANTABILITY\n"
+		"or FITNESS FOR A PARTICULAR PURPOSE.\n"
+		"\n"
+		"Copyright 1995, 1996 Akira Higuchi\n"
+		"Copyright 1997 Masanao Izumo\n"
+		"Copyright 1999-2001 Simon Peter\n"
+		"Copyright 2002 Florian Schulze\n"
+		"Copyright 2002 Jeremy Sheeley\n"
+		"Copyright 2005 Erik Auerswald\n"
+		"Copyright 2008 Robert Schuster\n"
+		"Copyright 1999-2009, 2015 David Olofson\n");
 
 	atexit(emergency_close);
 	signal(SIGTERM, breakhandler);

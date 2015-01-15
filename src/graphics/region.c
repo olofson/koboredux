@@ -2,7 +2,8 @@
 ----------------------------------------------------------------------
 	region.c - Graphics Engine
 ----------------------------------------------------------------------
- * Copyright (C) 2007, 2009 David Olofson
+ * Copyright 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -26,7 +27,7 @@ static struct
 {
 	RGN_region	*region;
 	int		x, y;
-	SDL_Surface	*target;
+	SDL_Renderer	*target;
 } s;
 
 
@@ -141,7 +142,7 @@ void RGN_FreeRegion(RGN_region *rgn)
 }
 
 
-void RGN_Target(SDL_Surface *tgt)
+void RGN_Target(SDL_Renderer *tgt)
 {
 	s.target = tgt;
 }

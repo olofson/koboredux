@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2002 Jeremy Sheeley
- * Copyright (C) 2001-2003, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2002 Jeremy Sheeley
+ * Copyright 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -48,7 +49,6 @@
 #include "radar.h"
 #include "gamectl.h"
 #include "states.h"
-#include "audio.h"
 #include "random.h"
 
 #define GIGA             1000000000
@@ -256,7 +256,9 @@ void _manage::game_stop()
 	}
 	ships = 0;
 	ships_changed = 1;
+#if 0
 	audio_channel_stop(0, -1);
+#endif
 	playing = 0;
 }
 

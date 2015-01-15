@@ -2,7 +2,8 @@
 ----------------------------------------------------------------------
 	filters.c - Filters for the sprite manager
 ----------------------------------------------------------------------
- * Copyright (C) 2001, 2003, 2006, 2007, 2009 David Olofson
+ * Copyright 2001, 2003, 2006, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,7 +23,7 @@
 #include <string.h>
 #include <math.h>
 #include "logger.h"
-#include "glSDL.h"
+#include "SDL.h"
 #include "SDL_image.h"
 #include "sprite.h"
 #include "filters.h"
@@ -32,21 +33,21 @@
 	RNG
 --------------------------------------------------*/
 
-static unsigned int rnd = 16576;
+static unsigned int rndstate = 16576;
 
 /* Resets the noise generator */
 static void noise_reset(int seed)
 {
-	rnd = 16576 + seed;
+	rndstate = 16576 + seed;
 }
 
 /* Returns a pseudo random number in the range [0, 65535] */
 static inline int noise(void)
 {
-	rnd *= 1566083941UL;
-	rnd++;
-	rnd &= 0xffffffffUL;	/* NOP on 32 bit machines */
-	return (int)(rnd * (rnd >> 16) >> 16);
+	rndstate *= 1566083941UL;
+	rndstate++;
+	rndstate &= 0xffffffffUL;	/* NOP on 32 bit machines */
+	return (int)(rndstate * (rndstate >> 16) >> 16);
 }
 
 
@@ -256,19 +257,19 @@ int s_filter_rgba8(s_bank_t *b, unsigned first, unsigned frames,
 		s_sprite_t *s = s_get_sprite_b(b, first+i);
 		if(!s)
 			continue;
-		tmp = SDL_ConvertSurface(s->surface, &fmt,
+		tmp = SDL_ConvertSurface(s->_surface, &fmt,
 				SDL_SWSURFACE);
 		if(!tmp)
 			return -1;
 
-		SDL_FreeSurface(s->surface);
-		s->surface = tmp;
+		SDL_FreeSurface(s->_surface);
+		s->_surface = tmp;
 	}
 	return 0;
 }
 
 
-int s_filter_dither(s_bank_t *b, unsigned first, unsigned frames,
+int s_filter_dither(s_bank_t *bank, unsigned first, unsigned frames,
 		s_filter_args_t *args)
 {
 	int x, y;
@@ -279,7 +280,7 @@ int s_filter_dither(s_bank_t *b, unsigned first, unsigned frames,
 	noise_reset(first);
 	for(i = 0; i < frames; ++i)
 	{
-		s_sprite_t *s = s_get_sprite_b(b, first+i);
+		s_sprite_t *s = s_get_sprite_b(bank, first+i);
 		if(!s)
 			continue;
 		ar = args->r;
@@ -289,7 +290,7 @@ int s_filter_dither(s_bank_t *b, unsigned first, unsigned frames,
 			switch (s_blitmode)
 			{
 			  case S_BLITMODE_AUTO:
-				if(s->surface->format->Amask)
+				if(s->_surface->format->Amask)
 					ar = ag = ab = 8;
 				break;
 			  case S_BLITMODE_OPAQUE:
@@ -310,16 +311,17 @@ int s_filter_dither(s_bank_t *b, unsigned first, unsigned frames,
 		  case 2:
 			break;
 		}
-		for(y = (args->flags & SF_CLAMP_SFONT) ? 1 : 0; y < b->h; ++y)
+		for(y = (args->flags & SF_CLAMP_SFONT) ? 1 : 0; y < bank->h;
+				++y)
 		{
-			pix_t *p = (pix_t *)((char *)s->surface->pixels +
-					y * s->surface->pitch);
+			pix_t *p = (pix_t *)((char *)s->_surface->pixels +
+					y * s->_surface->pitch);
 			switch(args->y)
 			{
 			  default:
 			  case 0:
 				/* 2x2 filter */
-				for(x = 0; x < b->w; ++x)
+				for(x = 0; x < bank->w; ++x)
 				{
 					int r, g, b;
 					pix_t *pix = p + x;
@@ -354,7 +356,7 @@ int s_filter_dither(s_bank_t *b, unsigned first, unsigned frames,
 				break;
 			  case 1:
 				/* 4x4 filter */
-				for(x = 0; x < b->w; ++x)
+				for(x = 0; x < bank->w; ++x)
 				{
 					int dr, dg, db;
 					int r, g, b;
@@ -412,7 +414,7 @@ int s_filter_dither(s_bank_t *b, unsigned first, unsigned frames,
 				break;
 			  case 2:
 				/* Random */
-				for(x = 0; x < b->w; ++x)
+				for(x = 0; x < bank->w; ++x)
 				{
 					int r, g, b, z;
 					pix_t *pix = p + x;
@@ -447,7 +449,7 @@ int s_filter_dither(s_bank_t *b, unsigned first, unsigned frames,
 	return 0;
 }
 
-
+#if 0
 /*
  * Ugly hack to get around the problems caused by
  * SDL_SetColorKey() ignoring the alpha channel.
@@ -472,43 +474,54 @@ static void tweak_ck(SDL_Surface *s)
 		}
 	}
 }
+#endif
 
-
-int s_filter_displayformat(s_bank_t * b, unsigned first, unsigned frames,
-		s_filter_args_t * args)
+int s_filter_displayformat(s_bank_t *b, unsigned first, unsigned frames,
+		s_filter_args_t *args)
 {
 	unsigned i;
+	if(!args->data)
+		return 0;	/* No renderer! */
 	for(i = 0; i < frames; ++i)
 	{
+#if 0
 		SDL_Surface *tmp;
+#endif
 		s_sprite_t *s = s_get_sprite_b(b, first + i);
 		if(!s)
 			continue;
-
+		s->texture = SDL_CreateTextureFromSurface(
+				(SDL_Renderer *)args->data,
+				s->_surface);
+#if 0
+		SDL_FreeSurface(s->_surface);
+		s->_surface = NULL;
+#endif
+#if 0
 		switch(s_blitmode)
 		{
 		  case S_BLITMODE_AUTO:
-			if(s->surface->format->Amask)
-				SDL_SetAlpha(s->surface,
+			if(s->_surface->format->Amask)
+				SDL_SetAlpha(s->_surface,
 						SDL_SRCALPHA |
 						SDL_RLEACCEL,
 						SDL_ALPHA_OPAQUE);
 			else
-				SDL_SetColorKey(s->surface, SDL_RLEACCEL, 0);
+				SDL_SetColorKey(s->_surface, SDL_TRUE, 0);
 			break;
 		  case S_BLITMODE_OPAQUE:
-			SDL_SetColorKey(s->surface, SDL_RLEACCEL, 0);
+			SDL_SetColorKey(s->_surface, SDL_RLEACCEL, 0);
 			break;
 		  case S_BLITMODE_COLORKEY:
-			SDL_SetColorKey(s->surface,
+			SDL_SetColorKey(s->_surface,
 					SDL_SRCCOLORKEY | SDL_RLEACCEL,
-					SDL_MapRGB(s->surface->format,
+					SDL_MapRGB(s->_surface->format,
 						s_colorkey.r,
 						s_colorkey.g,
 						s_colorkey.b));
 			break;
 		  case S_BLITMODE_ALPHA:
-			SDL_SetAlpha(s->surface,
+			SDL_SetAlpha(s->_surface,
 					SDL_SRCALPHA | SDL_RLEACCEL,
 					s_alpha);
 			break;
@@ -516,26 +529,27 @@ int s_filter_displayformat(s_bank_t * b, unsigned first, unsigned frames,
 
 		if(args->x)
 		{
-			if(s->surface->format->Amask)
-				tweak_ck(s->surface);
-			tmp = SDL_DisplayFormat(s->surface);
-			if(s->surface->format->Amask)
+			if(s->_surface->format->Amask)
+				tweak_ck(s->_surface);
+			tmp = SDL_DisplayFormat(s->_surface);
+			if(s->_surface->format->Amask)
 				SDL_SetColorKey(tmp,
 						SDL_SRCCOLORKEY | SDL_RLEACCEL,
 						SDL_MapRGB(tmp->format, 0,0,0));
 		}
 		else
 		{
-			if(s->surface->format->Amask)
-				tmp = SDL_DisplayFormatAlpha(s->surface);
+			if(s->_surface->format->Amask)
+				tmp = SDL_DisplayFormatAlpha(s->_surface);
 			else
-				tmp = SDL_DisplayFormat(s->surface);
+				tmp = SDL_DisplayFormat(s->_surface);
 		}
 		if(!tmp)
 			return -1;
 
-		SDL_FreeSurface(s->surface);
-		s->surface = tmp;
+		SDL_FreeSurface(s->_surface);
+		s->_surface = tmp;
+#endif
 	}
 	return 0;
 }
@@ -543,8 +557,8 @@ int s_filter_displayformat(s_bank_t * b, unsigned first, unsigned frames,
 
 typedef struct
 {
-	SDL_Surface *src;	/* Source surface */
-	SDL_Surface *dst;	/* Destination surface */
+	SDL_Surface *src;	/* Source _surface */
+	SDL_Surface *dst;	/* Destination _surface */
 	int scx, scy;		/* Scale (fixp 16:16) */
 	int start_sy, start_sx;	/* Src start pos (fixp 16:16) */
 	int start_x, start_y;	/* Dst start pos (pixels) */
@@ -852,7 +866,7 @@ int s_filter_scale(s_bank_t *b, unsigned first, unsigned frames,
 
 	getpix32_empty = s_clampcolor;
 
-	params.max_x = (int)ceil(b->w * args->fx);
+	params.max_x = ceil(b->w * args->fx);
 	params.scx = (int)(65536.0 / args->fx);
 	params.scy = (int)(65536.0 / args->fy);
 	params.start_x = 0;
@@ -898,7 +912,7 @@ int s_filter_scale(s_bank_t *b, unsigned first, unsigned frames,
 		s_sprite_t *s = s_get_sprite_b(b, first+i);
 		if(!s)
 			continue;
-		params.src = s->surface;
+		params.src = s->_surface;
 		params.dst = SDL_CreateRGBSurface(SDL_SWSURFACE,
 				params.max_x, params.max_y, 32,
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -956,8 +970,8 @@ int s_filter_scale(s_bank_t *b, unsigned first, unsigned frames,
 			break;
 		}
 
-		SDL_FreeSurface(s->surface);
-		s->surface = params.dst;
+		SDL_FreeSurface(s->_surface);
+		s->_surface = params.dst;
 	}
 	b->w = params.max_x;
 	b->h = params.max_y;
@@ -983,8 +997,8 @@ int s_filter_cleanalpha(s_bank_t *b, unsigned first, unsigned frames,
 			continue;
 		for(y = (args->flags & SF_CLAMP_SFONT) ? 1 : 0; y < b->h; ++y)
 		{
-			pix_t *p = (pix_t *)((char *)s->surface->pixels +
-					y * s->surface->pitch);
+			pix_t *p = (pix_t *)((char *)s->_surface->pixels +
+					y * s->_surface->pitch);
 			for(x = 0; x < b->w; ++x)
 			{
 				pix_t *pix = p + x;
@@ -1023,8 +1037,8 @@ int s_filter_brightness(s_bank_t *b, unsigned first, unsigned frames,
 			continue;
 		for(y = (args->flags & SF_CLAMP_SFONT) ? 1 : 0; y < b->h; ++y)
 		{
-			pix_t *p = (pix_t *)((char *)s->surface->pixels +
-					y * s->surface->pitch);
+			pix_t *p = (pix_t *)((char *)s->_surface->pixels +
+					y * s->_surface->pitch);
 			for(x = 0; x < b->w; ++x)
 			{
 				int v;
@@ -1093,8 +1107,8 @@ int s_filter_key2alpha(s_bank_t *b, unsigned first, unsigned frames,
 			continue;
 		for(y = (args->flags & SF_CLAMP_SFONT) ? 1 : 0; y < b->h; ++y)
 		{
-			pix_t *p = (pix_t *)((char *)s->surface->pixels +
-					y * s->surface->pitch);
+			pix_t *p = (pix_t *)((char *)s->_surface->pixels +
+					y * s->_surface->pitch);
 			for(x = 0; x < b->h; ++x)
 			{
 				pix_t *pix = p + x;
@@ -1109,7 +1123,7 @@ int s_filter_key2alpha(s_bank_t *b, unsigned first, unsigned frames,
 }
 
 
-int s_filter_noise(s_bank_t *b, unsigned first, unsigned frames,
+int s_filter_noise(s_bank_t *bank, unsigned first, unsigned frames,
 		s_filter_args_t *args)
 {
 	int x, y;
@@ -1127,14 +1141,15 @@ int s_filter_noise(s_bank_t *b, unsigned first, unsigned frames,
 	noise_reset(args->x);
 	for(i = 0; i < frames; ++i)
 	{
-		s_sprite_t *s = s_get_sprite_b(b, first+i);
+		s_sprite_t *s = s_get_sprite_b(bank, first+i);
 		if(!s)
 			continue;
-		for(y = (args->flags & SF_CLAMP_SFONT) ? 1 : 0; y < b->h; ++y)
+		for(y = (args->flags & SF_CLAMP_SFONT) ? 1 : 0; y < bank->h;
+				++y)
 		{
-			pix_t *p = (pix_t *)((char *)s->surface->pixels +
-					y * s->surface->pitch);
-			for(x = 0; x < b->w; ++x)
+			pix_t *p = (pix_t *)((char *)s->_surface->pixels +
+					y * s->_surface->pitch);
+			for(x = 0; x < bank->w; ++x)
 			{
 				int r, g, b;
 				pix_t *pix = p + x;

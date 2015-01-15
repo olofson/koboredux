@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 2001-2003 David Olofson
- * Copyright (C) 2002 Jeremy Sheeley
- * Copyright (C) 2007, 2009 David Olofson
+ * Copyright 2001-2003 David Olofson
+ * Copyright 2002 Jeremy Sheeley
+ * Copyright 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -474,28 +475,6 @@ class st_ask_abort_game_t : public st_yesno_base_t
 
 
 /*----------------------------------------------------------
-	Debug: Audio Engine Profiling
-----------------------------------------------------------*/
-
-extern "C" {
-#include "a_globals.h"
-};
-
-#ifdef PROFILE_AUDIO
-class st_profile_audio_t : public kobo_basestate_t
-{
-	int	pan, pitch, shift;
-  public:
-	st_profile_audio_t();
-	void enter();
-	void press(int button);
-	void pre_render();
-	void post_render();
-};
-#endif
-
-
-/*----------------------------------------------------------
 	Critical Error Screen
 ----------------------------------------------------------*/
 
@@ -535,8 +514,5 @@ extern st_options_audio_t st_options_audio;
 extern st_options_control_t st_options_control;
 extern st_options_game_t st_options_game;
 extern st_error_t st_error;
-#ifdef PROFILE_AUDIO
-extern st_profile_audio_t st_profile_audio;
-#endif
 
 #endif	//_KOBO_STATES_H_

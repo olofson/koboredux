@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001-2003, 2006, 2009, 2012 David Olofson
- * 
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001-2003, 2006, 2009, 2012 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
+ *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
  * Free Software Foundation;  either version 2 of the License,  or (at your
@@ -54,7 +55,9 @@ void gamecontrol_t::init(int always_fire)
 	down = 0;
 	shot = 0;
 	movekey_pressed = 0;
+#if 0
 	SDL_EnableKeyRepeat(r_delay, r_interval);
+#endif
 }
 
 
@@ -68,9 +71,11 @@ void gamecontrol_t::repeat(int delay, int interval)
 {
 	r_delay = delay;
 	r_interval = interval;
+#if 0
 	//Temporary kludge - should apply repeat to
 	//all switch inputs, not just the keyboard!
 	SDL_EnableKeyRepeat(delay, interval);
+#endif
 }
 
 
@@ -80,7 +85,7 @@ void gamecontrol_t::clear()
 }
 
 
-int gamecontrol_t::map(SDLKey sym)
+int gamecontrol_t::map(SDL_Keycode sym)
 {
 /*
 FIXME: This should be replaced by a configurable mapping system.

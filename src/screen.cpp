@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001-2003, 2005, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001-2003, 2005, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -35,7 +36,6 @@
 #include "scenes.h"
 #include "config.h"
 #include "random.h"
-#include "version.h"
 
 int _screen::scene_max;
 int _screen::scene_num;
@@ -82,6 +82,7 @@ void _screen::init()
 
 void _screen::render_title_plasma(int t, float fade, int y, int h)
 {
+#if 0
 	s_sprite_t *s = gengine->get_sprite(B_FOCUSFX, 0);
 	if(!s || !s->surface)
 		return;
@@ -108,11 +109,13 @@ void _screen::render_title_plasma(int t, float fade, int y, int h)
 			RGN_Blit(fx, &sr, x, y + ty);
 		}
 	}
+#endif
 }
 
 
 void _screen::render_title_noise(float fade, int y, int h, int bank, int frame)
 {
+#if 0
 	for(int ty = 0; ty < h; )
 	{
 		int xo = (int)(pubrand.get(16) * gengine->xscale()) / 256;
@@ -126,6 +129,7 @@ void _screen::render_title_noise(float fade, int y, int h, int bank, int frame)
 			RGN_Blit(fx, NULL, x, y + ty);
 		ty += fx->h;
 	}
+#endif
 }
 
 
@@ -142,6 +146,16 @@ static int flashin(int t)
 
 void _screen::title(int t, float fade, int mode)
 {
+	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), B_LOGO);
+	if(!b)
+		return;
+	s_sprite_t *s = s_get_sprite_b(b, 0);
+	if(!s || !s->texture)
+		return;
+	float mf = (1.0f - fade);
+	int ly0 = wmain->phys_rect.y + (int)(60 * gengine->yscale() + 0.5f);
+	int ly = (int)(ly0 - mf * mf * mf * (ly0 + b->h) + 0.5f);
+#if 0
 	// Enclosed effect
 	s_sprite_t *s = gengine->get_sprite(B_LOGO, 0);
 	if(!s || !s->surface)
@@ -151,7 +165,7 @@ void _screen::title(int t, float fade, int mode)
 	int y0 = wmain->phys_rect.y + (int)(60 * gengine->yscale() + 0.5f);
 	int y = (int)(y0 - mf * mf * mf * (y0 + h) + 0.5f);
 	wmain->select();
-	RGN_Target(gengine->surface());
+	RGN_Target(gengine->renderer());
 	RGN_SetRegion(logo_region,
 			wmain->phys_rect.x +
 			(int)((wmain->width() - 206) / 2 * gengine->xscale()),
@@ -168,10 +182,11 @@ void _screen::title(int t, float fade, int mode)
 		render_title_noise(fade, y, h, (int)B_HITNOISE, 0);
 		break;
 	}
+#endif
 
 	// Outline
 	wmain->sprite_fxp(PIXEL2CS((wmain->width() - 206) / 2),
-			(int)((y * 256 + 255) / gengine->yscale()) -
+			(int)((ly * 256 + 255) / gengine->yscale()) -
 			PIXEL2CS(wmain->y()),
 			B_LOGO, 0);
 
@@ -814,11 +829,13 @@ void _screen::render_highlight(window_t *win)
 	}
 
 	int x0 = win->phys_rect.x;
-	s_sprite_t *s = gengine->get_sprite(B_FOCUSFX, 0);
-	if(!s || !s->surface)
+	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), B_FOCUSFX);
+	if(!b)
 		return;
-	SDL_Surface *fx = s->surface;
-	SDL_Surface *dst = gengine->surface();
+	s_sprite_t *s = s_get_sprite_b(b, 0);
+	if(!s || !s->texture)
+		return;
+	SDL_Renderer *r = gengine->renderer();
 	y = (int)((y * gengine->yscale() + 128) / 256) + win->phys_rect.y;
 	h = (int)(hf * gengine->yscale());
 	win->select();
@@ -832,21 +849,22 @@ void _screen::render_highlight(window_t *win)
 				sin(t * 0.00017f) * scy * 0.18f);
 		float plasma2 = 0.5f + 0.5f * sin(t * .003 +
 				sin(t * 0.0001f) * scy * 0.12f);
-		int i = (int)((fx->h - 1) * ((.5f * plasma + .5f * plasma * shape) *
-				(1.0f - edges) + edges));
-		int xo = (int)((t * 10 + 8192 * plasma2) * gengine->xscale() / 256);
-		xo -= (int)(xo / fx->w) * fx->w;
-		int xmax = (int)((WSIZE * gengine->xscale() + xo) / fx->w);
+		int i = (int)((b->h - 1) * ((.5f * plasma + .5f * plasma *
+				shape) * (1.0f - edges) + edges));
+		int xo = (int)((t * 10 + 8192 * plasma2) *
+				gengine->xscale() / 256);
+		xo -= (int)(xo / b->w) * b->w;
+		int xmax = (int)((WSIZE * gengine->xscale() + xo) / b->w);
 		for(int x = 0; x <= xmax; ++x)
 		{
 			SDL_Rect sr, dr;
 			sr.x = 0;
 			sr.y = i;
-			sr.w = fx->w;
-			sr.h = 1;
-			dr.x = x0 + (int)(x * fx->w) - xo;
+			dr.x = x0 + (int)(x * b->w) - xo;
 			dr.y = y + ty;
-			SDL_BlitSurface(fx, &sr, dst, &dr);
+			dr.w = sr.w = b->w;
+			dr.h = sr.h = 1;
+			SDL_RenderCopy(r, s->texture, &sr, &dr);
 		}
 	}
 }

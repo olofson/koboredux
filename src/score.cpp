@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2002 Jeremy Sheeley
- * Copyright (C) 2001-2003, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2002 Jeremy Sheeley
+ * Copyright 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -25,12 +26,17 @@
 #define	DBG2(x)
 #define	DBG3(x)
 
+#include "kobo.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+
+#ifdef KOBO_HAVE_LSTAT
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <unistd.h>
+#endif
 
 #if HAVE_DIRENT_H
 # include <dirent.h>
@@ -54,7 +60,6 @@
 #endif
 
 #include "kobolog.h"
-#include "kobo.h"
 #include "score.h"
 
 score_manager_t scorefile;
@@ -278,7 +283,7 @@ int s_profile_t::save()
 
 //The "safe list"; platforms that do not have symlinks:
 #if !defined(WIN32)
-#ifdef HAVE_STAT
+# ifdef KOBO_HAVE_LSTAT
 	// We will not write score files via symlinks!
 	struct stat statbuf;
 	if(lstat(filename, &statbuf) < 0)
@@ -295,15 +300,15 @@ int s_profile_t::save()
 				filename);
 		return -1;	
 	}
-#else
-#warning ================= SECURITY HAZARD =================
-#warning If this platform has symlinks or similar, please
-#warning add an appropriate test. If not, add your platform
-#warning to the "safe list". Either way, if you read this,
-#warning post a bug report to the Kobo Deluxe maintainer.
-#warning ================= SECURITY HAZARD =================
-#error (Remove this line to compile anyway.)
-#endif	/* HAVE_STAT */
+# else
+#  warning ================= SECURITY HAZARD =================
+#  warning If this platform has symlinks or similar, please
+#  warning add an appropriate test. If not, add your platform
+#  warning to the "safe list". Either way, if you read this,
+#  warning post a bug report to the Kobo Redux maintainer.
+#  warning ================= SECURITY HAZARD =================
+#  error (Remove this line to compile anyway.)
+# endif	/* KOBO_HAVE_LSTAT */
 #endif	/* "Safe list" */
 
 	FILE *f = fopen(filename, "wb");

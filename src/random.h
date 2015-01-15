@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2002, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2002, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -23,8 +24,7 @@
 #ifndef _KOBO_RANDOM_H_
 #define _KOBO_RANDOM_H_
 
-#include <time.h>
-#include "glSDL.h"
+#include "SDL.h"
 
 class rand_num_t
 {

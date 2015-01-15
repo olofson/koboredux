@@ -2,7 +2,8 @@
 ----------------------------------------------------------------------
 	region.h - Graphics Engine
 ----------------------------------------------------------------------
- * Copyright (C) 2007, 2009 David Olofson
+ * Copyright 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,7 +23,7 @@
 #ifndef	KOBO_REGION_H
 #define	KOBO_REGION_H
 
-#include "glSDL.h"
+#include "SDL.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,7 +47,7 @@ RGN_region *RGN_ScanMask(SDL_Surface *src, Uint32 key);
 void RGN_FreeRegion(RGN_region *rgn);
 
 /* Set target for region rendering */
-void RGN_Target(SDL_Surface *tgt);
+void RGN_Target(SDL_Renderer *tgt);
 
 /* Select and position region for subsequent operations */
 void RGN_SetRegion(RGN_region *rgn, int xpos, int ypos);

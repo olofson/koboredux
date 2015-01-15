@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2002 Jeremy Sheeley
- * Copyright (C) 2001-2003, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2002 Jeremy Sheeley
+ * Copyright 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -24,7 +25,7 @@
 #ifndef _KOBO_MANAGE_H_
 #define _KOBO_MANAGE_H_
 
-#include "glSDL.h"
+#include "SDL.h"
 #include "score.h"
 
 class _manage
@@ -87,8 +88,8 @@ class _manage
 	static void lost_myship();
 	static void destroyed_a_core();
 	static void add_score(int sc);
-	static void key_down(SDLKey sym);
-	static void key_up(SDLKey sym);
+	static void key_down(SDL_Keycode sym);
+	static void key_up(SDL_Keycode sym);
 	static int title_blank()	{ return blank; }
 	static void select_next(int redraw_map = 1);
 	static void select_prev(int redraw_map = 1);
