@@ -2,7 +2,8 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 2003, 2007, 2009 David Olofson
+ * Copyright 2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -61,17 +62,6 @@ class dashboard_window_t : public window_t
 	void progress_init(float *progtab);
 	void progress();
 	void progress_done();
-	/*
-	 * Tools:
-	 *	-1: Random tool
-	 *	0:  Black 4x4 square
-	 *	1+: Brushes from "brushes.png";
-	 *		1: Soft black 16 pixel round brush
-	 *		2: (4/8)x4 tilable romboid brush
-	 *		3: Tilable garbage brush
-	 *		4: Vertical "D" brush
-	 */
-	void nibble(int tool = -1);
 	void refresh(SDL_Rect *r);
 };
 

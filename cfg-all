@@ -46,7 +46,7 @@ setup_cross() {
 	local target=$4
 	local opts=$5
 	create_build_dir $dname $btype $desc
-	cmake "$opts" -DCMAKE_TOOLCHAIN_FILE=$SOURCEDIR/mingw32-cross.cmake $SOURCEDIR -DCMAKE_BUILD_TYPE="$btype" -DCMAKE_TOOLCHAIN_FILE=$MXEPATH/usr/$target/share/cmake/mxe-conf.cmake -DBUILD_SHARED_LIBS=OFF
+	cmake "$opts" -DCMAKE_TOOLCHAIN_FILE=$SOURCEDIR/mingw32-cross.cmake $SOURCEDIR -DCMAKE_BUILD_TYPE="$btype" -DCMAKE_TOOLCHAIN_FILE=$MXEPATH/usr/$target/share/cmake/mxe-conf.cmake -DBUILD_SHARED_LIBS=ON
 	cd $SOURCEDIR
 }
 
@@ -75,8 +75,8 @@ if [ -e $MXEPATH ]; then
 	echo "Setting up build directories for MXE cross-compiling..."
 	echo "=========================================================="
 
-	setup_cross mingw-release Release "MXE cross" i686-pc-mingw32
-	setup_cross mingw-debug Debug "MXE cross" i686-pc-mingw32
+	setup_cross mingw-release Release "MXE cross" i686-w64-mingw32.shared
+	setup_cross mingw-debug Debug "MXE cross" i686-w64-mingw32.shared
 
 	echo
 	echo "=========================================================="

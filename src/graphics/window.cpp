@@ -84,7 +84,6 @@ void window_t::visible(int vis)
 	if(_visible == vis)
 		return;
 	_visible = vis;
-	invalidate();
 }
 
 
@@ -226,78 +225,24 @@ void window_t::offscreen_invalidate(SDL_Rect *r)
 
 void window_t::invalidate(SDL_Rect *r)
 {
-	if(!engine)
+	if(!engine || !renderer || !_offscreen)
 		return;
-	if(!renderer)
-		return;
-
 	SELECT
-
-	if(_offscreen)
-	{
-		if(!r)
-		{
-			SDL_Rect rr;
-			rr.x = 0;
-			rr.y = 0;
-			rr.w = phys_rect.w;
-			rr.h = phys_rect.h;
-			phys_refresh(&rr);
-			offscreen_invalidate(&rr);
-		}
-		else
-		{
-			phys_refresh(r);
-			offscreen_invalidate(r);
-		}
-		return;
-	}
-
-#if 0
 	if(!r)
-		engine->invalidate(&phys_rect, this);
+	{
+		SDL_Rect rr;
+		rr.x = 0;
+		rr.y = 0;
+		rr.w = phys_rect.w;
+		rr.h = phys_rect.h;
+		phys_refresh(&rr);
+		offscreen_invalidate(&rr);
+	}
 	else
 	{
-		/* Translate to screen coordinates */
-		SDL_Rect dr = *r;
-		dr.x = (dr.x * xs + 128) >> 8;
-		dr.y = (dr.y * ys + 128) >> 8;
-		dr.w = (((dr.w + dr.x) * xs + 128) >> 8) - dr.x;
-		dr.h = (((dr.h + dr.y) * ys + 128) >> 8) - dr.y;
-		dr.x += phys_rect.x;
-		dr.y += phys_rect.y;
-
-		/* Clip to window (stolen from SDL_surface.c) */
-		int Amin, Amax, Bmin, Bmax;
-
-		/* Horizontal intersection */
-		Amin = dr.x;
-		Amax = Amin + dr.w;
-		Bmin = phys_rect.x;
-		Bmax = Bmin + phys_rect.w;
-		if(Bmin > Amin)
-			Amin = Bmin;
-		dr.x = Amin;
-		if(Bmax < Amax)
-			Amax = Bmax;
-		dr.w = Amax - Amin > 0 ? Amax - Amin : 0;
-
-		/* Vertical intersection */
-		Amin = dr.y;
-		Amax = Amin + dr.h;
-		Bmin = phys_rect.y;
-		Bmax = Bmin + phys_rect.h;
-		if(Bmin > Amin)
-			Amin = Bmin;
-		dr.y = Amin;
-		if(Bmax < Amax)
-			Amax = Bmax;
-		dr.h = Amax - Amin > 0 ? Amax - Amin : 0;
-
-		if(dr.w && dr.h)
-			engine->invalidate(&dr, this);
+		phys_refresh(r);
+		offscreen_invalidate(r);
 	}
-#endif
 }
 
 
@@ -630,13 +575,6 @@ void window_t::sprite_fxp(int _x, int _y, int bank, int frame, int inval)
 	dest_rect.x = phys_rect.x + _x;
 	dest_rect.y = phys_rect.y + _y;
 	SDL_RenderCopy(renderer, s->texture, NULL, &dest_rect);
-
-	if(inval && !engine->autoinvalidate())
-	{
-		dest_rect.w = b->w;
-		dest_rect.h = b->h;
-		engine->invalidate(&dest_rect, this);
-	}
 }
 
 
@@ -687,4 +625,19 @@ void window_t::blit(int dx, int dy, window_t *src)
 	dest_rect.h = src_rect.h;
 
 	SDL_RenderCopy(renderer, src->otexture, &src_rect, &dest_rect);
+}
+
+
+/*----------------------------------------------------------
+	Engine output window
+----------------------------------------------------------*/
+
+void engine_window_t::refresh(SDL_Rect *r)
+{
+	engine->wx = x();
+	engine->wy = y();
+	engine->pre_render();
+	select();
+	cs_engine_render(engine->csengine);
+	engine->post_render();
 }

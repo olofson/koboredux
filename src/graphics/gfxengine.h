@@ -55,13 +55,11 @@ class SoFont;
 class gfxengine_t
 {
 	friend class window_t;
+	friend class engine_window_t;
 	int video_flags();
   public:
 	gfxengine_t();
 	virtual ~gfxengine_t();
-
-	void output(window_t *outwin);
-	window_t *output()	{ return window; }
 
 	void screen(window_t *fullwin);
 	window_t *screen()	{ return fullwin; }
@@ -91,8 +89,6 @@ class gfxengine_t
 	// 1: Use a software shadow back buffer, if possible
 	void shadow(int use);
 
-	void autoinvalidate(int use);
-
 	void interpolation(int inter);
 
 	// 0 to reset internal timer
@@ -107,7 +103,6 @@ class gfxengine_t
 	/* Info */
 	int doublebuffer()	{ return _doublebuf; }
 	int shadow()		{ return _shadow; }
-	int autoinvalidate()	{ return _autoinvalidate; }
 
 	/* Engine open/close */
 	int open(int objects = 1024, int extraflags = 0);
@@ -168,7 +163,6 @@ class gfxengine_t
 
 	/* Rendering */
 	void clear(Uint32 _color = 0x000000);
-	void invalidate(SDL_Rect *rect = NULL, window_t *window = NULL);
 
 	/* Screenshots */
 	void screenshot();
@@ -216,7 +210,6 @@ class gfxengine_t
 	SDL_Window	*sdlwindow;
 	SDL_Renderer	*sdlrenderer;
 	window_t	*fullwin;
-	window_t	*window;
 	window_t	*windows;	// Linked list
 	window_t	*selected;	// Currently selected for rendering
 	int		wx, wy;
@@ -240,7 +233,6 @@ class gfxengine_t
 	int		_shadow;
 	int		_fullscreen;
 	int		_centered;
-	int		_autoinvalidate;
 	int		use_interpolation;
 	int		_width, _height;
 	int		_depth;
@@ -264,8 +256,6 @@ class gfxengine_t
 
 	int		screenshot_count;
 
-	void __invalidate(int page, SDL_Rect *rect = NULL,
-			 window_t *window = NULL);
 	void refresh_rect(SDL_Rect *r);
 
 	static void on_frame(cs_engine_t *e);

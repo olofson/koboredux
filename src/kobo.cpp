@@ -93,7 +93,7 @@ bargraph_t		*wtemp = NULL;
 bargraph_t		*wttemp = NULL;
 radar_map_t		*wmap = NULL;
 radar_window_t		*wradar = NULL;
-window_t		*wmain = NULL;
+engine_window_t		*wmain = NULL;
 display_t		*dhigh = NULL;
 display_t		*dscore = NULL;
 display_t		*dstage = NULL;
@@ -454,7 +454,6 @@ int KOBO_main::quit_requested()
 			  case SDL_WINDOWEVENT_RESIZED:
 			  case SDL_WINDOWEVENT_MAXIMIZED:
 			  case SDL_WINDOWEVENT_RESTORED:
-				gengine->invalidate();
 				break;
 			  case SDL_WINDOWEVENT_CLOSE:
 				exit_game_fast = 1;
@@ -591,7 +590,6 @@ void KOBO_main::build_screen()
 	whealth->redmax(0);
 
 	wmain->place(xoffs + 8 + MARGIN, yoffs + MARGIN, WSIZE, WSIZE);
-	gengine->output(wmain);
 
 	dhigh->place(xoffs + 252, yoffs + 4, 64, 18);
 	dhigh->font(B_NORMAL_FONT);
@@ -748,7 +746,7 @@ int KOBO_main::init_display(prefs_t *p)
 	wdash->init(gengine);
 	whealth = new bargraph_t;
 	whealth->init(gengine);
-	wmain = new window_t;
+	wmain = new engine_window_t;
 	wmain->init(gengine);
 	dhigh = new display_t;
 	dhigh->init(gengine);
@@ -1333,13 +1331,13 @@ void KOBO_main::load_config(prefs_t *p)
 	 */
 	else
 	{
-		f = fmap->fopen(KOBO_SYSCONFDIR "/kobo-deluxe/default-config",
+		f = fmap->fopen(KOBO_SYSCONFDIR "/koboredux/default-config",
 				"r");
 		if(f)
 		{
 			log_puts(VLOG, "Loading configuration defaults from: "\
 					KOBO_SYSCONFDIR
-					"/kobo-deluxe/default-config");
+					"/koboredux/default-config");
 			p->read(f);
 			fclose(f);
 		}
@@ -1438,7 +1436,7 @@ int KOBO_main::open()
 
 	wdash->progress_done();
 
-	wdash->nibble();
+	wdash->mode(DASHBOARD_BLACK);
 
 	ct_engine.render_highlight = kobo_render_highlight;
 	wdash->mode(DASHBOARD_GAME);
@@ -1488,7 +1486,7 @@ int KOBO_main::run()
 			if(exit_game)
 			{
 				if(wdash)
-					wdash->nibble();
+					wdash->mode(DASHBOARD_BLACK);
 				break;
 			}
 			dont_retry = 0;
@@ -1510,7 +1508,7 @@ int KOBO_main::run()
 					return 5;
 				wdash->progress_done();
 				sound.open();
-				wdash->nibble();
+				wdash->mode(DASHBOARD_BLACK);
 				log_printf(ULOG, "--- Audio restarted.\n");
 				wdash->mode(DASHBOARD_GAME);
 				wradar->mode(screen.radar_mode);
@@ -1546,7 +1544,7 @@ int KOBO_main::run()
 		if(global_status & OS_RESTART_VIDEO)
 		{
 			log_printf(ULOG, "--- Restarting video...\n");
-			wdash->nibble();
+			wdash->mode(DASHBOARD_BLACK);
 			gengine->hide();
 			close_display();
 			gengine->unload();
@@ -1572,7 +1570,7 @@ int KOBO_main::run()
 					OS_RESTART_VIDEO))
 		{
 			if(!(global_status & OS_RESTART_VIDEO))
-				wdash->nibble();
+				wdash->mode(DASHBOARD_BLACK);
 			gengine->unload();
 			if(!retry_status)
 			{
@@ -1585,7 +1583,6 @@ int KOBO_main::run()
 				if(load_graphics(prefs) < 0)
 					return 7;
 				wdash->progress_done();
-				wdash->nibble();
 				wdash->mode(DASHBOARD_GAME);
 				wradar->mode(screen.radar_mode);
 				manage.set_bars();
@@ -1744,7 +1741,6 @@ void kobo_gfxengine_t::frame()
 			  case SDL_WINDOWEVENT_RESIZED:
 			  case SDL_WINDOWEVENT_MAXIMIZED:
 			  case SDL_WINDOWEVENT_RESTORED:
-				gengine->invalidate();
 				break;
 			  case SDL_WINDOWEVENT_CLOSE:
 				km.brutal_quit();
@@ -2087,8 +2083,8 @@ void kobo_gfxengine_t::post_render()
 
 static void put_usage()
 {
-	printf("\nKobo Deluxe %s\n", KOBO_VERSION);
-	printf("Usage: kobodl [<options>]\n");
+	printf("\nKobo Redux %s\n", KOBO_VERSION);
+	printf("Usage: kobord [<options>]\n");
 	printf("Recognized options:\n");
 	int s = -1;
 	while(1)

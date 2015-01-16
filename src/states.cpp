@@ -1285,7 +1285,7 @@ void main_menu_t::build()
 		button("Return to Intro", 0);
 	else
 		button("Abort Current Game", 101);
-	button("Quit Kobo Deluxe", MENU_TAG_CANCEL);
+	button("Quit Kobo Redux", MENU_TAG_CANCEL);
 }
 
 void main_menu_t::rebuild()
@@ -1715,7 +1715,7 @@ void st_yesno_base_t::post_render()
 st_ask_exit_t::st_ask_exit_t()
 {
 	name = "ask_exit";
-	msg = "Quit Kobo Deluxe?";
+	msg = "Quit Kobo Redux?";
 }
 
 void st_ask_exit_t::select(int tag)

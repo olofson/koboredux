@@ -179,9 +179,9 @@ s_sprite_t *s_new_sprite_b(s_bank_t *b, unsigned frame)
 		if(s->texture)
 			SDL_DestroyTexture(s->texture);
 		s->texture = NULL;
-		if(s->_surface)
-			SDL_FreeSurface(s->_surface);
-		s->_surface = NULL;
+		if(s->surface)
+			SDL_FreeSurface(s->surface);
+		s->surface = NULL;
 	}
 	return s;
 }
@@ -215,8 +215,8 @@ void s_delete_sprite_b(s_bank_t *b, unsigned frame)
 		return;
 	if(b->sprites[frame]->texture)
 		SDL_DestroyTexture(b->sprites[frame]->texture);
-	if(b->sprites[frame]->_surface)
-		SDL_FreeSurface(b->sprites[frame]->_surface);
+	if(b->sprites[frame]->surface)
+		SDL_FreeSurface(b->sprites[frame]->surface);
 	b->sprites[frame]->texture = NULL;
 	free(b->sprites[frame]);
 	b->sprites[frame] = NULL;
@@ -406,11 +406,11 @@ static int extract_sprite(s_bank_t *bank, unsigned frame,
 	SDL_SetSurfaceBlendMode(tmp, bm);
 	if(SDL_GetColorKey(src, &ck) == 0)
 		SDL_SetColorKey(tmp, SDL_TRUE, ck);
-	bank->sprites[frame]->_surface = tmp;
+	bank->sprites[frame]->surface = tmp;
 
 	DBG(log_printf(DLOG, "image %d: (%d,%d)/%dx%d @ %p\n", frame,
 			from->x, from->y, from->w, from->h,
-			bank->sprites[frame]->_surface);)
+			bank->sprites[frame]->surface);)
 	return 0;
 }
 
@@ -429,7 +429,7 @@ int s_copy_rect(s_container_t *c, unsigned bank,
 				frombank, fromframe);
 		return -1;
 	}
-	if(!s->_surface)
+	if(!s->surface)
 	{
 		log_printf(ELOG, "sprite: Sprite %d:%d"
 				" does not have a surface!\n",
@@ -445,7 +445,7 @@ int s_copy_rect(s_container_t *c, unsigned bank,
 		return -3;
 	}
 
-	if(extract_sprite(b, 0, s->_surface, from) < 0)
+	if(extract_sprite(b, 0, s->surface, from) < 0)
 	{
 		log_printf(ELOG, "sprite: Something went wrong while "
 				"copying from sprite %d:%d.\n",

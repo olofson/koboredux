@@ -77,7 +77,7 @@ extern bargraph_t		*wtemp;
 extern bargraph_t		*wttemp;
 extern radar_map_t		*wmap;
 extern radar_window_t		*wradar;
-extern window_t			*wmain;
+extern engine_window_t		*wmain;
 extern display_t		*dhigh;
 extern display_t		*dscore;
 extern display_t		*dstage;

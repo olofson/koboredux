@@ -50,7 +50,6 @@ gfxengine_t::gfxengine_t()
 	sdlwindow = NULL;
 	sdlrenderer = NULL;
 	fullwin = NULL;
-	window = NULL;
 	windows = NULL;
 	selected = NULL;
 	wx = wy = 0;
@@ -73,7 +72,6 @@ gfxengine_t::gfxengine_t()
 	_cursor = 1;
 	_width = 320;
 	_height = 240;
-	_autoinvalidate = 1;
 	_scalemode = GFX_SCALE_NEAREST;
 	_clamping = 0;
 	xflags = 0;
@@ -114,12 +112,6 @@ gfxengine_t::~gfxengine_t()
 		w->engine = NULL;
 		w = w->next;
 	}
-}
-
-
-void gfxengine_t::output(window_t *outwin)
-{
-	window = outwin;
 }
 
 
@@ -228,11 +220,6 @@ void gfxengine_t::shadow(int use)
 
 	if(was_showing)
 		show();
-}
-
-void gfxengine_t::autoinvalidate(int use)
-{
-	_autoinvalidate = use;
 }
 
 void gfxengine_t::period(float frameduration)
@@ -585,7 +572,7 @@ int gfxengine_t::loadfont(int bank, const char *name)
 	}
 
 	fonts[bank]->ExtraSpace((xs + 127) / 256);
-	if(fonts[bank]->load(s_get_sprite(gfx, bank, 0)->_surface))
+	if(fonts[bank]->load(s_get_sprite(gfx, bank, 0)->surface))
 	{
 		s_detach_sprite(gfx, bank, 0);
 		log_printf(DLOG, "  Ok.\n");
@@ -948,98 +935,6 @@ void gfxengine_t::hide(void)
 }
 
 
-void gfxengine_t::invalidate(SDL_Rect *rect, window_t *window)
-{
-#if 0
-	switch(_pages)
-	{
-	  case -1:
-		if(_doublebuf)
-			__invalidate(1, rect, window);
-		__invalidate(0, rect, window);
-		break;
-	  case 0:
-		__invalidate(0, NULL, NULL);
-		break;
-	  case 3:
-		__invalidate(2, rect, window);
-		// Fallthrough!
-	  case 2:
-		__invalidate(1, rect, window);
-		// Fallthrough!
-	  case 1:
-		__invalidate(0, rect, window);
-		break;
-	}
-#endif
-}
-
-
-void gfxengine_t::__invalidate(int page, SDL_Rect *rect, window_t *window)
-{
-#if 0
-	if(!screen_surface)
-		return;
-
-	if(!rect || (_pages == 0))
-	{
-		dirtyrects[page] = 1;
-		dirtytable[page][0].x = 0;
-		dirtytable[page][0].y = 0;
-		dirtytable[page][0].w = screen_surface->w;
-		dirtytable[page][0].h = screen_surface->h;
-		dirtywtable[page][0] = NULL;
-		return;
-	}
-
-	/* Clip to screen (stolen from SDL_surface.c) */
-	SDL_Rect dr = *rect;
-	int Amin, Amax, Bmin, Bmax;
-
-	/* Horizontal intersection */
-	Amin = dr.x;
-	Amax = Amin + dr.w;
-	Bmin = screen_surface->clip_rect.x;
-	Bmax = Bmin + screen_surface->clip_rect.w;
-	if(Bmin > Amin)
-	        Amin = Bmin;
-	dr.x = Amin;
-	if(Bmax < Amax)
-	        Amax = Bmax;
-	dr.w = Amax - Amin > 0 ? Amax - Amin : 0;
-
-	/* Vertical intersection */
-	Amin = dr.y;
-	Amax = Amin + dr.h;
-	Bmin = screen_surface->clip_rect.y;
-	Bmax = Bmin + screen_surface->clip_rect.h;
-	if(Bmin > Amin)
-	        Amin = Bmin;
-	dr.y = Amin;
-	if(Bmax < Amax)
-	        Amax = Bmax;
-	dr.h = Amax - Amin > 0 ? Amax - Amin : 0;
-
-	if(!dr.w || !dr.h)
-		return;
-
-	for(int i = 0; i < dirtyrects[page]; ++i)
-		if(memcmp(&dirtytable[page][i], &dr, sizeof(dr)) == 0)
-			return;
-
-	if(dirtyrects[page] < MAX_DIRTYRECTS - 1)
-	{
-		dirtytable[page][dirtyrects[page]] = dr;
-		dirtywtable[page][dirtyrects[page]] = window;
-		++dirtyrects[page];
-	}
-	else
-		log_printf(ELOG, "gfxengine: Page %d out of dirtyrects!\n",
-				page);
-#endif
-}
-
-
 /*----------------------------------------------------------
 	Engine start/stop
 ----------------------------------------------------------*/
@@ -1091,12 +986,6 @@ void gfxengine_t::run()
 			fdt = ticks_per_frame;
 		toframe += fdt / ticks_per_frame;
 		cs_engine_advance(csengine, toframe);
-		pre_render();
-		window->select();
-		cs_engine_render(csengine);
-		post_render();
-		if(_autoinvalidate)
-			window->invalidate();
 		flip();
 	}
 	stop_engine();
@@ -1296,81 +1185,6 @@ void gfxengine_t::flip()
 			w->phys_refresh(NULL);
 
 	SDL_RenderPresent(sdlrenderer);
-#if 0
-	// Init dirtyrect table flipping, if necessary.
-	switch(_pages)
-	{
-	  case -1:
-		if(!_doublebuf)
-			frontpage = backpage = 0;
-		else if(frontpage == backpage)
-		{
-			frontpage = 0;
-			backpage = 1;
-		}
-		break;
-	  case 0:
-		frontpage = backpage = 0;
-		invalidate();
-		break;
-	  case 1:
-		frontpage = backpage = 0;
-		break;
-	  case 2:
-	  case 3:
-		if(frontpage == backpage)
-		{
-			frontpage = 0;
-			backpage = 1;
-		}
-		break;
-	}
-
-	// Process the dirtyrects.
-	int i;
-	for(i = 0; i < dirtyrects[backpage]; ++i)
-	{
-		if(dirtywtable[backpage][i])
-		{
-			if(!dirtywtable[backpage][i]->visible())
-				continue;
-			SDL_Rect dr = dirtytable[backpage][i];
-			dirtywtable[backpage][i]->phys_refresh(&dr);
-		}
-		else
-			refresh_rect(&dirtytable[backpage][i]);
-	}
-
-	// Perform the actual flip or update
-	if(_shadow)
-	{
-		for(i = 0; i < dirtyrects[backpage]; ++i)
-			SDL_BlitSurface(softbuf,
-					&dirtytable[backpage][i],
-					screen_surface,
-					&dirtytable[backpage][i]);
-	}
-	if(_doublebuf)
-	{
-		dirtyrects[backpage] = 0;
-		if(_pages == -1)
-		{
-			backpage = !backpage;
-			frontpage = !frontpage;
-		}
-		else if(_pages > 1)
-		{
-			backpage = (backpage + 1) % _pages;
-			frontpage = (frontpage + 1) % _pages;
-		}
-		SDL_Flip(screen_surface);
-	}
-	else
-	{
-		SDL_UpdateRects(screen_surface, dirtyrects[0], dirtytable[0]);
-		dirtyrects[0] = 0;
-	}
-#endif
 }
 
 
@@ -1391,14 +1205,11 @@ void gfxengine_t::render_sprite(cs_obj_t *o)
 	int y = o->point.gy - (s->y << 8);
 	dest_rect.x = CS2PIXEL((x * gfxengine->xs + 128) >> 8);
 	dest_rect.y = CS2PIXEL((y * gfxengine->ys + 128) >> 8);
-	dest_rect.x += (gfxengine->window->x() * gfxengine->xs + 128) >> 8;
-	dest_rect.y += (gfxengine->window->y() * gfxengine->ys + 128) >> 8;
+	dest_rect.x += (gfxengine->wx * gfxengine->xs + 128) >> 8;
+	dest_rect.y += (gfxengine->wy * gfxengine->ys + 128) >> 8;
 	dest_rect.w = (b->w * gfxengine->xs + 128) >> 8;
 	dest_rect.h = (b->h * gfxengine->ys + 128) >> 8;
 	SDL_RenderCopy(gfxengine->renderer(), s->texture, NULL, &dest_rect);
-
-	if(!gfxengine->_autoinvalidate)
-		gfxengine->invalidate(&dest_rect);
 }
 
 

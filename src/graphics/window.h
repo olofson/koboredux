@@ -43,7 +43,9 @@
  *		surface of it's own for rendering. An off-
  *		screen window will never be directly visible,
  *		but can be used as a source window for blit().
- *		May return -1 if there is an error.
+ *		Offscreen windows support rendering outside
+ *		refresh(), and do not need to implement
+ *		refresh(). May return -1 if there is an error.
  *
  *	void select();
  *		Makes this window active, and sets up SDL's
@@ -62,16 +64,7 @@
  *
  *	virtual void refresh(SDL_Rect *r);
  *		Virtual refresh call to be implemented by
- *		windows that aren't repainted every frame.
- *		After a call to invalidate(), refresh() will
- *		be called by the engine as necessary to
- *		produce a correct display. Note that in some
- *		cases, this means that refresh() will be
- *		called once for each screen flip, until all
- *		buffers (usually two) are up to date. Also
- *		note that you should do all rendering to the
- *		window either directly *or* in the refresh()
- *		function.
+ *		ALL windows that are not offscreen.
  *
  *	Uint32 map_rgb(Uint8 r, Uint8 g, Uint8 b);
  *	Uint32 map_rgb(Uint32 rgb);
@@ -317,6 +310,7 @@ class window_t
 	// Fallback for offscreen window, if there's no render target support
 	SDL_Surface	*osurface;
 
+	int		wx, wy;		// Engine window position
 	int		xs, ys;		// fixp 24:8
 	Uint32		fgcolor, bgcolor;
 	int		bg_bank, bg_frame;
@@ -348,6 +342,13 @@ class window_t
 	}
 
 	void offscreen_invalidate(SDL_Rect *r);
+};
+
+/* Engine output window */
+class engine_window_t : public window_t
+{
+  public:
+	void refresh(SDL_Rect *r);
 };
 
 #endif

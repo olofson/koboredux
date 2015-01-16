@@ -1,4 +1,13 @@
 
+* Should window_t manage SDL renderer state? Probably, because the window_t
+  rendering API gives the impression of keeping state per window.
+	* Well, it pretty much does already - and there isn't much state in an
+	  SDL renderer anyway.
+
+* Problem with offscreen windows: They can only share textures with the screen
+  when using render targets! The software fallback renderers need their own
+  textures.
+
 * window_t::colorkey() and window_t::alpha() need to be ported to the rendering
   API.
 

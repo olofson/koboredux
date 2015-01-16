@@ -469,13 +469,13 @@ void _screen::scroller()
 	scroller_speed += (target_speed - scroller_speed) * 0.05;
 
 	static const char scrolltext[] =
-			"Welcome to KOBO DELUXE, an enhanced version of "
+			"Welcome to KOBO REDUX, a revival of the old "
+			"KOBO DELUXE, which was an enhanced version of "
 			"Akira Higuchi's fabulous X-Window game XKOBO. "
 			"     "
-			"KOBO DELUXE uses SDL, the Simple DirectMedia "
-			"Layer (www.libsdl.org) for graphics and input, "
-			"and Audiality (olofson.net/audiality) for sound "
-			"and music. "
+			"KOBO REDUX uses SDL 2, the Simple DirectMedia Layer "
+			"(www.libsdl.org) for graphics and input, and "
+			"Audiality 2 (audiality.org) for sound and music. "
 			"     "
 			"KOBO DELUXE has been known to hinder productivity on: "
 			"     "

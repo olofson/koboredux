@@ -45,7 +45,7 @@ typedef struct
 {
 	int		x, y;		/* kern or hot-spot*/
 	SDL_Texture	*texture;
-/*FIXME:*/SDL_Surface	*_surface;
+	SDL_Surface	*surface;
 /*TODO:	SDL_BlendMode	blendmode;	*/
 } s_sprite_t;
 
