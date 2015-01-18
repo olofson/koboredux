@@ -115,6 +115,14 @@ gfxengine_t::~gfxengine_t()
 }
 
 
+void gfxengine_t::messagebox(const char *message)
+{
+	if(SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, _title, message,
+			sdlwindow) < 0)
+		fprintf(stderr, "%s: %s\n", _title, message);
+}
+
+
 /*----------------------------------------------------------
 	Initialization
 ----------------------------------------------------------*/
@@ -866,6 +874,7 @@ int gfxengine_t::show()
 		log_printf(ELOG, "Failed to open renderer! Giving up.\n");
 		return -4;
 	}
+	SDL_RenderSetLogicalSize(sdlrenderer, _width, _height);
 
 	SDL_SetWindowTitle(sdlwindow, _title);
 	SDL_ShowCursor(_cursor);
@@ -912,6 +921,11 @@ void gfxengine_t::hide(void)
 	delete fullwin;
 	fullwin = NULL;
 
+	SDL_DestroyRenderer(sdlrenderer);
+	sdlrenderer = NULL;
+
+	SDL_DestroyWindow(sdlwindow);
+	sdlwindow = NULL;
 #if 0
 	// Make sure no windows keep old surface pointers!
 	window_t *w = windows;
@@ -1207,8 +1221,8 @@ void gfxengine_t::render_sprite(cs_obj_t *o)
 	dest_rect.y = CS2PIXEL((y * gfxengine->ys + 128) >> 8);
 	dest_rect.x += (gfxengine->wx * gfxengine->xs + 128) >> 8;
 	dest_rect.y += (gfxengine->wy * gfxengine->ys + 128) >> 8;
-	dest_rect.w = (b->w * gfxengine->xs + 128) >> 8;
-	dest_rect.h = (b->h * gfxengine->ys + 128) >> 8;
+	dest_rect.w = b->w;
+	dest_rect.h = b->h;
 	SDL_RenderCopy(gfxengine->renderer(), s->texture, NULL, &dest_rect);
 }
 

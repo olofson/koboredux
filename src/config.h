@@ -65,25 +65,6 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 #define ENEMY_MAX	2048
 
 /*
- * Game display size.
- *
- * In XKobo, there was only WSIZE - VIEWLIMIT was added
- * for Kobo Deluxe, and WSIZE was set to 230, to add some
- * extra pixels, most of which were more or less covered
- * by the rounded framework.
- *
- * As of Kobo Deluxe 0.4.1, WSIZE is restored to the
- * original 224.
- *
- * Note that if WSIZE is larger than VIEWLIMIT, some
- * objects might be created or deleted in view. Finding
- * out whether or not it can really happen calls for
- * closer analysis of the code.
- */
-#define WSIZE	224
-#define MARGIN	8
-
-/*
  * Fraction of the screen size in which clicks are not considered
  * clicks but movements in that direction (as regarded from the
  * center of the screen) or other special things (pause & exit).
@@ -102,15 +83,13 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 #define POINTER_MARGIN_PERCENT 10
 
 /*
- * (In XKobo, WSIZE was used where this is
- * used now; in the game logic code.)
+ * In XKobo, WSIZE was used where VIEWLIMIT is used now; in the game logic
+ * code. Kobo Redux replaces WSIZE with WMAIN_W and WMAIN_H, but VIEWLIMIT is
+ * still what that determines what the game logic considers "in view!"
  *
- * NOTE:  I *DON'T* want to change the view
- *        range as the XKobo engine knows it,
- *        as that would make the game play
- *        slightly differently. (Probably not
- *        so that anyone would notice, but
- *        let's not take chances... This is
+ * NOTE:  I *DON'T* want to change the view range as the XKobo engine knows it,
+ *        as that would make the game play slightly differently. (Probably not
+ *        so that anyone would notice, but let's not take chances... This is
  *        NOT "Kobo II".)
  */
 #define VIEWLIMIT	224
@@ -120,16 +99,6 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 
 // Player bolt hit rect size
 #define HIT_BOLT	5
-
-/*
- * Actually, this is not the *full* size in windowed mode any more. This was
- * originally 320x240. Kobo Redux changes the "native" resolution to 640x360,
- * and the tile size is changed from 16x16 to 24x24. However, the game logic
- * coordinates are NOT changed, which is why those coordinates still deal in
- * the original 16x16 tile based figures.
- */
-#define	SCREEN_WIDTH	640
-#define	SCREEN_HEIGHT	360
 
 /* Various size info (DO NOT EDIT!) */
 #define CHIP_SIZEX_LOG2   4
@@ -158,5 +127,39 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 #define	INTRO_INSTRUCTIONS_TIME	19700
 #define	INTRO_HIGHSCORE_TIME	11700
 #define	INTRO_CREDITS_TIME	13700
+
+/*
+ * Actually, this is not the *full* size in windowed mode any more. This was
+ * originally 320x240. Kobo Redux changes the "native" resolution to 640x360,
+ * and the tile size is changed from 16x16 to 24x24. However, the game logic
+ * coordinates are NOT changed, which is why those coordinates still deal in
+ * the original 16x16 tile based figures.
+ */
+#define	SCREEN_WIDTH	640
+#define	SCREEN_HEIGHT	360
+
+/*
+ * Map tile size in "native" 640x360 pixels. Until Kobo Redux, this was 32, but
+ * indirectly derived from CHIP_SIZE*, rather than defined explicitly.
+ */
+#define	TILE_SIZE	24
+
+/*
+ * Dashboard window layout
+ */
+#define WMAIN_X		152
+#define WMAIN_Y		12
+#define WMAIN_W		336
+#define WMAIN_H		336
+
+#define WCONSOLE_X	8
+#define WCONSOLE_Y	51
+#define WCONSOLE_W	128
+#define WCONSOLE_H	256
+
+#define WRADAR_X	503
+#define WRADAR_Y	51
+#define WRADAR_W	128
+#define WRADAR_H	256
 
 #endif	/*_KOBO_CONFIG_H_*/

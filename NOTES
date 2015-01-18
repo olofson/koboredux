@@ -1,4 +1,8 @@
 
+* Maybe we should change the game logic units to 1.0/tile, after all? These
+  "physics pixels" that no longer relate to screen pixels at all is getting
+  ugly...
+
 * Should window_t manage SDL renderer state? Probably, because the window_t
   rendering API gives the impression of keeping state per window.
 	* Well, it pretty much does already - and there isn't much state in an
@@ -10,6 +14,8 @@
 
 * window_t::colorkey() and window_t::alpha() need to be ported to the rendering
   API.
+
+* Screenshots: SDL_RenderReadPixels().
 
 
 Kobo DL install on Ubuntu:

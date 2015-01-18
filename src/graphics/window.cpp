@@ -569,12 +569,14 @@ void window_t::sprite_fxp(int _x, int _y, int bank, int frame, int inval)
 		return;
 	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 128) >> 8);
 	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 128) >> 8);
-	SDL_Rect dest_rect;
+	SDL_Rect r;
 
 	SELECT
-	dest_rect.x = phys_rect.x + _x;
-	dest_rect.y = phys_rect.y + _y;
-	SDL_RenderCopy(renderer, s->texture, NULL, &dest_rect);
+	r.x = phys_rect.x + _x;
+	r.y = phys_rect.y + _y;
+	r.w = b->w;
+	r.h = b->h;
+	SDL_RenderCopy(renderer, s->texture, NULL, &r);
 }
 
 

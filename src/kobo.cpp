@@ -42,16 +42,6 @@
 #include <fcntl.h>
 #include <math.h>
 
-#ifdef DEBUG
-#include "audio.h"
-extern "C" {
-/*For the oscilloscope*/
-#include "a_globals.h"
-/*For VU and voice info*/
-#include "a_struct.h"
-}
-#endif
-
 #include "kobolog.h"
 #include "kobo.h"
 #include "states.h"
@@ -207,109 +197,12 @@ static void add_dirs(prefs_t *p)
 }
 
 
-#ifdef DEBUG
-static void draw_osc(int mode)
-{
-	int mx = oscframes;
-	if(mx > wmain->width())
-		mx = wmain->width();
-	int yo = wmain->height() - 40;
-	wmain->foreground(wmain->map_rgb(0x000099));
-	wmain->fillrect(0, yo, wmain->width(), 1);
-	wmain->foreground(wmain->map_rgb(0x990000));
-	wmain->fillrect(0, yo - 32, wmain->width(), 1);
-	wmain->fillrect(0, yo + 31, wmain->width(), 1);
-
-	switch(mode)
-	{
-	  case 0:
-		wmain->foreground(wmain->map_rgb(0x009900));
-		for(int s = 0; s < mx; ++s)
-			wmain->point(s, ((oscbufl[s]+oscbufr[s]) >> 11) + yo);
-		break;
-	  case 1:
-		wmain->foreground(wmain->map_rgb(0x009900));
-		for(int s = 0; s < mx; ++s)
-			wmain->point(s, (oscbufl[s] >> 10) + yo);
-		wmain->foreground(wmain->map_rgb(0xcc0000));
-		for(int s = 0; s < mx; ++s)
-			wmain->point(s, (oscbufr[s] >> 10) + yo);
-		break;
-	  case 2:
-		wmain->foreground(wmain->map_rgb(0x009900));
-		for(int s = 0; s < mx; ++s)
-			wmain->point(s>>1, (oscbufl[s] >> 10) + yo);
-		wmain->foreground(wmain->map_rgb(0xcc0000));
-		for(int s = 0; s < mx; ++s)
-			wmain->point((s>>1) + (mx>>1), (oscbufr[s] >> 10) + yo);
-		wmain->fillrect(mx/2, yo-34, 1, 68);
-		break;
-	}
-
-	wmain->foreground(wmain->map_rgb(0xcc0000));
-	wmain->fillrect(0, yo - 32, 6, limiter.attenuation >> 11);
-}
-
-
-static void draw_vu(void)
-{
-	int xo = (wmain->width() - 5 * AUDIO_MAX_VOICES) / 2;
-	int yo = wmain->height() - 50;
-	wmain->foreground(wmain->map_rgb(0x000000));
-	for(int s = 4; s < 40; s += 4)
-		wmain->fillrect(xo, yo+s, 5 * AUDIO_MAX_VOICES-1, 1);
-	wmain->foreground(wmain->map_rgb(0x333333));
-	wmain->fillrect(xo-1, yo, 5 * AUDIO_MAX_VOICES+1, 1);
-	wmain->fillrect(xo-1, yo+40, 5 * AUDIO_MAX_VOICES+1, 4);
-	for(int s = 0; s <= AUDIO_MAX_VOICES; ++s)
-		wmain->fillrect(xo + s*5 - 1, yo+1, 1, 39);
-	for(int s = 0; s < AUDIO_MAX_VOICES; ++s)
-	{
-		int vu, vu2, vumin;
-		if(VS_STOPPED != voicetab[s].state)
-		{
-			wmain->foreground(wmain->map_rgb(0x009900));
-			wmain->fillrect(xo + 1, yo + 41, 2, 2);
-
-			vu = labs((voicetab[s].ic[VIC_LVOL].v>>1) +
-					(voicetab[s].ic[VIC_RVOL].v>>1)) >>
-					RAMP_BITS;
-#ifdef AUDIO_USE_VU
-			vu2 = voicetab[s].vu;
-			voicetab[s].vu = 0;
-#else
-			vu2 = 0;
-#endif
-			vu2 = (vu2>>4) * (vu>>4) >> 8;
-			vu2 >>= 11;
-			if(vu2 > 40)
-				vu2 = 40;
-			vu >>= 11;
-			if(vu > 40)
-				vu = 40;
-			vumin = vu < vu2 ? vu : vu2;
-		}
-		else
-			vu = vu2 = vumin = 0;
-		wmain->foreground(wmain->map_rgb(0x006600));
-		wmain->fillrect(xo, yo + 40 - vu, 4, vu - vu2);
-		wmain->foreground(wmain->map_rgb(0xffcc00));
-		wmain->fillrect(xo, yo + 40 - vu2, 4, vu2);
-		xo += 5;
-	}
-}
-#endif
-
-
 /*----------------------------------------------------------
 	The main object
 ----------------------------------------------------------*/
 class KOBO_main
 {
   public:
-#ifdef DEBUG
-	static int		audio_vismode;
-#endif
 	static SDL_Joystick	*joystick;
 	static int		js_lr;
 	static int		js_ud;
@@ -334,6 +227,7 @@ class KOBO_main
 	static float		max_fps_filter;
 	static int		max_fps_begin;
 
+	// Dashboard offset ("native" 640x360 pixels)
 	static int		xoffs;
 	static int		yoffs;
 
@@ -370,9 +264,6 @@ class KOBO_main
 	static void print_fps_results();
 };
 
-#ifdef DEBUG
-int		KOBO_main::audio_vismode = 0;
-#endif
 
 SDL_Joystick	*KOBO_main::joystick = NULL;
 int		KOBO_main::js_lr = DEFAULT_JOY_LR;
@@ -580,36 +471,50 @@ int KOBO_main::open_logging(prefs_t *p)
 
 void KOBO_main::build_screen()
 {
+	int conx = xoffs + WCONSOLE_X;
+	int cony = yoffs + WCONSOLE_Y;
+	int conw = WCONSOLE_W;
+
 	gengine->clear(0x000000);
 
 	wdash->place(xoffs, yoffs, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	dhigh->place(conx, cony, conw, 18);
+	dhigh->font(B_NORMAL_FONT);
+//	dhigh->bgimage(B_HIGH_BACK, 0);
+	dhigh->caption("HIGHSCORE");
+	dhigh->text("000000000");
+
+	dscore->place(conx, cony + 24, conw, 18);
+	dscore->font(B_NORMAL_FONT);
+//	dscore->bgimage(B_SCORE_BACK, 0);
+	dscore->caption("SCORE");
+	dscore->text("000000000");
+
+	dships->place(conx, cony + 48, conw, 18);
+	dships->font(B_NORMAL_FONT);
+//	dships->bgimage(B_SHIPS_BACK, 0);
+	dships->caption("SHIPS");
+	dships->text("000");
+
+	dstage->place(conx, cony + 72, conw, 18);
+	dstage->font(B_NORMAL_FONT);
+//	dstage->bgimage(B_STAGE_BACK, 0);
+	dstage->caption("STAGE");
+	dstage->text("000");
+
+	wmain->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
+
+	// Map tiles are 2x2 "native" pixels now!
+	wmap->place(0, 0, MAP_SIZEX * 2, MAP_SIZEY * 2);
+	wmap->offscreen();
+	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
+	wradar->bgimage(B_RADAR_BACK, 0);
 
 	whealth->place(xoffs + 4, yoffs + 92, 8, 128);
 	whealth->bgimage(B_HEALTH_LID, 0);
 	whealth->background(whealth->map_rgb(0x182838));
 	whealth->redmax(0);
-
-	wmain->place(xoffs + 8 + MARGIN, yoffs + MARGIN, WSIZE, WSIZE);
-
-	dhigh->place(xoffs + 252, yoffs + 4, 64, 18);
-	dhigh->font(B_NORMAL_FONT);
-	dhigh->bgimage(B_HIGH_BACK, 0);
-	dhigh->caption("HIGHSCORE");
-	dhigh->text("000000000");
-
-	dscore->place(dhigh->x(), dhigh->y2() + 4, 64, 18);
-	dscore->font(B_NORMAL_FONT);
-	dscore->bgimage(B_SCORE_BACK, 0);
-	dscore->caption("SCORE");
-	dscore->text("000000000");
-
-	wmap->place(0, 0, MAP_SIZEX, MAP_SIZEY);
-	wmap->offscreen();
-
-	wradar->place(xoffs + 244,
-			yoffs + (SCREEN_HEIGHT - MAP_SIZEY) / 2,
-			MAP_SIZEX, MAP_SIZEY);
-	wradar->bgimage(B_RADAR_BACK, 0);
 
 	wtemp->place(xoffs + 244, yoffs + 188, 4, 32);
 	wtemp->bgimage(B_TEMP_LID, 0);
@@ -620,18 +525,6 @@ void KOBO_main::build_screen()
 	wttemp->bgimage(B_TTEMP_LID, 0);
 	wttemp->background(wttemp->map_rgb(0x182838));
 	wttemp->redmax(1);
-
-	dships->place(xoffs + 264, yoffs + 196, 38, 18);
-	dships->font(B_NORMAL_FONT);
-	dships->bgimage(B_SHIPS_BACK, 0);
-	dships->caption("SHIPS");
-	dships->text("000");
-
-	dstage->place(dships->x(), dships->y2() + 4, 38, 18);
-	dstage->font(B_NORMAL_FONT);
-	dstage->bgimage(B_STAGE_BACK, 0);
-	dstage->caption("STAGE");
-	dstage->text("000");
 
 	if(prefs->cmd_fps)
 	{
@@ -654,58 +547,67 @@ int KOBO_main::init_display(prefs_t *p)
 
 	dw = p->width;
 	dh = p->height;
-	if(p->fullscreen)
+log_printf(WLOG, "--- Desired size: %d x %d\n", dw, dh);
+
+	// This game assumes 1:1 pixel aspect ratio, or 16:9
+	// width:height ratio, so we need to adjust accordingly.
+	// Note:
+	//	This code assumes 1:1 pixels for all resolutions!
+	//	This does not hold true for 1280x1024 on a CRT
+	//	for example, but that's an incorrect (although
+	//	all too common) setup anyway. (1280x1024 is for
+	//	5:4 TFT displays only!)
+	if(dw * 9 >= dh * 16)
 	{
-		// This game assumes 1:1 pixel aspect ratio, or 4:3
-		// width:height ratio, so we need to adjust accordingly.
-		// Note:
-		//	This code assumes 1:1 pixels for all resolutions!
-		//	This does not hold true for 1280x1024 or a CRT
-		//	for example, but that's an incorrect (although
-		//	all too common) setup anyway. (1280x1024 is for
-		//	5:4 TFT displays only!)
-		if(dw * 3 >= dh * 4)
-		{
-			// 4:3 or widescreen; Height defines size
-			gw = dh * 4 / 3;
-			gh = dh;
-		}
-		else
-		{
-			// "tallscreen" (probably 5:4 TFT or rotated display)
-			// Width defines size
-			gw = dw;
-			gh = dw * 3 / 4;
-		}
+		// 16:9 or wider; Height defines size
+		gw = dh * 16 / 9;
+		gh = dh;
 	}
 	else
 	{
+		// "tallscreen" (4:3 or rotated display)
+		// Width defines size
 		gw = dw;
-		gh = dh;
+		gh = dw * 9 / 16;
+	}
+
+log_printf(WLOG, "--- Aspect corrected size: %d x %d\n", gw, gh);
+
+	// Kobo Redux only allows integer scaling factors above 1:1, and
+	// shrinking is restricted to 24ths granularity, to guarantee an
+	// integer sprite/tile size.
+	if((gw >= SCREEN_WIDTH) && (gh >= SCREEN_HEIGHT))
+		gengine->scale(floor(gw / SCREEN_WIDTH),
+				floor(gh / SCREEN_HEIGHT));
+	else
+		gengine->scale((int)((gw * 24 + 12) / SCREEN_WIDTH) / 24.f,
+				(int)((gh * 24 + 12) / SCREEN_HEIGHT) / 24.f);
+log_printf(WLOG, "--- xscale(): %f\tyscale(): %f\n",
+		gengine->xscale(), gengine->yscale());
+
+	// Read back and recalculate, in case the engine has some ideas...
+	gw = (int)(SCREEN_WIDTH * gengine->xscale() + 0.5f);
+	gh = (int)(SCREEN_HEIGHT * gengine->yscale() + 0.5f);
+log_printf(WLOG, "--- Recalculated size: %d x %d\n", gw, gh);
+
+	if(!p->fullscreen)
+	{
+		//Add thin black border in windowed mode.
+		dw += 8;
+		dh += 8;
+log_printf(WLOG, "--- Border added: %d x %d\n", dw, dh);
 	}
 
 #ifdef ENABLE_TOUCHSCREEN
 	gengine->setup_pointer_margin(dw, dh);
 #endif
 
-	// Scaling has 16ths granularity, so tiles scale properly!
-	gengine->scale((int)((gw * 16 + 8) / SCREEN_WIDTH) / 16.f,
-			(int)((gh * 16 + 8) / SCREEN_HEIGHT) / 16.f);
-
-	// Read back and recalculate, in case the engine has some ideas...
-	gw = (int)(SCREEN_WIDTH * gengine->xscale() + 0.5f);
-	gh = (int)(SCREEN_HEIGHT * gengine->yscale() + 0.5f);
-
-	if(!p->fullscreen)
-	{
-		//Add thin black border around the game "screen" in windowed mode.
-		dw = gw + 8;
-		dh = gh + 8;
-	}
-
-	xoffs = (int)((dw - gw) / 2 / gengine->xscale());
-	yoffs = (int)((dh - gh) / 2 / gengine->yscale());
 	gengine->size(dw, dh);
+
+	// Center the framework on the screen/in the window
+	xoffs = (int)((dw - gw) / (2 * gengine->xscale()) + 0.5f);
+	yoffs = (int)((dh - gh) / (2 * gengine->yscale()) + 0.5f);
+log_printf(WLOG, "--- Offsets: %d, %d\n", xoffs, yoffs);
 
 	gengine->mode(0, p->fullscreen);
 	gengine->doublebuffer(p->doublebuf);
@@ -983,7 +885,7 @@ typedef struct KOBO_GfxDesc
 	const char	*path;		// Path + name (for filemapper)
 	int		bank;		// Sprite bank ID
 	int		w, h;		// Frame size (original image pixels)
-	float		scale;		// Scale of source data rel. 320x240
+	float		scale;		// Scale of source data rel. 640x360
 	int		flags;		// KOBO_GfxDescFlags
 } KOBO_GfxDesc;
 
@@ -996,52 +898,47 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	// In-game
 	{ "Loading in-game graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>tiles-green.png", B_TILES1,	32, 32,	2.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-metal.png", B_TILES2,	32, 32,	2.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-blood.png", B_TILES3,	32, 32,	2.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-double.png", B_TILES4,	32, 32,	2.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-chrome.png", B_TILES5,	32, 32,	2.0f,	KOBO_CLAMP },
-	{ "GFX>>flatstars1.png", B_OLDSTARS,	32, 32,	2.0f,	KOBO_CLAMP },
-	{ "GFX>>crosshair.png", B_CROSSHAIR,	32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>player.png", B_PLAYER,		40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bmr-green.png", B_BMR_GREEN,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bmr-purple.png", B_BMR_PURPLE,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bmr-pink.png", B_BMR_PINK,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>fighter.png", B_FIGHTER,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>missile.png", B_MISSILE1,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>missile2.png", B_MISSILE2,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>missile3.png", B_MISSILE3,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bolt.png", B_BOLT,		16, 16,	2.0f,	KOBO_CENTER },
-	{ "GFX>>boltexpl.png", B_BOLTEXPL,	32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>explo1e.png", B_EXPLO1,		48, 48,	2.0f,	KOBO_CENTER },
-	{ "GFX>>explo3e.png", B_EXPLO3,		64, 64,	2.0f,	KOBO_CENTER },
-	{ "GFX>>explo4e.png", B_EXPLO4,		64, 64,	2.0f,	KOBO_CENTER },
-	{ "GFX>>explo5e.png", B_EXPLO5,		64, 64,	2.0f,	KOBO_CENTER },
-	{ "GFX>>rock1c.png", B_ROCK1,		32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>rock2.png", B_ROCK2,		32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>shinyrock.png", B_ROCK3,	32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>rockexpl.png", B_ROCKEXPL,	64, 64,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bullet5b.png", B_BULLETS,	16, 16,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bulletexpl2.png", B_BULLETEXPL,	32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>ring.png", B_RING,		32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>ringexpl2b.png", B_RINGEXPL,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bomb.png", B_BOMB,		24, 24,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bombdeto.png", B_BOMBDETO,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bigship.png", B_BIGSHIP,	72, 72,	2.0f,	KOBO_CENTER },
+	{ "GFX>>tiles-green.png", B_TILES1,	32, 32,	1.333f,	KOBO_CLAMP },
+	{ "GFX>>tiles-metal.png", B_TILES2,	32, 32,	1.333f,	KOBO_CLAMP },
+	{ "GFX>>tiles-blood.png", B_TILES3,	32, 32,	1.333f,	KOBO_CLAMP },
+	{ "GFX>>tiles-double.png", B_TILES4,	32, 32,	1.333f,	KOBO_CLAMP },
+	{ "GFX>>tiles-chrome.png", B_TILES5,	32, 32,	1.333f,	KOBO_CLAMP },
+	{ "GFX>>crosshair.png", B_CROSSHAIR,	32, 32,	1.0f,	KOBO_CENTER },
+	{ "GFX>>player.png", B_PLAYER,		40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>bmr-green.png", B_BMR_GREEN,	40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>bmr-purple.png", B_BMR_PURPLE,	40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>bmr-pink.png", B_BMR_PINK,	40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>fighter.png", B_FIGHTER,	40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>missile.png", B_MISSILE1,	40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>missile2.png", B_MISSILE2,	40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>missile3.png", B_MISSILE3,	40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>bolt.png", B_BOLT,		16, 16,	1.333f,	KOBO_CENTER },
+	{ "GFX>>boltexpl.png", B_BOLTEXPL,	32, 32,	1.333f,	KOBO_CENTER },
+	{ "GFX>>explo1e.png", B_EXPLO1,		48, 48,	1.333f,	KOBO_CENTER },
+	{ "GFX>>explo3e.png", B_EXPLO3,		64, 64,	1.333f,	KOBO_CENTER },
+	{ "GFX>>explo4e.png", B_EXPLO4,		64, 64,	1.333f,	KOBO_CENTER },
+	{ "GFX>>explo5e.png", B_EXPLO5,		64, 64,	1.333f,	KOBO_CENTER },
+	{ "GFX>>rock1c.png", B_ROCK1,		32, 32,	1.333f,	KOBO_CENTER },
+	{ "GFX>>rock2.png", B_ROCK2,		32, 32,	1.333f,	KOBO_CENTER },
+	{ "GFX>>shinyrock.png", B_ROCK3,	32, 32,	1.333f,	KOBO_CENTER },
+	{ "GFX>>rockexpl.png", B_ROCKEXPL,	64, 64,	1.333f,	KOBO_CENTER },
+	{ "GFX>>bullet5b.png", B_BULLETS,	16, 16,	1.333f,	KOBO_CENTER },
+	{ "GFX>>bulletexpl2.png", B_BULLETEXPL,	32, 32,	1.333f,	KOBO_CENTER },
+	{ "GFX>>ring.png", B_RING,		32, 32,	1.333f,	KOBO_CENTER },
+	{ "GFX>>ringexpl2b.png", B_RINGEXPL,	40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>bomb.png", B_BOMB,		24, 24,	1.333f,	KOBO_CENTER },
+	{ "GFX>>bombdeto.png", B_BOMBDETO,	40, 40,	1.333f,	KOBO_CENTER },
+	{ "GFX>>bigship.png", B_BIGSHIP,	72, 72,	1.333f,	KOBO_CENTER },
 
 	// Dashboard
 	{ "Loading dashboard graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	2.0f,
-			KOBO_CLAMP_OPAQUE },
+	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	1.0f,	0 },
+//			KOBO_CLAMP_OPAQUE },
 
 	// Logo
 	{ "Loading logo", 0, 0,0, 0.0f, KOBO_MESSAGE },
 	{ "GFX>>logo-outline.png", B_LOGO,	0, 0,	2.0f,	0 },
 	{ "GFX>>deluxe.png", B_LOGODELUXE,	0, 0,	2.0f,	0 },
-#if 0
-	{ "GFX>>logomask3.png", B_LOGOMASK,	0, 0,	4.0f,
-			KOBO_NEAREST | KOBO_NODITHER },
-#endif
 
 	// Fonts
 	{ "Loading fonts", 0, 0,0, 0.0f, KOBO_MESSAGE },
@@ -1056,8 +953,6 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "GFX>>hitnoise.png", B_HITNOISE,	NOISE_SIZEX, 1,	1.0f,
 			KOBO_CLAMP | KOBO_NEAREST },
 	{ "GFX>>focusfx.png", B_FOCUSFX,	0, 0,	1.0f, KOBO_CLAMP },
-	{ "GFX>>brushes.png", B_BRUSHES,	16, 16,	1.0f,
-			KOBO_CLAMP | KOBO_NEAREST | KOBO_NOALPHA },
 
 	{ NULL, 0,	0, 0,	0.0f,	0 }	// Terminator
 };
@@ -1125,7 +1020,6 @@ int KOBO_main::load_graphics(prefs_t *p)
 		{
 			log_printf(ELOG, "Couldn't get path to \"%s\"!\n",
 					gd->path);
-//			return -1;
 			continue;
 		}
 		int res;
@@ -1138,7 +1032,6 @@ int KOBO_main::load_graphics(prefs_t *p)
 		if(res < 0)
 		{
 			log_printf(ELOG, "Couldn't load \"%s\"!\n", fn);
-//			return -1;
 			continue;
 		}
 
@@ -1151,28 +1044,28 @@ int KOBO_main::load_graphics(prefs_t *p)
 		// Update progress bar
 		progress();
 	}
-
+#if 0
 	// Chop up the dashboard graphics as needed
 	SDL_Rect r;
 	r.w = r.h = 16;
-	r.x = (8 + MARGIN);
-	r.y = MARGIN;
+	r.x = WMAIN_X;
+	r.y = WMAIN_Y;
 	if(gengine->copyrect(B_FRAME_TL, B_SCREEN, 0, &r) < 0)
 //		return -6;
 		;
 	progress();
-	r.x += WSIZE - 16;
+	r.x += WMAIN_W - 16;
 	if(gengine->copyrect(B_FRAME_TR, B_SCREEN, 0, &r) < 0)
 //		return -7;
 		;
 	progress();
-	r.x = (8 + MARGIN);
-	r.y = MARGIN + WSIZE - 16;
+	r.x = WMAIN_X;
+	r.y = WMAIN_Y + WMAIN_H - 16;
 	if(gengine->copyrect(B_FRAME_BL, B_SCREEN, 0, &r) < 0)
 //		return -8;
 		;
 	progress();
-	r.x += WSIZE - 16;
+	r.x += WMAIN_W - 16;
 	if(gengine->copyrect(B_FRAME_BR, B_SCREEN, 0, &r) < 0)
 //		return -9;
 		;
@@ -1232,6 +1125,15 @@ int KOBO_main::load_graphics(prefs_t *p)
 //		return -33;
 		;
 	progress();
+#endif
+
+	// We can try to run with missing graphics, but without the menu font,
+	// the user may not even be able to find his/her way out of the game!
+	if(!gengine->get_font(B_BIG_FONT))
+	{
+		gengine->messagebox("CRITICAL: Could not load menu font!");
+		return -1;
+	}
 
 	return 0;
 }
@@ -1823,16 +1725,20 @@ void kobo_gfxengine_t::frame()
 			}
 			break;
 		  case SDL_MOUSEMOTION:
-			mouse_x = (int)(ev.motion.x / gengine->xscale()) - km.xoffs;
-			mouse_y = (int)(ev.motion.y / gengine->yscale()) - km.yoffs;
+			mouse_x = (int)(ev.motion.x / gengine->xscale()) -
+					km.xoffs;
+			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
+					km.yoffs;
 			if(prefs->use_mouse)
 				gamecontrol.mouse_position(
-						mouse_x - 8 - MARGIN - WSIZE/2,
-						mouse_y - MARGIN - WSIZE/2);
+						mouse_x - WMAIN_X - WMAIN_W/2,
+						mouse_y - WMAIN_Y - WMAIN_H/2);
 			break;
 		  case SDL_MOUSEBUTTONDOWN:
-			mouse_x = (int)(ev.motion.x / gengine->xscale()) - km.xoffs;
-			mouse_y = (int)(ev.motion.y / gengine->yscale()) - km.yoffs;
+			mouse_x = (int)(ev.motion.x / gengine->xscale()) -
+					km.xoffs;
+			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
+					km.yoffs;
 			gsm.press(BTN_FIRE);
 			if(prefs->use_mouse)
 			{
@@ -1882,8 +1788,8 @@ void kobo_gfxengine_t::frame()
 				gsm.press(BTN_FIRE);
 #endif
 				gamecontrol.mouse_position(
-						mouse_x - 8 - MARGIN - WSIZE/2,
-						mouse_y - MARGIN - WSIZE/2);
+						mouse_x - WMAIN_X - WMAIN_W/2,
+						mouse_y - WMAIN_Y - WMAIN_H/2);
 				switch(ev.button.button)
 				{
 				  case SDL_BUTTON_LEFT:
@@ -1919,8 +1825,8 @@ void kobo_gfxengine_t::frame()
 				}
 #endif
 				gamecontrol.mouse_position(
-						mouse_x - 8 - MARGIN - WSIZE/2,
-						mouse_y - MARGIN - WSIZE/2);
+						mouse_x - WMAIN_X - WMAIN_W/2,
+						mouse_y - WMAIN_Y - WMAIN_H/2);
 				switch(ev.button.button)
 				{
 				  case SDL_BUTTON_LEFT:
@@ -1973,7 +1879,7 @@ void kobo_gfxengine_t::pre_render()
 void kobo_gfxengine_t::post_render()
 {
 	gsm.post_render();
-
+#if 0
 	if(!prefs->cmd_noframe)
 	{
 		wmain->sprite(0, 0, B_FRAME_TL, 0, 0);
@@ -1981,7 +1887,7 @@ void kobo_gfxengine_t::post_render()
 		wmain->sprite(0, WSIZE - 16, B_FRAME_BL, 0, 0);
 		wmain->sprite(WSIZE - 16, WSIZE - 16, B_FRAME_BR, 0, 0);
 	}
-
+#endif
 #ifdef DEBUG
 	if(prefs->cmd_debug)
 	{
@@ -1990,24 +1896,6 @@ void kobo_gfxengine_t::post_render()
 				gengine->objects_in_use());
 		wmain->font(B_NORMAL_FONT);
 		wmain->string(160, 5, buf);
-	}
-
-	switch (km.audio_vismode % 5)
-	{
-	  case 0:
-		break;
-	  case 1:
-		draw_osc(0);
-		break;
-	  case 2:
-		draw_vu();
-		break;
-	  case 3:
-		draw_osc(1);
-		break;
-	  case 4:
-		draw_osc(2);
-		break;
 	}
 #endif
 

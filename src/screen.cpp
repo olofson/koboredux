@@ -48,12 +48,12 @@ float _screen::_fps = 40;
 float _screen::scroller_speed = SCROLLER_SPEED;
 float _screen::target_speed = SCROLLER_SPEED;
 int _screen::noise_y = 0;
-int _screen::noise_h = WSIZE;
+int _screen::noise_h = WMAIN_H;
 int _screen::noise_source = B_NOISE;
 float _screen::noise_fade = 0.0f;
 float _screen::noise_bright = 0.0f;
 float _screen::noise_depth = 0.0f;
-int _screen::highlight_y = WSIZE / 2;
+int _screen::highlight_y = WMAIN_H / 2;
 int _screen::highlight_h = 0;
 int _screen::hi_sc[10];
 int _screen::hi_st[10];
@@ -752,7 +752,7 @@ void _screen::render_noise(window_t *win)
 			fy += step + pubrand.get(8) * rstep)
 	{
 		int xo = PIXEL2CS(pubrand.get(NOISE_SIZEX_LOG2));
-		int xmax = ((WSIZE + CS2PIXEL(xo)) >> NOISE_SIZEX_LOG2) + 1;
+		int xmax = ((WMAIN_W + CS2PIXEL(xo)) >> NOISE_SIZEX_LOG2) + 1;
 		dnp += pubrand.get(3) - 4 + pubrand.get(1);
 		np += dnp;
 		if(np > 255)
@@ -774,7 +774,7 @@ void _screen::set_noise(int source, float fade, float bright, float depth)
 {
 	noise_source = source;
 	noise_y = 0;
-	noise_h = WSIZE;
+	noise_h = WMAIN_H;
 	noise_fade = fade;
 	noise_bright = bright;
 	noise_depth = depth;
@@ -821,7 +821,7 @@ void _screen::render_highlight(window_t *win)
 	for(int ty = -256; ty <= h; ty += h + 256)
 	{
 		int xo = PIXEL2CS(pubrand.get(NOISE_SIZEX_LOG2));
-		int xmax = ((WSIZE + CS2PIXEL(xo)) >> NOISE_SIZEX_LOG2) + 1;
+		int xmax = ((WMAIN_W + CS2PIXEL(xo)) >> NOISE_SIZEX_LOG2) + 1;
 		for(int x = 0; x < xmax; ++x)
 			wmain->sprite_fxp(PIXEL2CS(x << NOISE_SIZEX_LOG2) - xo,
 					ty + y,
@@ -854,7 +854,7 @@ void _screen::render_highlight(window_t *win)
 		int xo = (int)((t * 10 + 8192 * plasma2) *
 				gengine->xscale() / 256);
 		xo -= (int)(xo / b->w) * b->w;
-		int xmax = (int)((WSIZE * gengine->xscale() + xo) / b->w);
+		int xmax = (int)((WMAIN_W * gengine->xscale() + xo) / b->w);
 		for(int x = 0; x <= xmax; ++x)
 		{
 			SDL_Rect sr, dr;
@@ -980,20 +980,20 @@ void _screen::render_background(window_t *win)
 
 	int vx, vy, xo, yo, x, y, xmax, ymax;
 	int mx, my;
-	vx = gengine->xoffs(LAYER_BASES);
-	vy = gengine->yoffs(LAYER_BASES);
+	vx = gengine->xoffs(LAYER_BASES) * TILE_SIZE / 16;
+	vy = gengine->yoffs(LAYER_BASES) * TILE_SIZE / 16;
 
 	/*
 	 * Start exactly at the top-left corner
 	 * of the tile visible in the top-left
 	 * corner of the display window.
 	 */
-	xo = vx & (PIXEL2CS(CHIP_SIZEX) - 1);
-	yo = vy & (PIXEL2CS(CHIP_SIZEY) - 1);
-	mx = CS2PIXEL(vx >> CHIP_SIZEX_LOG2);
-	my = CS2PIXEL(vy >> CHIP_SIZEY_LOG2);
-	ymax = ((WSIZE+CS2PIXEL(yo)) >> CHIP_SIZEY_LOG2) + 1;
-	xmax = ((WSIZE+CS2PIXEL(xo)) >> CHIP_SIZEX_LOG2) + 1;
+	xo = vx % PIXEL2CS(TILE_SIZE);
+	yo = vy % PIXEL2CS(TILE_SIZE);
+	mx = CS2PIXEL(vx / TILE_SIZE);
+	my = CS2PIXEL(vy / TILE_SIZE);
+	ymax = ((WMAIN_H + CS2PIXEL(yo)) / TILE_SIZE) + 1;
+	xmax = ((WMAIN_W + CS2PIXEL(xo)) / TILE_SIZE) + 1;
 
 	/*
 	 * NOTE:
@@ -1007,35 +1007,16 @@ void _screen::render_background(window_t *win)
 		render_starfield(win, vx, vy);
 
 	int tileset = B_TILES1 + (scene_num / 10) % 5;
-	switch(prefs->starfield)
-	{
-	  case STARFIELD_NONE:
-	  case STARFIELD_PARALLAX:
-		/* Ignore star tiles */
-		for(y = 0; y < ymax; ++y)
-			for(x = 0; x < xmax; ++x)
-			{
-				int n = map.pos(mx + x, my + y);
-				if(IS_SPACE(n))
-					continue;
-				win->sprite_fxp(PIXEL2CS(x<<CHIP_SIZEX_LOG2) - xo,
-						PIXEL2CS(y<<CHIP_SIZEX_LOG2) - yo,
-						tileset, n >> 8);
-			}
-		break;
-	  case STARFIELD_OLD:
-		/* Draw all tiles, XKobo style */
-		for(y = 0; y < ymax; ++y)
-			for(x = 0; x < xmax; ++x)
-			{
-				int n = map.pos(mx + x, my + y);
-				int b = IS_SPACE(n) ? B_OLDSTARS : tileset;
-				win->sprite_fxp(PIXEL2CS(x<<CHIP_SIZEX_LOG2) - xo,
-						PIXEL2CS(y<<CHIP_SIZEX_LOG2) - yo,
-						b, n >> 8);
-			}
-		break;
-	}
+	for(y = 0; y < ymax; ++y)
+		for(x = 0; x < xmax; ++x)
+		{
+			int n = map.pos(mx + x, my + y);
+			if(IS_SPACE(n))
+				continue;
+			win->sprite_fxp(PIXEL2CS(x * TILE_SIZE) - xo,
+					PIXEL2CS(y * TILE_SIZE) - yo,
+					tileset, n >> 8);
+		}
 }
 
 

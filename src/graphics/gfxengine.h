@@ -64,6 +64,8 @@ class gfxengine_t
 	void screen(window_t *fullwin);
 	window_t *screen()	{ return fullwin; }
 
+	void messagebox(const char *message);
+
 	/*
 	 * Initialization
 	 */

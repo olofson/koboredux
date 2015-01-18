@@ -516,9 +516,11 @@ void _manage::run_intro()
 	intro_y -= 3;
 	intro_x &= MAP_SIZEX*CHIP_SIZEX-1;
 	intro_y &= MAP_SIZEY*CHIP_SIZEY-1;
-	sound.g_position(intro_x + (WSIZE >> 1), intro_y + (WSIZE >> 1));
-	myship.set_position(intro_x + (WSIZE >> 1) + (int)(WSIZE * 0.3f * sin(t)),
-			intro_y + (WSIZE >> 1) + (int)(WSIZE * 0.3f * sin(t * 1.73)));
+	sound.g_position(intro_x + WMAIN_W / 2, intro_y + WMAIN_H / 2);
+	myship.set_position(intro_x + WMAIN_W / 2 +
+			(int)(WMAIN_W * 0.3f * sin(t)),
+			intro_y + WMAIN_H / 2 +
+			(int)(WMAIN_H * 0.3f * sin(t * 1.73)));
 	enemies.move_intro();
 	enemies.put();
 

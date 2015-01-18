@@ -99,9 +99,15 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		break;
 	}
 	wmain->visible(vis);
+#if 0
 	whealth->visible(vis);
 	wtemp->visible(vis);
 	wttemp->visible(vis);
+#else
+	whealth->visible(0);
+	wtemp->visible(0);
+	wttemp->visible(0);
+#endif
 	wradar->visible(vis);
 	dhigh->visible(vis);
 	dscore->visible(vis);

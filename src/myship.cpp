@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001-2003, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -110,8 +111,8 @@ int _myship::init()
 	tail_temperature = 0;
 	x = WORLD_SIZEX >> 1;
 	y = (WORLD_SIZEY >> 2) * 3;
-	virtx = x - (WSIZE >> 1);
-	virty = y - (WSIZE >> 1);
+	virtx = x - WMAIN_W / 2;
+	virty = y - WMAIN_H / 2;
 	lapx = 0;
 	lapy = 0;
 	di = 1;
@@ -174,8 +175,8 @@ int _myship::move()
 			--_health;
 	}
 
-	virtx = x - (WSIZE >> 1);
-	virty = y - (WSIZE >> 1);
+	virtx = x - WMAIN_W / 2;
+	virty = y - WMAIN_H / 2;
 	if(_state == normal)
 	{
 		int vd, vo;
@@ -252,8 +253,8 @@ int _myship::move()
 		virty -= WORLD_SIZEY;
 		lapy = -WORLD_SIZEY;
 	}
-	x = virtx + (WSIZE >> 1);
-	y = virty + (WSIZE >> 1);
+	x = virtx + WMAIN_W / 2;
+	y = virty + WMAIN_H / 2;
 
 	nose_temperature -= game.nosecooling;
 	if(nose_temperature < 0)
@@ -452,8 +453,8 @@ void _myship::put_crosshair()
 	if(crosshair)
 	{
 		cs_obj_image(crosshair, B_CROSSHAIR, 0);
-		crosshair->point.v.x = PIXEL2CS(mouse_x - 8 - MARGIN);
-		crosshair->point.v.y = PIXEL2CS(mouse_y - MARGIN);
+		crosshair->point.v.x = PIXEL2CS(mouse_x - WMAIN_X);
+		crosshair->point.v.y = PIXEL2CS(mouse_y - WMAIN_H);
 	}
 }
 
@@ -643,8 +644,8 @@ void _myship::set_position(int px, int py)
 {
 	x = px;
 	y = py;
-	virtx = x - (WSIZE >> 1);
-	virty = y - (WSIZE >> 1);
+	virtx = x - WMAIN_W / 2;
+	virty = y - WMAIN_H / 2;
 
 	if(object)
 	{

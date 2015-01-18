@@ -35,7 +35,6 @@
 #include "radar.h"
 #include "dashboard.h"
 #include "sound.h"
-#include "region.h"
 
 /*----------------------------------------------------------
 	Singletons
@@ -83,8 +82,6 @@ extern display_t		*dscore;
 extern display_t		*dstage;
 extern display_t		*dships;
 
-extern RGN_region		*logo_region;
-
 extern int mouse_x, mouse_y;
 extern int mouse_left, mouse_middle, mouse_right;
 
@@ -108,7 +105,6 @@ typedef enum
 	B_TILES4,
 	B_TILES5,
 
-	B_OLDSTARS,
 	B_CROSSHAIR,
 	B_PLAYER,
 	B_BULLETS,
@@ -141,14 +137,8 @@ typedef enum
 	B_FOCUSFX,
 
 	B_SCREEN,
-	B_FRAME_TL,
-	B_FRAME_TR,
-	B_FRAME_BL,
-	B_FRAME_BR,
 	B_LOGO,
-	B_LOGOMASK,
 	B_LOGODELUXE,
-	B_BRUSHES,
 
 	B_HIGH_BACK,
 	B_SCORE_BACK,
