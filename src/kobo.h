@@ -138,7 +138,6 @@ typedef enum
 
 	B_SCREEN,
 	B_LOGO,
-	B_LOGODELUXE,
 
 	B_HIGH_BACK,
 	B_SCORE_BACK,

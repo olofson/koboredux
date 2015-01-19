@@ -932,13 +932,12 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	// Dashboard
 	{ "Loading dashboard graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	1.0f,	0 },
-//			KOBO_CLAMP_OPAQUE },
+	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	1.0f,
+			KOBO_CLAMP_OPAQUE },
 
 	// Logo
 	{ "Loading logo", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>logo-outline.png", B_LOGO,	0, 0,	2.0f,	0 },
-	{ "GFX>>deluxe.png", B_LOGODELUXE,	0, 0,	2.0f,	0 },
+	{ "GFX>>logo2.png", B_LOGO,		0, 0,	1.0f,	0 },
 
 	// Fonts
 	{ "Loading fonts", 0, 0,0, 0.0f, KOBO_MESSAGE },

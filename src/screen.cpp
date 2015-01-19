@@ -155,45 +155,10 @@ void _screen::title(int t, float fade, int mode)
 	float mf = (1.0f - fade);
 	int ly0 = wmain->phys_rect.y + (int)(60 * gengine->yscale() + 0.5f);
 	int ly = (int)(ly0 - mf * mf * mf * (ly0 + b->h) + 0.5f);
-#if 0
-	// Enclosed effect
-	s_sprite_t *s = gengine->get_sprite(B_LOGO, 0);
-	if(!s || !s->surface)
-		return;
-	float mf = (1.0f - fade);
-	int h = s->surface->h;
-	int y0 = wmain->phys_rect.y + (int)(60 * gengine->yscale() + 0.5f);
-	int y = (int)(y0 - mf * mf * mf * (y0 + h) + 0.5f);
-	wmain->select();
-	RGN_Target(gengine->renderer());
-	RGN_SetRegion(logo_region,
-			wmain->phys_rect.x +
-			(int)((wmain->width() - 206) / 2 * gengine->xscale()),
-			y);
-	switch(mode)
-	{
-	  case 0:
-		render_title_plasma(t, fade, y, h);
-		break;
-	  case 1:
-		render_title_noise(fade, y, h, (int)B_NOISE, 0);
-		break;
-	  case 2:
-		render_title_noise(fade, y, h, (int)B_HITNOISE, 0);
-		break;
-	}
-#endif
-
-	// Outline
-	wmain->sprite_fxp(PIXEL2CS((wmain->width() - 206) / 2),
+	wmain->sprite_fxp(PIXEL2CS((wmain->width() - 640 / 2)),
 			(int)((ly * 256 + 255) / gengine->yscale()) -
 			PIXEL2CS(wmain->y()),
 			B_LOGO, 0);
-
-	// "DELUXE"
-	wmain->sprite_fxp(PIXEL2CS((wmain->width() - 139) / 2),
-			PIXEL2CS(123) + (int)(PIXEL2CS(160) * mf * mf),
-			B_LOGODELUXE, 0);
 
 	// Version
 	if(fade > 0.9)

@@ -464,8 +464,16 @@ int s_load_image(s_container_t *c, unsigned bank, const char *name)
 	src = IMG_Load(name);
 	if(!src)
 	{
-		log_printf(ELOG, "sprite: Failed to load sprite \"%s\"!\n", name);
+		log_printf(ELOG, "sprite: Failed to load image \"%s\"!\n",
+				name);
 		return -1;
+	}
+	src = SDL_ConvertSurfaceFormat(src, SDL_PIXELFORMAT_RGBA8888, 0);
+	if(!src)
+	{
+		log_printf(ELOG, "sprite: Could not convert image %s!\n",
+				name);
+		return -2;
 	}
 
 	b = s_new_bank(c, bank, 1, src->clip_rect.w, src->clip_rect.h);
@@ -478,7 +486,7 @@ int s_load_image(s_container_t *c, unsigned bank, const char *name)
 	if(extract_sprite(b, 0, src, &src->clip_rect) < 0)
 	{
 		log_printf(ELOG, "sprite: Something went wrong while"
-				" extracting sprite \"%s\".\n", name);
+				" extracting image \"%s\".\n", name);
 		return -3;
 	}
 
@@ -506,6 +514,13 @@ int s_load_sprite(s_container_t *c, unsigned bank, unsigned frame,
 	{
 		log_printf(ELOG, "sprite: Failed to load sprite \"%s\"!\n", name);
 		return -1;
+	}
+	src = SDL_ConvertSurfaceFormat(src, SDL_PIXELFORMAT_RGBA8888, 0);
+	if(!src)
+	{
+		log_printf(ELOG, "sprite: Could not convert sprite %s!\n",
+				name);
+		return -2;
 	}
 
 	from = src->clip_rect;
@@ -548,6 +563,13 @@ int s_load_bank(s_container_t *c, unsigned bank, unsigned w, unsigned h,
 		log_printf(ELOG, "sprite: Failed to load sprite palette %s!\n", name);
 		return -1;
 	}
+	src = SDL_ConvertSurfaceFormat(src, SDL_PIXELFORMAT_RGBA8888, 0);
+	if(!src)
+	{
+		log_printf(ELOG, "sprite: Could not convert sprite palette "
+				"%s!\n", name);
+		return -2;
+	}
 
 	if(w > src->w)
 	{
@@ -578,8 +600,9 @@ int s_load_bank(s_container_t *c, unsigned bank, unsigned w, unsigned h,
 			r.h = h;
 			if(extract_sprite(b, frame, src, &r) < 0)
 			{
-				log_printf(ELOG, "sprite: Something went wrong while"
-						" extracting sprites.\n");
+				log_printf(ELOG, "sprite: Something went "
+						"wrong while extracting "
+						"sprites.\n");
 				return -3;
 			}
 			++frame;
