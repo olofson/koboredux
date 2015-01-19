@@ -1036,9 +1036,15 @@ int KOBO_main::load_graphics(prefs_t *p)
 
 		// Hotspot
 		if(gd->flags & KOBO_CENTER)
-			gengine->set_hotspot(gd->bank, -1,
-					(int)(gd->w / gd->scale / 2),
-					(int)(gd->h / gd->scale / 2));
+		{
+			s_bank_t *b = s_get_bank(gfxengine->get_gfx(),
+					gd->bank);
+//FIXME: Is this correct...? (Other scaling breakage now, so can't verify!)
+			if(b)
+				gengine->set_hotspot(gd->bank, -1,
+						(int)(b->w / gd->scale / 2),
+						(int)(b->h / gd->scale / 2));
+		}
 
 		// Update progress bar
 		progress();

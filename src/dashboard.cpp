@@ -108,6 +108,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	wtemp->visible(0);
 	wttemp->visible(0);
 #endif
+vis = 0;	/////////////////////////////////
 	wradar->visible(vis);
 	dhigh->visible(vis);
 	dscore->visible(vis);

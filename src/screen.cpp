@@ -153,9 +153,9 @@ void _screen::title(int t, float fade, int mode)
 	if(!s || !s->texture)
 		return;
 	float mf = (1.0f - fade);
-	int ly0 = wmain->phys_rect.y + (int)(60 * gengine->yscale() + 0.5f);
+	int ly0 = wmain->phys_rect.y + (int)(50 * gengine->yscale() + 0.5f);
 	int ly = (int)(ly0 - mf * mf * mf * (ly0 + b->h) + 0.5f);
-	wmain->sprite_fxp(PIXEL2CS((wmain->width() - 640 / 2)),
+	wmain->sprite_fxp(PIXEL2CS(wmain->width() - 320) / 2,
 			(int)((ly * 256 + 255) / gengine->yscale()) -
 			PIXEL2CS(wmain->y()),
 			B_LOGO, 0);
@@ -164,22 +164,22 @@ void _screen::title(int t, float fade, int mode)
 	if(fade > 0.9)
 	{
 		wmain->font(B_NORMAL_FONT);
-		wmain->center(132, KOBO_VERSION);
+		wmain->center(180, KOBO_VERSION);
 	}
 
 	// Cheat mode warning
 	if((prefs->cmd_cheat || prefs->cmd_pushmove) && (t % 1000 < 500))
 	{
 		wmain->font(B_MEDIUM_FONT);
-		wmain->center(145, "CHEAT MODE");
+		wmain->center(210, "CHEAT MODE");
 	}
 #if 1
 	// WIP notice
 	if(!flashin(t - 2000))
 	{
 		wmain->font(B_MEDIUM_FONT);
-		wmain->center(170, "This is a Work in Progress!");
-		wmain->center(180, "Check http://olofson.net/kobodl");
+		wmain->center(230, "This is a Work in Progress!");
+		wmain->center(240, "Check http://koboredux.com");
 	}
 #endif
 }
@@ -520,7 +520,7 @@ void _screen::scroller()
 	fdt += ((dt<<8) - fdt) >> 3;
 	pos -= (fdt * PIXEL2CS((int)scroller_speed) + 128000) / 256000;
 	wmain->font(B_BIG_FONT);
-	wmain->string_fxp(pos, PIXEL2CS(200), stp);
+	wmain->string_fxp(pos, PIXEL2CS(312), stp);
 
 	/*
 	 * Chop away characters at the left edge
