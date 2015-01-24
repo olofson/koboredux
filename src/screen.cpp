@@ -152,19 +152,27 @@ void _screen::title(int t, float fade, int mode)
 	s_sprite_t *s = s_get_sprite_b(b, 0);
 	if(!s || !s->texture)
 		return;
-	float mf = (1.0f - fade);
-	int ly0 = wmain->phys_rect.y + (int)(50 * gengine->yscale() + 0.5f);
-	int ly = (int)(ly0 - mf * mf * mf * (ly0 + b->h) + 0.5f);
-	wmain->sprite_fxp(PIXEL2CS(wmain->width() - 320) / 2,
-			(int)((ly * 256 + 255) / gengine->yscale()) -
-			PIXEL2CS(wmain->y()),
-			B_LOGO, 0);
 
+#if 0
+	float mf = (1.0f - fade);
+	int ly = (int)(mf * mf * mf * WMAIN_H);
+	wmain->sprite_fxp(PIXEL2CS(wmain->width() - 320) / 2,
+			PIXEL2CS(wmain->height()  / 2 - (128 - 20) - ly),
+			B_LOGO, 0);
+#elif 1
+	wmain->sprite_fxp_alpha(PIXEL2CS(wmain->width() - 320) / 2,
+			PIXEL2CS(wmain->height() / 2 - (128 - 20)),
+			B_LOGO, 0, fade * fade * fade * 255);
+#else
+	wmain->sprite_fxp_scale(PIXEL2CS(wmain->width() - 320) / 2,
+			PIXEL2CS(wmain->height() / 2 - (128 - 20)),
+			B_LOGO, 0, 1.0f, fade);
+#endif
 	// Version
 	if(fade > 0.9)
 	{
 		wmain->font(B_NORMAL_FONT);
-		wmain->center(180, KOBO_VERSION);
+		wmain->center(195, KOBO_VERSION);
 	}
 
 	// Cheat mode warning

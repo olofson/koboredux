@@ -937,7 +937,7 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	// Logo
 	{ "Loading logo", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>logo2.png", B_LOGO,		0, 0,	1.0f,	0 },
+	{ "GFX>>logo2d.png", B_LOGO,		0, 0,	1.0f,	0 },
 
 	// Fonts
 	{ "Loading fonts", 0, 0,0, 0.0f, KOBO_MESSAGE },

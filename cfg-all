@@ -24,7 +24,10 @@ create_build_dir() {
 	if [ ! -e $BUILDDIR/$dname/src ]; then
 		mkdir $BUILDDIR/$dname/src
 	fi
-	cp -r $SOURCEDIR/data $BUILDDIR/$dname/src/data
+	#cp -r $SOURCEDIR/data $BUILDDIR/$dname/src/data
+	if [ ! -e $BUILDDIR/$dname/src/data ]; then
+		ln -s $SOURCEDIR/data $BUILDDIR/$dname/src/data
+	fi
 	cd $BUILDDIR/$dname
 }
 

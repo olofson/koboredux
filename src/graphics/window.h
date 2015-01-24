@@ -270,10 +270,12 @@ class window_t
 	void font(int fnt);
 	void string(int _x, int _y, const char *txt);
 	void center(int _y, const char *txt);
-	void center_token(int _x, int _y, const char *txt, signed char token = 0);
+	void center_token(int _x, int _y, const char *txt,
+			signed char token = 0);
 	void string_fxp(int _x, int _y, const char *txt);
 	void center_fxp(int _y, const char *txt);
-	void center_token_fxp(int _x, int _y, const char *txt, signed char token = 0);
+	void center_token_fxp(int _x, int _y, const char *txt,
+			signed char token = 0);
 	int textwidth(const char *txt, int min = 0, int max = 255);
 	int textwidth_fxp(const char *txt, int min = 0, int max = 255);
 	int fontheight();
@@ -283,16 +285,26 @@ class window_t
 	void fillrect(int _x, int _y, int w, int h);
 	void fillrect_fxp(int _x, int _y, int w, int h);
 
-	void sprite(int _x, int _y, int bank, int frame, int inval = 1);
-	void sprite_fxp(int _x, int _y, int bank, int frame, int inval = 1);
+	void sprite(int _x, int _y, int bank, int frame);
+	void sprite_fxp(int _x, int _y, int bank, int frame);
+	void sprite_fxp_alpha(int _x, int _y, int bank, int frame, Uint8 a);
+	void sprite_fxp_scale(int _x, int _y, int bank, int frame,
+			float xscale, float yscale);
 
-	void blit(int dx, int dy, int sx, int sy, int sw, int sh, window_t *src);
+	void blit(int dx, int dy, int sx, int sy, int sw, int sh,
+			window_t *src);
 	void blit(int dx, int dy, window_t *src);
 
 	int x()		{ return (phys_rect.x * 256 + 128) / xs; }
 	int y()		{ return (phys_rect.y * 256 + 128) / ys; }
-	int x2()	{ return ((phys_rect.x + phys_rect.w) * 256 + 128) / xs; }
-	int y2()	{ return ((phys_rect.y + phys_rect.h) * 256 + 128) / ys; }
+	int x2()
+	{
+		return ((phys_rect.x + phys_rect.w) * 256 + 128) / xs;
+	}
+	int y2()
+	{
+		return ((phys_rect.y + phys_rect.h) * 256 + 128) / ys;
+	}
 	int width()	{ return x2() - x(); }
 	int height()	{ return y2() - y(); }
 
