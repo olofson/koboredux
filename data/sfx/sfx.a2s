@@ -1,0 +1,1642 @@
+def title	"K2SFX"
+def version	"TP5"
+def description	"Kobo II sound effects"
+def author	"David Olofson"
+def copyright	"Copyright 2013 David Olofson"
+def license	"CC BY-NC-ND 3.0"
+def a2sversion	"1.9.1"
+
+test(x)
+{
+	debug x
+	test (x + 1)
+}
+
+.Chr0(P V Attack Decay Detune S)
+{
+	struct { wtosc; panmix }
+	pan (Detune * 100)
+	w qsine; !aa 0; !Ta (V * .03); phase (rand 1)
+	+P Detune
+	p P; !er (Attack * .1)
+.rt	while V + aa > .001 {
+		+p (P - p * .4 + rand .02 - .01)
+		+aa (Ta - aa * er); Ta (V * rand .2); a (aa * S)
+		d (rand 5 + 2.5)
+	}
+	a 0; d 5
+	1(NV) {
+		if NV > V {
+			V NV; er (Attack * .1); wake rt
+		} else {
+			V NV; er (Decay * .1)
+		}
+	}
+	2(NP) { P (NP + Detune) }
+}
+
+.Choir(P V=1 Attack=.3 Decay=.2)
+{
+	struct {
+		inline 0 *
+		filter12 f1 * *
+		filter12 f2 * *
+		panmix * >
+	}
+	f1.lp .5; f1.bp .7; f1.hp 1; f1.q .04; f1.cutoff (P + 8n)
+	f2.lp .5; f2.bp 1; f2.hp .1; f2.q .02; f2.cutoff (P + 1.9)
+	!Voices (7 - P quant 1)
+	if Voices < 2 {
+		Voices 2
+	}
+	def Spread .03
+	!s 1
+	!detune (0 - (Spread / 2))
+	Voices {
+		0:Chr0 P V Attack Decay detune s
+		+detune (Spread / Voices)
+		s (neg s)
+	}
+	1(NV) { *<1 NV }
+	2(NP) { *<2 NP }
+}
+
+ChCh(P V=1)
+{
+	def I Choir
+	+tr P
+	*V .4
+	1:I -8n V;	2:I -3n V;	3:I 0n V; 	4:I 4n V;	td 16
+	*<1
+	1:I -7n V;	2:I -3n V;	3:I 0n V; 	4:I 5n V;	td 16
+	*<1
+	1:I -5n V;	2:I 0n V;	3:I 4n V; 	4:I 7n V;	td 16
+	*<1
+	1:I -5n V;	2:I -1n V;	3:I 2n V; 	4:I 7n V;	td 16
+	*<1
+
+	1:I -8n V;	2:I -3n V;	3:I 0n V; 	4:I 4n V;	td 16
+	*<1
+	1:I -5n V;	2:I -1n V;	3:I 2n V; 	4:I 7n V;	td 16
+	*<1
+	1:I -3n V;	2:I 2n V;	3:I 6n V; 	4:I 9n V;	td 16
+	*<1
+	1:I -3n V;	2:I 2n V;	3:I 5n V; 	4:I 9n V;	td 16
+	*<1
+}
+
+// BLIT test; true BLIT with asynchronous impulses
+.blitimp(pitch amp)
+{
+	struct { wtosc }
+	w sine; a amp; set a; p pitch
+	a 0; d 5
+}
+BLIT(P V=1)
+{
+	struct { inline; panmix }
+	!per p2d P; !reso (V * 5 - 1); !vm .99
+	V .5
+	while V > .001 {
+		blitimp reso V; *V vm; d per
+	}
+	1() { *vm .9 }
+}
+
+// "Fake" BLIT that scales impulse length to match period; uses only one voice
+.blitimp2(pitch de amp)
+{
+	struct { wtosc }
+	w sine; p pitch; a amp; set a
+	a 0; d de
+}
+BLIT2(P V=1)
+{
+	struct { inline; panmix }
+	!per p2d P; !reso 1000f
+	!dreso 1n; *dreso per; *dreso .1
+	for {
+		blitimp2 reso per V
+		d per
+		-reso dreso
+	}
+.rel
+	1() { force rel }
+}
+
+// 8 bit style "poff" sound effect using BLIT with randomized timing
+.blitpoffimp(pitch de amp)
+{
+	struct { wtosc }
+	d (rand de)
+	w sine; p pitch; a amp; set a
+	a 0; d de
+}
+BLITPoff(P V=1)
+{
+	struct { inline; panmix }
+	!per p2d P; !reso 1000f
+	!dreso 1n; *dreso per; *dreso .1
+	for {
+		blitpoffimp reso per V
+		d per
+		-reso dreso
+	}
+.rel
+	1() { force rel }
+}
+
+// "Fake" BLIT modulating impulses out of a single oscillator
+SemiBLIT(P V=1)
+{
+	struct { wtosc; panmix }
+	!per p2d P; !reso 1000f
+	!dreso 1n; *dreso per; *dreso .1
+	w sine
+	for {
+		p reso; phase 0; a V; set a
+		a 0; d per
+		-reso dreso
+	}
+.rel
+	1() { force rel }
+}
+
+// Oscillator phase/timing test. This is supposed to sound exactly like a plain
+// sine wave oscillator, with no audible artifacts whatsoever.
+PhaseTest(P V=1)
+{
+	struct { wtosc; panmix }
+//P 23.4375f
+	!per p2d P
+	w sine; a V
+	for {
+		p P
+		phase 0
+		d per
+	}
+.rel	a 0; d per
+	1() { force rel }
+}
+
+// Subvoice spawn timing test. This is supposed to sound exactly like a plain
+// sine wave oscillator, with no audible artifacts whatsoever.
+.periodimp(pitch de amp)
+{
+	struct { wtosc }
+	w sine; phase 0; p pitch; a amp; set a
+	d de
+	a 0; set a
+}
+SubvoiceTimingTest(P V=1)
+{
+	struct { inline; panmix }
+	!per p2d P
+	for {
+		periodimp P per V
+		d per
+	}
+.rel
+	1() { force rel }
+}
+
+// Subvoice event timing test. This is supposed to sound exactly like a plain
+// sine wave oscillator, with no audible artifacts whatsoever.
+.msgimp(pitch de amp)
+{
+	struct { wtosc }
+	w sine; p pitch
+	end
+.imp	phase 0; a amp; set a
+	d de
+	a 0; set a
+	1() { force imp }
+}
+EventTimingTest(P V=1)
+{
+	struct { inline; panmix }
+	!per p2d P
+	1:msgimp P per V
+	for {
+		1<1
+		d per
+	}
+.rel
+	1() { force rel }
+}
+
+Pig(P V=1)
+{
+	struct { wtosc; filter12; filter12 f2; panmix }
+	w saw; a V; set a; p P
+	lp 1; bp 1; hp 0; q 1; set q; cutoff (P + 4); set cutoff
+f2.lp 0; f2.bp 1; f2.hp 1; f2.q 0; set f2.q; f2.cutoff -1; set f2.cutoff
+vol .1; set vol
+//	cutoff (P + 1); q .1;	d 100
+//	cutoff (P + .5);	d 500
+	a 0;			d 500
+	end
+.rel	a 0; cutoff P; q 0; d 100
+	d 500
+	1() { force rel }
+}
+
+// Noise excited oscillator, based on a resonant filter
+FilterPitch(P V=1)
+{
+	struct { wtosc; filter12; panmix }
+	w noise; p 5; lp 0; bp 0; hp 1
+	q 2; set q; cutoff (P + 2); set cutoff
+	a (V * .1); set a
+	*a .1; d 50
+	end
+.rel	a 0; d 100
+	d 2000		// Needed because of long tails with high resonance!
+	1() { force rel }
+}
+/*
+Test(P V=1)
+{
+	struct { wtosc; panmix }
+	w longsweep; p (P - 1)//23.4375f
+	a (V * .5); set a
+	end
+.rel	a 0; d 10
+	1() { force rel }
+}
+*/
+
+/*--------------------------------------------
+ Kobo II Sound Effects
+ Copyright 2011-2013 David Olofson
+--------------------------------------------*/
+/*
+.Sweep(Vel Pitch Wave Start Dur Decay)
+{
+	struct { wtosc }
+	w Wave; tr Pitch; p Start; a Vel; set a
+	!reps (Dur / 2); !da (a / reps)
+	reps {
+		*p Decay; -p .005; d 10
+	}
+	reps {
+		*p Decay; -p .005; -a da; d 10
+	}
+.stop	a 0; d 10
+	1() { force stop }
+}
+
+.Sweep2(Vel Pitch Wave Start Dur Decay)
+{
+	struct { wtosc }
+	w Wave; tr Pitch; p Start
+	!reps (Dur / 2); !da (Vel / reps)
+	reps {
+		*p Decay; -p .005; +a da; d 10
+	}
+	reps {
+		*p Decay; -p .005; -a da; d 10
+	}
+.stop	a 0; d 10
+	1() { force stop }
+}
+
+.Rumble(pitch amp decay)
+{
+	struct { wtosc }
+	-pitch 2
+	w triangle; a amp
+	wg (a - .001) {
+		p (pitch + rand 1); *a decay; d 10
+	}
+}
+
+.Rattle(P V=1 Count=20 Decay=.8 Spacing=100)
+{
+	struct { wtosc }
+	w noise; tr P
+	!a0 V
+	20 {
+		a a0; set a; a 0; p (rand 3); d (2 + rand 20)
+		d (rand Spacing)
+		*a0 Decay
+	}
+}
+
+.Debris(P V=1 Count=20 Decay=.8 Spacing=50)
+{
+	struct { wtosc }
+	w triangle
+	!a0 V
+	20 {
+		p (P - 1 + rand 2); a a0; set a; phase 0
+		15 {
+			-p .2; *a .9
+			d (1 + rand 1)
+		}
+		a 0; d 2
+		d (rand Spacing)
+		*Spacing 1.1
+		*a0 Decay
+	}
+}
+
+.Explo0(P V=1 Wave Attack Period=.5)
+{
+	struct { wtosc }
+	+P tr; w Wave; !x 1; a V; -P 3; tr Attack; !DP (Period * .01)
+	200 {
+		*tr .98; p (P + rand x); +x .01; d Period; +Period DP
+	}
+	400 {
+		*tr .98; p (P + rand x); -x .0025; *a .995; d Period; +Period DP
+	}
+	tr P
+	600 {
+		rand p x; *a .993; d 2.5
+	}
+}
+
+.Explosion(P V=1 Period=.5)
+{
+	struct { wtosc }
+	+tr P
+	Explo0 0 V sine 3 Period
+	Explo0 -1 V triangle 4 Period
+	Explo0 .5 (V * .5) triangle 5 Period
+	Explo0 1.5 (V * .25) triangle 3 Period
+	Explo0 3 (V * .2) triangle 3 (Period * .5)
+	w noise; a (V * .5); set a
+	100 { *a .9; d (30 * Period) }
+}
+
+KoboDeath(P V=1 PanX)
+{
+	+tr P
+	Explosion (2 + rand .5) V .3
+	Explosion (rand .5 - 1) V 1
+	Rumble -1 (V * 4) .98
+	Rattle 0 (V * 1.5) 50 .85 50
+	Debris 0 (V * 3) 40 .9 50
+	Sweep (V * .04) (rand .2 + 2.7) saw 2 150 .95
+	Sweep (V * .04) (rand .2 + 3) saw 2 150 .95
+	Sweep (V * .2) (rand .2 + 1.2) triangle 2 150 .95
+	Sweep (V * .2) (rand .2) triangle 2 150 .95
+	Sweep V -2 triangle 1 250 .99
+	Sweep V -2.5 triangle 1 250 .99
+}
+
+KoboCrash(P V=1 PanX)
+{
+	+tr P
+	Explosion 1.3 V .3
+	Explosion -.5 V .5
+	Rumble -.7 (V * 2) .98
+	d (rand 300)
+	Rattle 1 V 40 .8 70
+	d (rand 300)
+	Debris 0 (V * 4) 30 .9 50
+	Rumble -1 (V * 3) .98
+}
+
+SegmentDeath(P V=1 PanX)
+{
+	+tr P
+	Explosion (rand 1) (V * 2) .1
+	Explosion (rand 1 - 1) (V * 2) .3
+	Rattle (rand 1 - .5) (V * 1.5) 20 .85 30
+}
+
+SegmentCrash(P V=1 PanX)
+{
+	+tr P
+	Explosion (rand 1 - 1.5) (V * 2.5) .3
+	Rattle 0 (V * .7) 50 .85 30
+	Debris 0 (V * 2) 40 .9 30
+}
+
+Grenade(P V=1 PanX)
+{
+	+tr P
+	Explosion (1.5 + rand .5) (V * .5) .5
+	Explosion (rand .5 - 1) V 1
+	Rattle 0 (V * 1.5) 50 .85 50
+	Debris 0 (V * 4) 40 .9 50
+}
+
+Bomb(P V=1 PanX)
+{
+	+tr P
+	Explosion (.3 + rand .3) (V * 1.5) .2
+	Rumble -.9 (V * 3) .96
+	Rattle -.5 V 10 .8 10
+	Debris -.5 (V * 4) 10 .85 20
+}
+
+
+FirePlasma(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	a (V * .1); set a; w noise; p 5; d 10
+	a (V * .5); set a; w triangle; p 1.5
+	10 {	d 5; -p .5; +p (rand .1); -a .025 }
+	w saw; p (2 + rand .2); a 0; set a
+	10 {
+		+a (V * .006)
+		+p .9; d 10
+		-p .85; d 10
+	}
+	20 {
+		-a (V * .003)
+		+p .7; d 10
+		-p .65; d 10
+	}
+.stop	a 0; d 10
+	1() { force stop }
+}
+
+.Fwoomp(P V=1)
+{
+	struct { wtosc }
+	tr 0
+	!A 0; !D 19; !R -2.5
+	!reps1 (500 / p2d P / 2)
+	!reps2 (2000 / p2d P / 2)
+	reps1 {
+		+A (V / reps1)
+		w sine; phase 0; p R; a A; set a; a 0; d (p2d P)
+		+R .15; +P .01
+	}
+	reps2 {
+		w sine; phase 0; p R; a A; set a; a 0; d (p2d P)
+		-R .07; +P .01
+		-A (V / reps2)
+	}
+.stop	a 0; d 1
+	1() { force stop }
+}
+FireLava(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	!abort 0
+	w noise; p (1 + rand .5); a (rand .5 * V); set a; d (rand 8)
+	w triangle; a V; p (.5 + rand .5)
+	3 {	d 3; -p (.7 + rand .1) }
+	5 {	d 10; -p .2 }
+	a 0; d 1
+	ifz abort
+	{
+		abort 1
+		1:Fwoomp -2 (V * .3)
+		2:Fwoomp -2.5 (V * .4)
+		w noise; p (3.5 + rand .2); a (V * .03); d 300
+		a (V * .01); d 200
+		a 0; d 200
+	}
+.stop	a 0; d 10
+	1() {
+		ifz abort {
+			abort 1
+		} else {
+			*<1; force stop
+		}
+	}
+}
+
+LavaImpact(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	w triangle; p (rand 1 + 1); a (V * .3)
+	5 {	-p .2; d .5 }
+	20 {	-p .1; d 1 }
+	a 0; d 10
+	w sine
+	10 {
+		p (rand 1 - 1); +a (V * .05); d 2
+	}
+	wg (a - .01) {
+		p (rand 1 - 2); *a (V * .8); d 2
+	}
+	w noise; p 6
+	50 {
+		a (V * rand .1); set a; d (1 + rand 15)
+	}
+	wg (V - .01) {
+		a (V * rand .1); set a; d (1 + rand 15); *V .93
+	}
+}
+
+.Knock(V)
+{
+	struct { wtosc }
+	w sine; p (rand .5 + 1.3); a V; set a
+	10 { -p .4; d 5 }
+	a 0; d 100
+}
+Crash(P V=.5 PanX)
+{
+	struct { wtosc }
+	+tr P
+	Knock V
+	p (rand 1 - .5)
+	5 {
+		w noise; +p 2; a V; set a; a 0; d (1 + rand 10)
+		w square; -p 2.3; a V; set a; a 0; d (1 + rand 10)
+	}
+	w noise; tr (rand 1)
+	!a0 (V * .5)
+	20 {
+		a a0; set a; a 0; p (rand 3); d (5 + rand 30)
+		*a0 .9
+	}
+}
+
+BoomerangDeath(P V=1 PanX)
+{
+	Explosion (P + 1.5 + rand .5) V .2
+	Rumble P (V * 2) .9
+	Rattle P (V * 2) 30 .7 20
+	d (100 + rand 100)
+	Debris P (V * 4) 20 .7 30
+	Rumble (P - .9) (V * 2) .97
+}
+
+Shot(P V=1 PanX)
+{
+	Explosion (P + 2.2 + rand .2) V .1
+	d (100 + rand 200)
+	Debris (P + 1) V 20 .7 30
+}
+
+.blopp(pitch V decay rp=1)
+{
+	struct { wtosc }
+	w triangle; a (V * .5); !p1 (pitch + rand rp); !p2 (p1 + .3 + rand .5)
+	!per (rand 2 + 2)
+	wg (a - .001) {
+		p p1; d per
+		p p2; d per
+		+p2 (p1 - p2 * .01)
+		*a decay
+	}
+}
+Impact(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	blopp 0 V .7
+	w square; p (rand .5 + 1); a (V * .3); set a
+	5 { -p .2; d 1 }
+	w triangle; a V
+	15 { -p .1; d 2 }
+	a 0; d 10
+	w noise; p (rand .5 + 4); a (V * .1); set a; a 0; d 100
+}
+
+ImpactGround(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	w triangle; p (rand 1 + .5); a (V * .3); set a
+	10 { -p .2; d 2 }
+	10 { -p .1; d 5 }
+	p (rand .5 - 3); a 0; d 100
+}
+
+.Tele(wave pitch spread vel attack decay)
+{
+	struct { wtosc }
+	!env 0
+	w wave; p pitch; a env
+	!da (vel / attack)
+	attack {
+		p (rand spread + pitch); a env; +env da; d 5
+	}
+	da (vel / decay)
+	decay {
+		p (rand spread + pitch); a env; -env da; d 2
+	}
+}
+Teleport(P V=1 PanX)
+{
+	+tr P
+	Tele square 200f 2 (V * .1) 10 50
+	d 100
+	Tele triangle 2000f 1 (V * .4) 40 150
+	Tele triangle 1500f .6 (V * .1) 100 150
+	Tele square 250f 3 (V * .1) 150 200
+	Tele triangle 150f 3 (V * .04) 200 250
+	Tele sine 30f 1 (V * 2) 50 500
+	Tele sine 50f 2 (V * 1) 15 300
+	d 300
+	Tele triangle 800f 1 (V * .05) 100 200
+}
+
+.Electro1(V)
+{
+	struct { wtosc }
+	w noise; a V; set a; p 6
+	a 0; d 50
+	p 5; a (V * .1); d 150
+	a 0; d 10
+}
+FireElectro(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	w saw; a 0
+	5 {
+		p 5; +a (V * .04)
+		15 {	d 1; -p .2 }
+	}
+	*a .5
+	Electro1 (V * .3)
+	20 {
+		p 3.7; *a .85
+		14 {	d 1; -p .2 }
+	}
+}
+
+.Kl(Vel Duration Wave Base Period RD)
+{
+	struct { wtosc }
+	d (rand RD)
+	!warble (rand .05 + .05)
+	!bend (rand .002 - .001)
+	w Wave; a Vel; set a; tr (rand .2 + Base)
+	!decay (Vel / Duration)
+	Duration {
+		p 0
+		10 {
+			+p warble; d Period
+		}
+		+warble bend
+		-a decay
+	}
+}
+Klank(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	w noise; p 4; a (V * .5); set a
+	Kl (V * .7) 6 square (rand 1 - 1) (rand .2 + .3)
+	Kl (rand .3 + .1 * V) 8 square (rand 1 + .5) (rand .3 + .7)
+	Kl (rand .5 + .1 * V) 10 square (rand 1 + 1) (rand .3 + .1)
+	a 0; d 10
+}
+MineAttach(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	w saw; p (rand .1 + 4.2); a V; set a
+	23 {
+		-p .2; d 1.5
+	}
+	Kl (V * .3) 6 square (rand .5 + 1.5) (rand .3 + .2) 100
+	Kl (rand .1 + .1 * V) 8 square (rand .5 + .5) (rand .3 + .7) 100
+	Kl (rand .2 + .2 * V) 10 square (rand .5 - 1.5) (rand .2 + .3) 100
+	w triangle
+	20 {
+		-p .1; d 5
+	}
+	a 0; d 100
+}
+
+BulletImpact(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	w triangle; p (2.5 + rand .5); a (V * .5); set a
+	Kl (rand .2 + .05) 10 square (rand 1 + 1) (rand .2 + .1)
+	15 {
+		-p .25; d .5
+	}
+	10 {
+		-p .1; d 1
+	}
+	a 0; d 50
+}
+
+BulletGround(P V=1 PanX)
+{
+	struct { wtosc }
+	+tr P
+	w sine; p (1.7 + rand .5); a (V * .3); set a
+	20 {
+		-p .2; d 1
+	}
+	10 {
+		-p .05; d 1
+	}
+	a 0; d 50
+}
+
+.Swoop(Vel Pitch Slide Enwarble)
+{
+	struct { wtosc }
+	w sine; p Pitch
+	!warble 0
+	500 {
+		tr (rand warble); +p Slide; +warble Enwarble
+		+a (Vel / 500)
+		d 1
+	}
+	wg (a - .001) {
+		*a .5
+		-p (250 * Slide)
+		-warble (250 * Enwarble)
+		250 {
+			tr (rand warble); +p Slide; +warble Enwarble; d 1
+		}
+	}
+}
+WarbleUp(P V=1 PanX)
+{
+	+tr P
+	Swoop V -3 .002 .002
+	Swoop (V * .1) -2 .002 .002
+	Swoop (V * .1) 1 .002 .001
+	Swoop (V * .1) (1 + 7n) .002 .001
+	Swoop (V * .1) 3 .002 .001
+	d 490
+	Tele triangle 2000f 1.6 (V * .2) 10 700
+	Tele triangle 2000f .6 (V * .1) 150 500
+	Tele square 250f 3 (V * .1) 10 200
+	Tele sine 30f 1 (V * 2) 50 500
+	Tele sine 50f 2 (V * 1) 15 300
+	d 10
+	Electro1 .4
+}
+
+.RumbleSwoop(pitch amp wave attack decay per slide)
+{
+	struct { wtosc }
+	-pitch 2
+	*attack amp; *decay amp
+	*attack per; *decay per
+	w wave
+	wl (a - amp) {
+		p (pitch + rand 1); +a attack; d per; +pitch slide
+	}
+	wg a {
+		p (pitch + rand 1); -a decay; d per; +pitch slide
+	}
+	a 0; d 10
+}
+ItemSpawn(P V=1 PanX)
+{
+	+tr P
+	Swoop V -3.5 .0005 .005
+	Tele triangle 2000f 1.5 (V * .2) 50 200
+	d 50
+	Tele triangle 2000f 1 (V * .1) 100 300
+	d 100
+	Electro1 (.1 * V)
+	RumbleSwoop -1 (V * 2) sine .005 .002 10
+	RumbleSwoop 0 (V * 2) triangle .01 .003 1
+	RumbleSwoop 1.3 (V * .2) square .01 .01 1 .01
+}
+ItemVanish(P V=1 PanX)
+{
+	+tr P
+	RumbleSwoop -1 (V * .5) sine .003 .002 10 .01
+	d 100
+	Tele triangle 1300f 1.7 (V * .05) 80 150
+	d 100
+	Tele triangle 1000f 1 (V * .03) 100 200
+}
+
+.Scratch(Vel Pitch Wave Slide)
+{
+	struct { wtosc }
+	w Wave; p (Pitch - (Slide / 1.5)); a 0
+	/Slide 300
+	50 {
+		+p (Slide * 2); +a (.02 * Vel); d 1
+	}
+	50 {
+		+p (Slide * 2); d 1
+	}
+	200 {
+		+p (Slide / 4); d 1
+	}
+	200 {
+		+p (Slide / 2); -a (Vel / 200); d 1
+	}
+}
+.DoScratch(Vel Slide)
+{
+	Scratch (Vel * .15) 4 noise Slide
+	Scratch (Vel * .3) -24n sine Slide
+	Scratch (Vel * .3) -12n sine Slide
+	Scratch (Vel * .1) 0 saw Slide
+	Scratch (Vel * .1) 4n square Slide
+	Scratch (Vel * .1) 7n square Slide
+	Scratch (Vel * .1) 14n square Slide
+	Scratch (Vel * .08) 26n saw Slide
+	Scratch (Vel * .1) 3 saw Slide
+}
+ScratchDown(P V=1)
+{
+	tr P
+	run DoScratch V -5
+}
+ScratchUp(P V=1)
+{
+	tr P
+	run DoScratch V 5
+}
+
+MegaKlank(P V=1 PanX)
+{
+	struct { wtosc }
+	tr P
+	1:Sweep (V * .3) (rand .1 - .7) triangle 2 7 .98
+	2:Sweep (V * .3) (rand .1 - 1) triangle 2 7 .98
+	3:Sweep (V * .3) -1 saw 2 10 .98
+	4:Sweep (V * .3) -1.2 saw 2 10 .98
+	5:Sweep (V * .5) (rand .1 - 3) sine 1 20 .99
+	w noise; a (V * .3); p 3; d 3
+	a 0; d 10
+	d 50
+	1:Sweep2 (V * .07) (3.3 + rand .1) triangle -2 50 .99
+	2:Sweep2 (V * .07) (3 + rand .1) triangle -2 50 .99
+	3:Sweep2 (V * .07) 3 saw -2 50 .99
+	4:Sweep2 (V * .07) 2.8 saw -2 60 .99
+	5:Sweep2 (V * .2) (rand .1 - 1) sine -1 70 .995
+.stop	a 0; d 10
+	1() { *<1; force stop }
+}
+
+MegaDeath(P V=1 PanX)
+{
+	tr P
+	Explosion (1.5 + rand .5) V .2
+	d (50 + rand 100)
+	Sweep (V * .4) (rand .1 - .7) triangle 2 250 .99
+	Sweep (V * .4) (rand .1 - 1) triangle 2 250 .99
+	Sweep (V * .15) -1 saw 2 250 .99
+	Sweep (V * .15) -1.2 saw 2 250 .99
+	Sweep V -2 triangle 1 250 .99
+	Sweep (V * 2) -3 triangle 1 250 .99
+	d (50 + rand 300)
+	Explosion 0 V 1
+	d (200 + rand 500)
+	Explosion -.5 V 1
+}
+
+MegaCrash(P V=1 PanX)
+{
+	tr P
+	Explosion (rand .5 - 1) (V * 1.5) 1
+	d (50 + rand 150)
+	Explosion (rand .5) (V * 2) .5
+	d (50 + rand 150)
+	Rattle -1 V 50 .85 70
+	Debris -.3 (V * 4) 50 .85 50
+	d (200 + rand 200)
+	Rumble -.8 (V * 4) .97
+}
+
+.MiniReverb(P V=1)
+{
+	struct { wtosc }
+	w square; a 0
+	*V .01
+	100 {
+		+a V; p (rand 3 - 1.5); d 1
+	}
+	wg (a - .001) {
+		*a .995; p (rand 3 - 1.5); d 1
+	}
+}
+
+MiniShot(P V=1 PanX)
+{
+	struct { wtosc }
+	w square; tr (P + 2); p 0; a V; set a
+	20 {
+		-tr .2; rand p .5; d .5
+	}
+	w triangle; a (V * 1.5)
+	20 {
+		rand p .5; d 2
+	}
+	a 0; d 10
+}
+MiniFire(P V=1 PanX)
+{
+	!per (p2d P * 5.23252)
+	!running V
+.restart
+	while running {
+		MiniShot 0 (V * .5)
+		d (per - 1 + rand 2)
+	}
+	d 50
+	MiniReverb .4 (V * .2)
+	1(NV) {
+		if NV {
+			V NV
+			ifz running {
+				running 1
+				force restart
+			}
+		} else {
+			running 0
+		}
+	}
+	2(NP) {
+		per (p2d NP * 5.23252)
+	}
+}
+
+.gear0(P V=1 C=3)
+{
+	struct { wtosc }
+	!pper (p2d P * .5)
+	w triangle
+.restart
+	while V {
+		phase (rand .1); p (C + rand 1)
+		a V; set a; a 0; d pper
+		d (pper - .05 + rand .1)
+	}
+	1(NP NV) {
+		pper (p2d NP * .5)
+		V NV
+		wake restart
+	}
+}
+MiniGear(P V=1 PanX)
+{
+	struct { wtosc }
+	def AMP .3
+	def PMIN -1
+	!amp (V * AMP)
+	!pitch (PMIN + .01); !lp 1000
+	!target P
+	w saw
+	ifl (P - PMIN) {
+		P PMIN
+	}
+	1:gear0 (pitch + 1.9) amp
+	2:gear0 (pitch + 2.4) amp
+.restart
+	wg (pitch - PMIN) {
+		if V {
+			// Chase target speed
+			ifz (target - pitch) {
+				// Do nothing!
+			} else {
+				ifg (target - pitch) {
+					+pitch .1
+					ifl (target - pitch) {
+						pitch target
+					}
+				} else {
+					-pitch .05
+					ifg (target - pitch) {
+						pitch target
+					}
+				}
+			}
+		} else {
+			// Spin down and stop
+			-pitch .01
+			ifl (pitch - PMIN) {
+				pitch PMIN
+			}
+		}
+		!vout ((pitch - PMIN) * amp * 3)
+		ifg (vout - amp) {
+			vout amp
+		}
+		ifz V {
+			*vout .5
+		}
+		p (pitch + .97 + rand .06); a (vout * .23)
+		if (pitch - lp) {
+			1<1 (pitch + 1.9) vout
+			2<1 (pitch + 2.4) vout
+			lp pitch
+		}
+		d 10
+	}
+	pitch PMIN
+	lp 1000
+	*<1
+	a 0; d 10
+	1(NV) {
+		if NV {
+			ifg (pitch - PMIN) {
+				wake restart
+			} else {
+				*<1
+				force restart
+			}
+			amp (NV * AMP); +pitch .01; target P
+		} else {
+			target PMIN
+		}
+		V NV
+		wake restart
+	}
+	2(NP) {
+		ifl (NP - PMIN) {
+			P PMIN
+		} else {
+			P NP
+		}
+		target P
+	}
+}
+
+MiniTest(P V=1 PanX)
+{
+	1:MiniGear (P + .5) V
+	2:MiniFire P 0
+	!rev 0
+	for {
+		if V {
+			+rev .06
+			ifg (rev - 1) {
+				rev 1
+			}
+		} else {
+			-rev .03
+			ifl rev {
+				rev 0
+			}
+		}
+		ifz (rev - 1) {
+			2<1 V
+		} else {
+			2<1 0
+		}
+		d 10
+	}
+	1(NV) { 1<1 NV; V NV }
+	2(NP) { 1<2 (NP + .5); 2<2 NP }
+}
+
+
+HeavyGear(P V=1 PanX)
+{
+	struct { wtosc }
+	def AMP .3
+	def PMIN -2
+	!amp (V * AMP)
+	!pitch (PMIN + .01); !lp 1000
+	!target P
+	w triangle
+	ifl (P - PMIN) {
+		P PMIN
+	}
+	1:gear0 (pitch + .41) amp 1
+	2:gear0 (pitch + 1.4) amp 2
+	3:gear0 (pitch + 2) amp 2.5
+.restart
+	wg (pitch - PMIN) {
+		if V {
+			// Chase target speed
+			ifz (target - pitch) {
+				// Do nothing!
+			} else {
+				ifg (target - pitch) {
+					+pitch .1
+					ifl (target - pitch) {
+						pitch target
+					}
+				} else {
+					-pitch .05
+					ifg (target - pitch) {
+						pitch target
+					}
+				}
+			}
+		} else {
+			// Spin down and stop
+			-pitch .01
+			ifl (pitch - PMIN) {
+				pitch PMIN
+			}
+		}
+		!vout ((pitch - PMIN) * amp)
+		ifg (vout - amp) {
+			vout amp
+		}
+		!vout2 vout
+		if V {
+			if (target - pitch) {
+				vout (amp * 2)
+				vout2 amp
+			}
+		} else {
+			*vout .25
+			*vout2 .25
+		}
+		p (pitch - .9 + rand .1); a (vout * .5)
+		if (pitch - lp) {
+			1<1 (pitch + .41) vout2
+			2<1 (pitch + 1.4) vout2
+			3<1 (pitch + 2) vout
+			lp pitch
+		}
+		d 10
+	}
+	pitch PMIN
+	lp 1000
+	*<1
+	a 0; d 30
+	1(NV) {
+		if NV {
+			ifg (pitch - PMIN) {
+				wake restart
+			} else {
+				*<1
+				force restart
+			}
+			amp (NV * AMP); +pitch .01; target P
+		} else {
+			target PMIN
+		}
+		V NV
+	}
+	2(NP) {
+		ifl (NP - PMIN) {
+			P PMIN
+		} else {
+			P NP
+		}
+		target P
+	}
+}
+
+HeavyShot(P V=1 PanX)
+{
+	struct { wtosc }
+	w square; p (P + .5); a (V * .7)
+	15 {
+		-p (.1 + rand .1); d 1
+	}
+	w triangle; p (P - .7); a (V * 1.5)
+	25 {
+		-p (.03 + rand .02); d 2
+	}
+	-p 1; a 0; d 100
+}
+HeavyFire(P V=1 PanX)
+{
+	!per (p2d P * 5.23252)
+	!running V
+.restart
+	while running {
+		HeavyShot 0 V
+		d (per - 1 + rand 2)
+	}
+	d 50
+	MiniReverb -1 (V * .1)
+	Rumble -.3 V .97
+	1(NV) {
+		if NV {
+			V NV
+			ifz running {
+				running 1
+				force restart
+			}
+		} else {
+			running 0
+		}
+	}
+	2(NP) {
+		per (p2d NP * 5.23252)
+	}
+}
+
+HeavyTest(P V=1 PanX)
+{
+	1:HeavyGear P V
+	2:HeavyFire (P - 1) 0
+	!rev 0
+	for {
+		if V {
+			+rev .05
+			ifg (rev - 1) {
+				rev 1
+			}
+		} else {
+			-rev .025
+			ifl rev {
+				rev 0
+			}
+		}
+		ifz (rev - 1) {
+			2<1 V
+		} else {
+			2<1 0
+		}
+		d 10
+	}
+	1(NV) { 1<1 NV; V NV }
+	2(NP) { 1<2 (NP + .5); 2<2 NP }
+}
+
+
+Afterburner(P V=1 PanX)
+{
+	struct { wtosc }
+	w sine; *V .25
+.restart
+	!amp (V * .5)
+	tr P; !pp 2
+	wg (amp - .01) {
+		p (rand 5 - 4 + pp); *pp .99
+		a amp; +amp (V - amp * .01)
+		d .5
+	}
+	a 0; set a
+	1(NV) {
+		V (NV * .25)
+		if V {
+			ifle (amp - .01) {
+				amp .02
+			}
+			wake restart
+		}
+	}
+}
+
+Rocket(P V=1 PanX)
+{
+	struct { wtosc }
+	w triangle
+.restart
+	!amp V
+	tr (P + .5); !pp 2
+	wg (amp - .01) {
+		p (rand 5 - 4 + pp); *pp .99
+		a amp; +amp (V - amp * .01)
+		d .5
+	}
+	a 0; set a
+	1(NV) {
+		V NV
+		if V {
+			ifle (amp - .01) {
+				amp .02
+			}
+			wake restart
+		}
+	}
+}
+*/
+.r1(P V=1)
+{
+	struct { wtosc }
+	w triangle
+	!per (p2d (P + tr) / 2)
+	!amp V
+.restart
+	while amp > .002 {
+		p (P + 1.5 + rand .05)
+		a amp; d per
+		a 0; d per
+		+amp (V - amp * .1)
+	}
+	a 0; d 10
+	1(NV) {
+		V NV
+		if V {
+			if (amp <= .003) {
+				amp .003
+			}
+			wake restart
+		}
+	}
+}
+/*
+Reactor(P V=1 PanX)
+{
+	struct { wtosc }
+	+P 40f; w sine; !per (p2d P * .5)
+	1:r1 (P + 1.35) (V * .1)
+	2:r1 (P + 2) (V * .07)
+	!amp V
+.restart
+	wg (amp - .001) {
+		a amp;	p (P + 1.5);	d per
+		p (P + rand .1 - 2.15);	d per
+		+amp (V - amp * .5)
+	}
+	*<1
+	a 0; d 10
+	1(NV) {
+		V NV
+		if V {
+			ifle (amp - .002) {
+				amp .002
+			}
+			wake restart
+		}
+		1<1 (NV * .1)
+		2<1 (NV * .07)
+	}
+}
+*/
+SpawnDeck(P V=1 PanX)
+{
+	struct { wtosc; inline; panmix }
+	pan PanX
+	+P 40f; w sine; !per (p2d P * .5)
+	1:r1 (P + 1.65) (V * .05)
+	2:r1 (P + 1.8) (V * .05)
+	3:r1 (P + .4) (V * .1)
+	!amp V
+.restart
+	while amp > .001 {
+		a amp;	p (P + .8);	d per
+		p (P + rand .5 - 1.7);	d per
+		a amp;	p (P + .7);	d per
+		p (P + rand .5 - 1.8);	d per
+		+amp (V - amp * .5)
+	}
+	*<1
+	a 0; d 10
+	1() {
+		V 0; wake restart; *<1
+	}
+	3(pV pX) {
+		pan pX
+		V pV
+		if V {
+			if amp < .002 {
+				amp .002
+			}
+			wake restart
+		}
+		1<1 (pV * .05)
+		2<1 (pV * .05)
+		3<1 (pV * .1)
+	}
+}
+/*
+PowerAlert(P V=1 PanX)
+{
+	struct { wtosc }
+	*V .1; w saw
+	5 {
+		3 {
+			p .5; a V
+			30 {
+				+p .25; d 3
+				-p .2; d 3
+			}
+			p -1; a 0; d 30
+		}
+		*V .2
+	}
+}
+
+MineAlert(P V=1 PanX)
+{
+	struct { wtosc }
+	*V .4; w saw; !reps 2
+	ifz P {
+		reps 5
+	}
+	3 {
+		p (P + 3)
+		reps {
+			a V
+			7 {
+				-p .4; d 3
+				+p .402; d 5
+			}
+			a 0; d 5
+			d 40
+			p 3
+		}
+		*V .2
+	}
+}
+
+.fump(P V)
+{
+	struct { wtosc }
+	w sine; p -2; a V
+	10 {
+		+p .2; d 2
+	}
+	12 {
+		-p .2; d 3
+	}
+	10 {
+		-p .02; *a .95; d 20
+	}
+	a 0; d 200
+}
+Launch(P V=1 PanX)
+{
+	struct { wtosc }
+	a (V * .5)
+	w noise; p -2
+	15 {
+		+p .4; d 3
+	}
+	fump P (V * 2)
+	a (V * .1); d 50
+	-p 2
+	a 0; d 200
+}
+
+.klang(Vel Decay Base Warble)
+{
+	struct { wtosc }
+	w square; a Vel; set a; +tr Base; !per (p2d tr)
+	wg (a - .01) {
+		p 0
+		10 {
+			+p Warble; d per
+		}
+		w triangle
+		*a Decay
+	}
+}
+GiveHealth(P V=1 PanX)
+{
+	tr P
+	5 {
+		!bp 4
+		3 {
+			klang (V * .7) .95 bp -.13; d 100; +bp 3n
+		}
+		*V .3
+	}
+}
+GiveHealthBig(P V=1 PanX)
+{
+	tr P
+	!bp 45n
+	5 {
+		klang (V * .7) .95 bp -.13; d 100; +bp 3n
+	}
+	*V .3
+	4 {
+		bp 51n
+		3 {
+			klang (V * .7) .95 bp -.13; d 100; +bp 3n
+		}
+		*V .3
+	}
+}
+
+GiveWeapon(P V=1 PanX)
+{
+	struct { wtosc }
+	tr P
+	w noise; p 5; a V; set a; a 0; d 5
+	d 10
+	w noise; p 2.5; a V; set a; a 0; d 15
+	w triangle; p -2.5; a V; set a; a 0; d 20
+	w noise; p -1; a V; set a; a 0; d 10
+	d 20
+	w square; p 2; a V; set a; a 0; d 3
+	w square; p 3; a V; set a; a 0; d 1
+	!rev P; *V .6
+	1:gear0 rev (V); 2:gear0 (rev + .3) V
+	20 {
+		1<1 rev V; 2<1 (rev + .3) V; d 5
+		+rev .15
+	}
+	d 50
+	w noise; p 6; a V; set a; a 0; d 5
+	w noise; p -1; a V; set a; a 0; d 10
+	10 {
+		-rev .15
+		1<1 rev V; 2<1 (rev + .3) V; d 5
+	}
+	10 {
+		+rev .015
+		1<1 rev V; 2<1 (rev + .3) V; d 15
+	}
+	w noise; p 2; a V; set a; a 0; d 10
+	11 {
+		-rev .15
+		1<1 rev V; 2<1 (rev + .3) V; d 10
+	}
+	*<1
+	w triangle; p 1; a V
+	20 {
+		-p .2; d 2
+	}
+	p 3; a (V * .2)
+	wg (a - .01) {
+		+p .7; d 5
+		-p .68; d 5
+		*a .96
+	}
+}
+
+GiveAmmo(P V=1 PanX)
+{
+	struct { wtosc }
+	tr P
+	w noise; p 6; a V; set a; a 0; d 5
+	d 5
+	w noise; p 3; a V; set a; a 0; d 15
+	w noise; p -1; a V; set a; a 0; d 10
+	d 10
+	w square; p 2; a V; set a; a 0; d 3
+	w square; p 3; a V; set a; a 0; d 1
+	!rev (P + .5); *V .4
+	1:gear0 rev (V); 2:gear0 (rev + .2) V
+	15 {
+		1<1 rev V; 2<1 (rev + .2) V; d 5
+		+rev .15
+	}
+	d 20
+	w noise; p 6; a V; set a; a 0; d 5
+	15 {
+		-rev .15
+		1<1 rev V; 2<1 (rev + .2) V; d 5
+	}
+	*<1
+	w triangle; p 2.7; a (V * .15)
+	wg (a - .01) {
+		+p .7; d 5
+		-p .68; d 5
+		*a .9
+	}
+}
+
+GiveEnergy(P V=1 PanX)
+{
+	struct { wtosc }
+	tr P
+	w triangle; p -1.5
+	5 {
+		+p .9; d 5
+		-p .88; d 5
+		+a (V * .2)
+	}
+	5 {
+		+p .9; d 5
+		-p .88; d 5
+	}
+	wg (a - .01) {
+		+p .9; d 5
+		-p .88; d 5
+		*a .9
+	}
+}
+
+GiveEnergyBig(P V=1 PanX)
+{
+	struct { wtosc; panmix }
+	tr P
+	w triangle; p -1.6
+	5 {
+		+p .9; d 5
+		-p .88; d 5
+		+a (V * .2)
+	}
+	17 {
+		+p .9; d 5
+		-p .88; d 5
+	}
+	wg (a - .01) {
+		+p .9; d 5
+		-p .88; d 5
+		*a .9
+	}
+}
+
+GiveEnergyMega(P V=1 PanX)
+{
+	struct { wtosc; panmix }
+	tr P
+	w triangle; p -1.7
+	5 {
+		+p .9; d 5
+		-p .88; d 5
+		+a (V * .2)
+	}
+	5 {
+		+p .9; d 5
+		-p .88; d 5
+	}
+	30 {
+		+p .9; d 5
+		-p .88; d 5
+	}
+	wg (a - .01) {
+		+p .9; d 5
+		-p .88; d 5
+		*a .9
+	}
+}
+*/

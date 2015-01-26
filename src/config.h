@@ -84,15 +84,13 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 
 /*
  * In XKobo, WSIZE was used where VIEWLIMIT is used now; in the game logic
- * code. Kobo Redux replaces WSIZE with WMAIN_W and WMAIN_H, but VIEWLIMIT is
- * still what that determines what the game logic considers "in view!"
+ * code. The original value was 224.
  *
- * NOTE:  I *DON'T* want to change the view range as the XKobo engine knows it,
- *        as that would make the game play slightly differently. (Probably not
- *        so that anyone would notice, but let's not take chances... This is
- *        NOT "Kobo II".)
+ * Kobo Redux replaces WSIZE with WMAIN_W and WMAIN_H, but VIEWLIMIT is still
+ * what that determines what the game logic considers "in view!" The value is
+ * changed to 336, to match the new view size.
  */
-#define VIEWLIMIT	224
+#define VIEWLIMIT	336
 
 // Player ship hit rect size
 #define HIT_MYSHIP	5
@@ -108,7 +106,6 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 #define WORLD_SIZEX_LOG2 (MAP_SIZEX_LOG2+CHIP_SIZEX_LOG2)
 #define WORLD_SIZEY_LOG2 (MAP_SIZEY_LOG2+CHIP_SIZEY_LOG2)
 #define NOISE_SIZEX_LOG2   8
-
 #define CHIP_SIZEX        (1<<CHIP_SIZEX_LOG2)
 #define CHIP_SIZEY        (1<<CHIP_SIZEY_LOG2)
 #define MAP_SIZEX         (1<<MAP_SIZEX_LOG2)
@@ -129,11 +126,9 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 #define	INTRO_CREDITS_TIME	13700
 
 /*
- * Actually, this is not the *full* size in windowed mode any more. This was
- * originally 320x240. Kobo Redux changes the "native" resolution to 640x360,
- * and the tile size is changed from 16x16 to 24x24. However, the game logic
- * coordinates are NOT changed, which is why those coordinates still deal in
- * the original 16x16 tile based figures.
+ * This was originally 320x240. Kobo Redux changes the "native" resolution to
+ * 640x360, while keeping the 16x16 tile size, so the view size is now 50%
+ * larger than in XKobo and Kobo Deluxe.
  */
 #define	SCREEN_WIDTH	640
 #define	SCREEN_HEIGHT	360
@@ -142,7 +137,7 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
  * Map tile size in "native" 640x360 pixels. Until Kobo Redux, this was 32, but
  * indirectly derived from CHIP_SIZE*, rather than defined explicitly.
  */
-#define	TILE_SIZE	24
+#define	TILE_SIZE	16
 
 /*
  * Dashboard window layout

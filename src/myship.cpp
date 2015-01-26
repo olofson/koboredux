@@ -290,10 +290,15 @@ int _myship::move()
 				fired = 1;	// Ok!
 			else
 				fired = 2;	// Overheat!
+#if 0
 			if(fired == 1)
 				sound.g_player_fire();
 			else if(fired == 2)
 				sound.g_player_overheat();
+#else
+			if(fired)
+				sound.g_player_fire();
+#endif
 		}
 	}
 	else
@@ -329,8 +334,8 @@ int _myship::move()
 		}
 		else if(bolt_objects[i])
 			cs_obj_image(bolt_objects[i], B_BOLT,
-					(bolt_objects[i]->anim.frame & 0xfffffffc) +
-					animtab[boltst[i] & 7]);
+					(bolt_objects[i]->anim.frame &
+					0xfffffff8) + animtab[boltst[i] & 7]);
 	}
 	return 0;
 }
@@ -560,7 +565,8 @@ void _myship::shot_single(int i, int dir, int offset)
 	{
 		bolt_objects[i]->point.v.x = PIXEL2CS(boltx[i]);
 		bolt_objects[i]->point.v.y = PIXEL2CS(bolty[i]);
-		cs_obj_image(bolt_objects[i], B_BOLT, (((dir - 1) & 0x3) << 2) + 3);
+		cs_obj_image(bolt_objects[i], B_BOLT,
+				(((dir - 1) & 0x3) << 3) + 3);
 		cs_obj_show(bolt_objects[i]);
 	}
 }
@@ -575,7 +581,9 @@ int _myship::xkobo_shot()
 		;
 	if(j >= game.bolts)
 	{
+#if 0
 		sound.g_player_overheat(1);
+#endif
 		return 1;
 	}
 	shot_single(i, di, 0);

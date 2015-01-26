@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2002, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2002, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -39,6 +40,7 @@
 #define HARD           (1<<5)
 #define SPACE          (1<<6)
 #define	MAP_BITS(x)	((x) & 0xff)
+#define	MAP_TILE(x)	((x) >> 8)
 
 #define	IS_SPACE(x)	((x) & SPACE)
 

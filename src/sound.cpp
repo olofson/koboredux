@@ -21,7 +21,6 @@
  */
 
 #include "sound.h"
-
 #include "kobo.h"
 #include "kobolog.h"
 #include "random.h"
@@ -38,9 +37,65 @@ int KOBO_sound::wrap_y = 0;
 int KOBO_sound::scale = 65536 / 1000;
 int KOBO_sound::panscale = 65536 / 700;
 int KOBO_sound::firing = 0;
-int KOBO_sound::overheat = 0;
 unsigned KOBO_sound::rumble = 0;
 
+/* Sound effects, songs and other program handles */
+enum KOBO_sounds {
+	SOUND_ONEUP,
+	SOUND_FINE,
+	SOUND_BEAM,
+	SOUND_RING,
+	SOUND_BOMB_DETO,
+	SOUND_EXPLO_NODE1,
+	SOUND_EXPLO_NODE2,
+	SOUND_EXPLO_ENEMY1,
+	SOUND_EXPLO_ENEMY2,
+	SOUND_EXPLO_PLAYER,
+	SOUND_EXPLO_RING1,
+	SOUND_EXPLO_RING2,
+	SOUND_EXPLO_RING3,
+	SOUND_EXPLO_ROCK,
+	SOUND_BZZZT,
+	SOUND_GAMEOVER,
+	SOUND_READY,
+	SOUND_PLAY,
+	SOUND_PAUSE,
+	SOUND_CANCEL,
+	SOUND_ERROR,
+	SOUND_LAUNCH2,
+	SOUND_LAUNCH,
+	SOUND_RUMBLE_NODE2,
+	SOUND_RUMBLE_NODE1,
+	SOUND_SHOT_START,
+	SOUND_SHOT,
+	SOUND_SHOT_END,
+	SOUND_METALLIC3,
+	SOUND_METALLIC2,
+	SOUND_METALLIC1,
+	SOUND_DAMAGE,
+	SOUND_MOVE,
+	SOUND_HIT3,
+	SOUND_HIT2,
+	SOUND_HIT1,
+	SOUND_TICK,
+	SOUND_ENEMYM,
+	SOUND__COUNT
+};
+
+/*
+typedef struct KOBO_SfxDesc
+{
+	const char	*name;		// A2 module export name
+	int		bank;		// Sprite bank ID
+	int		w, h;		// Frame size (original image pixels)
+	float		scale;		// Scale of source data rel. 640x360
+	int		flags;		// KOBO_GfxDescFlags
+} KOBO_SfxDesc;
+
+static KOBO_GfxDesc gfxdesc[] = {
+	// Loading screen
+	{ "Loading loading screen graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
+*/
 
 KOBO_sound::KOBO_sound()
 {
@@ -461,7 +516,6 @@ void KOBO_sound::g_player_fire()
 		firing = 1;
 		g_play0(SOUND_SHOT_START, 20000);
 	}
-	overheat = 0;
 }
 
 
@@ -472,18 +526,6 @@ void KOBO_sound::g_player_fire_off()
 		firing = 0;
 		g_play0(SOUND_SHOT_END, 20000);
 	}
-}
-
-
-void KOBO_sound::g_player_overheat(int classic)
-{
-	if(overheat)
-		return;
-	overheat = 1;
-	g_play0(SOUND_SHOT_OVERHEAT, (prefs->cannonloud << 13) / 75);
-	if(!classic)
-		g_play(SOUND_OVERHEAT, listener_x + 100, listener_y,
-				(prefs->overheatloud << 14) / 100);
 }
 
 
@@ -635,7 +677,7 @@ void KOBO_sound::g_m_launch(int x, int y)
 	UI sound effects
 --------------------------------------------------*/
 
-void KOBO_sound::ui_music(int wid)
+void KOBO_sound::ui_music_title()
 {
 #if 0
 // KLUDGE UNTIL MIDI SONGS AND FX CONTROL IS FIXED!
@@ -701,7 +743,7 @@ void KOBO_sound::ui_tick()
 
 void KOBO_sound::ui_error()
 {
-	play(SOUND_OVERHEAT, 20000);
+	play(SOUND_ERROR, 20000);
 }
 
 

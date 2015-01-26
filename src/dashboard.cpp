@@ -253,7 +253,7 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 	  case DASHBOARD_LOADING:
 		background(map_rgb(0x000000));
 		clear();
-		sprite((width() - 250) / 2, 55, B_LOADING, 0);
+		sprite(width() / 2, height() / 3, B_LOADING, 0);
 		render_progress();
 		break;
 	}

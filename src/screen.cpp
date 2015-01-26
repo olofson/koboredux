@@ -986,9 +986,20 @@ void _screen::render_background(window_t *win)
 			int n = map.pos(mx + x, my + y);
 			if(IS_SPACE(n))
 				continue;
+			int tile;
+			if(n & CORE)
+			{
+				if(n & (U_MASK | D_MASK))
+					tile = 32;
+				else
+					tile = 40;
+				tile += SDL_GetTicks() / 50 & 7;
+			}
+			else
+				tile = MAP_TILE(n);
 			win->sprite_fxp(PIXEL2CS(x * TILE_SIZE) - xo,
 					PIXEL2CS(y * TILE_SIZE) - yo,
-					tileset, n >> 8);
+					tileset, tile);
 		}
 }
 

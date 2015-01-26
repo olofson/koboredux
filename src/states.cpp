@@ -92,7 +92,7 @@ void st_introbase_t::enter()
 	{
 		manage.init_resources_title();
 		if(prefs->use_music)
-			sound.ui_music(SOUND_TITLE);
+			sound.ui_music_title();
 		run_intro = 1;
 	}
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
@@ -106,7 +106,7 @@ void st_introbase_t::reenter()
 	{
 		manage.init_resources_title();
 		if(prefs->use_music)
-			sound.ui_music(SOUND_TITLE);
+			sound.ui_music_title();
 		run_intro = 1;
 	}
 	gsm.change(&st_intro_title);
@@ -128,8 +128,10 @@ void st_introbase_t::press(int button)
 	  case BTN_SELECT:
 		run_intro = 0;
 		gsm.push(&st_main_menu);
-	        if(scorefile.numProfiles <= 0)
+#if 0
+		if(scorefile.numProfiles <= 0)
 			gsm.push(&st_new_player);
+#endif
 		break;
 	  case BTN_BACK:
 	  case BTN_UP:
@@ -1258,7 +1260,8 @@ void main_menu_t::build()
 	if(manage.game_stopped())
 	{
 		space();
-	        if(scorefile.numProfiles > 0)
+#if 0
+		if(scorefile.numProfiles > 0)
 		{
 			button("Start Game!", 1);
 			space();
@@ -1272,6 +1275,10 @@ void main_menu_t::build()
 		else
 			space(2);
 		button("New Player...", 3);
+#else
+		log_printf(WLOG, "Player profiles are disabled!\n");
+		button("Start Game!", 1);
+#endif
 	}
 	else
 	{

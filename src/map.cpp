@@ -151,33 +151,32 @@ int _map::maze_judge(int cx, int cy, int dx, int dy, int x, int y)
 	return 1;
 }
 
-// Translate map "tile state bits" into tile index
-//
-// The hard end nodes need some special treatment here. There are 16 direction
-// mask combinations, but only 4 are valid in this case. So, we use a 16 x 2
-// bit lookup "table" (packed into an 'int') to get the right tile index.
-//
-//	    00  01  10  11 <-- mask bits 1 (right) and 0 (up)
-//	-----------------------------------------------------
-//	00  --  00  01  --
-//	01  10  --  --  --      <-- Tile indices
-//	10  11  --  --  --
-//	11  --  --  --  --
-//	 ^
-//	 '- mask bits 3 (left) and 2 (down)
-//
-// Thus, our table is 00000000 00000011 00000010 00010000 == 0x00030210
-//
 static inline int bits2tile(int n)
 {
 	if(n & CORE)		// Core
 		return n & (U_MASK | D_MASK) ? 6 : 7;
 	else if(n & HARD)	// One of the 4 indestructible end nodes
-		return (0x00030210 >> ((n & 15) << 1)) & 3;
+		switch(n & 0xf)
+		{
+		  case U_MASK:	return 0;
+		  case R_MASK:	return 1;
+		  case D_MASK:	return 2;
+		  case L_MASK:	return 3;
+		}
 	else if(n == 5)		// Vertical pipe
-		return pubrand.get(2) ? 13 : 4;
-	else if(n == 10)	// Vertical pipe
-		return pubrand.get(2) ? 18 : 5;
+		switch(pubrand.get(3))
+		{
+		  case 0:	return 4;
+		  case 1:	return 6;
+		  default:	return 13;
+		}
+	else if(n == 10)	// Horizontal pipe
+		switch(pubrand.get(3))
+		{
+		  case 0:	return 5;
+		  case 1:	return 7;
+		  default:	return 18;
+		}
 	else			// Other pipe parts or normal end nodes
 		return n + 8;
 }

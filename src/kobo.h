@@ -114,7 +114,6 @@ typedef enum
 	B_BOMB,
 	B_BOMBDETO,
 	B_BOLT,
-	B_BOLTEXPL,
 	B_EXPLO1,
 	B_EXPLO3,
 	B_EXPLO4,

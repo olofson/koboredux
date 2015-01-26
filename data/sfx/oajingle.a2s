@@ -1,0 +1,529 @@
+def title	"Official Olofson Arcade Jingle"
+def version	"1.0"
+def description	"Yes, this is indeed the intro from the Kobo II title song."
+def author	"David Olofson"
+def copyright	"Copyright 2011-2014 David Olofson"
+def license	"CC BY-NC-ND 3.0"
+def a2sversion	"1.9"
+
+.Flute0(P V=1 Wave)
+{
+	struct { wtosc }
+	!P0 tr; +P tr; w Wave; p P; a 0; !er .05; !vib 0; !tvib .005; !pf .3
+.rt	wg (V + a - .001) {
+		tr (vib * 6 + rand .01)
+		12 {	-tr vib; +p (P - p * pf); +a (V - a * er); d 5 }
+		12 {	+tr vib; +p (P - p * pf); +a (V - a * er); d 5 }
+		+vib (tvib - vib * .1)
+	}
+	a 0; d 5
+	1(NV) {
+		V NV
+		if NV {
+			vib .005; tvib .005; er .05; wake rt
+		} else {
+			tvib .02; er .02
+		}
+	}
+	2(NP NPF=.3) { P (P0 + NP); pf NPF }
+}
+
+Flute(P V=1)
+{
+	struct { inline; panmix }
+	def A1 1; def A2 .3
+	def P1 1.001; def P2 -.001
+	1:Flute0 (P + P1) (V * A1) triangle
+	2:Flute0 (P + P2) (V * A2) pulse10
+	1(NV) { 1<1 (NV * A1); 2<1 (NV * A2) }
+	2(NP NPF=.3) { 1<2 (NP + P1) NPF; 2<2 (NP + P2) NPF }
+}
+
+Feep(P V=1 C=2)
+{
+	struct { wtosc; filter12; panmix }
+	lp .5; bp .5; hp .1; q .05
+	cutoff (P - 1); !tp (P + C)
+	!pp (rand 3 - 1.5)
+	!P0 tr; +P tr; w pulse1; p P; a 0; !er .05; !vib 0; !tvib .005
+.rt	while ((V + a) > .001) {
+		tr (vib * 6 + rand .01)
+		12 {
+			-tr vib; +p (P - p * .1); +a (V - a * er)
+			+cutoff (tp - cutoff * .05)
+			+pan (pp - pan * .05)
+			d 3
+		}
+		12 {
+			+tr vib; +p (P - p * .1); +a (V - a * er)
+			+cutoff (tp - cutoff * .05)
+			+pan (pp - pan * .05)
+			d 3
+		}
+		+vib (tvib - vib * .3)
+	}
+	a 0; d 5
+	1(NV NC=2) {
+		V NV
+		if NV {
+			vib .005; tvib .005; er .03; wake rt
+		} else {
+			tvib .02; er .01; tp P
+		}
+		tp (P + NC)
+		pp (rand 2 - 1)
+	}
+	2(NP NC=2) {
+		P (P0 + NP)
+		tp (P + NC)
+		pp (rand 2 - 1)
+	}
+}
+
+SpaceFeep(P V=1)
+{
+	struct {
+		inline 0 *
+		fbdelay * *
+		panmix * >
+	}
+	fbdelay (tick * 6 + 10); fbgain .5
+	ldelay (tick * 5 + 13); lgain .5
+	rdelay (tick * 4 + 17); rgain .5
+
+	def I Feep
+	+tr P
+	*V .25
+				td 8
+	1:I 7n V 1;		td 2
+	1<2 8n 3;		td 2
+	1<2 7n 2;		td 2
+	1<2 5n 1;		td 2
+	1<2 7n 2;		td 8
+	1<2 3n 1;		td 8
+	1<2 0n 3;		td 12
+	1<1 (V * .8) 2.5;	td 2
+	1<1 (V * .6) 2;		td 2
+	1<1 (V * .4) 1.5;	td 2
+	1<1 (V * .3) 1;		td 2
+	1<1 0 -1;		td 12
+
+				td 8
+	1:I 7n V 1;		td 2
+	1<2 8n 3;		td 2
+	1<2 7n 2;		td 2
+	1<2 5n 1;		td 2
+	1<2 7n 2;		td 8
+	1<2 3n 1;		td 8
+	1<2 -5n 3;		td 12
+	1<1 (V * .8) 2.5;	td 2
+	1<1 (V * .6) 2;		td 2
+	1<1 (V * .4) 1.5;	td 2
+	1<1 (V * .3) 1;		td 2
+	1<1 0 -1;		td 12
+
+				td 40
+}
+
+.Str0(P V Attack Decay Detune)
+{
+	struct { wtosc; panmix }
+	pan (Detune * 100)
+	w saw; a 0; !Ta (V * .1); phase (rand 1)
+	+P Detune
+	p P; !er (Attack * .1)
+.rt	wg (V + a - .001) {
+		+p (P - p * .4 + rand .02 - .01)
+		+a (Ta - a * er); Ta (V * rand .2)
+		d (rand 5 + 2.5)
+	}
+	a 0; d 5
+	1(NV) {
+		ifg (NV - V) {
+			V NV; er (Attack * .1); wake rt
+		} else {
+			V NV; er (Decay * .1)
+		}
+	}
+	2(NP) { P (NP + Detune) }
+}
+Strings(P V=1 Attack=.3 Decay=.2)
+{
+	!Voices (7 - P quant 1)
+	ifl (Voices - 2) {
+		Voices 2
+	}
+	def Spread .02
+	!detune (0 - (Spread / 2))
+	Voices {
+		0:Str0 P V Attack Decay detune
+		+detune (Spread / Voices)
+	}
+	1(NV) { *<1 NV }
+	2(NP) { *<2 NP }
+}
+
+OctStrings(P V=1)
+{
+	1:Strings (P + 1) V .5 .2
+	2:Strings (P - 1) V .2 .4
+	1(NV) { *<1 NV }
+	2(NP) { 1<2 (NP + 1); 2<2 (NP - 1) }
+}
+
+.nb(P V=1 Pan)
+{
+	struct { wtosc; panmix }
+	pan Pan; set pan
+	w noise; p (P + 6); a (V * .8); set a
+	50 {	*a .99; *p .96; d 2 }
+	40 {	*a .92; -p .01; d 50 }
+}
+NBurst(P V=1)
+{
+	nb P (V * .5) -1.25
+	nb P (V * .5) 1.25
+}
+
+NBurst2(P V=1)
+{
+	struct { wtosc }
+	w noise; p (P + 3.5); a V; set a; *a .5; d 10
+	-p 2
+	60 {	*a .9; d 50 }
+}
+
+.sdn(V)
+{
+	struct { wtosc }
+	w noise; p 5.5; a V; set a; d 2
+	p 5; *a .4; d 20
+	*a .2; d 100
+	100 {
+		!D (rand 15 + 5)
+		p 4.5; *a .95; d D
+		p 6; d D
+	}
+}
+SDrum(P V=1)
+{
+	struct { wtosc }
+	sdn V
+	w square; p (P + 2); a V; set a
+	10 {	-p .2; d 1 }
+	d 5
+	-p .2; d 5
+	5 {
+		!D (rand 2 + 3)
+		w saw; -p .51; d D
+		w square; +p .5; *a .7; d D
+	}
+	*a .5; !p0 (p - .8)
+	1000 {	p (rand 1.5 + p0); *a .99; d 1 }
+}
+
+HHClosed(P V=1)
+{
+	struct { wtosc }
+	w square; a (V * .2); set a; p 6
+	3 {	d 1; -p .5 }
+	200 {	p (rand 1.5 + 4.5); *a .95; d .5 }
+}
+
+HHOpen(P V=1)
+{
+	struct { wtosc }
+	w square; a (V * .2); set a; p 6
+	3 {	d 1; -p .5 }
+	600 {	p (rand 1.5 + 4.5); *a .993; d .5 }
+}
+
+HH0()
+{
+	!aa 1
+	32 {	HHClosed 0 aa; *aa .8;	td 1 }
+}
+
+HH1()
+{
+	def c HHClosed; def o HHOpen
+	8 {
+		c;		td 1
+		c 0 .5;		td 1
+		c 0 .25;	td 1
+		c 0 .5;		td 1
+		o 0 .5;		td 12
+	}
+}
+
+HH2()
+{
+	def c HHClosed; def o HHOpen
+	8 {
+		c;	td 1
+		c;	td 1
+		c;	td 1
+		c;	td 1
+
+		o;	td 1
+		c;	td .5
+		c;	td .5
+		c;	td 1
+		o;	td 1
+
+		c;	td 1
+		c;	td 1
+		c;	td 1
+		c;	td .5
+		c;	td .5
+
+		o;	td 1
+		c;	td 1
+		c;	td 1
+		c;	td .5
+		c;	td .5
+	}
+}
+
+.bdnoise(P V)
+{
+	struct { wtosc }
+	w noise; p (P + 4); a (V * .2); set a
+	20 {	*a .95; -p .1; d 3 }
+	a 0; d 1000
+}
+BDrum(P V=1)
+{
+	struct { wtosc }
+	bdnoise P V
+	w sine; p (P + 4); a V; set a
+	5 {	-p .9; d 1 }
+	d 10
+	5 {	-p .2; d 2 }
+	d 20
+	20 {	-p .1; d 10 }
+	d 30
+	a 0; d 100
+	d 1000
+}
+
+.tn(P V)
+{
+	struct { wtosc }
+	w noise; p (P + 6); a (V * .5); set a; d 10
+	-p 2
+	100 {	-p .07; *a .8; d 10 }
+}
+Tom(P V=1)
+{
+	struct { wtosc }
+	tn P V
+	w saw; p (P + 3); a V; set a
+	10 {	-p .35; d 1 }
+	w triangle
+	7 {
+		-p .15; *a .9; d 10
+		+p 3n; d 10
+		-p 3n
+	}
+	20 {
+		-p .01; *a .8; d 10
+		+p 3n; d 10
+		-p 3n
+	}
+}
+
+SoftArp(P V=1 Maj=0)
+{
+	struct { wtosc; panmix }
+	sa0(PP VV)
+	{
+		pan (rand 1 - .5); set pan
+		a VV; p PP;	td .01
+		*a .25;		td .49
+	}
+	w triangle; a V; +tr P; !aa a
+	7 {
+		sa0 12n aa
+		sa0 0 aa
+		sa0 (3n + Maj) aa
+		sa0 7n aa
+		*aa .75
+		sa0 (15n + Maj) aa
+		sa0 (3n + Maj) aa
+		sa0 7n aa
+		sa0 12n aa
+		*aa .75
+		sa0 19n aa
+		sa0 7n aa
+		sa0 12n aa
+		sa0 (15n + Maj) aa
+		+tr 1; *aa .75
+	}
+}
+
+SoftArp2(P V=1 Maj=0)
+{
+	struct { wtosc; panmix }
+	sa0(PP VV)
+	{
+		pan (rand 1 - .5); set pan
+		a VV; p PP;	td .01
+		*a .25;		td .49
+	}
+	w triangle; a V; +tr P; !aa a
+	40 {
+		sa0 12n aa
+		sa0 0 aa
+		sa0 (3n + Maj) aa
+		sa0 7n aa
+		*aa .75
+	}
+}
+
+.Explo0(P V=1 Wave Attack)
+{
+	struct { wtosc; panmix }
+	pan (rand 1 - .5); set pan
+	+P tr; w Wave; !x 1.5; a V; -P 3; tr Attack; !D 1
+	200 {	*tr .98; p (P + rand x); +x .01; d D; +D .005 }
+	800 {	*tr .98; p (P + rand x); -x .0025; *a .999; d D; +D .005 }
+	tr P
+	800 {	rand p x; *a .995; d 2.5 }
+}
+Explosion(P V=1)
+{
+	+tr P
+	Explo0 0 V sine 2
+	Explo0 -1 V sine 4
+	Explo0 .5 (V * .5) triangle 5
+	Explo0 1.5 (V * .25) sine 3
+}
+
+ResoBass(P V=1 Reso)
+{
+	struct { wtosc }
+	p (P + 2); w square; a (V * .2); set a
+	a 0; d 5
+	+Reso (P + 1.5); w sine
+	P p2d (P + tr)
+	10 {
+		phase 0; p Reso; a V; set a
+		a 0; d P
+		-Reso 1n
+		*V .8
+	}
+	!i (500 / P); !mv (1 - (1 / (.1 * i)))
+	i {
+		phase 0; p Reso; a V; set a; a 0; d P
+		-Reso .1n; *V mv
+	}
+}
+
+.rl(p1 v v1 r r1 cnt=16)
+{
+	-p1 24n
+	!dv ((v1 - v) / cnt)
+	!dr ((r1 - r) / cnt)
+	cnt {	ResoBass p1 v r; +v dv; +r dr; td 2 }
+}
+ResoIn(P V=1)
+{
+	struct { inline; panmix }
+	rl P	.1 (V * .5)	0 .16;	td 32
+	rl P	(V * .5) V	.16 0;	td 32
+}
+
+EvilSyncBass(P V=1 Drive)
+{
+	struct { wtosc }
+	+P tr; tr 0; p P
+	*V .6
+	!per (p2d P * .5)
+	a V; set a
+	p 5; w noise; phase 0; d 2
+	p (P + 2); w square; d per
+	w saw; p (P + .5 + Drive)
+	!ma .99; !dp .01
+	wg (a - .01) {
+		+p dp; w saw; phase 0; d per
+		*a ma; w square; d per
+	}
+	a 0; set a
+	1() { *a .5; *ma .85; +p 1; /per 4; *<1 }
+}
+
+Drone(P V=1)
+{
+	def i EvilSyncBass; +tr (P - 36n)
+	1:i 0 V 2.5;	td .5;	1<1
+			td 1.5
+	1:i 0 V 1;	td 30;	1<1
+	1:i 0 V 2;	td .5;	1<1
+			td 1.5
+	1:i 0 V 0;	td 30;	1<1
+}
+
+Perc1()
+{
+	struct { inline; panmix }
+	tr 0
+	BDrum 0 .4;	Explosion .3 .1;	td 16
+	BDrum 0 .4; 				td 2
+	BDrum 0 .2; 				td 2
+	BDrum 0 .1;	HH0;			td 10
+	BDrum -4n .25;				td 2
+	BDrum 0 .3;	Explosion -1 .5;	td 8
+			NBurst -4n .5
+}
+
+BassI()
+{
+	struct { inline 0 *; panmix * > }
+	vol .1; set vol; vol .3
+	1:Strings -2 .6;	2:OctStrings 0 .2;	td 6
+	ResoIn; Drone 0 .2;	vol .5;			td 32
+	vol 1;						td 24
+	vol 0; 1<1; 2<1;				td 8
+}
+
+Main(L)
+{
+	tempo 94 4
+	!Tr0 tr; !Tr 2n
+	BassI;					td 6
+	Perc1;		SoftArp -2 1;		td 32
+			SoftArp -1 .8 -1n;	td 32
+}
+
+Song(P V=1 L=1)
+{
+	struct {
+		inline 0 *
+		fbdelay * *
+		panmix * >
+	}
+	fbdelay 160; fbgain .1
+	ldelay 300; lgain .1
+	rdelay 350; rgain .1
+
+	// Transposition + volume - no fade-in
+	+tr P; vol (V * .4); set vol
+
+	1:Main L
+	wait 1
+	end
+.stop
+	// Fade out
+	10 {
+		*vol .7
+		d 100
+	}
+	vol 0; d 100
+	kill *
+
+	// "Stop" message handler
+	1() {
+		force stop
+	}
+}

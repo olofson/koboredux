@@ -235,7 +235,7 @@ void _manage::game_start()
 	hi.loads = 0;
 	hi.start_scene = scene_num;
 	hi.end_lives = ships;
-	sound.g_music(SOUND_BGM);
+	sound.g_music(scene_num);
 
 #ifdef PLAYSTATS
 	start_time = SDL_GetTicks();

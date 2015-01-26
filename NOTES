@@ -28,7 +28,12 @@ Design:
 	* The occasional creepy cut scene where a video of some alien monster
 	  face is resynthesized using explosion sprites?
 
+	* An ancient TODO in there says "Short demo of how to destroy a base."
+
 -------------------------------------------------------------------------------
+
+* How about handling music by sending messages to a "director" A2S script, that
+  handles tracks, transitions etc?
 
 * Maybe we should change the game logic units to 1.0/tile, after all? These
   "physics pixels" that no longer relate to screen pixels at all is getting

@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001-2003, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -557,10 +558,10 @@ void _enemy::make_expl()
 	  case B_BULLETEXPL:
 		a = 6;
 		break;
-	  case B_BOLTEXPL:
-		frame = 6 * pubrand.get(1);
-		di = pubrand.get(2);
-		a = 6;
+	  case B_BOLT:
+		frame = 32 + 8 * pubrand.get(2);
+		di = 1;	//pubrand.get(2);
+		a = 8;
 		break;
 	}
 }
@@ -655,7 +656,7 @@ const enemy_kind boltexpl = {
 	&_enemy::move_expl,
 	&_enemy::kill_default,
 	-1,
-	B_BOLTEXPL, 0,
+	B_BOLT, 0,
 	LAYER_FX
 };
 

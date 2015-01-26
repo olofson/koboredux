@@ -2,7 +2,8 @@
 ------------------------------------------------------------
    Kobo Deluxe - Wrapper for Sound Control
 ------------------------------------------------------------
- * Copyright (C) 2007, 2009 David Olofson
+ * Copyright 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -22,13 +23,7 @@
 #ifndef KOBO_SOUND_H
 #define KOBO_SOUND_H
 
-#include "kobosfx.h"
-
-/* Sound groups */
-#define	SOUND_GROUP_UI		0
-#define	SOUND_GROUP_SFX		1
-#define	SOUND_GROUP_UIMUSIC	2
-#define	SOUND_GROUP_BGMUSIC	3
+#include "audiality2.h"
 
 
 class KOBO_sound
@@ -47,7 +42,6 @@ class KOBO_sound
 	static int	scale;
 	static int	panscale;
 	static int	firing;
-	static int	overheat;
 	static unsigned	rumble;
 
   public:
@@ -90,7 +84,7 @@ class KOBO_sound
 		In-game sound
 	--------------------------------------------------*/
 	/* Play in-game music */
-	static void g_music(int wid);
+	static void g_music(int scene);
 
 	/* Set listener position */
 	static void g_position(int x, int y);
@@ -107,7 +101,6 @@ class KOBO_sound
 	/* Various sound effects */
 	static void g_player_fire();
 	static void g_player_fire_off();
-	static void g_player_overheat(int classic = 0);
 	static void g_player_damage();
 	static void g_player_explo_start();
 	static void g_bolt_hit(int x, int y);
@@ -132,7 +125,7 @@ class KOBO_sound
 		UI sound effects
 	--------------------------------------------------*/
 	/* Low level interface */
-	static void ui_music(int wid);
+	static void ui_music_title();
 
 	/* Various UI effects */
 	static void ui_noise(int n);
