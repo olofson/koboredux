@@ -23,6 +23,7 @@
 #ifndef KOBO_SOUND_H
 #define KOBO_SOUND_H
 
+#include "config.h"
 #include "audiality2.h"
 
 
