@@ -153,7 +153,7 @@ void _screen::title(int t, float fade, int mode)
 	if(!s || !s->texture)
 		return;
 
-#if 0
+#if 1
 	float mf = (1.0f - fade);
 	int ly = (int)(mf * mf * mf * WMAIN_H);
 	wmain->sprite_fxp(PIXEL2CS(wmain->width() - 320) / 2,
@@ -254,7 +254,7 @@ void _screen::highscores(int t, float fade)
 		wmain->center_token_fxp(PIXEL2CS((70+125)/2)+(int)xo, real_y, s, -1);
 		wmain->string_fxp(PIXEL2CS(125)+(int)xo, real_y, hi_nm[i]);
 	}
-#if 1
+#if 0
 	if(!flashin(t - 1000))
 	{
 		wmain->font(B_MEDIUM_FONT);
@@ -267,7 +267,7 @@ void _screen::highscores(int t, float fade)
 
 void _screen::credits(int t)
 {
-	if((t % 4000 < 3600) && (t / 4000 <= 2))
+	if((t % 4000 < 3600) && (t / 4000 <= 1))
 		screen.set_highlight(102, 70);
 	else
 		screen.set_highlight(0, 0);
@@ -281,9 +281,9 @@ void _screen::credits(int t)
 				wmain->center(80, "DAVID OLOFSON");
 			wmain->font(B_NORMAL_FONT);
 			if(t2 > 2)
-				wmain->center(105, "New SDL Audio & GFX Engines");
+				wmain->center(105, "New Audio & GFX Engines");
 			if(t2 > 3)
-				wmain->center(115, "New Graphics, Sound & Music");
+				wmain->center(115, "Graphics, Sound & Music");
 			break;
 		  case 1:
 			wmain->font(B_BIG_FONT);
@@ -293,18 +293,8 @@ void _screen::credits(int t)
 			if(t2 > 2)
 				wmain->center(110, "XKobo - The Original Game");
 			break;
-		  case 2:
-			wmain->font(B_BIG_FONT);
-			if(t2 > 0)
-				wmain->center(80, "MASANAO IZUMO");
-			wmain->font(B_NORMAL_FONT);
-			if(t2 > 2)
-				wmain->center(105, "Original Sounds");
-			if(t2 > 3)
-				wmain->center(115, "Original Sound Engine");
-			break;
 		}
-	if(!flashin(t - 11000))
+	if(!flashin(t - 7000))
 	{
 		wmain->font(B_MEDIUM_FONT);
 		wmain->center(170, "Additional Credits & Thanks");
@@ -408,7 +398,7 @@ void _screen::help(int t)
 		if(t > 19700)
 			screen.set_highlight(0, 0);
 		wmain->font(B_MEDIUM_FONT);
-// TODO: Demo destroying a rock in Gamer mode?
+// TODO: Demo destroying a rock
 		int i;
 		for(i = B_TILES1; i <= B_TILES5; ++i)
 		{
@@ -695,12 +685,22 @@ void _screen::generate_fixed_enemies()
 }
 
 
+void _screen::clean_scrap(int x, int y)
+{
+	if(map.pos(x + 1, y) & SPACE)
+		map.pos(x + 1, y) = SPACE;
+	if(map.pos(x - 1, y) & SPACE)
+		map.pos(x - 1, y) = SPACE;
+	if(map.pos(x, y + 1) & SPACE)
+		map.pos(x, y + 1) = SPACE;
+	if(map.pos(x, y - 1) & SPACE)
+		map.pos(x, y - 1) = SPACE;
+}
+
+
 void _screen::set_map(int x, int y, int n)
 {
-	if(n == 0)
-		map.clearpos(x, y);
-	else
-		map.pos(x, y) = n;
+	map.pos(x, y) = n;
 	wradar->update(x, y);
 }
 
@@ -957,9 +957,8 @@ void _screen::render_background(window_t *win)
 	vy = gengine->yoffs(LAYER_BASES) * TILE_SIZE / 16;
 
 	/*
-	 * Start exactly at the top-left corner
-	 * of the tile visible in the top-left
-	 * corner of the display window.
+	 * Start exactly at the top-left corner of the tile visible in the top-
+	 * left corner of the display window.
 	 */
 	xo = vx % PIXEL2CS(TILE_SIZE);
 	yo = vy % PIXEL2CS(TILE_SIZE);
@@ -975,16 +974,16 @@ void _screen::render_background(window_t *win)
 	 */
 	win->clear();
 
-	/* Render parallax starfield, if selected */
-	if(prefs->starfield == STARFIELD_PARALLAX)
-		render_starfield(win, vx, vy);
+	/* Render parallax starfield */
+	render_starfield(win, vx, vy);
 
 	int tileset = B_TILES1 + (scene_num / 10) % 5;
+	int frame = manage.game_time();
 	for(y = 0; y < ymax; ++y)
 		for(x = 0; x < xmax; ++x)
 		{
 			int n = map.pos(mx + x, my + y);
-			if(IS_SPACE(n))
+			if(IS_SPACE(n) && (MAP_TILE(n) == 0))
 				continue;
 			int tile;
 			if(n & CORE)
@@ -993,7 +992,7 @@ void _screen::render_background(window_t *win)
 					tile = 32;
 				else
 					tile = 40;
-				tile += SDL_GetTicks() / 50 & 7;
+				tile += frame / 3 & 7;
 			}
 			else
 				tile = MAP_TILE(n);

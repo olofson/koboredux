@@ -49,21 +49,17 @@ class prefs_t : public config_parser_t
 	//Game options
 	int	filter;		//Use motion filtering
 	int	timefilter;	//Delta time filter
-	int	scrollradar;	//Radar display mode
+	int	scrollradar;	//Scrolling radar
 	int	countdown;	//"Get Ready" countdown
-	int	starfield;	//None/Old/parallax
 	int	stars;		//Number of parallax stars
-	int	overheatloud;	//Overheat warning loudness
 	int	cannonloud;	//Cannon loudness
 
 	//Sound: System
 	int	use_sound;	//Enable sound
-	int	use_music;	//Enable "real" music
+	int	use_music;	//Enable music
 	int	cached_sounds;	//Use prerendered waveforms
-	int	use_oss;	//Use OSS audio driver
 	int	samplerate;
 	int	latency;	//Audio latency in ms
-	int	mixquality;	//Mixer quality control
 	int	volume;		//Digital master volume
 	//Sound: Mixer
 	int	intro_vol;	//Intro music volume
@@ -75,25 +71,18 @@ class prefs_t : public config_parser_t
 
 	//Video settings
 	int	fullscreen;	//Use fullscreen mode
-	int	videodriver;	//Internal video driver
 	int	width;		//Screen/window width
 	int	height;		//Screen/window height
 	int	autoswap;	//Automatically swap dimensions if init fails
 	int	aspect;		//Pixel aspect ratio * 1000
-	int	depth;		//Bits per pixel
 	int	max_fps;	//Maximum fps
 	int	max_fps_strict;	//Strictly regulated fps limiter
 	int	doublebuf;	//Use double buffering
-	int	shadow;		//Use software shadow buffer
 	int	videomode;	//New video mode codes
 	int	vsync;		//Vertical (retrace) sync
-	int	pages;		//Number of physical video pages
 
 	//Graphics settings
 	int	scalemode;	//Scaling filter mode
-	int	use_dither;
-	int	dither_type;
-	int	broken_rgba8;	//For some OpenGL setups
 	int	alpha;		//Alpha blending
 	int	brightness;	//Graphics brightness
 	int	contrast;	//Graphics contrast
@@ -103,14 +92,6 @@ class prefs_t : public config_parser_t
 	cfg_string_t	gfxdir;		//Path to gfx/
 	cfg_string_t	sfxdir;		//Path to sfx/
 	cfg_string_t	scoredir;	//Path to scores/
-
-	//Obsolete stuff (compatibility)
-	int		o_size;			//Screen scale
-	int		o_wait_msec;		//ms per control system frame
-	cfg_string_t	o_bgm_indexfile;	//Ext playlist path
-	int		o_threshold;		//Limiter threshold
-	int		o_release;		//Limiter release rate
-	int		o_internalres;		//Internal resolution for OpenGL
 
 	//"Hidden" stuff ("to remember until next startup")
 	int	last_profile;		//Last used player profile
@@ -125,13 +106,9 @@ class prefs_t : public config_parser_t
 	int cmd_override;
 	int cmd_debug;
 	int cmd_fps;
-	int cmd_noframe;
-	int cmd_midi;
 	int cmd_cheat;		//Unlimited lives; select any starting stage
 	int cmd_indicator;	//Enable collision testing mode
 	int cmd_pushmove;	//Stop when not holding any direction down
-	int cmd_noparachute;	//Disable SDL parachute
-	int cmd_pollaudio;	//Use polling based audio instead of thread
 	int cmd_autoshot;	//Take ingame screenshots
 	int cmd_help;		//Show help and exit
 	int cmd_options_man;	//Output OPTIONS doc in Un*x man source format

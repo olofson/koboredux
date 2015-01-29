@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2002, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2002, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -117,25 +118,17 @@ void _map::maze_move_and_push(int x, int y, int d)
 	switch (d)
 	{
 	  case 1:
-	  {
 		x1 += 2;
 		break;
-	  }
 	  case 2:
-	  {
 		y1 += 2;
 		break;
-	  }
 	  case 3:
-	  {
 		x1 -= 2;
 		break;
-	  }
 	  case 4:
-	  {
 		y1 -= 2;
 		break;
-	  }
 	}
 	maze_push(x1, y1);
 	pos((x + x1) / 2, (y + y1) / 2) = WALL;
@@ -191,7 +184,7 @@ void _map::convert(unsigned ratio)
 			p = pos(i, j) & CORE;
 			if(IS_SPACE(pos(i, j)))
 			{
-				clearpos(i, j);
+				pos(i, j) = SPACE;
 				continue;
 			}
 			if((j > 0) && !IS_SPACE(pos(i, j - 1)))
@@ -210,10 +203,4 @@ void _map::convert(unsigned ratio)
 			}
 			pos(i, j) = (bits2tile(p) << 8) | p;
 		}
-}
-
-
-void _map::clearpos(int x, int y)
-{
-	pos(x, y) = (gamerand.get(6) << 8) | SPACE;
 }

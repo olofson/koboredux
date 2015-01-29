@@ -1,36 +1,24 @@
 
-Design:
-	* "Loader" pictures for each area?
+-------------------------------------------------------------------------------
+BUGS:
+-------------------------------------------------------------------------------
 
-	* Turn the assassin into a portal through which various nasty stuff
-	  gets teleported in? (Graphics change only.)
+* Scrap pipe cleanup still fails in some rare cases! Conflict between colliding
+  pipein and/or pipeout enemies...?
 
-	* Show one or two levels ahead as parallax layers!
+* Input should consider events - not just state!
 
-	* Final (10th) level in each area is near or at ground level over a
-	  planet.
-		* Maybe the last battle is over a gigantic space station?
+* Bullet impact animations should stick to the objects they hit! As it is, they
+  are just spawned with velocity 0.
 
-	* Add bosses after each 10 map area?
-		* Smaller maps?
-		* Barriers instead of wrapping?
-			* The bosses could trap you inside a force field that
-			  you can't leave until the bosses have been destroyed.
-		* Indestructible obstacles?
-		* How about fighting one or more massive enemies inside huge
-		  labyrinths?
-		* If we have obstacles, bosses should probably move on
-		  predefined paths between waypoints, to keep things simple
-		  and predictable. The use of waypoints means the bosses can
-		  still make decisions, but they don't have to do actual live
-		  pathfinding.
-
-	* The occasional creepy cut scene where a video of some alien monster
-	  face is resynthesized using explosion sprites?
-
-	* An ancient TODO in there says "Short demo of how to destroy a base."
 
 -------------------------------------------------------------------------------
+TODO:
+-------------------------------------------------------------------------------
+
+* Animated scrap pipe tiles! Flames and sparks!
+
+* Flying, bouncing debris!
 
 * How about handling music by sending messages to a "director" A2S script, that
   handles tracks, transitions etc?
@@ -62,6 +50,46 @@ Kobo DL install on Ubuntu:
 	/var/games/kobo-deluxe/scores/
 
 	* How do we create the scores dir with correct permissions with CMake?
+
+
+-------------------------------------------------------------------------------
+Design:
+-------------------------------------------------------------------------------
+
+	* Temporary invulnerability instead of countdown + position restart?
+	  It's quite annoying to find your way back to where you were, and that
+	  might become more of a problem if we add other types of maps...
+
+	* "Loader" pictures for each area?
+
+	* Turn the assassin into a portal through which various nasty stuff
+	  gets teleported in? (Graphics change only.)
+
+	* Show one or two levels ahead as parallax layers!
+
+	* Final (10th) level in each area is near or at ground level over a
+	  planet.
+		* Maybe the last battle is over a gigantic space station?
+
+	* Add bosses after each 10 map area?
+		* Smaller maps?
+		* Barriers instead of wrapping?
+			* The bosses could trap you inside a force field that
+			  you can't leave until the bosses have been destroyed.
+		* Indestructible obstacles?
+		* How about fighting one or more massive enemies inside huge
+		  labyrinths?
+		* If we have obstacles, bosses should probably move on
+		  predefined paths between waypoints, to keep things simple
+		  and predictable. The use of waypoints means the bosses can
+		  still make decisions, but they don't have to do actual live
+		  pathfinding.
+
+	* The occasional creepy cut scene where a video of some alien monster
+	  face is resynthesized using explosion sprites?
+
+	* An ancient TODO in there says "Short demo of how to destroy a base."
+
 
 -------------------------------------------------------------------------------
 

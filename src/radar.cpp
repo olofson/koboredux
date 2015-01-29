@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001-2003, 2005-2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001-2003, 2005-2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -95,7 +96,6 @@ radar_window_t::radar_window_t()
 	xoffs = 0;
 	yoffs = 0;
 	time = 0;
-	refresh_pos = 0;
 }
 
 
@@ -137,26 +137,15 @@ void radar_window_t::refresh(SDL_Rect *r)
 		blit(0, 0, wmap);
 		break;
 	  case RM_RADAR:
-		switch(prefs->scrollradar)
+		if(prefs->scrollradar)
 		{
-		  case 0:
-			blit(0, 0, wmap);
-			break;
-		  case 1:
-			foreground(map_rgb(48, 192, 160));
-			fillrect(0, refresh_pos - 1, wmap->w, 1);
-			foreground(map_rgb(40, 160, 128));
-			fillrect(0, refresh_pos - 2, wmap->w, 1);
-			foreground(map_rgb(32, 128, 96));
-			fillrect(0, refresh_pos - 3, wmap->w, 1);
-			// Fallthrough!
-		  case 2:
 			blit(-xoffs, MAP_SIZEY - yoffs, wmap);
 			blit(-xoffs, -yoffs, wmap);
 			blit(MAP_SIZEX - xoffs, MAP_SIZEY - yoffs, wmap);
 			blit(MAP_SIZEX - xoffs, -yoffs, wmap);
-			break;
 		}
+		else
+			blit(0, 0, wmap);
 		if(_mode != RM_SHOW)
 		{
 			foreground(map_rgb((t >> 1) & 255,
@@ -182,7 +171,6 @@ void radar_window_t::mode(radar_modes_t newmode)
 	wmap->background(wmap->pixel_bg);
 	wmap->colorkey(wmap->pixel_bg);
 	_mode = newmode;
-	refresh_pos = 0;
 	time = SDL_GetTicks();
 	wmap->invalidate();
 	invalidate();
@@ -196,75 +184,29 @@ void radar_window_t::set_scroll(int xs, int ys)
 }
 
 
-void radar_window_t::sweep(void)
-{
-	int start_y = refresh_pos;
-	int ct = SDL_GetTicks();
-	int t = ct - time;
-	int end_y = t / 8;
-	if((t < 0) || (end_y >= wmap->h))
-	{
-		end_y = wmap->h;
-		time = ct;
-		refresh_pos = 0;
-		set_scroll(xpos, ypos);
-		platched = 0;
-	}
-	else
-		refresh_pos = end_y;
-	if(!platched)
-		if(refresh_pos > ((ypos - pyoffs) & (MAP_SIZEY - 1)))
-		{
-			pxoffs = xoffs;
-			pyoffs = yoffs;
-			platched = 1;
-		}
-	SDL_Rect r;
-	r.x = 0;
-	r.y = start_y >= 3 ? start_y - 3 : 0;
-	r.w = wmap->w;
-	r.h = end_y - start_y + 1;
-	invalidate(&r);
-}
-
-
 void radar_window_t::radar()
 {
 	int xpos_new = (myship.get_x() & (WORLD_SIZEX - 1)) >> 4;
 	int ypos_new = (myship.get_y() & (WORLD_SIZEY - 1)) >> 4;
-	switch(prefs->scrollradar)
+	if((xpos_new == xpos) && (ypos_new == ypos))
+		return;
+	if(prefs->scrollradar)
 	{
-	  case 0:	/* No scrolling */
-		// Note this first one just invalidates the *area*
-		// that the player is in! That is, if the player
-		// has moved, the player will be somewhere else
-		// when the rendering is performed, and no player
-		// cursor is rendered.
-		update_player(xpos, ypos);
-		if((xpos_new == xpos) && (ypos_new == ypos))
-			break;
+		// Scrolling
 		xpos = xpos_new;
-	 	ypos = ypos_new;
-		pxoffs = pyoffs = xoffs = yoffs = 0;
-		update_player(xpos, ypos);
-		break;
-	  case 1:	/* Radar screen sweep */
-		update_player(xpos, ypos);
-		xpos = xpos_new;
-	 	ypos = ypos_new;
-		sweep();
-		update_player(xpos, ypos);
-		break;
-	  case 2:	/* Plain scrolling */
-		if((xpos_new == xpos) && (ypos_new == ypos))
-			break;
-		xpos = xpos_new;
-	 	ypos = ypos_new;
+		ypos = ypos_new;
 		set_scroll(xpos, ypos);
 		pxoffs = xoffs;
 		pyoffs = yoffs;
-		invalidate();
-		break;
+	}
+	else
+	{
+		// Fixed
+		update_player(xpos, ypos);
+		xpos = xpos_new;
+		ypos = ypos_new;
+		pxoffs = pyoffs = xoffs = yoffs = 0;
+		update_player(xpos, ypos);
 	}
 }
 
@@ -274,7 +216,6 @@ void radar_window_t::frame()
 	if(prefs->scrollradar != old_scrollradar)
 	{
 		old_scrollradar = prefs->scrollradar;
-		refresh_pos = 0;
 		time = SDL_GetTicks();
 		pxoffs = pyoffs = xoffs = yoffs = 0;
 		invalidate();

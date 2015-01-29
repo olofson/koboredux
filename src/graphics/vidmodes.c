@@ -2,7 +2,8 @@
 ---------------------------------------------------------------------------
 	vidmodes.c - Video Mode Manager for Kobo Deluxe
 ---------------------------------------------------------------------------
- * Copyright (C) 2007, 2009 David Olofson
+ * Copyright 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -74,6 +75,7 @@ static VMM_IMode modetab[] =
 
 	// 16:9 modes
 	{VMM_16_9 | VMM_LORES,	480,	270,	0x10910,	NULL},
+	{VMM_16_9,		640,	360,	0x10920,	NULL},
 	{VMM_16_9 | VMM_LORES,	678,	384,	0x10930,	NULL},
 	{VMM_16_9 | VMM_TV,	854,	480,	0x10950,	"WVGA"},
 	{VMM_16_9 | VMM_LORES,	960,	540,	0x10960,	NULL},
@@ -81,6 +83,7 @@ static VMM_IMode modetab[] =
 	{VMM_16_9 | VMM_TV,	1356,	768,	0x109a0,	"Flat TV"},
 	{VMM_16_9 | VMM_TV,	1920,	1080,	0x109c0,	"HD 1080"},
 	{VMM_16_9,		2560,	1440,	0x109e0,	NULL},
+	{VMM_16_9,		3840,	2160,	0x109f0,	"4K"},
 
 	// End of table
 	{0, 0, 0}

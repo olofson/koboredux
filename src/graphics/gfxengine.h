@@ -34,12 +34,6 @@
 #include "sprite.h"
 #include "cs.h"
 
-enum gfx_drivers_t
-{
-	GFX_DRIVER_SDL2D =	0,
-	GFX_DRIVER_GLSDL =	1
-};
-
 enum gfx_scalemodes_t
 {
 	GFX_SCALE_NEAREST =	0,
@@ -72,24 +66,10 @@ class gfxengine_t
 	void size(int w, int h);
 	void centered(int c);
 	void scale(float x, float y);
-	void driver(gfx_drivers_t drv);
 	void mode(int bits, int fullscreen);
-
-	// 1: Use double buffering if possible
-	void doublebuffer(int use);
-
-	// -1: Use default for shadow() and doublebuffer() settings
-	// 0: None; assume flipping gives you a garbage buffer
-	// 1: Assume flipping leaves the back buffer intact
-	// 2: Assume two buffers that are swapped when flipping
-	// 3: Assume three buffers cycled when flipping
-	void pages(int np);
 
 	// 1: Enable vsync, if available
 	void vsync(int use);
-
-	// 1: Use a software shadow back buffer, if possible
-	void shadow(int use);
 
 	void interpolation(int inter);
 
@@ -102,10 +82,6 @@ class gfxengine_t
 
 	void wrap(int x, int y);
 
-	/* Info */
-	int doublebuffer()	{ return _doublebuf; }
-	int shadow()		{ return _shadow; }
-
 	/* Engine open/close */
 	int open(int objects = 1024, int extraflags = 0);
 	void close();
@@ -117,7 +93,7 @@ class gfxengine_t
 	void source_scale(float x, float y);
 	void colorkey(Uint8 r, Uint8 g, Uint8 b);
 	void clampcolor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-	void dither(int type = 0, int _broken_rgba8 = 0);
+	void dither(int type = 0);
 	void noalpha(int threshold = 128);
 	void brightness(float bright, float contr);
 
@@ -206,7 +182,6 @@ class gfxengine_t
 	float yscale()		{ return ys * (1.f/256.f); }
 
   protected:
-	gfx_drivers_t		_driver;
 	gfx_scalemodes_t	_scalemode;
 	int			_clamping;
 	SDL_Window	*sdlwindow;
@@ -220,7 +195,6 @@ class gfxengine_t
 	s_filter_t	*sf1, *sf2;	// Scaling filter plugins
 	s_filter_t	*acf;		// Alpha cleaning plugin
 	s_filter_t	*bcf;		// Brightness/contrast plugin
-	s_filter_t	*df;		// Dither filter plugin
 	s_filter_t	*dsf;		// Display format plugin
 	int		xscroll, yscroll;
 	float		xratio[CS_LAYERS];
@@ -229,10 +203,8 @@ class gfxengine_t
 	SoFont		*fonts[GFX_BANKS];	// Kludge.
 	cs_engine_t	*csengine;
 	int		xflags;
-	int		_doublebuf;
 	int		_pages;
 	int		_vsync;
-	int		_shadow;
 	int		_fullscreen;
 	int		_centered;
 	int		use_interpolation;
@@ -243,7 +215,6 @@ class gfxengine_t
 	int		_cursor;
 	int		_dither;
 	int		_dither_type;
-	int		broken_rgba8;	//Klugde for OpenGL (if RGBA8 ==> RGBA4)
 	int		alpha_threshold;	//For noalpha()
 	float		_brightness;
 	float		_contrast;

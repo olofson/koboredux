@@ -1606,7 +1606,6 @@ void st_options_base_t::select(int tag)
 		gengine->timefilter(prefs->timefilter * 0.01f);
 		gengine->interpolation(prefs->filter);
 		gengine->vsync(prefs->vsync);
-		gengine->pages(prefs->pages);
 	}
 	cfg_form->clearstatus(OS_UPDATE);
 

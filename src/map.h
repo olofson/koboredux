@@ -56,7 +56,6 @@ class _map
 		y &= MAP_SIZEY - 1;
 		return data[(y << MAP_SIZEX_LOG2) + x];
 	}
-	void clearpos(int x, int y);
   protected:
 	int sitex[SITE_MAX];
 	int sitey[SITE_MAX];

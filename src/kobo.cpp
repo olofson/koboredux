@@ -509,20 +509,20 @@ void KOBO_main::build_screen()
 	wmap->place(0, 0, MAP_SIZEX * 2, MAP_SIZEY * 2);
 	wmap->offscreen();
 	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
-	wradar->bgimage(B_RADAR_BACK, 0);
+//	wradar->bgimage(B_RADAR_BACK, 0);
 
 	whealth->place(xoffs + 4, yoffs + 92, 8, 128);
-	whealth->bgimage(B_HEALTH_LID, 0);
+//	whealth->bgimage(B_HEALTH_LID, 0);
 	whealth->background(whealth->map_rgb(0x182838));
 	whealth->redmax(0);
 
 	wtemp->place(xoffs + 244, yoffs + 188, 4, 32);
-	wtemp->bgimage(B_TEMP_LID, 0);
+//	wtemp->bgimage(B_TEMP_LID, 0);
 	wtemp->background(wtemp->map_rgb(0x182838));
 	wtemp->redmax(1);
 
 	wttemp->place(xoffs + 248, yoffs + 188, 4, 32);
-	wttemp->bgimage(B_TTEMP_LID, 0);
+//	wttemp->bgimage(B_TTEMP_LID, 0);
 	wttemp->background(wttemp->map_rgb(0x182838));
 	wttemp->redmax(1);
 
@@ -543,7 +543,6 @@ int KOBO_main::init_display(prefs_t *p)
 	int dw, dh;		// Display size
 	int gw, gh;		// Game "window" size
 	gengine->title("Kobo Redux " KOBO_VERSION, "kobord");
-	gengine->driver((gfx_drivers_t)p->videodriver);
 
 	dw = p->width;
 	dh = p->height;
@@ -610,10 +609,7 @@ log_printf(WLOG, "--- Border added: %d x %d\n", dw, dh);
 log_printf(WLOG, "--- Offsets: %d, %d\n", xoffs, yoffs);
 
 	gengine->mode(0, p->fullscreen);
-	gengine->doublebuffer(p->doublebuf);
-	gengine->pages(p->pages);
 	gengine->vsync(p->vsync);
-	gengine->shadow(p->shadow);
 	gengine->cursor(0);
 
 	gengine->period(game.speed);
@@ -870,9 +866,8 @@ static float progtab_all[] = {
 typedef enum
 {
 	KOBO_CLAMP =		0x0001,	// Clamp to frame edge pixels
-	KOBO_CLAMP_OPAQUE =	0x0002,	// Clamp to black instead of transparent
+	KOBO_CLAMP_OPAQUE =	0x0002,	// Clamp to black; not transparent
 	KOBO_NOALPHA =		0x0004,	// Disable alpha channel
-	KOBO_NODITHER =		0x0008,	// Disable dithering
 	KOBO_NEAREST =		0x0010,	// Force NEAREST scale mode
 	KOBO_CENTER =		0x0020,	// Center hotspot in frames
 	KOBO_NOBRIGHT =		0x0040,	// Disable brightness/contrast filter
@@ -997,12 +992,6 @@ int KOBO_main::load_graphics(prefs_t *p)
 			gengine->brightness(0.01f * p->brightness,
 					0.01f * p->contrast);
 
-		// Dithering
-		if(gd->flags & KOBO_NODITHER || !p->use_dither)
-			gengine->dither(-1);
-		else
-			gengine->dither(p->dither_type, p->broken_rgba8);
-
 		// Alpha channels
 		if(gd->flags & KOBO_NOALPHA || !p->alpha)
 			gengine->noalpha(NOALPHA_THRESHOLD);
@@ -1038,7 +1027,6 @@ int KOBO_main::load_graphics(prefs_t *p)
 		{
 			s_bank_t *b = s_get_bank(gfxengine->get_gfx(),
 					gd->bank);
-//FIXME: Is this correct...? (Other scaling breakage now, so can't verify!)
 			if(b)
 				gengine->set_hotspot(gd->bank, -1,
 						b->w / gengine->xscale() / 2,
@@ -1049,85 +1037,12 @@ int KOBO_main::load_graphics(prefs_t *p)
 		progress();
 	}
 #if 0
-	// Chop up the dashboard graphics as needed
-	SDL_Rect r;
-	r.w = r.h = 16;
-	r.x = WMAIN_X;
-	r.y = WMAIN_Y;
-	if(gengine->copyrect(B_FRAME_TL, B_SCREEN, 0, &r) < 0)
-//		return -6;
-		;
-	progress();
-	r.x += WMAIN_W - 16;
-	if(gengine->copyrect(B_FRAME_TR, B_SCREEN, 0, &r) < 0)
-//		return -7;
-		;
-	progress();
-	r.x = WMAIN_X;
-	r.y = WMAIN_Y + WMAIN_H - 16;
-	if(gengine->copyrect(B_FRAME_BL, B_SCREEN, 0, &r) < 0)
-//		return -8;
-		;
-	progress();
-	r.x += WMAIN_W - 16;
-	if(gengine->copyrect(B_FRAME_BR, B_SCREEN, 0, &r) < 0)
-//		return -9;
-		;
-	progress();
-	r.x = 252;
-	r.y = 4;
-	r.w = 64;
-	r.h = 18;
-	if(gengine->copyrect(B_HIGH_BACK, B_SCREEN, 0, &r) < 0)
-//		return -26;
-		;
-	progress();
-	r.y += 18 + 4;
-	if(gengine->copyrect(B_SCORE_BACK, B_SCREEN, 0, &r) < 0)
-//		return -27;
-		;
-	progress();
 	r.x = 244;
 	r.y = (SCREEN_HEIGHT - MAP_SIZEY) / 2;
 	r.w = MAP_SIZEX;
 	r.h = MAP_SIZEY;
 	if(gengine->copyrect(B_RADAR_BACK, B_SCREEN, 0, &r) < 0)
-//		return -28;
-		;
-	progress();
-	r.x = 264;
-	r.y = 196;
-	r.w = 38;
-	r.h = 18;
-	if(gengine->copyrect(B_SHIPS_BACK, B_SCREEN, 0, &r) < 0)
-//		return -29;
-		;
-	progress();
-	r.y += 18 + 4;
-	if(gengine->copyrect(B_STAGE_BACK, B_SCREEN, 0, &r) < 0)
-//		return -30;
-		;
-	progress();
-	r.x = 4;
-	r.y = 92;
-	r.w = 8;
-	r.h = 128;
-	if(gengine->copyrect(B_HEALTH_LID, B_SCREEN, 0, &r) < 0)
-//		return -31;
-		;
-	progress();
-	r.x = 244;
-	r.y = 188;
-	r.w = 4;
-	r.h = 32;
-	if(gengine->copyrect(B_TEMP_LID, B_SCREEN, 0, &r) < 0)
-//		return -32;
-		;
-	progress();
-	r.x += 4;
-	if(gengine->copyrect(B_TTEMP_LID, B_SCREEN, 0, &r) < 0)
-//		return -33;
-		;
+		log_printf(ELOG, "Couldn't copy B_RADAR_BACK!\n");
 	progress();
 #endif
 
@@ -1206,7 +1121,6 @@ void KOBO_main::close_js()
 	if(!joystick)
 		return;
 
-//	if(SDL_JoystickOpened(0))
 	if(joystick)
 		SDL_JoystickClose(joystick);
 	joystick = NULL;
@@ -1608,21 +1522,17 @@ void kobo_gfxengine_t::frame()
 			{
 				km.pause_game();
 				prefs->fullscreen = 0;
-				prefs->videodriver = (int)GFX_DRIVER_SDL2D;
 				prefs->width = 640;
-				prefs->height = 480;
+				prefs->height = 360;
 				prefs->aspect = 1000;
-				prefs->depth = 0;
-				prefs->doublebuf = 0;
-				prefs->pages = -1;
-				prefs->shadow = 1;
 				prefs->scalemode = (int)GFX_SCALE_NEAREST;
 				prefs->brightness = 100;
 				prefs->contrast = 100;
 				global_status |= OS_RELOAD_GRAPHICS |
 						OS_RESTART_VIDEO;
 				stop();
-				st_error.message("Safe video settings applied!",
+				st_error.message(
+					"Safe video settings applied!",
 					"Enter Options menu to save.");
 				gsm.push(&st_error);
 				return;
@@ -2120,12 +2030,6 @@ int main(int argc, char *argv[])
 		put_options_man();
 		main_cleanup();
 		return 1;
-	}
-
-	if(prefs->cmd_noparachute)
-	{
-		SDL_Quit();
-		SDL_Init(SDL_INIT_NOPARACHUTE);
 	}
 
 	km.open_logging(prefs);

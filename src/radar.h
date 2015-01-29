@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001-2003, 2005-2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001-2003, 2005-2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -59,8 +60,6 @@ class radar_window_t : public window_t
 	int pxoffs, pyoffs;		//Scroll offset for player marker
 	int platched;			//p*offset latched yet?
 	int time;			//for delta time calc
-	int refresh_pos;		//Sweeping refresh posn
-	void sweep();			//Incremental sweeping refresh
 	void radar();			//Drive any actual radar mode
 	void noise();			//Render noise effect
 	void set_scroll(int xs, int ys);//Set map scroll offset

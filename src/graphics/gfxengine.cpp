@@ -55,18 +55,13 @@ gfxengine_t::gfxengine_t()
 	wx = wy = 0;
 	xs = ys = 256;		// 1.0
 	sxs = sys = 256;	// 1.0
-	sf1 = sf2 = acf = bcf = df = dsf = NULL;
+	sf1 = sf2 = acf = bcf = dsf = NULL;
 	gfx = NULL;
 	csengine = NULL;
-	_driver = GFX_DRIVER_SDL2D;
-	_shadow = 1;
-	_doublebuf = 1;
-	_pages = -1;
 	_vsync = 1;
 	_fullscreen = 0;
 	_centered = 0;
 	use_interpolation = 1;
-	_depth = 0;
 	_title = "GfxEngine v0.5";
 	_icontitle = "GfxEngine";
 	_cursor = 1;
@@ -76,9 +71,6 @@ gfxengine_t::gfxengine_t()
 	_clamping = 0;
 	xflags = 0;
 
-	_dither = 0;
-	_dither_type = 0;
-	broken_rgba8 = 0;
 	alpha_threshold = 0;
 
 	_brightness = 1.0;
@@ -172,36 +164,6 @@ void gfxengine_t::mode(int bits, int fullscreen)
 		show();
 }
 
-void gfxengine_t::driver(gfx_drivers_t drv)
-{
-	int was_showing = is_showing;
-	hide();
-
-	_driver = drv;
-
-	if(was_showing)
-		show();
-}
-
-void gfxengine_t::doublebuffer(int use)
-{
-	if(_doublebuf == use)
-		return;
-
-	int was_showing = is_showing;
-	hide();
-
-	_doublebuf = use;
-
-	if(was_showing)
-		show();
-}
-
-void gfxengine_t::pages(int np)
-{
-	_pages = np;
-}
-
 void gfxengine_t::vsync(int use)
 {
 	if(_vsync == use)
@@ -211,20 +173,6 @@ void gfxengine_t::vsync(int use)
 	hide();
 
 	_vsync = use;
-
-	if(was_showing)
-		show();
-}
-
-void gfxengine_t::shadow(int use)
-{
-	if(_shadow == use)
-		return;
-
-	int was_showing = is_showing;
-	hide();
-
-	_shadow = use;
 
 	if(was_showing)
 		show();
@@ -265,13 +213,11 @@ void gfxengine_t::reset_filters()
 	sf2 = s_add_filter(s_filter_scale);
 	acf = s_add_filter(s_filter_cleanalpha);
 	bcf = s_add_filter(s_filter_brightness);
-	df = s_add_filter(s_filter_dither);
 	dsf = s_add_filter(s_filter_displayformat);
 
 	/* Set default parameters */
 	clampcolor(0, 0, 0, 0);
 	scalemode(GFX_SCALE_NEAREST);
-	dither(0, 0);
 	noalpha(0);
 	brightness(1.0, 1.0);
 	filterflags(0);
@@ -290,7 +236,7 @@ void gfxengine_t::scalemode(gfx_scalemodes_t sm, int clamping)
 {
 	_scalemode = sm;
 	_clamping = clamping;
-	if(!sf1 || !df)
+	if(!sf1)
 		return;
 
 	int rxs = (xs * 256 + 128) / sxs;
@@ -416,45 +362,6 @@ void gfxengine_t::clampcolor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	s_clampcolor.g = g;
 	s_clampcolor.b = b;
 	s_clampcolor.a = b;
-}
-
-
-void gfxengine_t::dither(int type, int _broken_rgba8)
-{
-	_dither = type >= 0;
-	_dither_type = type;
-	broken_rgba8 = _broken_rgba8;
-
-	if(!df)
-		return;
-	if(!sdlrenderer)
-		return;
-	if(_dither)
-		log_printf(WLOG, "gfxengine: Dithering not implemented!\n");
-#if 0
-	{
-		if(_driver == GFX_DRIVER_GLSDL)
-		{
-			//Klugde for glSDL, which doesn't give us a faked
-			//screen surface - while we're interested only in
-			//the *texture* depth; not the display depth!
-			df->args.r = df->args.g = df->args.b = 0;
-			//Another kludge, because some cards support RGB8
-			//(24 bit) textures, but not RGBA8 (32 bit).
-			df->args.x = broken_rgba8;
-		}
-		else
-		{
-			df->args.x = 0;
-			df->args.r = 1<<(screen_surface->format->Rloss-1);
-			df->args.g = 1<<(screen_surface->format->Gloss-1);
-			df->args.b = 1<<(screen_surface->format->Bloss-1);
-		}
-	}
-	else
-#endif
-		df->args.x = df->args.r = df->args.g = df->args.b = 0;
-	df->args.y = type;
 }
 
 
@@ -721,7 +628,7 @@ void gfxengine_t::close()
 	cs_engine_delete(csengine);
 	csengine = NULL;
 	s_remove_filter(NULL);
-	sf1 = sf2 = acf = bcf = df = dsf = NULL;
+	sf1 = sf2 = acf = bcf = dsf = NULL;
 	s_delete_container(gfx);
 	gfx = NULL;
 	is_open = 0;
@@ -882,7 +789,6 @@ int gfxengine_t::show()
 	cs_engine_set_size(csengine, _width, _height);
 	csengine->filter = use_interpolation;
 
-	dither(_dither);
 	noalpha(alpha_threshold);
 	is_showing = 1;
 

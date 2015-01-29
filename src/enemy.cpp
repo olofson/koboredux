@@ -287,6 +287,7 @@ void _enemy::kill_default()
  *                                beam
  * ===========================================================================
  */
+
 void _enemy::make_beam()
 {
 	di = 1 + pubrand.get(4);
@@ -320,11 +321,13 @@ const enemy_kind beam = {
 	LAYER_BULLETS
 };
 
+
 /*
  * ===========================================================================
  *                                rock
  * ===========================================================================
  */
+
 void _enemy::make_rock()
 {
 	count = 500;
@@ -377,11 +380,13 @@ const enemy_kind rock = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                ring
  * ===========================================================================
  */
+
 void _enemy::make_ring()
 {
 	count = 500;
@@ -414,11 +419,13 @@ const enemy_kind ring = {
 	LAYER_BULLETS
 };
 
+
 /*
  * ===========================================================================
  *                                bomb
  * ===========================================================================
  */
+
 void _enemy::make_bomb()
 {
 	count = 500;
@@ -468,11 +475,13 @@ const enemy_kind bomb1 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                bomb2
  * ===========================================================================
  */
+
 void _enemy::move_bomb2()
 {
 	int h1 = ABS(diffx);
@@ -528,12 +537,14 @@ const enemy_kind bomb2 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                explosionX
  *                            Various explosions
  * ===========================================================================
  */
+
 void _enemy::make_expl()
 {
 	health = 1;
@@ -560,7 +571,7 @@ void _enemy::make_expl()
 		break;
 	  case B_BOLT:
 		frame = 32 + 8 * pubrand.get(2);
-		di = 1;	//pubrand.get(2);
+		di = pubrand.get(2);
 		a = 8;
 		break;
 	}
@@ -612,12 +623,14 @@ const enemy_kind explosion5 = {
 	LAYER_FX
 };
 
+
 /*
  * ===========================================================================
  *                                 ringexpl
  *                           Ring dies in a flash
  * ===========================================================================
  */
+
 const enemy_kind ringexpl = {
 	0,
 	&_enemy::make_expl,
@@ -628,12 +641,14 @@ const enemy_kind ringexpl = {
 	LAYER_FX
 };
 
+
 /*
  * ===========================================================================
  *                                 beamexpl
  *                         Enemy "bullet" discharges
  * ===========================================================================
  */
+
 const enemy_kind beamexpl = {
 	0,
 	&_enemy::make_expl,
@@ -644,12 +659,14 @@ const enemy_kind beamexpl = {
 	LAYER_FX
 };
 
+
 /*
  * ===========================================================================
  *                                 boltexpl
  *                         Player bolt discharges
  * ===========================================================================
  */
+
 const enemy_kind boltexpl = {
 	0,
 	&_enemy::make_expl,
@@ -660,12 +677,14 @@ const enemy_kind boltexpl = {
 	LAYER_FX
 };
 
+
 /*
  * ===========================================================================
  *                                 rockexpl
  *                          Rock *finally* explodes
  * ===========================================================================
  */
+
 const enemy_kind rockexpl = {
 	0,
 	&_enemy::make_expl,
@@ -676,12 +695,14 @@ const enemy_kind rockexpl = {
 	LAYER_FX
 };
 
+
 /*
  * ===========================================================================
  *                                 bombdeto
  *                  Bomb detonation (not really an explosion!)
  * ===========================================================================
  */
+
 const enemy_kind bombdeto = {
 	0,
 	&_enemy::make_expl,
@@ -692,11 +713,13 @@ const enemy_kind bombdeto = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                cannon
  * ===========================================================================
  */
+
 void _enemy::make_cannon()
 {
 	count = 0;
@@ -719,8 +742,9 @@ void _enemy::move_cannon()
 
 void _enemy::kill_cannon()
 {
-	enemies.make(&pipein, CS2PIXEL(x), CS2PIXEL(y));
 	sound.g_base_node_explo(x, y);
+	enemies.make(&pipein, CS2PIXEL(x), CS2PIXEL(y));
+	enemies.make(enemies.randexp(), CS2PIXEL(x), CS2PIXEL(y));
 	release();
 }
 
@@ -734,11 +758,13 @@ const enemy_kind cannon = {
 	LAYER_BASES
 };
 
+
 /*
  * ===========================================================================
  *                                core
  * ===========================================================================
  */
+
 void _enemy::make_core()
 {
 	count = 0;
@@ -781,34 +807,28 @@ const enemy_kind core = {
 	LAYER_BASES
 };
 
+
 /*
  * ===========================================================================
  *                                pipein
  *                    Exploding pipe from leaf nodes
  * ===========================================================================
  */
+
 void _enemy::make_pipein()
 {
 	health = 1;
 	damage = 0;
 	shootable = 0;
-	count = 4;
+	count = 0;
 	a = 0;
-	b = 0;
 }
 
 void _enemy::move_pipein()
 {
-	sound.g_pipe_rumble(x, y);
-	if((norm < ((VIEWLIMIT >> 1) + 32)) && (count == 1))
-		enemies.make(&explosion,
-				CS2PIXEL(x) + pubrand.get(4) - 8,
-				CS2PIXEL(y) + pubrand.get(4) - 8,
-				0, 0, 1);
-
-	if(++count < 4)
+	if(--count > 0)
 		return;
-	count = 0;
+	count = 2 + gamerand.get(2);
 
 	int x1 = (CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4;
 	int y1 = (CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4;
@@ -822,42 +842,49 @@ void _enemy::move_pipein()
 		release();
 		return;
 	}
-	if(norm < ((VIEWLIMIT >> 1) + 32))
-		enemies.make(enemies.randexp(), CS2PIXEL(x), CS2PIXEL(y),
-				0, 0, b);
-	b = 1;
-	if((p ^ a) == U_MASK)
+
+	int scraptube = 24 + pubrand.get(1);
+	switch(p ^ a)
 	{
+	  case U_MASK:
 		a_next = D_MASK;
 		y_next = -PIXEL2CS(16);
-	}
-	if((p ^ a) == R_MASK)
-	{
+		break;
+	  case R_MASK:
 		a_next = L_MASK;
 		x_next = PIXEL2CS(16);
-	}
-	if((p ^ a) == D_MASK)
-	{
+		scraptube += 2;
+		break;
+	  case D_MASK:
 		a_next = U_MASK;
 		y_next = PIXEL2CS(16);
-	}
-	if((p ^ a) == L_MASK)
-	{
+		scraptube += 4;
+		break;
+	  case L_MASK:
 		a_next = R_MASK;
 		x_next = -PIXEL2CS(16);
-	}
-	if(a_next)
-	{
-		screen.set_map(x1, y1, 0);
-		x += x_next;
-		y += y_next;
-		a = a_next;
+		scraptube += 6;
+		break;
+	  default:
+		if(!(p & CORE))
+			screen.set_map(x1, y1, m ^ a);
+		release();
 		return;
 	}
-	if(!(p & CORE))
-		screen.set_map(x1, y1, m ^ a);
-	release();
+	if(norm < ((VIEWLIMIT >> 1) + 32))
+	{
+		sound.g_pipe_rumble(x, y);
+		enemies.make(enemies.randexp(),
+				CS2PIXEL(x) + pubrand.get(4) - 8,
+				CS2PIXEL(y) + pubrand.get(4) - 8, 0, 0, 1);
+	}
+	screen.clean_scrap(x1, y1);
+	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
+	x += x_next;
+	y += y_next;
+	a = a_next;
 }
+
 const enemy_kind pipein = {
 	0,
 	&_enemy::make_pipein,
@@ -868,22 +895,24 @@ const enemy_kind pipein = {
 	LAYER_BASES
 };
 
+
 /*
  * ===========================================================================
  *                                pipeout
  *      Exploding pipes from core, recursively following branches
  * ===========================================================================
  */
+
 void _enemy::make_pipeout()
 {
 	int x1 = (CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4;
 	int y1 = (CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4;
-
-	screen.set_map(x1, y1, 0);
+	screen.clean_scrap(x1, y1);
+	screen.set_map(x1, y1, SPACE);
 	health = 1;
 	damage = 0;
 	shootable = 0;
-	count = 4;
+	count = 0;
 	switch (di)
 	{
 	  case 1:
@@ -905,20 +934,11 @@ void _enemy::make_pipeout()
 	}
 }
 
-
 void _enemy::move_pipeout()
 {
-	if((norm < ((VIEWLIMIT >> 1) + 32)) && (count == 1))
-		enemies.make(&explosion,
-				CS2PIXEL(x) + pubrand.get(4) - 8,
-				CS2PIXEL(y) + pubrand.get(4) - 8,
-				0, 0, 1);
-	if(++count < 4)
-	{
-		sound.g_pipe_rumble(x, y);
+	if(--count > 0)
 		return;
-	}
-	count = 0;
+	count = 2 + gamerand.get(2);
 
 	int x1 = (CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4;
 	int y1 = (CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4;
@@ -931,72 +951,84 @@ void _enemy::move_pipeout()
 		release();
 		return;
 	}
+
+	screen.clean_scrap(x1, y1);
+
 	if((p ^ a) == 0)
 	{
 		manage.add_score(30);
 		release();
 		enemies.erase_cannon(x1, y1);
-		screen.set_map(x1, y1, 0);
+		screen.set_map(x1, y1, SPACE);
 		sound.g_base_node_explo(x, y);
 		if(norm < ((VIEWLIMIT >> 1) + 32))
-			enemies.make(enemies.randexp(), CS2PIXEL(x), CS2PIXEL(y));
+			enemies.make(enemies.randexp(),
+					CS2PIXEL(x), CS2PIXEL(y));
 		return;
 	}
+
 	if((p ^ a) == HARD)
 	{
 		release();
-		screen.set_map(x1, y1, 0);
+		screen.set_map(x1, y1, SPACE);
 		sound.g_pipe_rumble(x, y);
 		if(norm < ((VIEWLIMIT >> 1) + 32))
-			enemies.make(enemies.randexp(), CS2PIXEL(x), CS2PIXEL(y),
-					0, 0, 1);
+			enemies.make(enemies.randexp(),
+					CS2PIXEL(x), CS2PIXEL(y), 0, 0, 1);
 		return;
 	}
-	if((p ^ a) == U_MASK)
+
+	int scraptube = 24 + pubrand.get(1);
+	switch(p ^ a)
 	{
+	  case U_MASK:
 		a_next = D_MASK;
 		y_next = -PIXEL2CS(16);
-	}
-	if((p ^ a) == R_MASK)
-	{
+		break;
+	  case R_MASK:
 		a_next = L_MASK;
 		x_next = PIXEL2CS(16);
-	}
-	if((p ^ a) == D_MASK)
-	{
+		scraptube += 2;
+		break;
+	  case D_MASK:
 		a_next = U_MASK;
 		y_next = PIXEL2CS(16);
-	}
-	if((p ^ a) == L_MASK)
-	{
+		scraptube += 4;
+		break;
+	  case L_MASK:
 		a_next = R_MASK;
 		x_next = -PIXEL2CS(16);
-	}
-	screen.set_map(x1, y1, 0);
-	sound.g_pipe_rumble(x, y);
-	if(norm < ((VIEWLIMIT >> 1) + 32))
-		enemies.make(enemies.randexp(), CS2PIXEL(x), CS2PIXEL(y),
-				0, 0, 1);
-	if(a_next)
-	{
-		x += x_next;
-		y += y_next;
-		a = a_next;
+		scraptube += 6;
+		break;
+	  default:
+		p ^= a;
+		if(p & U_MASK)
+			enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y),
+					0, 0, 1);
+		if(p & R_MASK)
+			enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y),
+					0, 0, 3);
+		if(p & D_MASK)
+			enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y),
+					0, 0, 5);
+		if(p & L_MASK)
+			enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y),
+					0, 0, 7);
+		manage.add_score(10);
+		release();
 		return;
 	}
-	p ^= a;
-	if(p & U_MASK)
-		enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y), 0, 0, 1);
-	if(p & R_MASK)
-		enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y), 0, 0, 3);
-	if(p & D_MASK)
-		enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y), 0, 0, 5);
-	if(p & L_MASK)
-		enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y), 0, 0, 7);
-	manage.add_score(10);
-	release();
+	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
+	sound.g_pipe_rumble(x, y);
+	if(norm < ((VIEWLIMIT >> 1) + 32))
+		enemies.make(&explosion,
+				CS2PIXEL(x) + pubrand.get(4) - 8,
+				CS2PIXEL(y) + pubrand.get(4) - 8,
+				0, 0, 1);
+	x += x_next;
+	y += y_next;
+	a = a_next;
 }
-
 
 const enemy_kind pipeout = {
 	0,
@@ -1008,12 +1040,14 @@ const enemy_kind pipeout = {
 	LAYER_BASES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy1
  *                           Gray Dumb Missile
  * ===========================================================================
  */
+
 void _enemy::make_enemy1()
 {
 	di = 1;
@@ -1024,6 +1058,7 @@ void _enemy::move_enemy1()
 {
 	this->move_enemy_template(2, 256);
 }
+
 const enemy_kind enemy1 = {
 	2,
 	&_enemy::make_enemy1,
@@ -1034,12 +1069,14 @@ const enemy_kind enemy1 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy2
  *                          Teal Firing Fighter
  * ===========================================================================
  */
+
 void _enemy::make_enemy2()
 {
 	di = 1;
@@ -1059,6 +1096,7 @@ void _enemy::move_enemy2()
 		count = 32;
 	}
 }
+
 const enemy_kind enemy2 = {
 	10,
 	&_enemy::make_enemy2,
@@ -1069,12 +1107,14 @@ const enemy_kind enemy2 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy3
  *                         Maroon Homing Missile
  * ===========================================================================
  */
+
 void _enemy::make_enemy3()
 {
 	di = 1;
@@ -1085,6 +1125,7 @@ void _enemy::move_enemy3()
 {
 	this->move_enemy_template(32, 96);
 }
+
 const enemy_kind enemy3 = {
 	1,
 	&_enemy::make_enemy3,
@@ -1095,12 +1136,14 @@ const enemy_kind enemy3 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy4
  *                          Blue Homing Missile
  * ===========================================================================
  */
+
 void _enemy::make_enemy4()
 {
 	di = 1;
@@ -1111,6 +1154,7 @@ void _enemy::move_enemy4()
 {
 	this->move_enemy_template(4, 96);
 }
+
 const enemy_kind enemy4 = {
 	1,
 	&_enemy::make_enemy4,
@@ -1121,12 +1165,14 @@ const enemy_kind enemy4 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy5
  *                        Green Boomerang Fighter
  * ===========================================================================
  */
+
 void _enemy::make_enemy()
 {
 	count = gamerand.get() & 127;
@@ -1163,6 +1209,7 @@ void _enemy::move_enemy5()
 			this->shot_template(&beam, 6, 0, 0);
 	}
 }
+
 const enemy_kind enemy5 = {
 	5,
 	&_enemy::make_enemy,
@@ -1173,12 +1220,14 @@ const enemy_kind enemy5 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy6
  *                         Purple Boomerang Fighter
  * ===========================================================================
  */
+
 void _enemy::move_enemy6()
 {
 	if(a == 0)
@@ -1202,6 +1251,7 @@ void _enemy::move_enemy6()
 			this->shot_template(&beam, 6, 0, 0);
 	}
 }
+
 const enemy_kind enemy6 = {
 	2,
 	&_enemy::make_enemy,
@@ -1212,12 +1262,14 @@ const enemy_kind enemy6 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy7
  *                        Pink Boomerang Fighter
  * ===========================================================================
  */
+
 void _enemy::move_enemy7()
 {
 	if(a == 0)
@@ -1246,6 +1298,7 @@ void _enemy::move_enemy7()
 			this->shot_template(&beam, 6, 0, 0);
 	}
 }
+
 const enemy_kind enemy7 = {
 	5,
 	&_enemy::make_enemy,
@@ -1255,11 +1308,14 @@ const enemy_kind enemy7 = {
 	B_BMR_PINK, 0,
 	LAYER_ENEMIES
 };
+
+
 /*
  * ===========================================================================
  *                                enemy_m1
  * ===========================================================================
  */
+
 void _enemy::make_enemy_m1()
 {
 	di = 1;
@@ -1286,6 +1342,7 @@ void _enemy::move_enemy_m1()
 		release();
 	}
 }
+
 const enemy_kind enemy_m1 = {
 	50,
 	&_enemy::make_enemy_m1,
@@ -1296,11 +1353,13 @@ const enemy_kind enemy_m1 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy_m2
  * ===========================================================================
  */
+
 void _enemy::make_enemy_m2()
 {
 	di = 1;
@@ -1327,6 +1386,7 @@ void _enemy::move_enemy_m2()
 		release();
 	}
 }
+
 const enemy_kind enemy_m2 = {
 	50,
 	&_enemy::make_enemy_m2,
@@ -1337,11 +1397,13 @@ const enemy_kind enemy_m2 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy_m3
  * ===========================================================================
  */
+
 void _enemy::make_enemy_m3()
 {
 	di = 1;
@@ -1368,6 +1430,7 @@ void _enemy::move_enemy_m3()
 		release();
 	}
 }
+
 const enemy_kind enemy_m3 = {
 	50,
 	&_enemy::make_enemy_m3,
@@ -1378,11 +1441,13 @@ const enemy_kind enemy_m3 = {
 	LAYER_ENEMIES
 };
 
+
 /*
  * ===========================================================================
  *                                enemy_m4
  * ===========================================================================
  */
+
 void _enemy::make_enemy_m4()
 {
 	di = 1;
@@ -1413,6 +1478,7 @@ void _enemy::move_enemy_m4()
 		release();
 	}
 }
+
 const enemy_kind enemy_m4 = {
 	100,
 	&_enemy::make_enemy_m4,

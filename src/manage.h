@@ -104,6 +104,7 @@ class _manage
 	static int get_ready();
 	static void game_start();
 	static int game_over();
+	static int game_time()		{ return hi.playtime; }
 };
 
 extern _manage manage;
