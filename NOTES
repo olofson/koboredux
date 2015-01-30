@@ -24,35 +24,6 @@ Kobo DL install on Ubuntu:
 
 	* How do we create the scores dir with correct permissions with CMake?
 
-
--------------------------------------------------------------------------------
-Design:
--------------------------------------------------------------------------------
-
-	* Final (10th) level in each area is near or at ground level over a
-	  planet.
-		* Maybe the last battle is over a gigantic space station?
-
-	* Add bosses after each 10 map area?
-		* Smaller maps?
-		* Barriers instead of wrapping?
-			* The bosses could trap you inside a force field that
-			  you can't leave until the bosses have been destroyed.
-		* Indestructible obstacles?
-		* How about fighting one or more massive enemies inside huge
-		  labyrinths?
-		* If we have obstacles, bosses should probably move on
-		  predefined paths between waypoints, to keep things simple
-		  and predictable. The use of waypoints means the bosses can
-		  still make decisions, but they don't have to do actual live
-		  pathfinding.
-
-	* The occasional creepy cut scene where a video of some alien monster
-	  face is resynthesized using explosion sprites?
-
-	* An ancient TODO in there says "Short demo of how to destroy a base."
-
-
 -------------------------------------------------------------------------------
 
 MetaRetroScreenFX:
