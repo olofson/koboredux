@@ -33,6 +33,7 @@
 #include <string.h>
 #include "sprite.h"
 #include "cs.h"
+#include "palette.h"
 
 enum gfx_scalemodes_t
 {
@@ -53,7 +54,7 @@ class gfxengine_t
 	int video_flags();
   public:
 	gfxengine_t();
-	virtual ~gfxengine_t();
+	~gfxengine_t();
 
 	void screen(window_t *fullwin);
 	window_t *screen()	{ return fullwin; }
@@ -66,7 +67,7 @@ class gfxengine_t
 	void size(int w, int h);
 	void centered(int c);
 	void scale(float x, float y);
-	void mode(int bits, int fullscreen);
+	void mode(int fullscreen);
 
 	// 1: Enable vsync, if available
 	void vsync(int use);
@@ -96,6 +97,8 @@ class gfxengine_t
 	void dither(int type = 0);
 	void noalpha(int threshold = 128);
 	void brightness(float bright, float contr);
+	int load_palette(const char *path);
+	uint32_t palette(unsigned ind);
 
 	int loadimage(int bank, const char *name);
 	int loadtiles(int bank, int w, int h, const char *name);
@@ -201,6 +204,7 @@ class gfxengine_t
 	float		yratio[CS_LAYERS];
 	s_container_t	*gfx;
 	SoFont		*fonts[GFX_BANKS];	// Kludge.
+	GFX_palette	*_palette;
 	cs_engine_t	*csengine;
 	int		xflags;
 	int		_pages;
@@ -209,7 +213,6 @@ class gfxengine_t
 	int		_centered;
 	int		use_interpolation;
 	int		_width, _height;
-	int		_depth;
 	const char	*_title;
 	const char	*_icontitle;
 	int		_cursor;
@@ -228,9 +231,9 @@ class gfxengine_t
 	int		is_open;
 
 	int		screenshot_count;
-
+#if 0
 	void refresh_rect(SDL_Rect *r);
-
+#endif
 	static void on_frame(cs_engine_t *e);
 	void __frame();
 

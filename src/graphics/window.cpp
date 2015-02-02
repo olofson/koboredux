@@ -37,19 +37,21 @@ enum gfx_offscreen_mode_t
 
 window_t::window_t()
 {
+	phys_rect.x = phys_rect.y = 0;
+	phys_rect.w = 320;
+	phys_rect.h = 240;
+	next = NULL;
+	prev = NULL;
 	engine = NULL;
 	renderer = NULL;
 	otexture = NULL;
 	osurface = NULL;
-	next = NULL;
-	prev = NULL;
-	phys_rect.x = phys_rect.y = 0;
-	phys_rect.w = 320;
-	phys_rect.h = 240;
-	fgcolor = bgcolor = 0;
+	wx = wy = 0;
 	xs = ys = 256;
+	fgcolor = bgcolor = 0;
 	bg_bank = -1;
 	bg_frame = -1;
+	_font = 0;
 	_visible = 1;
 	_offscreen = 0;
 }
@@ -163,7 +165,8 @@ int window_t::offscreen()
 	if(_offscreen)
 		return 0;	// Already offscreen!
 	visible(0);
-	if(SDL_RenderTargetSupported(engine->renderer()))
+//	if(SDL_RenderTargetSupported(engine->renderer()))
+if(0)
 	{
 		// Texture used as render target
 		otexture = SDL_CreateTexture(engine->renderer(),

@@ -24,7 +24,6 @@ set(sources
 	screen.cpp
 	states.cpp
 	logger.c
-	graphics/display.cpp
 	graphics/gfxengine.cpp
 	graphics/sofont.cpp
 	graphics/toolkit.cpp
@@ -33,6 +32,7 @@ set(sources
 	graphics/sprite.c
 	graphics/filters.c
 	graphics/cs.c
+	graphics/palette.c
 )
 
 include(FindPkgConfig)

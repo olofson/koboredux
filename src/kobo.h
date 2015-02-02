@@ -29,7 +29,6 @@
 
 #include "gfxengine.h"
 #include "window.h"
-#include "display.h"
 #include "filemap.h"
 #include "prefs.h"
 #include "radar.h"
@@ -59,7 +58,6 @@ class kobo_gfxengine_t : public gfxengine_t
 	void pre_render();
 	void post_render();
   public:
-	kobo_gfxengine_t();
 #ifdef ENABLE_TOUCHSCREEN
 	void setup_pointer_margin(int, int);
 #endif
@@ -136,6 +134,9 @@ typedef enum
 	B_FOCUSFX,
 
 	B_SCREEN,
+	B_HLEDS,
+	B_VLEDS,
+
 	B_LOGO,
 
 	B_HIGH_BACK,

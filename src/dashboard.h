@@ -25,8 +25,7 @@
 
 #include "window.h"
 
-
-/* "Screen" window; takes care of the border, if any. */
+/* "Screen" window; takes care of the border, if any */
 class screen_window_t : public window_t
 {
 	int	_top, _left, _right, _bottom;
@@ -43,7 +42,7 @@ enum dashboard_modes_t {
 	DASHBOARD_LOADING
 };
 
-/* Dashboard window; dashboard or loading screen. */
+/* Dashboard window; dashboard or loading screen */
 class dashboard_window_t : public window_t
 {
 	char			*_msg;
@@ -65,6 +64,24 @@ class dashboard_window_t : public window_t
 	void refresh(SDL_Rect *r);
 };
 
+/* Labeled text display */
+class display_t : public window_t
+{
+	char	_caption[64];
+	char	_text[64];
+	int	_on;
+	Uint32	_color;
+	void render_caption();
+	void render_text();
+  public:
+	display_t();
+	void refresh(SDL_Rect *r);
+	void color(Uint32 _cl);
+	void caption(const char *cap);
+	void text(const char *txt);
+	void on();
+	void off();
+};
 
 /* Bar graph display */
 class bargraph_t : public window_t
@@ -83,6 +100,5 @@ class bargraph_t : public window_t
 	}
 	void enable(int ena);
 };
-
 
 #endif /* KOBO_DASHBOARD_H */

@@ -57,6 +57,7 @@ gfxengine_t::gfxengine_t()
 	sxs = sys = 256;	// 1.0
 	sf1 = sf2 = acf = bcf = dsf = NULL;
 	gfx = NULL;
+	_palette = NULL;
 	csengine = NULL;
 	_vsync = 1;
 	_fullscreen = 0;
@@ -104,6 +105,11 @@ gfxengine_t::~gfxengine_t()
 		w->engine = NULL;
 		w = w->next;
 	}
+	if(_palette)
+	{
+		gfx_palette_free(_palette);
+		_palette = NULL;
+	}
 }
 
 
@@ -149,17 +155,11 @@ void gfxengine_t::scale(float x, float y)
 	log_printf(DLOG, "gfxengine: Setting scale to %d:256 x %d:256.\n", xs, ys);
 }
 
-void gfxengine_t::mode(int bits, int fullscreen)
+void gfxengine_t::mode(int fullscreen)
 {
 	int was_showing = is_showing;
 	hide();
-
-	int olddepth = _depth;
-	_depth = bits;
-	if(_depth != olddepth)
-		reload();
 	_fullscreen = fullscreen;
-
 	if(was_showing)
 		show();
 }
@@ -572,6 +572,22 @@ void gfxengine_t::unload(int bank)
 }
 
 
+int gfxengine_t::load_palette(const char *path)
+{
+	if(_palette)
+		gfx_palette_free(_palette);
+	_palette = gfx_palette_load(path);
+	return (_palette != NULL);
+}
+
+uint32_t gfxengine_t::palette(unsigned ind)
+{
+	if(!_palette)
+		return 0;
+	return gfx_palette_get(_palette, ind);
+}
+
+
 /*----------------------------------------------------------
 	Engine open/close
 ----------------------------------------------------------*/
@@ -623,8 +639,8 @@ void gfxengine_t::close()
 
 	log_printf(DLOG ,"Closing engine...\n");
 	stop();
-	hide();
 	unload();
+	hide();
 	cs_engine_delete(csengine);
 	csengine = NULL;
 	s_remove_filter(NULL);
@@ -1047,7 +1063,7 @@ void gfxengine_t::post_render()
 {
 }
 
-
+#if 0
 void gfxengine_t::refresh_rect(SDL_Rect *r)
 {
 	window_t *w = windows;
@@ -1089,7 +1105,7 @@ void gfxengine_t::refresh_rect(SDL_Rect *r)
 			w->phys_refresh(&dr);
 	}
 }
-
+#endif
 
 void gfxengine_t::flip()
 {

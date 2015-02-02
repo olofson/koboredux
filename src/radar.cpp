@@ -102,23 +102,27 @@ radar_window_t::radar_window_t()
 void radar_window_t::update(int mx, int my)
 {
 	wmap->update(mx, my, 1);
-	if(prefs->scrollradar == 1)
-		return;	/* No instant updates in sweep mode! */
 	SDL_Rect r;
-	r.x = (mx - xoffs) & (MAP_SIZEX-1);
-	r.y = (my - yoffs) & (MAP_SIZEY-1);
+//	r.x = (mx - xoffs) & (MAP_SIZEX-1);
+//	r.y = (my - yoffs) & (MAP_SIZEY-1);
+	r.x = mx & (MAP_SIZEX-1);
+	r.y = my & (MAP_SIZEY-1);
 	r.w = r.h = 1;
-	invalidate(&r);
+//	invalidate(&r);
+	wmap->invalidate(&r);
 }
 
 
 void radar_window_t::update_player(int px, int py)
 {
 	SDL_Rect r;
-	r.x = (px - pxoffs) & (MAP_SIZEX-1);
-	r.y = (py - pyoffs) & (MAP_SIZEY-1);
+//	r.x = (px - pxoffs) & (MAP_SIZEX-1);
+//	r.y = (py - pyoffs) & (MAP_SIZEY-1);
+	r.x = px & (MAP_SIZEX-1);
+	r.y = py & (MAP_SIZEY-1);
 	r.w = r.h = 1;
-	invalidate(&r);
+//	invalidate(&r);
+	wmap->invalidate(&r);
 }
 
 
@@ -164,12 +168,12 @@ void radar_window_t::mode(radar_modes_t newmode)
 	if(newmode == RM__REINIT)
 		newmode = _mode;
 	wmap->offscreen();
-	wmap->pixel_core = wmap->map_rgb(255, 255, 128);
-	wmap->pixel_hard = wmap->map_rgb(64, 128, 128);
-	wmap->pixel_launcher = wmap->map_rgb(64, 200, 240);
-	wmap->pixel_bg = wmap->map_rgb(32, 48, 64);
+	wmap->pixel_core = engine->palette(21);
+	wmap->pixel_hard = engine->palette(34);
+	wmap->pixel_launcher = engine->palette(19);
+	wmap->pixel_bg = engine->palette(0);
 	wmap->background(wmap->pixel_bg);
-	wmap->colorkey(wmap->pixel_bg);
+//	wmap->colorkey(wmap->pixel_bg);
 	_mode = newmode;
 	time = SDL_GetTicks();
 	wmap->invalidate();
@@ -218,7 +222,6 @@ void radar_window_t::frame()
 		old_scrollradar = prefs->scrollradar;
 		time = SDL_GetTicks();
 		pxoffs = pyoffs = xoffs = yoffs = 0;
-		invalidate();
 	}
 	switch(_mode)
 	{
@@ -232,7 +235,7 @@ void radar_window_t::frame()
 		break;
 	  case RM_NOISE:
 	  case RM_INFO:
-		invalidate();
+		clear();
 		break;
 	}
 }

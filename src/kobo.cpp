@@ -608,7 +608,7 @@ log_printf(WLOG, "--- Border added: %d x %d\n", dw, dh);
 	yoffs = (int)((dh - gh) / (2 * gengine->yscale()) + 0.5f);
 log_printf(WLOG, "--- Offsets: %d, %d\n", xoffs, yoffs);
 
-	gengine->mode(0, p->fullscreen);
+	gengine->mode(p->fullscreen);
 	gengine->vsync(p->vsync);
 	gengine->cursor(0);
 
@@ -955,9 +955,16 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 int KOBO_main::load_graphics(prefs_t *p)
 {
+	const char *fn;
 	KOBO_GfxDesc *gd;
 	gengine->reset_filters();
 	show_progress(p);
+
+	if(!(fn = fmap->get("GFX>>DO64-0.24.gpl")))
+		log_printf(ELOG, "Couldn't find palette!\n");
+	if(!gengine->load_palette(fn))
+		log_printf(ELOG, "Couldn't load palette!\n");
+
 	for(gd = gfxdesc; gd->path; ++gd)
 	{
 		if(gd->flags & KOBO_MESSAGE)
@@ -1004,7 +1011,7 @@ int KOBO_main::load_graphics(prefs_t *p)
 		gengine->source_scale(gd->scale, gd->scale);
 
 		// Load!
-		const char *fn = fmap->get(gd->path);
+		fn = fmap->get(gd->path);
 		if(!fn)
 		{
 			log_printf(ELOG, "Couldn't get path to \"%s\"!\n",
@@ -1433,10 +1440,6 @@ int KOBO_main::run()
 /*----------------------------------------------------------
 	Kobo Graphics Engine
 ----------------------------------------------------------*/
-
-kobo_gfxengine_t::kobo_gfxengine_t()
-{
-}
 
 #ifdef ENABLE_TOUCHSCREEN
 void kobo_gfxengine_t::setup_pointer_margin(int dw, int dh)

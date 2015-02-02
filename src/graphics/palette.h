@@ -1,8 +1,8 @@
 /*(LGPLv2.1)
 ----------------------------------------------------------------------
-	Simple display for score, lives etc.
+	palette.h - GIMP .gpl palette loader
 ----------------------------------------------------------------------
- * Copyright (C) 2001, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -19,27 +19,34 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _DISPLAY_H_
-#define _DISPLAY_H_
+#ifndef	_PALETTE_H_
+#define	_PALETTE_H_
 
-#include "window.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class display_t : public window_t
+#include <stdint.h>
+
+typedef struct GFX_palette {
+	unsigned	nentries;
+	uint32_t	*entries;
+} GFX_palette;
+
+GFX_palette *gfx_palette_parse(const char *data);
+GFX_palette *gfx_palette_load(const char *path);
+
+static inline uint32_t gfx_palette_get(GFX_palette *p, unsigned i)
 {
-	char	_caption[64];
-	char	_text[64];
-	int	_on;
-	Uint32	_color;
-	void render_caption();
-	void render_text();
-  public:
-	display_t();
-	void refresh(SDL_Rect *r);
-	void color(Uint32 _cl);
-	void caption(const char *cap);
-	void text(const char *txt);
-	void on();
-	void off();
-};
+	if(i >= p->nentries)
+		return p->entries[0];
+	return p->entries[i];
+}
 
-#endif /* _WINDOW_H_ */
+void gfx_palette_free(GFX_palette *p);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif /* _PALETTE_H_ */
