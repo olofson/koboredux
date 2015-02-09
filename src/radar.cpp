@@ -168,10 +168,10 @@ void radar_window_t::mode(radar_modes_t newmode)
 	if(newmode == RM__REINIT)
 		newmode = _mode;
 	wmap->offscreen();
-	wmap->pixel_core = engine->palette(21);
-	wmap->pixel_hard = engine->palette(34);
-	wmap->pixel_launcher = engine->palette(19);
-	wmap->pixel_bg = engine->palette(0);
+	wmap->pixel_core = map_rgb(engine->palette(21));
+	wmap->pixel_hard = map_rgb(engine->palette(34));
+	wmap->pixel_launcher = map_rgb(engine->palette(19));
+	wmap->pixel_bg = map_rgb(engine->palette(0));
 	wmap->background(wmap->pixel_bg);
 //	wmap->colorkey(wmap->pixel_bg);
 	_mode = newmode;
@@ -212,6 +212,7 @@ void radar_window_t::radar()
 		pxoffs = pyoffs = xoffs = yoffs = 0;
 		update_player(xpos, ypos);
 	}
+wmap->invalidate();
 }
 
 

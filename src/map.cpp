@@ -147,31 +147,40 @@ int _map::maze_judge(int cx, int cy, int dx, int dy, int x, int y)
 static inline int bits2tile(int n)
 {
 	if(n & CORE)		// Core
-		return n & (U_MASK | D_MASK) ? 6 : 7;
+		return n & (U_MASK | D_MASK) ? 16 : 24;
 	else if(n & HARD)	// One of the 4 indestructible end nodes
 		switch(n & 0xf)
 		{
-		  case U_MASK:	return 0;
-		  case R_MASK:	return 1;
-		  case D_MASK:	return 2;
-		  case L_MASK:	return 3;
+		  case U_MASK:	return 32;
+		  case R_MASK:	return 33;
+		  case D_MASK:	return 34;
+		  case L_MASK:	return 35;
 		}
 	else if(n == 5)		// Vertical pipe
 		switch(pubrand.get(3))
 		{
-		  case 0:	return 4;
-		  case 1:	return 6;
-		  default:	return 13;
+		  case 0:	return 40;
+		  case 1:	return 42;
+		  case 2:	return 44;
+		  default:	return 5;
 		}
 	else if(n == 10)	// Horizontal pipe
 		switch(pubrand.get(3))
 		{
-		  case 0:	return 5;
-		  case 1:	return 7;
-		  default:	return 18;
+		  case 0:	return 41;
+		  case 1:	return 43;
+		  case 2:	return 45;
+		  default:	return 10;
 		}
+	else if(n == 15)
+	{
+		if(pubrand.get(1))
+			return 0;
+		else
+			return 15;
+	}
 	else			// Other pipe parts or normal end nodes
-		return n + 8;
+		return n;
 }
 
 void _map::convert(unsigned ratio)

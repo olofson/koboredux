@@ -843,7 +843,7 @@ void _enemy::move_pipein()
 		return;
 	}
 
-	int scraptube = 24 + pubrand.get(1);
+	int scraptube = 48 + pubrand.get(1);
 	switch(p ^ a)
 	{
 	  case U_MASK:
@@ -938,6 +938,7 @@ void _enemy::move_pipeout()
 {
 	if(--count > 0)
 		return;
+
 	count = 2 + gamerand.get(2);
 
 	int x1 = (CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4;
@@ -946,13 +947,14 @@ void _enemy::move_pipeout()
 	int x_next = 0;
 	int y_next = 0;
 	int p = MAP_BITS(screen.get_map(x1, y1));
+
+	screen.clean_scrap(x1, y1);
+
 	if(IS_SPACE(p))
 	{
 		release();
 		return;
 	}
-
-	screen.clean_scrap(x1, y1);
 
 	if((p ^ a) == 0)
 	{
@@ -978,7 +980,7 @@ void _enemy::move_pipeout()
 		return;
 	}
 
-	int scraptube = 24 + pubrand.get(1);
+	int scraptube = 48 + pubrand.get(1);
 	switch(p ^ a)
 	{
 	  case U_MASK:

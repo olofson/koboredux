@@ -989,9 +989,9 @@ void _screen::render_background(window_t *win)
 			if(n & CORE)
 			{
 				if(n & (U_MASK | D_MASK))
-					tile = 32;
+					tile = 16;
 				else
-					tile = 40;
+					tile = 24;
 				tile += frame / 3 & 7;
 			}
 			else
