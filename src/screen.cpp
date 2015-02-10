@@ -992,7 +992,7 @@ void _screen::render_background(window_t *win)
 					tile = 16;
 				else
 					tile = 24;
-				tile += frame / 3 & 7;
+				tile += frame / 2 & 7;
 			}
 			else
 				tile = MAP_TILE(n);
