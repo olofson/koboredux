@@ -685,19 +685,6 @@ void _screen::generate_fixed_enemies()
 }
 
 
-void _screen::clean_scrap(int x, int y)
-{
-	if(map.pos(x + 1, y) & SPACE)
-		map.pos(x + 1, y) = SPACE;
-	if(map.pos(x - 1, y) & SPACE)
-		map.pos(x - 1, y) = SPACE;
-	if(map.pos(x, y + 1) & SPACE)
-		map.pos(x, y + 1) = SPACE;
-	if(map.pos(x, y - 1) & SPACE)
-		map.pos(x, y - 1) = SPACE;
-}
-
-
 void _screen::set_map(int x, int y, int n)
 {
 	map.pos(x, y) = n;

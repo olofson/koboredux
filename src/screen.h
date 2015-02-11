@@ -74,6 +74,11 @@ class _screen
 	static void render_title_plasma(int t, float fade, int y, int h);
 	static void render_title_noise(float fade, int y, int h, int bank, int frame);
 	static void render_starfield(window_t *win, int xo, int yo);
+	static void clean_scrap_tile(int x, int y)
+	{
+		if((map.pos(x, y) & SPACE) && (MAP_TILE(map.pos(x, y))))
+			set_map(x, y, SPACE);
+	}
   public:
 	~_screen();
 	static radar_modes_t radar_mode;	// Last set radar mode
@@ -86,7 +91,14 @@ class _screen
 		return map.pos(x, y);
 	}
 	static void set_map(int x, int y, int n);
-	static void clean_scrap(int x, int y);
+	static void clean_scrap(int x, int y)
+	{
+		clean_scrap_tile(x + 1, y);
+		clean_scrap_tile(x - 1, y);
+		clean_scrap_tile(x, y + 1);
+		clean_scrap_tile(x, y - 1);
+		clean_scrap_tile(x, y);
+	}
 	static void set_highlight(int y, int h);
 	static void set_noise(int source, float fade, float bright, float depth);
 	static void render_background(window_t * win);
