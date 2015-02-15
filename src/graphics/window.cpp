@@ -499,8 +499,8 @@ void window_t::point(int _x, int _y)
 	r.y = phys_rect.y + _y;
 	r.w = x2 - _x;
 	r.h = y2 - _y;
-	SDL_SetRenderDrawColor(renderer, get_r(bgcolor), get_g(bgcolor),
-			get_b(bgcolor), get_a(bgcolor));
+	SDL_SetRenderDrawColor(renderer, get_r(fgcolor), get_g(fgcolor),
+			get_b(fgcolor), get_a(fgcolor));
 	SDL_RenderFillRect(renderer, &r);
 }
 
