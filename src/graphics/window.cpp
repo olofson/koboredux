@@ -149,6 +149,7 @@ void window_t::select()
 		break;
 	  case OFFSCREEN_RENDER_TARGET:
 		SDL_SetRenderTarget(renderer, otexture);
+		SDL_RenderSetClipRect(renderer, NULL);
 		break;
 	  case OFFSCREEN_SOFTWARE:
 		// Has its own renderer, so nothing needs to be done here!
@@ -165,8 +166,12 @@ int window_t::offscreen()
 	if(_offscreen)
 		return 0;	// Already offscreen!
 	visible(0);
-//	if(SDL_RenderTargetSupported(engine->renderer()))
-if(0)
+#if 0
+	/*
+	 * This has some serious performance issues for some reason, and
+	 * shouldn't really be needed anyway.
+	 */
+	if(SDL_RenderTargetSupported(engine->renderer()))
 	{
 		// Texture used as render target
 		otexture = SDL_CreateTexture(engine->renderer(),
@@ -178,6 +183,7 @@ if(0)
 		_offscreen = OFFSCREEN_RENDER_TARGET;
 	}
 	else
+#endif
 	{
 		// Fallback: Texture + surface with software renderer
 		Uint32 fmt = SDL_PIXELFORMAT_ARGB8888;
