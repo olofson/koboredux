@@ -128,8 +128,13 @@ void window_t::place(int left, int top, int sizex, int sizey)
 {
 	int x2 = ((left + sizex) * xs + 128) >> 8;
 	int y2 = ((top + sizey) * ys + 128) >> 8;
-	phys_rect.x = (left * xs + 128) >> 8;
-	phys_rect.y = (top * ys + 128) >> 8;
+	if(_offscreen)
+		phys_rect.x = phys_rect.y = 0;
+	else
+	{
+		phys_rect.x = (left * xs + 128) >> 8;
+		phys_rect.y = (top * ys + 128) >> 8;
+	}
 	phys_rect.w = x2 - phys_rect.x;
 	phys_rect.h = y2 - phys_rect.y;
 }
@@ -166,6 +171,7 @@ int window_t::offscreen()
 	if(_offscreen)
 		return 0;	// Already offscreen!
 	visible(0);
+	phys_rect.x = phys_rect.y = 0;
 #if 0
 	/*
 	 * This has some serious performance issues for some reason, and
@@ -219,13 +225,30 @@ void window_t::offscreen_invalidate(SDL_Rect *r)
 		break;
 	  case OFFSCREEN_SOFTWARE:
 		SDL_RenderPresent(renderer);
+		SDL_Rect rr;
+		if(!r)
+		{
+			rr.x = 0;
+			rr.y = 0;
+			rr.w = phys_rect.w;
+			rr.h = phys_rect.h;
+		}
+		else
+		{
+			rr.x = (int)r->x * xs >> 8;
+			rr.y = (int)r->y * ys >> 8;
+			int x2 = (int)(r->x + r->w) * xs >> 8;
+			int y2 = (int)(r->y + r->h) * ys >> 8;
+			rr.w = x2 - rr.x;
+			rr.h = y2 - rr.y;
+		}
 		// FIXME: Is this *actually* slower than locking the texture
 		// and copying the pixels? Theoretically, SDL_UpdateTexture()
 		// should have a chance of doing a better job.
-		SDL_UpdateTexture(otexture, r,
+		SDL_UpdateTexture(otexture, &rr,
 				(Uint8 *)osurface->pixels +
-				r->y * osurface->pitch +
-				r->x * osurface->format->BytesPerPixel,
+				rr.y * osurface->pitch +
+				rr.x * osurface->format->BytesPerPixel,
 				osurface->pitch);
 		break;
 	}
@@ -237,21 +260,8 @@ void window_t::invalidate(SDL_Rect *r)
 	if(!engine || !renderer || !_offscreen)
 		return;
 	SELECT
-	if(!r)
-	{
-		SDL_Rect rr;
-		rr.x = 0;
-		rr.y = 0;
-		rr.w = phys_rect.w;
-		rr.h = phys_rect.h;
-		phys_refresh(&rr);
-		offscreen_invalidate(&rr);
-	}
-	else
-	{
-		phys_refresh(r);
-		offscreen_invalidate(r);
-	}
+	refresh(r);
+	offscreen_invalidate(r);
 }
 
 

@@ -506,9 +506,11 @@ void KOBO_main::build_screen()
 	wmain->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
 
 	// Map tiles are 2x2 "native" pixels now!
-	wmap->place(0, 0, MAP_SIZEX * 2, MAP_SIZEY * 2);
+//	wmap->place(0, 0, MAP_SIZEX * 2, MAP_SIZEY * 2);
+wmap->place(0, 0, MAP_SIZEX, MAP_SIZEY);
 	wmap->offscreen();
-	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
+//	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
+wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W / 2, WRADAR_H / 2);
 //	wradar->bgimage(B_RADAR_BACK, 0);
 
 	whealth->place(xoffs + 4, yoffs + 92, 8, 128);

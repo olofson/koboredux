@@ -1118,7 +1118,7 @@ void gfxengine_t::flip()
 	window_t *w = windows;
 	for(w = windows; w; w = w->next)
 		if(w->visible())
-			w->phys_refresh(NULL);
+			w->refresh(NULL);
 
 	SDL_RenderPresent(sdlrenderer);
 }

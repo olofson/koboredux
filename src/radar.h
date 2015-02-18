@@ -47,7 +47,7 @@ class radar_map_t : public window_t
 	Uint32 pixel_bg;
 	radar_map_t();
 	void refresh(SDL_Rect *r);
-	void update(int x, int y, int force);	//Update one tile
+	void update(int x, int y, int draw_space);	//Update one tile
 };
 
 // The on-screen radar window
@@ -68,7 +68,6 @@ class radar_window_t : public window_t
 	void refresh(SDL_Rect *r);
 	void mode(radar_modes_t newmode);//Set radar mode
 	void update(int mx, int my);	//Update map + radar
-	void update_player(int px, int py);//Update player cursor
 	void frame();			//Track player, drive logic etc...
 };
 

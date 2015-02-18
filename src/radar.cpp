@@ -46,20 +46,21 @@ radar_map_t::radar_map_t()
 }
 
 
-void radar_map_t::update(int x, int y, int force)
+void radar_map_t::update(int x, int y, int draw_space)
 {
 	int a = MAP_BITS(screen.get_map(x, y));
 	if(IS_SPACE(a))
 	{
-		if(!force)
+		if(!draw_space)
 			return;
 		foreground(pixel_bg);
 	}
 	else if(a & CORE)
 		foreground(pixel_core);
-	else if((a == U_MASK) || (a == R_MASK) || (a == D_MASK) || (a == L_MASK))
+	else if((a == U_MASK) || (a == R_MASK) || (a == D_MASK) ||
+			(a == L_MASK))
 		foreground(pixel_launcher);
-	else if((a & HIT_MASK))
+	else if(a & HIT_MASK)
 		foreground(pixel_hard);
 	point(x, y);
 }
@@ -67,7 +68,7 @@ void radar_map_t::update(int x, int y, int force)
 
 void radar_map_t::refresh(SDL_Rect *r)
 {
-	clear(r);
+	int draw_space = 1;
 	SDL_Rect nr;
 	if(!r)
 	{
@@ -76,11 +77,13 @@ void radar_map_t::refresh(SDL_Rect *r)
 		nr.w = w;
 		nr.h = h;
 		r = &nr;
+		clear(r);
+		draw_space = 0;
 	}
 	int i, j;
-	for(i = r->x; i < r->w; i++)
-		for(j = r->y; j < r->h; j++)
-			update(i, j, 0);
+	for(i = 0; i < r->w; i++)
+		for(j = 0; j < r->h; j++)
+			update(r->x + i, r->y + j, draw_space);
 }
 
 
@@ -101,27 +104,10 @@ radar_window_t::radar_window_t()
 
 void radar_window_t::update(int mx, int my)
 {
-	wmap->update(mx, my, 1);
 	SDL_Rect r;
-//	r.x = (mx - xoffs) & (MAP_SIZEX-1);
-//	r.y = (my - yoffs) & (MAP_SIZEY-1);
-	r.x = mx & (MAP_SIZEX-1);
-	r.y = my & (MAP_SIZEY-1);
+	r.x = mx & (MAP_SIZEX - 1);
+	r.y = my & (MAP_SIZEY - 1);
 	r.w = r.h = 1;
-//	invalidate(&r);
-	wmap->invalidate(&r);
-}
-
-
-void radar_window_t::update_player(int px, int py)
-{
-	SDL_Rect r;
-//	r.x = (px - pxoffs) & (MAP_SIZEX-1);
-//	r.y = (py - pyoffs) & (MAP_SIZEY-1);
-	r.x = px & (MAP_SIZEX-1);
-	r.y = py & (MAP_SIZEY-1);
-	r.w = r.h = 1;
-//	invalidate(&r);
 	wmap->invalidate(&r);
 }
 
@@ -129,13 +115,13 @@ void radar_window_t::update_player(int px, int py)
 void radar_window_t::refresh(SDL_Rect *r)
 {
 	int t = SDL_GetTicks();
-	clear(r);
 	switch(_mode)
 	{
 	  case RM__REINIT:
 	  case RM_OFF:
 	  case RM_NOISE:
 	  case RM_INFO:
+		clear(r);
 		break;
 	  case RM_SHOW:
 		blit(0, 0, wmap);
@@ -150,14 +136,9 @@ void radar_window_t::refresh(SDL_Rect *r)
 		}
 		else
 			blit(0, 0, wmap);
-		if(_mode != RM_SHOW)
-		{
-			foreground(map_rgb((t >> 1) & 255,
-					120 + ((t >> 2) & 127),
-					120 + ((t >> 2) & 127)));
-			point((xpos - pxoffs) & (MAP_SIZEX - 1),
-					(ypos - pyoffs) & (MAP_SIZEY - 1));
-		}
+		foreground(map_rgb(engine->palette(28 + t / 100 % 8)));
+		point((xpos - pxoffs) & (MAP_SIZEX - 1),
+				(ypos - pyoffs) & (MAP_SIZEY - 1));
 		break;
 	}
 }
@@ -167,13 +148,11 @@ void radar_window_t::mode(radar_modes_t newmode)
 {
 	if(newmode == RM__REINIT)
 		newmode = _mode;
-	wmap->offscreen();
-	wmap->pixel_core = map_rgb(engine->palette(21));
-	wmap->pixel_hard = map_rgb(engine->palette(34));
-	wmap->pixel_launcher = map_rgb(engine->palette(19));
+	wmap->pixel_core = map_rgb(engine->palette(29));
+	wmap->pixel_hard = map_rgb(engine->palette(33));
+	wmap->pixel_launcher = map_rgb(engine->palette(31));
 	wmap->pixel_bg = map_rgb(engine->palette(0));
 	wmap->background(wmap->pixel_bg);
-//	wmap->colorkey(wmap->pixel_bg);
 	_mode = newmode;
 	time = SDL_GetTicks();
 	wmap->invalidate();
@@ -206,13 +185,10 @@ void radar_window_t::radar()
 	else
 	{
 		// Fixed
-		update_player(xpos, ypos);
 		xpos = xpos_new;
 		ypos = ypos_new;
 		pxoffs = pyoffs = xoffs = yoffs = 0;
-		update_player(xpos, ypos);
 	}
-wmap->invalidate();
 }
 
 

@@ -334,25 +334,6 @@ class window_t
 	void link(gfxengine_t *e);
 	void unlink(void);
 
-	void phys_refresh(SDL_Rect *r)
-	{
-		if(!r)
-			refresh(NULL);
-		else
-		{
-			SDL_Rect dr;
-			dr.x = r->x - phys_rect.x;
-			dr.y = r->y - phys_rect.y;
-			int x2 = (int)(dr.x + r->w) * 256 / xs;
-			int y2 = (int)(dr.y + r->h) * 256 / ys;
-			dr.x = (int)dr.x * 256 / xs;
-			dr.y = (int)dr.y * 256 / ys;
-			dr.w = x2 - dr.x;
-			dr.h = y2 - dr.y;
-			refresh(&dr);
-		}
-	}
-
 	void offscreen_invalidate(SDL_Rect *r);
 };
 
