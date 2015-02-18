@@ -682,7 +682,6 @@ st_game_over_t st_game_over;
  */
 void menu_base_t::open()
 {
-	init(gengine);
 	place(wmain->x(), wmain->y(), wmain->width(), wmain->height());
 	font(B_NORMAL_FONT);
 	foreground(wmain->map_rgb(0xffffff));
@@ -864,7 +863,6 @@ void st_menu_base_t::press(int button)
 
 void new_player_t::open()
 {
-	init(gengine);
 	place(wmain->x(), wmain->y(), wmain->width(), wmain->height());
 	font(B_NORMAL_FONT);
 	foreground(wmain->map_rgb(255, 255, 255));
@@ -928,6 +926,13 @@ st_new_player_t::st_new_player_t()
 	name = "new_player";
 }
 
+kobo_form_t *st_new_player_t::open()
+{
+	menu = new new_player_t(gengine);
+	menu->open();
+	return menu;
+}
+
 void st_new_player_t::frame()
 {
 	manage.run_intro();
@@ -935,33 +940,33 @@ void st_new_player_t::frame()
 
 void st_new_player_t::enter()
 {
-	menu.open();
+	menu->open();
 	run_intro = 0;
 	sound.ui_ok();
 }
 
 void st_new_player_t::leave()
 {
-	menu.close();
+	menu->close();
 }
 
 void st_new_player_t::post_render()
 {
 	kobo_basestate_t::post_render();
-	menu.render();
+	menu->render();
 }
 
 void st_new_player_t::press(int button)
 {
-	if(menu.editing)
+	if(menu->editing)
 	{
 		switch(button)
 		{
 		  case BTN_EXIT:
 			sound.ui_ok();
-			menu.editing = 0;
-			menu.next();	// Select the CANCEL option.
-			menu.next();
+			menu->editing = 0;
+			menu->next();	// Select the CANCEL option.
+			menu->next();
 			break;
 
 		  case BTN_FIRE:
@@ -970,40 +975,40 @@ void st_new_player_t::press(int button)
 		  case BTN_START:
 		  case BTN_SELECT:
 			sound.ui_ok();
-			menu.editing = 0;
-			menu.next();	// Select the OK option.
+			menu->editing = 0;
+			menu->next();	// Select the OK option.
 			break;
 
 		  case BTN_UP:
 		  case BTN_INC:
-			if(!menu.name[menu.currentIndex])
-				menu.name[menu.currentIndex] = 'A';
-			else if(menu.name[menu.currentIndex] == 'Z')
-				menu.name[menu.currentIndex] = 'a';
-			else if(menu.name[menu.currentIndex] == 'z')
-				menu.name[menu.currentIndex] = 'A';
+			if(!menu->name[menu->currentIndex])
+				menu->name[menu->currentIndex] = 'A';
+			else if(menu->name[menu->currentIndex] == 'Z')
+				menu->name[menu->currentIndex] = 'a';
+			else if(menu->name[menu->currentIndex] == 'z')
+				menu->name[menu->currentIndex] = 'A';
 			else
-				menu.name[menu.currentIndex]++;
+				menu->name[menu->currentIndex]++;
 			sound.ui_tick();
 			break;
 
 		  case BTN_DEC:
 		  case BTN_DOWN:
-			if(!menu.name[menu.currentIndex])
-				menu.name[menu.currentIndex] = 'A';
-			else if(menu.name[menu.currentIndex] == 'A')
-				menu.name[menu.currentIndex] = 'z';
-			else if(menu.name[menu.currentIndex] == 'a')
-				menu.name[menu.currentIndex] = 'Z';
+			if(!menu->name[menu->currentIndex])
+				menu->name[menu->currentIndex] = 'A';
+			else if(menu->name[menu->currentIndex] == 'A')
+				menu->name[menu->currentIndex] = 'z';
+			else if(menu->name[menu->currentIndex] == 'a')
+				menu->name[menu->currentIndex] = 'Z';
 			else
-				menu.name[menu.currentIndex]--;
+				menu->name[menu->currentIndex]--;
 			sound.ui_tick();
 			break;
 
 		  case BTN_RIGHT:
-			if(menu.currentIndex < sizeof(menu.name) - 2)
+			if(menu->currentIndex < sizeof(menu->name) - 2)
 			{
-				menu.currentIndex++;
+				menu->currentIndex++;
 				sound.ui_tick();
 			}
 			else
@@ -1011,16 +1016,16 @@ void st_new_player_t::press(int button)
 				sound.ui_error();
 				break;
 			}
-			if(menu.name[menu.currentIndex] == '\0')
-				menu.name[menu.currentIndex] = 'A';
+			if(menu->name[menu->currentIndex] == '\0')
+				menu->name[menu->currentIndex] = 'A';
 			break;
 
 		  case BTN_LEFT:
 		  case BTN_BACK:
-			if(menu.currentIndex > 0)
+			if(menu->currentIndex > 0)
 			{
-				menu.name[menu.currentIndex] = '\0';
-				menu.currentIndex--;
+				menu->name[menu->currentIndex] = '\0';
+				menu->currentIndex--;
 				sound.ui_tick();
 			}
 			else
@@ -1031,10 +1036,10 @@ void st_new_player_t::press(int button)
 			if(((unicode >= 'a') && (unicode <= 'z')) ||
 				((unicode >= 'A') && (unicode <= 'Z')))
 			{
-				menu.name[menu.currentIndex] = (char)unicode;
-				if(menu.currentIndex < sizeof(menu.name) - 2)
+				menu->name[menu->currentIndex] = (char)unicode;
+				if(menu->currentIndex < sizeof(menu->name) - 2)
 				{
-					menu.currentIndex++;
+					menu->currentIndex++;
 					sound.ui_tick();
 				}
 				else
@@ -1044,40 +1049,40 @@ void st_new_player_t::press(int button)
 				sound.ui_error();
 			break;
 		}
-		menu.rebuild();
+		menu->rebuild();
 	}
 	else
 	{
-		menu.selection = -1;
+		menu->selection = -1;
 
 		switch(button)
 		{
 		  case BTN_EXIT:
-			menu.selection = MENU_TAG_CANCEL;
+			menu->selection = MENU_TAG_CANCEL;
 			break;
 
 		  case BTN_CLOSE:
-			menu.selection = MENU_TAG_OK;
+			menu->selection = MENU_TAG_OK;
 			break;
 
 		  case BTN_FIRE:
 		  case BTN_START:
 		  case BTN_SELECT:
-			menu.change(0);
+			menu->change(0);
 			break;
 
 		  case BTN_INC:
 		  case BTN_UP:
-			menu.prev();
+			menu->prev();
 			break;
 
 		  case BTN_DEC:
 		  case BTN_DOWN:
-			menu.next();
+			menu->next();
 			break;
 		}
 
-		switch(menu.selection)
+		switch(menu->selection)
 		{
 		  case 1:
 			if(button == BTN_START
@@ -1085,12 +1090,12 @@ void st_new_player_t::press(int button)
 					|| button == BTN_FIRE)
 			{
 				sound.ui_ok();
-				menu.editing = 1;
+				menu->editing = 1;
 			}
 			break;
 
 		  case MENU_TAG_OK:
-			switch(scorefile.addPlayer(menu.name))
+			switch(scorefile.addPlayer(menu->name))
 			{
 			  case 0:
 				sound.ui_ok();
@@ -1123,7 +1128,7 @@ void st_new_player_t::press(int button)
 
 		  case MENU_TAG_CANCEL:
 			sound.ui_cancel();
-			strcpy(menu.name, "A");
+			strcpy(menu->name, "A");
 			pop();
 			break;
 		}
@@ -1317,7 +1322,7 @@ kobo_form_t *st_main_menu_t::open()
 		scorefile.select_profile(prefs->last_profile);
 	}
 
-	menu = new main_menu_t;
+	menu = new main_menu_t(gengine);
 	menu->open();
 	return menu;
 }
@@ -1453,7 +1458,7 @@ void skill_menu_t::rebuild()
 
 kobo_form_t *st_skill_menu_t::open()
 {
-	menu = new skill_menu_t;
+	menu = new skill_menu_t(gengine);
 	menu->set_skill(scorefile.profile()->skill);
 	menu->open();
 	switch(scorefile.profile()->skill)
@@ -1527,7 +1532,7 @@ void options_main_t::build()
 
 kobo_form_t *st_options_main_t::open()
 {
-	options_main_t *m = new options_main_t;
+	options_main_t *m = new options_main_t(gengine);
 	m->open();
 	return m;
 }
@@ -1667,7 +1672,7 @@ void yesno_menu_t::rebuild()
 
 kobo_form_t *st_yesno_base_t::open()
 {
-	menu = new yesno_menu_t;
+	menu = new yesno_menu_t(gengine);
 	menu->open();
 	menu->select(1);
 	return menu;

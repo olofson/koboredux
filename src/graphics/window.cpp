@@ -35,7 +35,7 @@ enum gfx_offscreen_mode_t
 };
 
 
-window_t::window_t()
+window_t::window_t(gfxengine_t *e)
 {
 	phys_rect.x = phys_rect.y = 0;
 	phys_rect.w = 320;
@@ -47,13 +47,15 @@ window_t::window_t()
 	otexture = NULL;
 	osurface = NULL;
 	wx = wy = 0;
-	xs = ys = 256;
 	fgcolor = bgcolor = 0;
 	bg_bank = -1;
 	bg_frame = -1;
 	_font = 0;
 	_visible = 1;
 	_offscreen = 0;
+	link(e);
+	xs = engine->xs;
+	ys = engine->ys;
 }
 
 
@@ -68,14 +70,6 @@ window_t::~window_t()
 	unlink();
 	if(renderer)
 		SDL_DestroyRenderer(renderer);
-}
-
-
-void window_t::init(gfxengine_t *e)
-{
-	link(e);
-	xs = engine->xs;
-	ys = engine->ys;
 }
 
 

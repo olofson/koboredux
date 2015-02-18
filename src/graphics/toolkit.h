@@ -2,7 +2,8 @@
 ---------------------------------------------------------------------------
 	toolkit.h - Simple "GUI" toolkit for config screens.
 ---------------------------------------------------------------------------
- * Copyright (C) 2001, 2009 David Olofson
+ * Copyright 2001, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -62,8 +63,7 @@ class ct_widget_t : public window_t
 	void		*user;	//user stuff
 	int		user2;	//user stuff
 	int		tag;	//user stuff
-	ct_widget_t();
-	virtual void init(gfxengine_t *e);
+	ct_widget_t(gfxengine_t *e);
 	void transparency(int t);
 	void highlight(int hl);
 	void color(Uint32 _cl);
@@ -104,7 +104,7 @@ class ct_label_t : public ct_widget_t
 	char	_caption[64];
 	void render();
   public:
-	ct_label_t(const char *cap = NULL);
+	ct_label_t(gfxengine_t *e, const char *cap = NULL);
 	void caption(const char *cap);
 	const char *caption()	{ return _caption; }
 	virtual void halign(ct_align_t ha);
@@ -135,7 +135,7 @@ class ct_list_t : public ct_label_t
 	ct_item_t	*_selected;
 	void render();
   public:
-	ct_list_t(const char *cap = NULL);
+	ct_list_t(gfxengine_t *e, const char *cap = NULL);
 	virtual ~ct_list_t();
 	void add(ct_item_t *item);
 	void add(const char *cap, int val);
@@ -158,8 +158,8 @@ class ct_spin_t : public ct_label_t
 	char	_unit[32];
 	void render();
   public:
-	ct_spin_t(const char *cap = NULL, int _min = 0, int _max = 99999,
-			const char *__unit = NULL);
+	ct_spin_t(gfxengine_t *e, const char *cap = NULL, int _min = 0,
+			int _max = 99999, const char *__unit = NULL);
 	void value(int val);
 	void change(int delta);
 	void unit(const char *txt);
@@ -172,7 +172,7 @@ class ct_button_t : public ct_label_t
   protected:
 	void render();
   public:
-	ct_button_t(const char *cap = NULL);
+	ct_button_t(gfxengine_t *e, const char *cap = NULL);
 	void change(int delta);
 };
 
@@ -183,7 +183,7 @@ class ct_form_t : public window_t
 	ct_widget_t	*widgets;
 	ct_widget_t	*_selected;
   public:
-	ct_form_t();
+	ct_form_t(gfxengine_t *e);
 	virtual ~ct_form_t();
 	void add(ct_widget_t *w);
 	void clean();

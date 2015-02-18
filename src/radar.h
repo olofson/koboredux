@@ -45,7 +45,7 @@ class radar_map_t : public window_t
 	Uint32 pixel_launcher;
 	Uint32 pixel_hard;
 	Uint32 pixel_bg;
-	radar_map_t();
+	radar_map_t(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
 	void update(int x, int y, int draw_space);	//Update one tile
 };
@@ -64,7 +64,7 @@ class radar_window_t : public window_t
 	void noise();			//Render noise effect
 	void set_scroll(int xs, int ys);//Set map scroll offset
   public:
-	radar_window_t();
+	radar_window_t(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
 	void mode(radar_modes_t newmode);//Set radar mode
 	void update(int mx, int my);	//Update map + radar

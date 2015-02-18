@@ -530,8 +530,7 @@ wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W / 2, WRADAR_H / 2);
 
 	if(prefs->cmd_fps)
 	{
-		dfps = new display_t;
-		dfps->init(gengine);
+		dfps = new display_t(gengine);
 		dfps->place(0, -9, 48, 18);
 		dfps->color(wdash->map_rgb(0, 0, 0));
 		dfps->font(B_NORMAL_FONT);
@@ -632,8 +631,7 @@ log_printf(WLOG, "--- Offsets: %d, %d\n", xoffs, yoffs);
 
 	gengine->clear();
 
-	wscreen = new screen_window_t;
-	wscreen->init(gengine);
+	wscreen = new screen_window_t(gengine);
 	wscreen->place(0, 0,
 			(int)(gengine->width() / gengine->xscale() + 0.5f),
 			(int)(gengine->height() / gengine->yscale() + 0.5f));
@@ -642,28 +640,17 @@ log_printf(WLOG, "--- Offsets: %d, %d\n", xoffs, yoffs);
 			dw - gw - (int)(xoffs * gengine->xscale() + 0.5f),
 			dh - gh - (int)(yoffs * gengine->yscale() + 0.5f));
 
-	wdash = new dashboard_window_t;
-	wdash->init(gengine);
-	whealth = new bargraph_t;
-	whealth->init(gengine);
-	wmain = new engine_window_t;
-	wmain->init(gengine);
-	dhigh = new display_t;
-	dhigh->init(gengine);
-	dscore = new display_t;
-	dscore->init(gengine);
-	wmap = new radar_map_t;
-	wmap->init(gengine);
-	wradar = new radar_window_t;
-	wradar->init(gengine);
-	wtemp = new bargraph_t;
-	wtemp->init(gengine);
-	wttemp = new bargraph_t;
-	wttemp->init(gengine);
-	dships = new display_t;
-	dships->init(gengine);
-	dstage = new display_t;
-	dstage->init(gengine);
+	wdash = new dashboard_window_t(gengine);
+	whealth = new bargraph_t(gengine);
+	wmain = new engine_window_t(gengine);
+	dhigh = new display_t(gengine);
+	dscore = new display_t(gengine);
+	wmap = new radar_map_t(gengine);
+	wradar = new radar_window_t(gengine);
+	wtemp = new bargraph_t(gengine);
+	wttemp = new bargraph_t(gengine);
+	dships = new display_t(gengine);
+	dstage = new display_t(gengine);
 
 	build_screen();
 

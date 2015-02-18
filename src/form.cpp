@@ -28,7 +28,7 @@
 #include "form.h"
 #include "kobo.h"
 
-kobo_form_t::kobo_form_t()
+kobo_form_t::kobo_form_t(gfxengine_t *e) : ct_form_t(e)
 {
 	ypos = 0;
 	current_list = NULL;
@@ -77,7 +77,6 @@ void kobo_form_t::prev()
 void kobo_form_t::init_widget(ct_widget_t *w)
 {
 	current_widget = w;
-	w->init(engine);
 	switch(_big)
 	{
 	  case 0:
@@ -130,14 +129,14 @@ void kobo_form_t::begin()
 
 void kobo_form_t::label(const char *cap)
 {
-	ct_label_t *w = new ct_label_t(cap);
+	ct_label_t *w = new ct_label_t(engine, cap);
 	init_widget(w);
 }
 
 
 void kobo_form_t::yesno(const char *cap, int *var, int tag)
 {
-	current_list = new ct_list_t(cap);
+	current_list = new ct_list_t(engine, cap);
 	current_list->offset(xoffs, 0);
 	current_list->user = var;
 	current_list->tag = tag;
@@ -149,7 +148,7 @@ void kobo_form_t::yesno(const char *cap, int *var, int tag)
 
 void kobo_form_t::onoff(const char *cap, int *var, int tag)
 {
-	current_list = new ct_list_t(cap);
+	current_list = new ct_list_t(engine, cap);
 	current_list->offset(xoffs, 0);
 	current_list->user = var;
 	current_list->tag = tag;
@@ -162,7 +161,7 @@ void kobo_form_t::onoff(const char *cap, int *var, int tag)
 void kobo_form_t::spin(const char *cap, int *var, int min, int max,
 		const char *unit, int tag)
 {
-	ct_spin_t *w = new ct_spin_t(cap, min, max, unit);
+	ct_spin_t *w = new ct_spin_t(engine, cap, min, max, unit);
 	w->offset(xoffs, 0);
 	w->user = var;
 	w->tag = tag;
@@ -172,7 +171,7 @@ void kobo_form_t::spin(const char *cap, int *var, int min, int max,
 
 void kobo_form_t::list(const char *cap, int *var, int tag)
 {
-	ct_list_t *w = new ct_list_t(cap);
+	ct_list_t *w = new ct_list_t(engine, cap);
 	w->offset(xoffs, 0);
 	w->user = var;
 	w->tag = tag;
@@ -218,7 +217,7 @@ void kobo_form_t::enum_list(int first, int last)
 
 void kobo_form_t::button(const char *cap, int tag)
 {
-	ct_widget_t *w = new ct_button_t(cap);
+	ct_widget_t *w = new ct_button_t(engine, cap);
 	w->offset(xoffs, 0);
 	w->tag = tag;
 	init_widget(w);

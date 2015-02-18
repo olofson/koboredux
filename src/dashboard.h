@@ -30,6 +30,7 @@ class screen_window_t : public window_t
 {
 	int	_top, _left, _right, _bottom;
   public:
+	screen_window_t(gfxengine_t *e) : window_t(e) { }
 	void border(int top, int left, int right, int bottom);
 	void refresh(SDL_Rect *r);
 };
@@ -54,7 +55,7 @@ class dashboard_window_t : public window_t
 	int			progress_bench;
 	void render_progress();
   public:
-	dashboard_window_t();
+	dashboard_window_t(gfxengine_t *e);
 	~dashboard_window_t();
 	void mode(dashboard_modes_t m);
 	void doing(const char *msg);
@@ -74,7 +75,7 @@ class display_t : public window_t
 	void render_caption();
 	void render_text();
   public:
-	display_t();
+	display_t(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
 	void color(Uint32 _cl);
 	void caption(const char *cap);
@@ -91,7 +92,7 @@ class bargraph_t : public window_t
 	int	_y;
 	int	_enabled;
   public:
-	bargraph_t();	
+	bargraph_t(gfxengine_t *e);
 	void value(float val);
 	void refresh(SDL_Rect *r);
 	void redmax(int rm)

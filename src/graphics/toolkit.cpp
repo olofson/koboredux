@@ -2,7 +2,8 @@
 ---------------------------------------------------------------------------
 	toolkit.cpp - Simple "GUI" toolkit for config screens.
 ---------------------------------------------------------------------------
- * Copyright (C) 2001, 2009 David Olofson
+ * Copyright 2001, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -33,7 +34,7 @@
 	ct_widget_t::
 ----------------------------------------------------------*/
 
-ct_widget_t::ct_widget_t()
+ct_widget_t::ct_widget_t(gfxengine_t *e) : window_t(e)
 {
 	interactive = 0;
 	transparent = 1;
@@ -48,6 +49,7 @@ ct_widget_t::ct_widget_t()
 	valign(ALIGN_DEFAULT);
 	_token = 0;
 	xo = yo = 0.0;
+	_color = map_rgb(0,0,0);
 }
 
 
@@ -66,13 +68,6 @@ void ct_widget_t::valign(ct_align_t va)
 		_valign = ALIGN_TOP;
 	else
 		_valign = va;
-}
-
-
-void ct_widget_t::init(gfxengine_t *e)
-{
-	window_t::init(e);
-	_color = map_rgb(0,0,0);
 }
 
 
@@ -217,7 +212,7 @@ ct_engine_t ct_engine;
 	ct_label_t::
 ----------------------------------------------------------*/
 
-ct_label_t::ct_label_t(const char *cap)
+ct_label_t::ct_label_t(gfxengine_t *e, const char *cap) : ct_widget_t(e)
 {
 	xo = 0.5;
 	if(cap)
@@ -280,7 +275,7 @@ static ct_item_t dummy_item("<error>", -1);
 	ct_list_t::
 ----------------------------------------------------------*/
 
-ct_list_t::ct_list_t(const char *cap) : ct_label_t(cap)
+ct_list_t::ct_list_t(gfxengine_t *e, const char *cap) : ct_label_t(e, cap)
 {
 	interactive = 1;
 	if(cap)
@@ -460,8 +455,8 @@ void ct_list_t::render()
 	ct_spin_t::
 ----------------------------------------------------------*/
 
-ct_spin_t::ct_spin_t(const char *cap, int _min, int _max,
-		const char *__unit) : ct_label_t(cap)
+ct_spin_t::ct_spin_t(gfxengine_t *e, const char *cap, int _min, int _max,
+		const char *__unit) : ct_label_t(e, cap)
 {
 	interactive = 1;
 	min = _min;
@@ -515,7 +510,7 @@ void ct_spin_t::render()
 	ct_button_t::
 ----------------------------------------------------------*/
 
-ct_button_t::ct_button_t(const char *cap) : ct_label_t(cap)
+ct_button_t::ct_button_t(gfxengine_t *e, const char *cap) : ct_label_t(e, cap)
 {
 	interactive = 1;
 }
@@ -540,7 +535,7 @@ void ct_button_t::change(int delta)
 	ct_form_t::
 ----------------------------------------------------------*/
 
-ct_form_t::ct_form_t()
+ct_form_t::ct_form_t(gfxengine_t *e) : window_t(e)
 {
 	widgets = NULL;
 	_selected = NULL;

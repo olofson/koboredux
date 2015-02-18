@@ -210,6 +210,7 @@ class st_game_over_t : public kobo_basestate_t
 class menu_base_t : public kobo_form_t
 {
   public:
+	menu_base_t(gfxengine_t *e) : kobo_form_t(e) { }
 	void open();
 	void close();
 };
@@ -277,6 +278,7 @@ class main_menu_t : public menu_base_t
 {
   public:
 	int	start_level;
+	main_menu_t(gfxengine_t *e) : menu_base_t(e) { }
 	virtual void buildStartLevel(int profNum);
 	void build();
 	void rebuild();
@@ -302,10 +304,11 @@ class skill_menu_t : public menu_base_t
 {
 	int skill;
   public:
-  	void set_skill(int sk)
-  	{
-  		skill = sk;
-  	};
+	skill_menu_t(gfxengine_t *e) : menu_base_t(e) { }
+	void set_skill(int sk)
+	{
+		skill = sk;
+	};
 	void build();
 	void rebuild();
 };
@@ -331,6 +334,7 @@ class new_player_t : public kobo_form_t
 	char		name[60];
 	unsigned	currentIndex;
 	int		selection;
+	new_player_t(gfxengine_t *e) : kobo_form_t(e) { }
 	virtual void change(int delta);
 	virtual void build();
 	void open();
@@ -340,9 +344,10 @@ class new_player_t : public kobo_form_t
 
 class st_new_player_t : public kobo_basestate_t
 {
+	new_player_t	*menu;
   public:
-	new_player_t	menu;
 	st_new_player_t();
+	kobo_form_t *open();
 	void enter();
 	void leave();
 	void press(int button);
@@ -357,6 +362,7 @@ class st_new_player_t : public kobo_basestate_t
 class options_main_t : public menu_base_t
 {
   public:
+	options_main_t(gfxengine_t *e) : menu_base_t(e) { }
 	void build();
 };
 
@@ -396,42 +402,42 @@ class st_options_system_t : public st_options_base_t
 {
   public:
 	st_options_system_t()	{ name = "options_system"; }
-	config_form_t *oopen()	{ return new system_options_t; }
+	config_form_t *oopen()	{ return new system_options_t(gengine); }
 };
 
 class st_options_video_t : public st_options_base_t
 {
   public:
 	st_options_video_t()	{ name = "options_video"; }
-	config_form_t *oopen()	{ return new video_options_t; }
+	config_form_t *oopen()	{ return new video_options_t(gengine); }
 };
 
 class st_options_graphics_t : public st_options_base_t
 {
   public:
 	st_options_graphics_t()	{ name = "options_graphics"; }
-	config_form_t *oopen()	{ return new graphics_options_t; }
+	config_form_t *oopen()	{ return new graphics_options_t(gengine); }
 };
 
 class st_options_audio_t : public st_options_base_t
 {
   public:
 	st_options_audio_t()	{ name = "options_audio"; }
-	config_form_t *oopen()	{ return new audio_options_t; }
+	config_form_t *oopen()	{ return new audio_options_t(gengine); }
 };
 
 class st_options_control_t : public st_options_base_t
 {
   public:
 	st_options_control_t()	{ name = "options_control"; }
-	config_form_t *oopen()	{ return new control_options_t; }
+	config_form_t *oopen()	{ return new control_options_t(gengine); }
 };
 
 class st_options_game_t : public st_options_base_t
 {
   public:
 	st_options_game_t()	{ name = "options_game"; }
-	config_form_t *oopen()	{ return new game_options_t; }
+	config_form_t *oopen()	{ return new game_options_t(gengine); }
 };
 
 
@@ -442,6 +448,7 @@ class st_options_game_t : public st_options_base_t
 class yesno_menu_t : public menu_base_t
 {
   public:
+	yesno_menu_t(gfxengine_t *e) : menu_base_t(e) { }
 	void build();
 	void rebuild();
 };

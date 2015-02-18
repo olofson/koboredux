@@ -71,7 +71,7 @@ void screen_window_t::refresh(SDL_Rect *r)
 	Dashboard
 ----------------------------------------------------------*/
 
-dashboard_window_t::dashboard_window_t()
+dashboard_window_t::dashboard_window_t(gfxengine_t *e) : window_t(e)
 {
 	_mode = DASHBOARD_BLACK;
 	_percent = 0.0f;
@@ -271,7 +271,7 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 #define	D_LINE2_POS	9
 #define	D_LINE2_TXOFFS	0
 
-display_t::display_t()
+display_t::display_t(gfxengine_t *e) : window_t(e)
 {
 	_color = map_rgb(0);
 	_on = 0;
@@ -364,7 +364,7 @@ void display_t::refresh(SDL_Rect *r)
 	Bar graph display
 ----------------------------------------------------------*/
 
-bargraph_t::bargraph_t()
+bargraph_t::bargraph_t(gfxengine_t *e) : window_t(e)
 {
 	_value = 0.0f;
 	_redmax = 1;

@@ -808,8 +808,7 @@ int gfxengine_t::show()
 	noalpha(alpha_threshold);
 	is_showing = 1;
 
-	fullwin = new window_t;
-	fullwin->init(this);
+	fullwin = new window_t(this);
 	fullwin->place(0, 0, (int)(_width / xscale()),
 			(int)(_height / yscale()));
 
@@ -1063,49 +1062,6 @@ void gfxengine_t::post_render()
 {
 }
 
-#if 0
-void gfxengine_t::refresh_rect(SDL_Rect *r)
-{
-	window_t *w = windows;
-	for(w = windows; w; w = w->next)
-	{
-		if(!w->visible())
-			continue;
-
-		SDL_Rect dr = *r;
-
-		/* Clip to window */
-		int Amin, Amax, Bmin, Bmax;
-
-		/* Horizontal intersection */
-		Amin = dr.x;
-		Amax = Amin + dr.w;
-		Bmin = w->phys_rect.x;
-		Bmax = Bmin + w->phys_rect.w;
-		if(Bmin > Amin)
-			Amin = Bmin;
-		dr.x = Amin;
-		if(Bmax < Amax)
-			Amax = Bmax;
-		dr.w = Amax - Amin > 0 ? Amax - Amin : 0;
-
-		/* Vertical intersection */
-		Amin = dr.y;
-		Amax = Amin + dr.h;
-		Bmin = w->phys_rect.y;
-		Bmax = Bmin + w->phys_rect.h;
-		if(Bmin > Amin)
-			Amin = Bmin;
-		dr.y = Amin;
-		if(Bmax < Amax)
-			Amax = Bmax;
-		dr.h = Amax - Amin > 0 ? Amax - Amin : 0;
-
-		if(dr.w && dr.h)
-			w->phys_refresh(&dr);
-	}
-}
-#endif
 
 void gfxengine_t::flip()
 {

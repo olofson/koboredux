@@ -29,12 +29,6 @@
  *	window occlusion is *not* handled, so you can't use
  *	this class for "real" windows.
  *
- *	virtual void init(gfxengine_t *e);
- *		Call this to connect a window_t instance to
- *		the gfxengine_t instance that manages your
- *		screen. You *must* call this for pretty much
- *		any other calls to work.
- *
  *	void place(int left, int top, int sizex, int sizey);
  *		Position the window on the screen.
  *
@@ -215,11 +209,9 @@ class window_t
 {
 	friend class gfxengine_t;
   public:
-	window_t();
 	window_t(gfxengine_t *e);
 	virtual ~window_t();
 
-	virtual void init(gfxengine_t *e);
 	void place(int left, int top, int sizex, int sizey);
 	int offscreen();
 	void visible(int vis);
@@ -341,6 +333,7 @@ class window_t
 class engine_window_t : public window_t
 {
   public:
+	engine_window_t(gfxengine_t *e) : window_t(e) { }
 	void refresh(SDL_Rect *r);
 };
 

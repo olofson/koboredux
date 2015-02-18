@@ -30,21 +30,15 @@
 int global_status = 0;
 
 
-config_form_t::config_form_t()
+config_form_t::config_form_t(gfxengine_t *e) : kobo_form_t(e)
 {
 	prf = NULL;
 	stat = 0;
 }
 
 
-config_form_t::~config_form_t()
-{
-}
-
-
 void config_form_t::open(prefs_t *p)
 {
-	init(gengine);
 	place(wmain->x(), wmain->y(), wmain->width(), wmain->height());
 	font(B_NORMAL_FONT);
 	foreground(wmain->map_rgb(0xffffff));

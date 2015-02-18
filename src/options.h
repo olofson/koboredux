@@ -2,7 +2,8 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -28,6 +29,7 @@
 class system_options_t : public config_form_t
 {
   public:
+	system_options_t(gfxengine_t *e) : config_form_t(e) { }
 	void build();
 };
 
@@ -37,7 +39,7 @@ class video_options_t : public config_form_t
 	int showlow;
 	int firstbuild;
   public:
-	video_options_t()
+	video_options_t(gfxengine_t *e) : config_form_t(e)
 	{
 		showmodes = VMM_PC;
 		showlow = 0;
@@ -49,12 +51,14 @@ class video_options_t : public config_form_t
 class graphics_options_t : public config_form_t
 {
   public:
+	graphics_options_t(gfxengine_t *e) : config_form_t(e) { }
 	void build();
 };
 
 class audio_options_t : public config_form_t
 {
   public:
+	audio_options_t(gfxengine_t *e) : config_form_t(e) { }
 	void build();
 	void undo_hook();
 };
@@ -62,12 +66,14 @@ class audio_options_t : public config_form_t
 class control_options_t : public config_form_t
 {
   public:
+	control_options_t(gfxengine_t *e) : config_form_t(e) { }
 	void build();
 };
 
 class game_options_t : public config_form_t
 {
   public:
+	game_options_t(gfxengine_t *e) : config_form_t(e) { }
 	void build();
 	void undo_hook();
 };

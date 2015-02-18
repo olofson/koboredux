@@ -2,7 +2,8 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 2001, 2003, 2009 David Olofson
+ * Copyright 2001, 2003, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -56,8 +57,7 @@ class config_form_t : public kobo_form_t
 	prefs_t		prfbak;
 	int		stat;
   public:
-	config_form_t();
-	virtual ~config_form_t();
+	config_form_t(gfxengine_t *e);
 	void open(prefs_t *p);
 	virtual void build();		// <-- Override this!
 	//...and this, if you need. Normally,

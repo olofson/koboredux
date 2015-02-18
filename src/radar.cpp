@@ -35,7 +35,7 @@
 /*---------------------------------------------------------------------
 	radar_map_t
 ---------------------------------------------------------------------*/
-radar_map_t::radar_map_t()
+radar_map_t::radar_map_t(gfxengine_t *e) : window_t(e)
 {
 	w = MAP_SIZEX;
 	h = MAP_SIZEY;
@@ -90,7 +90,7 @@ void radar_map_t::refresh(SDL_Rect *r)
 /*---------------------------------------------------------------------
 	radar_window_t
 ---------------------------------------------------------------------*/
-radar_window_t::radar_window_t()
+radar_window_t::radar_window_t(gfxengine_t *e) : window_t(e)
 {
 	_mode = RM_OFF;
 	old_scrollradar = -1;
@@ -114,7 +114,6 @@ void radar_window_t::update(int mx, int my)
 
 void radar_window_t::refresh(SDL_Rect *r)
 {
-	int t = SDL_GetTicks();
 	switch(_mode)
 	{
 	  case RM__REINIT:
@@ -136,6 +135,7 @@ void radar_window_t::refresh(SDL_Rect *r)
 		}
 		else
 			blit(0, 0, wmap);
+		int t = SDL_GetTicks();
 		foreground(map_rgb(engine->palette(28 + t / 100 % 8)));
 		point((xpos - pxoffs) & (MAP_SIZEX - 1),
 				(ypos - pyoffs) & (MAP_SIZEY - 1));
