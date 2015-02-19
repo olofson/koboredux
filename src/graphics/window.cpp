@@ -134,6 +134,19 @@ void window_t::place(int left, int top, int sizex, int sizey)
 }
 
 
+void window_t::scale(float x, float y)
+{
+	if(x > 0)
+		xs = (int)(x * 256.f);
+	else
+		xs = (int)((-x) * engine->xs);
+	if(y > 0)
+		ys = (int)(y * 256.f);
+	else
+		ys = (int)((-y) * engine->ys);
+}
+
+
 void window_t::select()
 {
 	if(!engine)
@@ -679,14 +692,14 @@ void window_t::blit(int dx, int dy, window_t *src)
 	SDL_Rect src_rect;
 	src_rect.x = 0;
 	src_rect.y = 0;
-	src_rect.w = phys_rect.w;
-	src_rect.h = phys_rect.h;
+	src_rect.w = src->phys_rect.w;
+	src_rect.h = src->phys_rect.h;
 
 	SDL_Rect dest_rect;
 	dest_rect.x = phys_rect.x + dx;
 	dest_rect.y = phys_rect.y + dy;
-	dest_rect.w = src_rect.w;
-	dest_rect.h = src_rect.h;
+	dest_rect.w = src_rect.w * xs / src->xs;
+	dest_rect.h = src_rect.h * ys / src->ys;
 
 	SDL_RenderCopy(renderer, src->otexture, &src_rect, &dest_rect);
 }

@@ -213,6 +213,7 @@ class window_t
 	virtual ~window_t();
 
 	void place(int left, int top, int sizex, int sizey);
+	void scale(float x, float y);
 	int offscreen();
 	void visible(int vis);
 	int visible()	{ return _visible; }

@@ -481,50 +481,44 @@ void KOBO_main::build_screen()
 
 	dhigh->place(conx, cony, conw, 18);
 	dhigh->font(B_NORMAL_FONT);
-//	dhigh->bgimage(B_HIGH_BACK, 0);
 	dhigh->caption("HIGHSCORE");
 	dhigh->text("000000000");
 
 	dscore->place(conx, cony + 24, conw, 18);
 	dscore->font(B_NORMAL_FONT);
-//	dscore->bgimage(B_SCORE_BACK, 0);
 	dscore->caption("SCORE");
 	dscore->text("000000000");
 
 	dships->place(conx, cony + 48, conw, 18);
 	dships->font(B_NORMAL_FONT);
-//	dships->bgimage(B_SHIPS_BACK, 0);
 	dships->caption("SHIPS");
 	dships->text("000");
 
 	dstage->place(conx, cony + 72, conw, 18);
 	dstage->font(B_NORMAL_FONT);
-//	dstage->bgimage(B_STAGE_BACK, 0);
 	dstage->caption("STAGE");
 	dstage->text("000");
 
 	wmain->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
 
-	// Map tiles are 2x2 "native" pixels now!
-//	wmap->place(0, 0, MAP_SIZEX * 2, MAP_SIZEY * 2);
-wmap->place(0, 0, MAP_SIZEX, MAP_SIZEY);
+	// Set up the map at 1 physical pixel per tile
 	wmap->offscreen();
-//	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
-wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W / 2, WRADAR_H / 2);
-//	wradar->bgimage(B_RADAR_BACK, 0);
+	wmap->scale(1.0f, 1.0f);
+	wmap->place(0, 0, MAP_SIZEX, MAP_SIZEY);
+
+	// Have the radar window scale up to 2x2 "native" pixels per tile
+	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
+	wradar->scale(-2.0f, -2.0f);
 
 	whealth->place(xoffs + 4, yoffs + 92, 8, 128);
-//	whealth->bgimage(B_HEALTH_LID, 0);
 	whealth->background(whealth->map_rgb(0x182838));
 	whealth->redmax(0);
 
 	wtemp->place(xoffs + 244, yoffs + 188, 4, 32);
-//	wtemp->bgimage(B_TEMP_LID, 0);
 	wtemp->background(wtemp->map_rgb(0x182838));
 	wtemp->redmax(1);
 
 	wttemp->place(xoffs + 248, yoffs + 188, 4, 32);
-//	wttemp->bgimage(B_TTEMP_LID, 0);
 	wttemp->background(wttemp->map_rgb(0x182838));
 	wttemp->redmax(1);
 
