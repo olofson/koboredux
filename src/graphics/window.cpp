@@ -663,18 +663,18 @@ void window_t::blit(int dx, int dy,
 
 	SELECT
 	SDL_Rect src_rect;
-	int sx2 = ((sx + sw) * xs + 128) >> 8;
-	int sy2 = ((sy + sh) * ys + 128) >> 8;
-	src_rect.x = (sx * xs + 128) >> 8;
-	src_rect.y = (sy * ys + 128) >> 8;
+	int sx2 = ((sx + sw) * src->xs + 128) >> 8;
+	int sy2 = ((sy + sh) * src->ys + 128) >> 8;
+	src_rect.x = (sx * src->xs + 128) >> 8;
+	src_rect.y = (sy * src->ys + 128) >> 8;
 	src_rect.w = sx2 - src_rect.x;
 	src_rect.h = sy2 - src_rect.y;
 
 	SDL_Rect dest_rect;
 	dest_rect.x = phys_rect.x + ((dx * xs + 128) >> 8);
 	dest_rect.y = phys_rect.y + ((dy * ys + 128) >> 8);
-	dest_rect.w = src_rect.w;
-	dest_rect.h = src_rect.h;
+	dest_rect.w = src_rect.w * xs / src->xs;
+	dest_rect.h = src_rect.h * ys / src->ys;
 
 	SDL_RenderCopy(renderer, src->otexture, &src_rect, &dest_rect);
 }
@@ -686,9 +686,6 @@ void window_t::blit(int dx, int dy, window_t *src)
 		return;
 
 	SELECT
-	dx = (dx * xs + 128) >> 8;
-	dy = (dy * ys + 128) >> 8;
-
 	SDL_Rect src_rect;
 	src_rect.x = 0;
 	src_rect.y = 0;
@@ -696,8 +693,8 @@ void window_t::blit(int dx, int dy, window_t *src)
 	src_rect.h = src->phys_rect.h;
 
 	SDL_Rect dest_rect;
-	dest_rect.x = phys_rect.x + dx;
-	dest_rect.y = phys_rect.y + dy;
+	dest_rect.x = phys_rect.x + ((dx * xs + 128) >> 8);
+	dest_rect.y = phys_rect.y + ((dy * ys + 128) >> 8);
 	dest_rect.w = src_rect.w * xs / src->xs;
 	dest_rect.h = src_rect.h * ys / src->ys;
 
