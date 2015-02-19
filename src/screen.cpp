@@ -155,9 +155,12 @@ void _screen::title(int t, float fade, int mode)
 
 #if 1
 	float mf = (1.0f - fade);
-	int ly = (int)(mf * mf * mf * WMAIN_H);
+	float ly = mf * mf * mf * WMAIN_H - 0.5f;
+	if(ly < 0.0f)
+		ly = 0.0f;
 	wmain->sprite_fxp(PIXEL2CS(wmain->width() - 320) / 2,
-			PIXEL2CS(wmain->height()  / 2 - (128 - 20) - ly),
+			(int)((wmain->height()  / 2 - (128 - 20) - ly) *
+					256.0f),
 			B_LOGO, 0);
 #elif 1
 	wmain->sprite_fxp_alpha(PIXEL2CS(wmain->width() - 320) / 2,
