@@ -148,12 +148,12 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 #define WMAIN_H		336
 
 #define WCONSOLE_X	8
-#define WCONSOLE_Y	51
+#define WCONSOLE_Y	52
 #define WCONSOLE_W	128
 #define WCONSOLE_H	256
 
-#define WRADAR_X	503
-#define WRADAR_Y	51
+#define WRADAR_X	504
+#define WRADAR_Y	52
 #define WRADAR_W	128
 #define WRADAR_H	256
 
