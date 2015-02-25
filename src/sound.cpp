@@ -27,9 +27,9 @@
 
 int KOBO_sound::sounds_loaded = 0;
 int KOBO_sound::music_loaded = 0;
+
 int KOBO_sound::time = 0;
 int KOBO_sound::_period = 30;
-int KOBO_sound::sfx2d_tag = 0;
 int KOBO_sound::listener_x = 0;
 int KOBO_sound::listener_y = 0;
 int KOBO_sound::wrap_x = 0;
@@ -39,63 +39,19 @@ int KOBO_sound::panscale = 65536 / 700;
 int KOBO_sound::firing = 0;
 unsigned KOBO_sound::rumble = 0;
 
-/* Sound effects, songs and other program handles */
-enum KOBO_sounds {
-	SOUND_ONEUP,
-	SOUND_FINE,
-	SOUND_BEAM,
-	SOUND_RING,
-	SOUND_BOMB_DETO,
-	SOUND_EXPLO_NODE1,
-	SOUND_EXPLO_NODE2,
-	SOUND_EXPLO_ENEMY1,
-	SOUND_EXPLO_ENEMY2,
-	SOUND_EXPLO_PLAYER,
-	SOUND_EXPLO_RING1,
-	SOUND_EXPLO_RING2,
-	SOUND_EXPLO_RING3,
-	SOUND_EXPLO_ROCK,
-	SOUND_BZZZT,
-	SOUND_GAMEOVER,
-	SOUND_READY,
-	SOUND_PLAY,
-	SOUND_PAUSE,
-	SOUND_CANCEL,
-	SOUND_ERROR,
-	SOUND_LAUNCH2,
-	SOUND_LAUNCH,
-	SOUND_RUMBLE_NODE2,
-	SOUND_RUMBLE_NODE1,
-	SOUND_SHOT_START,
-	SOUND_SHOT,
-	SOUND_SHOT_END,
-	SOUND_METALLIC3,
-	SOUND_METALLIC2,
-	SOUND_METALLIC1,
-	SOUND_DAMAGE,
-	SOUND_MOVE,
-	SOUND_HIT3,
-	SOUND_HIT2,
-	SOUND_HIT1,
-	SOUND_TICK,
-	SOUND_ENEMYM,
-	SOUND__COUNT
-};
+A2_state *KOBO_sound::state = NULL;
+A2_handle KOBO_sound::rootvoice = 0;
+A2_handle KOBO_sound::sfxbank = 0;
+A2_handle KOBO_sound::sounds[SOUND__COUNT];
 
-/*
-typedef struct KOBO_SfxDesc
+
+#define	KOBO_DEFS(x, y)	y,
+static const char *kobo_soundnames[] =
 {
-	const char	*name;		// A2 module export name
-	int		bank;		// Sprite bank ID
-	int		w, h;		// Frame size (original image pixels)
-	float		scale;		// Scale of source data rel. 640x360
-	int		flags;		// KOBO_GfxDescFlags
-} KOBO_SfxDesc;
+	KOBO_ALLSOUNDS
+};
+#undef	KOBO_DEFS
 
-static KOBO_GfxDesc gfxdesc[] = {
-	// Loading screen
-	{ "Loading loading screen graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-*/
 
 KOBO_sound::KOBO_sound()
 {
@@ -115,13 +71,33 @@ KOBO_sound::~KOBO_sound()
 
 int KOBO_sound::load(int (*prog)(const char *msg), int force)
 {
-	int res;
-	int save_to_disk = 0;
-	const char *ap = fmap->get("SFX>>", FM_DIR);
-	if(!ap)
+	int i, h;
+	const char *p = fmap->get("SFX>>sfx.a2s");
+	if(!p)
 	{
-		log_printf(ELOG, "Couldn't find audio data directory!\n");
+		log_printf(ELOG, "Couldn't find sound effects!\n");
 		return -1;
+	}
+
+	if((h = a2_Load(state, p, 0)) < 0)
+	{
+		log_printf(ELOG, "Couldn't load sound effects! (%s)\n",
+				a2_ErrorString((A2_errors)-h));
+		return -1;
+	}
+	sfxbank = h;
+
+	for(i = 0; i < SOUND__COUNT; ++i)
+	{
+		h = a2_Get(state, sfxbank, kobo_soundnames[i]);
+		if(h < 0)
+		{
+			log_printf(WLOG, "Couldn't find sound effect \"%s\"!"
+					" (%s)\n", kobo_soundnames[i],
+					a2_ErrorString((A2_errors)-h));
+		}
+		else
+			sounds[i] = h;
 	}
 #if 0
 	audio_set_path(ap);
@@ -215,6 +191,39 @@ int KOBO_sound::open()
 		log_printf(WLOG, "Sound disabled!\n");
 		return 0;
 	}
+
+	log_printf(ULOG, "Initializing audio...\n");
+	log_printf(ULOG, "   Sample rate: %d Hz\n", prefs->samplerate);
+	log_printf(ULOG, "       Latency: %d ms\n", prefs->latency);
+
+	A2_config *cfg = a2_OpenConfig(
+			prefs->samplerate,
+			prefs->samplerate * prefs->latency / 1000,
+			2,
+			A2_REALTIME | A2_TIMESTAMP | A2_STATECLOSE);
+	if(!cfg)
+	{
+		log_printf(ELOG, "Couldn't create audio configuration;"
+				" disabling sound effects.\n");
+		return -1;
+	}
+#if 0
+	//TODO
+	if(audiodriver)
+		if(a2_AddDriver(cfg, a2_NewDriver(A2_AUDIODRIVER,
+				audiodriver)))
+			...
+#endif
+
+	if(!(state = a2_Open(cfg)))
+	{
+		log_printf(ELOG, "Couldn't create audio engine state;"
+				" disabling sound effects.\n");
+		return -2;
+	}
+
+	rootvoice = a2_RootVoice(state);
+
 #if 0
 
 	if(audio_start(prefs->samplerate, prefs->latency, prefs->use_oss, prefs->cmd_midi,
@@ -239,10 +248,10 @@ int KOBO_sound::open()
 	audio_channel_control(SOUND_GROUP_UIMUSIC, AVT_ALL, ACC_PRIORITY, 2);
 	audio_channel_control(SOUND_GROUP_UI, AVT_ALL, ACC_PRIORITY, 3);
 	audio_channel_control(SOUND_GROUP_SFX, AVT_ALL, ACC_PRIORITY, 4);
-
+#endif
 	g_wrap(MAP_SIZEX*CHIP_SIZEX, MAP_SIZEY*CHIP_SIZEY);
 	g_scale(VIEWLIMIT * 3 / 2, VIEWLIMIT);
-
+#if 0
 	// For the noise "bzzzt" effect :-)
 	audio_channel_control(3, -1, ACC_PRIM_BUS, 1);
 
@@ -255,10 +264,7 @@ int KOBO_sound::open()
 	audio_bus_control(1, 1, ABC_FX_TYPE, AFX_NONE);
 	audio_bus_controlf(1, 0, ABC_SEND_MASTER, 1.0);
 	audio_bus_controlf(1, 0, ABC_SEND_BUS_7, 0.1);
-#else
-	log_printf(WLOG, "Sound not implemented!\n");
 #endif
-
 	prefschange();
 
 	time = SDL_GetTicks();
@@ -268,19 +274,21 @@ int KOBO_sound::open()
 
 void KOBO_sound::stop()
 {
-#if 0
-	audio_stop();
-#endif
 }
 
 
 void KOBO_sound::close()
 {
-#if 0
-	audio_close();
-#endif
+	if(state)
+	{
+		a2_Close(state);
+		state = NULL;
+	}
 	sounds_loaded = 0;
 	music_loaded = 0;
+	rootvoice = 0;
+	sfxbank = 0;
+	memset(sounds, 0, sizeof(sounds));
 }
 
 
@@ -376,8 +384,10 @@ void KOBO_sound::frame()
 	else if (aaa == 20)
 		g_play(SOUND_OVERHEAT, listener_x - 128, listener_y, 32768, 67<<16);
 #endif
-#if 0
 	// Advance to next game logic frame
+	if(state)
+		a2_Now(state);
+#if 0
 	int nc = audio_next_callback();
 	if(time < nc)
 		time = nc;
@@ -388,15 +398,12 @@ void KOBO_sound::frame()
 	time += _period;
 
 	// Various sound control logic
-	++rumble;	// Rumble timer
+	rumble = 0;	// Only one per logic frame!
 }
 
 
 void KOBO_sound::run()
 {
-#if 0
-	audio_run();
-#endif
 }
 
 
@@ -406,21 +413,19 @@ void KOBO_sound::run()
 
 void KOBO_sound::g_music(int wid)
 {
-#if 0
-	audio_channel_control(SOUND_GROUP_BGMUSIC, AVT_FUTURE, ACC_PATCH, wid);
-	audio_channel_control(SOUND_GROUP_BGMUSIC, AVT_FUTURE, ACC_PAN, 0);
-	audio_channel_play(SOUND_GROUP_BGMUSIC, 0, 60<<16, 65536);
-#endif
+	if(!state || !sounds[wid])
+		return;
+	a2_Play(state, rootvoice, sounds[wid]);
 }
 
 
 void KOBO_sound::play(int wid, int vol, int pitch, int pan)
 {
-#if 0
-	audio_channel_control(SOUND_GROUP_UI, AVT_FUTURE, ACC_PATCH, wid);
-	audio_channel_control(SOUND_GROUP_UI, AVT_FUTURE, ACC_PAN, pan);
-	audio_channel_play(SOUND_GROUP_UI, 0, pitch, vol);
-#endif
+	if(!state || !sounds[wid])
+		return;
+	a2_Play(state, rootvoice, sounds[wid],
+			(pitch / 65536.0f - 60.0f)  / 12.0f, vol / 65536.0f,
+			pan / 65536.0f);
 }
 
 
@@ -448,6 +453,10 @@ void KOBO_sound::g_scale(int maxrange, int pan_maxrange)
 void KOBO_sound::g_play(int wid, int x, int y, int vol, int pitch)
 {
 	int volume, vx, vy, pan;
+
+	if(!state || !sounds[wid])
+		return;
+
 	/* Calculate volume */
 	x -= listener_x;
 	y -= listener_y;
@@ -485,25 +494,19 @@ void KOBO_sound::g_play(int wid, int x, int y, int vol, int pitch)
 	else if(pan > 65536)
 		pan = 65536;
 
-#if 0
-	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_PATCH, wid);
-	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_PAN, pan);
-	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_VOLUME, volume);
-	audio_channel_play(SOUND_GROUP_SFX, sfx2d_tag, pitch, vol);
-#endif
-	sfx2d_tag = (sfx2d_tag + 1) & 0xffff;
+	a2_Play(state, rootvoice, sounds[wid],
+			(pitch / 65536.0f - 60.0f)  / 12.0f,
+			volume / 65536.0f, pan / 65536.0f);
 }
 
 
 void KOBO_sound::g_play0(int wid, int vol, int pitch)
 {
-#if 0
-	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_PATCH, wid);
-	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_PAN, 0);
-	audio_channel_control(SOUND_GROUP_SFX, AVT_FUTURE, ACC_VOLUME, 65536);
-	audio_channel_play(SOUND_GROUP_SFX, sfx2d_tag, 60<<16, vol);
-#endif
-	sfx2d_tag = (sfx2d_tag + 1) & 0xffff;
+	if(!state || !sounds[wid])
+		return;
+	a2_Play(state, rootvoice, sounds[wid],
+			(pitch / 65536.0f - 60.0f)  / 12.0f,
+			vol / 65536.0f);
 }
 
 
@@ -551,25 +554,19 @@ void KOBO_sound::g_player_explo_start()
 
 void KOBO_sound::g_bolt_hit(int x, int y)
 {
-	g_play(SOUND_METALLIC1 + (pubrand.get() % 3),
-			CS2PIXEL(x), CS2PIXEL(y),
-			12000);
+	g_play(SOUND_METALLIC, CS2PIXEL(x), CS2PIXEL(y), 8000);
 }
 
 
 void KOBO_sound::g_bolt_hit_rock(int x, int y)
 {
-	g_play(SOUND_HIT1 + (pubrand.get() % 3),
-			CS2PIXEL(x), CS2PIXEL(y),
-			20000);
+	g_play(SOUND_HIT_ROCK, CS2PIXEL(x), CS2PIXEL(y), 20000);
 }
 
 
 void KOBO_sound::g_base_node_explo(int x, int y)
 {
-	g_play(pubrand.get(8) > 128  ? SOUND_EXPLO_NODE1 : SOUND_EXPLO_NODE2,
-			CS2PIXEL(x), CS2PIXEL(y));
-	rumble = 0;
+	g_play(SOUND_EXPLO_NODE, CS2PIXEL(x), CS2PIXEL(y));
 }
 
 
@@ -577,28 +574,24 @@ void KOBO_sound::g_base_core_explo(int x, int y)
 {
 	x = CS2PIXEL(x);
 	y = CS2PIXEL(y);
-	g_play(pubrand.get(8) > 128  ? SOUND_EXPLO_NODE1 : SOUND_EXPLO_NODE2,
-			x, y, 100000, 62<<16);
+	g_play(SOUND_EXPLO_CORE, x, y, 100000, 60<<16);
 	g_play(SOUND_FINE, x + 30, y, 65536, (60<<16) + 4000);
 	g_play(SOUND_FINE, x - 30, y, 65536, (60<<16) - 4000);
-	rumble = 0;
 }
 
 
 void KOBO_sound::g_pipe_rumble(int x, int y)
 {
-	if(rumble < 4 + pubrand.get(3))
+	if(rumble)
 		return;
-	g_play(pubrand.get(8) > 128  ? SOUND_RUMBLE_NODE1 : SOUND_RUMBLE_NODE2,
-			CS2PIXEL(x), CS2PIXEL(y));
-	rumble = 0;
+	g_play(SOUND_RUMBLE, CS2PIXEL(x), CS2PIXEL(y));
+	rumble = 1;
 }
 
 
 void KOBO_sound::g_enemy_explo(int x, int y)
 {
-	g_play(SOUND_EXPLO_ENEMY1 + (pubrand.get() % 2),
-			CS2PIXEL(x), CS2PIXEL(y), 40000);
+	g_play(SOUND_EXPLO_ENEMY, CS2PIXEL(x), CS2PIXEL(y), 40000);
 }
 
 
@@ -610,8 +603,7 @@ void KOBO_sound::g_rock_explo(int x, int y)
 
 void KOBO_sound::g_ring_explo(int x, int y)
 {
-	g_play(SOUND_EXPLO_RING1 + (pubrand.get() % 3),
-			CS2PIXEL(x), CS2PIXEL(y), 32768);
+	g_play(SOUND_EXPLO_RING, CS2PIXEL(x), CS2PIXEL(y), 32768);
 }
 
 
@@ -719,7 +711,7 @@ void KOBO_sound::ui_noise(int n)
 
 void KOBO_sound::ui_ok()
 {
-	play(SOUND_EXPLO_NODE1, 32768);
+	play(SOUND_EXPLO_NODE, 32768);
 }
 
 
@@ -737,7 +729,7 @@ void KOBO_sound::ui_move()
 
 void KOBO_sound::ui_tick()
 {
-	play(SOUND_METALLIC1, 15000);
+	play(SOUND_METALLIC, 15000);
 }
 
 
@@ -749,15 +741,15 @@ void KOBO_sound::ui_error()
 
 void KOBO_sound::ui_play()
 {
-	play(SOUND_PLAY, 32768, (50<<16) + 2000, -40000);
-	play(SOUND_PLAY, 32768, (50<<16) - 2000, 40000);
+	play(SOUND_PLAY, 32768, (60<<16) + 2000, -40000);
+	play(SOUND_PLAY, 32768, (60<<16) - 2000, 40000);
 }
 
 
 void KOBO_sound::ui_pause()
 {
-	play(SOUND_PAUSE, 32768, (56<<16) + 2000, -40000);
-	play(SOUND_PAUSE, 32768, (56<<16) - 2000, 40000);
+	play(SOUND_PAUSE, 32768, (60<<16) + 2000, -40000);
+	play(SOUND_PAUSE, 32768, (60<<16) - 2000, 40000);
 }
 
 
@@ -770,7 +762,7 @@ void KOBO_sound::ui_ready()
 
 void KOBO_sound::ui_countdown(int remain)
 {
-	play(SOUND_TICK, 20000, (65 - remain)<<16);
+	play(SOUND_TICK, 20000, (60 - remain)<<16);
 }
 
 

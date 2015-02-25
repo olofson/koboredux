@@ -1,276 +1,17 @@
-def title	"K2SFX"
-def version	"TP5"
-def description	"Kobo II sound effects"
+def title	"KRSFX"
+def version	"0.7.0"
+def description	"Kobo Redux sound effects"
 def author	"David Olofson"
-def copyright	"Copyright 2013 David Olofson"
+def copyright	"Copyright 2015 David Olofson"
 def license	"CC BY-NC-ND 3.0"
 def a2sversion	"1.9.1"
 
-test(x)
-{
-	debug x
-	test (x + 1)
-}
-
-.Chr0(P V Attack Decay Detune S)
-{
-	struct { wtosc; panmix }
-	pan (Detune * 100)
-	w qsine; !aa 0; !Ta (V * .03); phase (rand 1)
-	+P Detune
-	p P; !er (Attack * .1)
-.rt	while V + aa > .001 {
-		+p (P - p * .4 + rand .02 - .01)
-		+aa (Ta - aa * er); Ta (V * rand .2); a (aa * S)
-		d (rand 5 + 2.5)
-	}
-	a 0; d 5
-	1(NV) {
-		if NV > V {
-			V NV; er (Attack * .1); wake rt
-		} else {
-			V NV; er (Decay * .1)
-		}
-	}
-	2(NP) { P (NP + Detune) }
-}
-
-.Choir(P V=1 Attack=.3 Decay=.2)
-{
-	struct {
-		inline 0 *
-		filter12 f1 * *
-		filter12 f2 * *
-		panmix * >
-	}
-	f1.lp .5; f1.bp .7; f1.hp 1; f1.q .04; f1.cutoff (P + 8n)
-	f2.lp .5; f2.bp 1; f2.hp .1; f2.q .02; f2.cutoff (P + 1.9)
-	!Voices (7 - P quant 1)
-	if Voices < 2 {
-		Voices 2
-	}
-	def Spread .03
-	!s 1
-	!detune (0 - (Spread / 2))
-	Voices {
-		0:Chr0 P V Attack Decay detune s
-		+detune (Spread / Voices)
-		s (neg s)
-	}
-	1(NV) { *<1 NV }
-	2(NP) { *<2 NP }
-}
-
-ChCh(P V=1)
-{
-	def I Choir
-	+tr P
-	*V .4
-	1:I -8n V;	2:I -3n V;	3:I 0n V; 	4:I 4n V;	td 16
-	*<1
-	1:I -7n V;	2:I -3n V;	3:I 0n V; 	4:I 5n V;	td 16
-	*<1
-	1:I -5n V;	2:I 0n V;	3:I 4n V; 	4:I 7n V;	td 16
-	*<1
-	1:I -5n V;	2:I -1n V;	3:I 2n V; 	4:I 7n V;	td 16
-	*<1
-
-	1:I -8n V;	2:I -3n V;	3:I 0n V; 	4:I 4n V;	td 16
-	*<1
-	1:I -5n V;	2:I -1n V;	3:I 2n V; 	4:I 7n V;	td 16
-	*<1
-	1:I -3n V;	2:I 2n V;	3:I 6n V; 	4:I 9n V;	td 16
-	*<1
-	1:I -3n V;	2:I 2n V;	3:I 5n V; 	4:I 9n V;	td 16
-	*<1
-}
-
-// BLIT test; true BLIT with asynchronous impulses
-.blitimp(pitch amp)
-{
-	struct { wtosc }
-	w sine; a amp; set a; p pitch
-	a 0; d 5
-}
-BLIT(P V=1)
-{
-	struct { inline; panmix }
-	!per p2d P; !reso (V * 5 - 1); !vm .99
-	V .5
-	while V > .001 {
-		blitimp reso V; *V vm; d per
-	}
-	1() { *vm .9 }
-}
-
-// "Fake" BLIT that scales impulse length to match period; uses only one voice
-.blitimp2(pitch de amp)
-{
-	struct { wtosc }
-	w sine; p pitch; a amp; set a
-	a 0; d de
-}
-BLIT2(P V=1)
-{
-	struct { inline; panmix }
-	!per p2d P; !reso 1000f
-	!dreso 1n; *dreso per; *dreso .1
-	for {
-		blitimp2 reso per V
-		d per
-		-reso dreso
-	}
-.rel
-	1() { force rel }
-}
-
-// 8 bit style "poff" sound effect using BLIT with randomized timing
-.blitpoffimp(pitch de amp)
-{
-	struct { wtosc }
-	d (rand de)
-	w sine; p pitch; a amp; set a
-	a 0; d de
-}
-BLITPoff(P V=1)
-{
-	struct { inline; panmix }
-	!per p2d P; !reso 1000f
-	!dreso 1n; *dreso per; *dreso .1
-	for {
-		blitpoffimp reso per V
-		d per
-		-reso dreso
-	}
-.rel
-	1() { force rel }
-}
-
-// "Fake" BLIT modulating impulses out of a single oscillator
-SemiBLIT(P V=1)
-{
-	struct { wtosc; panmix }
-	!per p2d P; !reso 1000f
-	!dreso 1n; *dreso per; *dreso .1
-	w sine
-	for {
-		p reso; phase 0; a V; set a
-		a 0; d per
-		-reso dreso
-	}
-.rel
-	1() { force rel }
-}
-
-// Oscillator phase/timing test. This is supposed to sound exactly like a plain
-// sine wave oscillator, with no audible artifacts whatsoever.
-PhaseTest(P V=1)
-{
-	struct { wtosc; panmix }
-//P 23.4375f
-	!per p2d P
-	w sine; a V
-	for {
-		p P
-		phase 0
-		d per
-	}
-.rel	a 0; d per
-	1() { force rel }
-}
-
-// Subvoice spawn timing test. This is supposed to sound exactly like a plain
-// sine wave oscillator, with no audible artifacts whatsoever.
-.periodimp(pitch de amp)
-{
-	struct { wtosc }
-	w sine; phase 0; p pitch; a amp; set a
-	d de
-	a 0; set a
-}
-SubvoiceTimingTest(P V=1)
-{
-	struct { inline; panmix }
-	!per p2d P
-	for {
-		periodimp P per V
-		d per
-	}
-.rel
-	1() { force rel }
-}
-
-// Subvoice event timing test. This is supposed to sound exactly like a plain
-// sine wave oscillator, with no audible artifacts whatsoever.
-.msgimp(pitch de amp)
-{
-	struct { wtosc }
-	w sine; p pitch
-	end
-.imp	phase 0; a amp; set a
-	d de
-	a 0; set a
-	1() { force imp }
-}
-EventTimingTest(P V=1)
-{
-	struct { inline; panmix }
-	!per p2d P
-	1:msgimp P per V
-	for {
-		1<1
-		d per
-	}
-.rel
-	1() { force rel }
-}
-
-Pig(P V=1)
-{
-	struct { wtosc; filter12; filter12 f2; panmix }
-	w saw; a V; set a; p P
-	lp 1; bp 1; hp 0; q 1; set q; cutoff (P + 4); set cutoff
-f2.lp 0; f2.bp 1; f2.hp 1; f2.q 0; set f2.q; f2.cutoff -1; set f2.cutoff
-vol .1; set vol
-//	cutoff (P + 1); q .1;	d 100
-//	cutoff (P + .5);	d 500
-	a 0;			d 500
-	end
-.rel	a 0; cutoff P; q 0; d 100
-	d 500
-	1() { force rel }
-}
-
-// Noise excited oscillator, based on a resonant filter
-FilterPitch(P V=1)
-{
-	struct { wtosc; filter12; panmix }
-	w noise; p 5; lp 0; bp 0; hp 1
-	q 2; set q; cutoff (P + 2); set cutoff
-	a (V * .1); set a
-	*a .1; d 50
-	end
-.rel	a 0; d 100
-	d 2000		// Needed because of long tails with high resonance!
-	1() { force rel }
-}
-/*
-Test(P V=1)
-{
-	struct { wtosc; panmix }
-	w longsweep; p (P - 1)//23.4375f
-	a (V * .5); set a
-	end
-.rel	a 0; d 10
-	1() { force rel }
-}
-*/
-
 /*--------------------------------------------
- Kobo II Sound Effects
+ Based on the Kobo II Sound Effects
  Copyright 2011-2013 David Olofson
+ Copyright 2015 David Olofson (Kobo Redux)
 --------------------------------------------*/
-/*
+
 .Sweep(Vel Pitch Wave Start Dur Decay)
 {
 	struct { wtosc }
@@ -372,6 +113,8 @@ Test(P V=1)
 
 KoboDeath(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	+tr P
 	Explosion (2 + rand .5) V .3
 	Explosion (rand .5 - 1) V 1
@@ -401,22 +144,49 @@ KoboCrash(P V=1 PanX)
 
 SegmentDeath(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	+tr P
 	Explosion (rand 1) (V * 2) .1
-	Explosion (rand 1 - 1) (V * 2) .3
-	Rattle (rand 1 - .5) (V * 1.5) 20 .85 30
+	Explosion (rand 1 - 1) (V * 2) .2
+	Rattle (rand 1 - .5) (V * 1.5) 20 .85 10
 }
 
 SegmentCrash(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	+tr P
 	Explosion (rand 1 - 1.5) (V * 2.5) .3
 	Rattle 0 (V * .7) 50 .85 30
 	Debris 0 (V * 2) 40 .9 30
 }
 
+BaseRumble(P V=1 PanX)
+{
+	struct { wtosc; panmix }
+	pan PanX
+	w triangle; a (V * 2)
+	-P (4 + rand .5)
+	!po (3 + rand 1)
+	50 {
+		p (P + po + rand 2)
+		*po .93
+		d 1
+	}
+	wg (a - .001) {
+		p (P + po + rand 2)
+		*a .99
+		*po .95
+		d 1
+	}
+	a 0; d 1
+}
+
 Grenade(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	+tr P
 	Explosion (1.5 + rand .5) (V * .5) .5
 	Explosion (rand .5 - 1) V 1
@@ -426,6 +196,8 @@ Grenade(P V=1 PanX)
 
 Bomb(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	+tr P
 	Explosion (.3 + rand .3) (V * 1.5) .2
 	Rumble -.9 (V * 3) .96
@@ -436,7 +208,8 @@ Bomb(P V=1 PanX)
 
 FirePlasma(P V=1 PanX)
 {
-	struct { wtosc }
+	struct { wtosc; panmix }
+	pan PanX
 	+tr P
 	a (V * .1); set a; w noise; p 5; d 10
 	a (V * .5); set a; w triangle; p 1.5
@@ -507,7 +280,8 @@ FireLava(P V=1 PanX)
 
 LavaImpact(P V=1 PanX)
 {
-	struct { wtosc }
+	struct { wtosc; panmix }
+	pan PanX
 	+tr P
 	w triangle; p (rand 1 + 1); a (V * .3)
 	5 {	-p .2; d .5 }
@@ -556,6 +330,8 @@ Crash(P V=.5 PanX)
 
 BoomerangDeath(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	Explosion (P + 1.5 + rand .5) V .2
 	Rumble P (V * 2) .9
 	Rattle P (V * 2) 30 .7 20
@@ -585,7 +361,8 @@ Shot(P V=1 PanX)
 }
 Impact(P V=1 PanX)
 {
-	struct { wtosc }
+	struct { wtosc; inline; panmix }
+	pan PanX
 	+tr P
 	blopp 0 V .7
 	w square; p (rand .5 + 1); a (V * .3); set a
@@ -606,11 +383,11 @@ ImpactGround(P V=1 PanX)
 	p (rand .5 - 3); a 0; d 100
 }
 
-.Tele(wave pitch spread vel attack decay)
+.Tele(wv pitch spread vel attack decay)
 {
 	struct { wtosc }
 	!env 0
-	w wave; p pitch; a env
+	w wv; p pitch; a env
 	!da (vel / attack)
 	attack {
 		p (rand spread + pitch); a env; +env da; d 5
@@ -622,6 +399,8 @@ ImpactGround(P V=1 PanX)
 }
 Teleport(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	+tr P
 	Tele square 200f 2 (V * .1) 10 50
 	d 100
@@ -645,7 +424,8 @@ Teleport(P V=1 PanX)
 }
 FireElectro(P V=1 PanX)
 {
-	struct { wtosc }
+	struct { wtosc; inline; panmix }
+	pan PanX
 	+tr P
 	w saw; a 0
 	5 {
@@ -658,6 +438,35 @@ FireElectro(P V=1 PanX)
 		p 3.7; *a .85
 		14 {	d 1; -p .2 }
 	}
+}
+
+Klank(P V=1 PanX)
+{
+	struct { wtosc; panmix }
+	pan PanX
+	+tr P
+	*V .25
+	w noise;	p 5;	a (V * .6); set a;	d 5
+	w square
+	p (rand .1 );		a (V * .5); set a;	d 5
+	p (rand .3 + 1);	a (V * .4); set a;	d 5
+	p (rand .2 + 2.5);	a (V * .3); set a;	d 5
+	p (rand .1 + 4);	a (V * .2); set a
+	a 0; d 20
+}
+
+Tick(P V=1 PanX)
+{
+	struct { wtosc; panmix }
+	pan PanX
+	+tr P
+	*V .5
+	w square
+	p 0;	a (V * .5); set a;	d 5
+	p 1;	a (V * .4); set a;	d 5
+	p 2.5;	a (V * .3); set a;	d 5
+	p 4;	a (V * .2); set a
+	a 0; d 50
 }
 
 .Kl(Vel Duration Wave Base Period RD)
@@ -677,16 +486,7 @@ FireElectro(P V=1 PanX)
 		-a decay
 	}
 }
-Klank(P V=1 PanX)
-{
-	struct { wtosc }
-	+tr P
-	w noise; p 4; a (V * .5); set a
-	Kl (V * .7) 6 square (rand 1 - 1) (rand .2 + .3)
-	Kl (rand .3 + .1 * V) 8 square (rand 1 + .5) (rand .3 + .7)
-	Kl (rand .5 + .1 * V) 10 square (rand 1 + 1) (rand .3 + .1)
-	a 0; d 10
-}
+
 MineAttach(P V=1 PanX)
 {
 	struct { wtosc }
@@ -755,6 +555,8 @@ BulletGround(P V=1 PanX)
 }
 WarbleUp(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	+tr P
 	Swoop V -3 .002 .002
 	Swoop (V * .1) -2 .002 .002
@@ -771,13 +573,13 @@ WarbleUp(P V=1 PanX)
 	Electro1 .4
 }
 
-.RumbleSwoop(pitch amp wave attack decay per slide)
+.RumbleSwoop(pitch amp wv attack decay per slide)
 {
 	struct { wtosc }
 	-pitch 2
 	*attack amp; *decay amp
 	*attack per; *decay per
-	w wave
+	w wv
 	wl (a - amp) {
 		p (pitch + rand 1); +a attack; d per; +pitch slide
 	}
@@ -841,13 +643,15 @@ ItemVanish(P V=1 PanX)
 }
 ScratchDown(P V=1)
 {
+	struct { inline; panmix }
 	tr P
-	run DoScratch V -5
+	DoScratch V -5
 }
 ScratchUp(P V=1)
 {
+	struct { inline; panmix }
 	tr P
-	run DoScratch V 5
+	DoScratch V 5
 }
 
 MegaKlank(P V=1 PanX)
@@ -873,6 +677,8 @@ MegaKlank(P V=1 PanX)
 
 MegaDeath(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	tr P
 	Explosion (1.5 + rand .5) V .2
 	d (50 + rand 100)
@@ -890,6 +696,8 @@ MegaDeath(P V=1 PanX)
 
 MegaCrash(P V=1 PanX)
 {
+	struct { inline; panmix }
+	pan PanX
 	tr P
 	Explosion (rand .5 - 1) (V * 1.5) 1
 	d (50 + rand 150)
@@ -1293,7 +1101,7 @@ Rocket(P V=1 PanX)
 		}
 	}
 }
-*/
+
 .r1(P V=1)
 {
 	struct { wtosc }
@@ -1318,7 +1126,7 @@ Rocket(P V=1 PanX)
 		}
 	}
 }
-/*
+
 Reactor(P V=1 PanX)
 {
 	struct { wtosc }
@@ -1346,7 +1154,7 @@ Reactor(P V=1 PanX)
 		2<1 (NV * .07)
 	}
 }
-*/
+
 SpawnDeck(P V=1 PanX)
 {
 	struct { wtosc; inline; panmix }
@@ -1383,7 +1191,7 @@ SpawnDeck(P V=1 PanX)
 		3<1 (pV * .1)
 	}
 }
-/*
+
 PowerAlert(P V=1 PanX)
 {
 	struct { wtosc }
@@ -1441,7 +1249,8 @@ MineAlert(P V=1 PanX)
 }
 Launch(P V=1 PanX)
 {
-	struct { wtosc }
+	struct { wtosc; inline; panmix }
+	pan PanX
 	a (V * .5)
 	w noise; p -2
 	15 {
@@ -1496,7 +1305,8 @@ GiveHealthBig(P V=1 PanX)
 
 GiveWeapon(P V=1 PanX)
 {
-	struct { wtosc }
+	struct { wtosc; panmix }
+	pan PanX
 	tr P
 	w noise; p 5; a V; set a; a 0; d 5
 	d 10
@@ -1543,7 +1353,8 @@ GiveWeapon(P V=1 PanX)
 
 GiveAmmo(P V=1 PanX)
 {
-	struct { wtosc }
+	struct { wtosc; panmix }
+	pan PanX
 	tr P
 	w noise; p 6; a V; set a; a 0; d 5
 	d 5
@@ -1575,7 +1386,8 @@ GiveAmmo(P V=1 PanX)
 
 GiveEnergy(P V=1 PanX)
 {
-	struct { wtosc }
+	struct { wtosc; panmix }
+	pan PanX
 	tr P
 	w triangle; p -1.5
 	5 {
@@ -1597,6 +1409,7 @@ GiveEnergy(P V=1 PanX)
 GiveEnergyBig(P V=1 PanX)
 {
 	struct { wtosc; panmix }
+	pan PanX
 	tr P
 	w triangle; p -1.6
 	5 {
@@ -1618,6 +1431,7 @@ GiveEnergyBig(P V=1 PanX)
 GiveEnergyMega(P V=1 PanX)
 {
 	struct { wtosc; panmix }
+	pan PanX
 	tr P
 	w triangle; p -1.7
 	5 {
@@ -1639,4 +1453,3 @@ GiveEnergyMega(P V=1 PanX)
 		*a .9
 	}
 }
-*/

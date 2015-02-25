@@ -27,6 +27,49 @@
 #include "audiality2.h"
 
 
+/* Sound effects, songs and other program handles */
+#define KOBO_ALLSOUNDS	\
+	KOBO_DEFS(ONEUP,	"GiveEnergyMega")\
+	KOBO_DEFS(FINE,		"")\
+	KOBO_DEFS(BEAM,		"FireElectro")\
+	KOBO_DEFS(RING,		"")\
+	KOBO_DEFS(BOMB_DETO,	"Bomb")\
+	KOBO_DEFS(EXPLO_NODE,	"SegmentDeath")\
+	KOBO_DEFS(EXPLO_CORE,	"MegaDeath")\
+	KOBO_DEFS(EXPLO_ENEMY,	"BoomerangDeath")\
+	KOBO_DEFS(EXPLO_PLAYER,	"KoboDeath")\
+	KOBO_DEFS(EXPLO_RING,	"LavaImpact")\
+	KOBO_DEFS(EXPLO_ROCK,	"")\
+	KOBO_DEFS(BZZZT,	"")\
+	KOBO_DEFS(GAMEOVER,	"")\
+	KOBO_DEFS(READY,	"WarbleUp")\
+	KOBO_DEFS(PLAY,		"")\
+	KOBO_DEFS(PAUSE,	"ScratchDown")\
+	KOBO_DEFS(CANCEL,	"")\
+	KOBO_DEFS(ERROR,	"")\
+	KOBO_DEFS(LAUNCH2,	"Launch")\
+	KOBO_DEFS(LAUNCH,	"Launch")\
+	KOBO_DEFS(RUMBLE,	"BaseRumble")\
+	KOBO_DEFS(SHOT_START,	"")\
+	KOBO_DEFS(SHOT,		"FirePlasma")\
+	KOBO_DEFS(SHOT_END,	"")\
+	KOBO_DEFS(METALLIC,	"Klank")\
+	KOBO_DEFS(DAMAGE,	"Impact")\
+	KOBO_DEFS(MOVE,		"")\
+	KOBO_DEFS(HIT_ROCK,	"ImpactGround")\
+	KOBO_DEFS(TICK,		"Tick")\
+	KOBO_DEFS(ENEMYM,	"Teleport")
+
+
+#define	KOBO_DEFS(x, y)	SOUND_##x,
+enum KOBO_sounds
+{
+	KOBO_ALLSOUNDS
+	SOUND__COUNT
+};
+#undef	KOBO_DEFS
+
+
 class KOBO_sound
 {
 	static int	sounds_loaded;
@@ -35,7 +78,6 @@ class KOBO_sound
 	/* In-game sfx stuff */
 	static int	time;
 	static int	_period;
-	static int	sfx2d_tag;
 	static int	listener_x;
 	static int	listener_y;
 	static int	wrap_x;
@@ -44,6 +86,12 @@ class KOBO_sound
 	static int	panscale;
 	static int	firing;
 	static unsigned	rumble;
+
+	/* Audiality 2 interface */
+	static A2_state *state;
+	static A2_handle rootvoice;
+	static A2_handle sfxbank;
+	static A2_handle sounds[SOUND__COUNT];
 
   public:
 	KOBO_sound();
