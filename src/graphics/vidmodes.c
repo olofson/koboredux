@@ -32,6 +32,9 @@ typedef struct VMM_IMode
 
 static VMM_IMode modetab[] =
 {
+	// Special modes
+	{VMM_DESKTOP,		0,	0,	0x00100,	"Desktop"},
+
 	// 4:3 modes
 	{VMM_4_3 | VMM_PC,	320,	200,	0x04300,	"CGA"},
 	{VMM_4_3 | VMM_PC,	320,	240,	0x04301,	"QVGA"},
@@ -41,22 +44,22 @@ static VMM_IMode modetab[] =
 	{VMM_4_3 | VMM_PC,	640,	480,	0x04330,	"VGA"},
 	{VMM_4_3,		640,	512,	0x04331,	"Amiga HiRes"},
 	{VMM_4_3 | VMM_TV,	768,	576,	0x04340,	"PAL"},
-	{VMM_4_3 | VMM_PC,	800,	600,	0x04350,	NULL},
+	{VMM_4_3 | VMM_PC,	800,	600,	0x04350,	"SVGA"},
 	{VMM_4_3 | VMM_LORES,	960,	720,	0x04360,	NULL},
 	{VMM_4_3 | VMM_PC,	1024,	768,	0x04370,	"XGA"},
-	{VMM_4_3 | VMM_PC,	1152,	864,	0x04380,	NULL},
-	{VMM_4_3 | VMM_PC,	1280,	960,	0x04390,	NULL},
+	{VMM_4_3 | VMM_PC,	1152,	864,	0x04380,	"XGA+"},
+	{VMM_4_3 | VMM_PC,	1280,	960,	0x04390,	"SXGA−/UVGA"},
 	{VMM_4_3 | VMM_PC,	1400,	1050,	0x043a0,	"SXGA+"},
 	{VMM_4_3 | VMM_PC,	1600,	1200,	0x043b0,	"UXGA"},
 	{VMM_4_3 | VMM_PC,	1920,	1440,	0x043c0,	NULL},
 	{VMM_4_3 | VMM_PC,	2048,	1536,	0x043d0,	"QXGA"},
 
 	// 3:2 modes
-	{VMM_3_2 | VMM_LORES,	360,	240,	0x03200,	NULL},
+	{VMM_3_2 | VMM_LORES,	360,	240,	0x03200,	"WQVGA"},
 	{VMM_3_2 | VMM_LORES,	720,	480,	0x03240,	"NTSC"},
-	{VMM_3_2,		1152,	768,	0x03280,	NULL},
-	{VMM_3_2,		1280,	854,	0x03290,	NULL},
-	{VMM_3_2,		1440,	960,	0x032a0,	NULL},
+	{VMM_3_2,		1152,	768,	0x03280,	"WXGA"},
+	{VMM_3_2,		1280,	864,	0x03290,	NULL},
+	{VMM_3_2,		1440,	960,	0x032a0,	"FWXGA+"},
 
 	// 5:4 modes
 	{VMM_5_4 | VMM_LORES,	320,	256,	0x05400,	"Amiga LoRes"},
@@ -65,28 +68,34 @@ static VMM_IMode modetab[] =
 	{VMM_5_4,		2560,	2048,	0x054e0,	"QSXGA"},
 
 	// 16:10 modes
-	{VMM_16_10 | VMM_LORES,	320,	200,	0x10a00,	NULL},
+	{VMM_16_10 | VMM_LORES,	320,	200,	0x10a00,	"CGA"},
 	{VMM_16_10 | VMM_PC,	640,	400,	0x10a30,	NULL},
 	{VMM_16_10 | VMM_LORES,	840,	525,	0x10a50,	NULL},
-	{VMM_16_10 | VMM_PC,	1280,	800,	0x10a90,	NULL},
+	{VMM_16_10 | VMM_PC,	1280,	800,	0x10a90,	"WXGA"},
 	{VMM_16_10 | VMM_PC,	1680,	1050,	0x10ab0,	"WSXGA+"},
 	{VMM_16_10 | VMM_PC,	1920,	1200,	0x10ac0,	"WUXGA"},
 	{VMM_16_10 | VMM_PC,	2560,	1600,	0x10ae0,	"WQXGA"},
 
 	// 16:9 modes
 	{VMM_16_9 | VMM_LORES,	480,	270,	0x10910,	NULL},
-	{VMM_16_9,		640,	360,	0x10920,	NULL},
+	{VMM_16_9,		640,	360,	0x10920,	"nHD"},
 	{VMM_16_9 | VMM_LORES,	678,	384,	0x10930,	NULL},
 	{VMM_16_9 | VMM_TV,	854,	480,	0x10950,	"WVGA"},
-	{VMM_16_9 | VMM_LORES,	960,	540,	0x10960,	NULL},
+	{VMM_16_9 | VMM_LORES,	960,	540,	0x10960,	"qHD"},
 	{VMM_16_9,		1280,	720,	0x10990,	"HD 720"},
 	{VMM_16_9 | VMM_TV,	1356,	768,	0x109a0,	"Flat TV"},
 	{VMM_16_9 | VMM_TV,	1920,	1080,	0x109c0,	"HD 1080"},
-	{VMM_16_9,		2560,	1440,	0x109e0,	NULL},
-	{VMM_16_9,		3840,	2160,	0x109f0,	"4K"},
+	{VMM_16_9 | VMM_PC,	2560,	1440,	0x109e0,	"QHD"},
+	{VMM_16_9 | VMM_PC,	3840,	2160,	0x109f0,	"UHD"},
+	{VMM_16_9 | VMM_PC,	5120,	2880,	0x109f1,	"UHD+"},
+	{VMM_16_9 | VMM_CINEMA,	7680,	4320,	0x109f2,	"FUHD"},
+
+	// Cinema modes
+	{VMM_CINEMA,		2048,	1152,	0x10b10,	"2K"},
+	{VMM_CINEMA | VMM_PC,	4096,	2160,	0x10ba0,	"4K"},
 
 	// End of table
-	{0, 0, 0}
+	{0}
 };
 
 
@@ -106,7 +115,7 @@ int vmm_Init(int show, int hide)
 TODO: Include detected SDL modes, if requested.
  */
 
-	for(i = 0; modetab[i].width; ++i)
+	for(i = 0; modetab[i].flags; ++i)
 	{
 		VMM_Mode *m;
 		double nominal_aspect;

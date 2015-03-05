@@ -2,7 +2,8 @@
 ---------------------------------------------------------------------------
 	vidmodes.h - Video Mode Manager for Kobo Deluxe
 ---------------------------------------------------------------------------
- * Copyright (C) 2007, 2009 David Olofson
+ * Copyright 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -34,7 +35,8 @@ extern "C" {
 typedef enum
 {
 	VMM_ALL =	0xffffffff,
-	VMM_DETECT =	0x00000001,	/* Available modes as detected by SDL */
+	VMM_DETECT =	0x00000001,	/* Available modes detected by SDL */
+	VMM_DESKTOP =	0x00000002,	/* Automatic desktop resolution */
 	VMM_4_3 =	0x00000010,	/* 4:3 modes */
 	VMM_3_2 =	0x00000020,	/* 3:2 modes */
 	VMM_5_4 =	0x00000040,	/* 5:4 modes */
@@ -44,6 +46,7 @@ typedef enum
 	VMM_WPC =	0x00020000,	/* Widescreen PC/Mac modes */
 	VMM_TV =	0x00040000,	/* Standard TV modes */
 	VMM_WTV =	0x00080000,	/* Widescreen TV modes */
+	VMM_CINEMA =	0x00100000,	/* Cinematography resolutions */
 	VMM_LORES =	0x10000000	/* Special low resolution modes */
 } VMM_Flags;
 
