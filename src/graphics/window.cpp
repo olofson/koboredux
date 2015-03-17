@@ -120,14 +120,14 @@ void window_t::unlink(void)
 
 void window_t::place(int left, int top, int sizex, int sizey)
 {
-	int x2 = ((left + sizex) * xs + 128) >> 8;
-	int y2 = ((top + sizey) * ys + 128) >> 8;
+	int x2 = ((left + sizex) * xs + 127) >> 8;
+	int y2 = ((top + sizey) * ys + 127) >> 8;
 	if(_offscreen)
 		phys_rect.x = phys_rect.y = 0;
 	else
 	{
-		phys_rect.x = (left * xs + 128) >> 8;
-		phys_rect.y = (top * ys + 128) >> 8;
+		phys_rect.x = (left * xs + 127) >> 8;
+		phys_rect.y = (top * ys + 127) >> 8;
 	}
 	phys_rect.w = x2 - phys_rect.x;
 	phys_rect.h = y2 - phys_rect.y;
@@ -353,8 +353,8 @@ void window_t::string_fxp(int _x, int _y, const char *txt)
 	if(!engine)
 		return;
 
-	_x = CS2PIXEL((_x * xs + 128) >> 8);
-	_y = CS2PIXEL((_y * ys + 128) >> 8);
+	_x = CS2PIXEL((_x * xs + 127) >> 8);
+	_y = CS2PIXEL((_y * ys + 127) >> 8);
 	SoFont *f = engine->get_font(_font);
 	if(!f)
 		return;
@@ -367,7 +367,7 @@ void window_t::string_fxp(int _x, int _y, const char *txt)
 
 void window_t::center_fxp(int _y, const char *txt)
 {
-	_y = CS2PIXEL((_y * ys + 128) >> 8);
+	_y = CS2PIXEL((_y * ys + 127) >> 8);
 
 	if(!engine)
 		return;
@@ -386,8 +386,8 @@ void window_t::center_fxp(int _y, const char *txt)
 void window_t::center_token_fxp(int _x, int _y, const char *txt,
 		signed char token)
 {
-	_x = CS2PIXEL((_x * xs + 128) >> 8);
-	_y = CS2PIXEL((_y * ys + 128) >> 8);
+	_x = CS2PIXEL((_x * xs + 127) >> 8);
+	_y = CS2PIXEL((_y * ys + 127) >> 8);
 
 	if(!engine)
 		return;
@@ -478,10 +478,10 @@ void window_t::clear(SDL_Rect *r)
 	}
 	else
 	{
-		sr.x = ((int)r->x * xs + 128) >> 8;
-		sr.y = ((int)r->y * ys + 128) >> 8;
-		sr.w = (((int)(r->x + r->w) * xs + 128) >> 8) - sr.x;
-		sr.h = (((int)(r->y + r->h) * ys + 128) >> 8) - sr.y;
+		sr.x = ((int)r->x * xs + 127) >> 8;
+		sr.y = ((int)r->y * ys + 127) >> 8;
+		sr.w = (((int)(r->x + r->w) * xs + 127) >> 8) - sr.x;
+		sr.h = (((int)(r->y + r->h) * ys + 127) >> 8) - sr.y;
 		dr = sr;
 		dr.x += phys_rect.x;
 		dr.y += phys_rect.y;
@@ -509,10 +509,10 @@ void window_t::clear(SDL_Rect *r)
 
 void window_t::point(int _x, int _y)
 {
-	int x2 = ((_x + 1) * xs + 128) >> 8;
-	int y2 = ((_y + 1) * ys + 128) >> 8;
-	_x = (_x * xs + 128) >> 8;
-	_y = (_y * ys + 128) >> 8;
+	int x2 = ((_x + 1) * xs + 127) >> 8;
+	int y2 = ((_y + 1) * ys + 127) >> 8;
+	_x = (_x * xs + 127) >> 8;
+	_y = (_y * ys + 127) >> 8;
 	if(!engine || !renderer)
 		return;
 	SELECT
@@ -530,10 +530,10 @@ void window_t::point(int _x, int _y)
 
 void window_t::fillrect(int _x, int _y, int w, int h)
 {
-	int x2 = ((_x + w) * xs + 128) >> 8;
-	int y2 = ((_y + h) * ys + 128) >> 8;
-	_x = (_x * xs + 128) >> 8;
-	_y = (_y * ys + 128) >> 8;
+	int x2 = ((_x + w) * xs + 127) >> 8;
+	int y2 = ((_y + h) * ys + 127) >> 8;
+	_x = (_x * xs + 127) >> 8;
+	_y = (_y * ys + 127) >> 8;
 	if(!engine || !renderer)
 		return;
 	SELECT
@@ -559,10 +559,10 @@ void window_t::rectangle(int _x, int _y, int w, int h)
 
 void window_t::fillrect_fxp(int _x, int _y, int w, int h)
 {
-	int xx = CS2PIXEL((_x * xs + 128) >> 8);
-	int yy = CS2PIXEL((_y * ys + 128) >> 8);
-	w = CS2PIXEL(((w + _x) * xs + 128) >> 8) - xx;
-	h = CS2PIXEL(((h + _y) * ys + 128) >> 8) - yy;
+	int xx = CS2PIXEL((_x * xs + 127) >> 8);
+	int yy = CS2PIXEL((_y * ys + 127) >> 8);
+	w = CS2PIXEL(((w + _x) * xs + 127) >> 8) - xx;
+	h = CS2PIXEL(((h + _y) * ys + 127) >> 8) - yy;
 	if(!engine || !renderer)
 		return;
 	SELECT
@@ -593,8 +593,8 @@ void window_t::sprite_fxp(int _x, int _y, int bank, int frame)
 	s_sprite_t *s = s_get_sprite_b(b, frame);
 	if(!s || !s->texture)
 		return;
-	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 128) >> 8);
-	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 128) >> 8);
+	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 127) >> 8);
+	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 127) >> 8);
 	SDL_Rect r;
 
 	SELECT
@@ -616,8 +616,8 @@ void window_t::sprite_fxp_alpha(int _x, int _y, int bank, int frame, Uint8 a)
 	s_sprite_t *s = s_get_sprite_b(b, frame);
 	if(!s || !s->texture)
 		return;
-	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 128) >> 8);
-	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 128) >> 8);
+	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 127) >> 8);
+	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 127) >> 8);
 	SDL_Rect r;
 
 	SELECT
@@ -642,8 +642,8 @@ void window_t::sprite_fxp_scale(int _x, int _y, int bank, int frame,
 	s_sprite_t *s = s_get_sprite_b(b, frame);
 	if(!s || !s->texture)
 		return;
-	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 128) >> 8);
-	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 128) >> 8);
+	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 127) >> 8);
+	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 127) >> 8);
 	SDL_Rect r;
 
 	SELECT
@@ -663,16 +663,16 @@ void window_t::blit(int dx, int dy,
 
 	SELECT
 	SDL_Rect src_rect;
-	int sx2 = ((sx + sw) * src->xs + 128) >> 8;
-	int sy2 = ((sy + sh) * src->ys + 128) >> 8;
-	src_rect.x = (sx * src->xs + 128) >> 8;
-	src_rect.y = (sy * src->ys + 128) >> 8;
+	int sx2 = ((sx + sw) * src->xs + 127) >> 8;
+	int sy2 = ((sy + sh) * src->ys + 127) >> 8;
+	src_rect.x = (sx * src->xs + 127) >> 8;
+	src_rect.y = (sy * src->ys + 127) >> 8;
 	src_rect.w = sx2 - src_rect.x;
 	src_rect.h = sy2 - src_rect.y;
 
 	SDL_Rect dest_rect;
-	dest_rect.x = phys_rect.x + ((dx * xs + 128) >> 8);
-	dest_rect.y = phys_rect.y + ((dy * ys + 128) >> 8);
+	dest_rect.x = phys_rect.x + ((dx * xs + 127) >> 8);
+	dest_rect.y = phys_rect.y + ((dy * ys + 127) >> 8);
 	dest_rect.w = src_rect.w * xs / src->xs;
 	dest_rect.h = src_rect.h * ys / src->ys;
 
@@ -693,8 +693,8 @@ void window_t::blit(int dx, int dy, window_t *src)
 	src_rect.h = src->phys_rect.h;
 
 	SDL_Rect dest_rect;
-	dest_rect.x = phys_rect.x + ((dx * xs + 128) >> 8);
-	dest_rect.y = phys_rect.y + ((dy * ys + 128) >> 8);
+	dest_rect.x = phys_rect.x + ((dx * xs + 127) >> 8);
+	dest_rect.y = phys_rect.y + ((dy * ys + 127) >> 8);
 	dest_rect.w = src_rect.w * xs / src->xs;
 	dest_rect.h = src_rect.h * ys / src->ys;
 
