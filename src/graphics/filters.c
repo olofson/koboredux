@@ -625,12 +625,12 @@ static inline void do_scale(scale_params_t *p,
 static void scale_nearest(scale_params_t *p)
 {
 	int x, y, sx, sy;
-	for(y = p->start_y, sy = p->start_sy + p->scy / 2;
+	for(y = p->start_y, sy = p->start_sy + p->scy / 2 - 1;
 			y < p->max_y; ++y, sy += p->scy)
 	{
 		pix_t *pix = (pix_t *)((char *)p->dst->pixels +
 				y * p->dst->pitch);
-		for(x = p->start_x, sx = p->start_sx + p->scx / 2;
+		for(x = p->start_x, sx = p->start_sx + p->scx / 2 - 1;
 				x < p->max_x; ++x, sx += p->scx)
 			pix[x] = getpix32_nc(p->src, sx >> 16, sy >> 16);
 	}
