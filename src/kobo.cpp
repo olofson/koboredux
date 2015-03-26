@@ -537,15 +537,48 @@ int KOBO_main::init_display(prefs_t *p)
 {
 	int dw, dh;		// Display size
 	int gw, gh;		// Game "window" size
-	gengine->title("Kobo Redux " KOBO_VERSION, "kobord");
+	int desktopres = 0;
 
-	dw = p->width;
-	dh = p->height;
-log_printf(WLOG, "--- Desired size: %d x %d\n", dw, dh);
+	gengine->hide();
+
+	gengine->title("Kobo Redux " KOBO_VERSION, "kobord");
+	gengine->vsync(p->vsync);
+	gengine->cursor(0);
+	gengine->mode((VMM_ModeID)p->videomode, p->fullscreen);
+
+	vmm_Init(-1, 0);
+	VMM_Mode *vm = vmm_FindMode(p->videomode);
+	if(vm)
+	{
+		log_printf(WLOG, "Video mode: %s (%x)\n", vm->name,
+				p->videomode);
+		if(vm->width && vm->height)
+		{
+			dw = vm->width;
+			dh = vm->height;
+			log_printf(WLOG, "Video mode size: %d x %d\n", dw, dh);
+		}
+		else
+		{
+			if(gengine->open(ENEMY_MAX) < 0)
+				return -1;
+			dw = gengine->width();
+			dh = gengine->height();
+			log_printf(WLOG, "Desktop size: %d x %d\n", dw, dh);
+			desktopres = 1;
+		}
+	}
+	else
+	{
+		dw = p->width;
+		dh = p->height;
+		log_printf(WLOG, "Requested size: %d x %d\n", dw, dh);
+	}
 
 	// This game assumes 1:1 pixel aspect ratio, or 16:9
 	// width:height ratio, so we need to adjust accordingly.
-	// Note:
+	//
+	// NOTE:
 	//	This code assumes 1:1 pixels for all resolutions!
 	//	This does not hold true for 1280x1024 on a CRT
 	//	for example, but that's an incorrect (although
@@ -564,48 +597,44 @@ log_printf(WLOG, "--- Desired size: %d x %d\n", dw, dh);
 		gw = dw;
 		gh = dw * 9 / 16;
 	}
-
-log_printf(WLOG, "--- Aspect corrected size: %d x %d\n", gw, gh);
+	log_printf(WLOG, "Aspect corrected display size: %d x %d\n", gw, gh);
 
 	// Kobo Redux only allows integer scaling factors above 1:1, and
-	// shrinking is restricted to 24ths granularity, to guarantee an
+	// shrinking is restricted to 16ths granularity, to guarantee an
 	// integer sprite/tile size.
 	if((gw >= SCREEN_WIDTH) && (gh >= SCREEN_HEIGHT))
 		gengine->scale(floor(gw / SCREEN_WIDTH),
 				floor(gh / SCREEN_HEIGHT));
 	else
-		gengine->scale((int)((gw * 24 + 12) / SCREEN_WIDTH) / 24.f,
-				(int)((gh * 24 + 12) / SCREEN_HEIGHT) / 24.f);
-log_printf(WLOG, "--- xscale(): %f\tyscale(): %f\n",
-		gengine->xscale(), gengine->yscale());
+		gengine->scale((int)((gw * 16 + 8) / SCREEN_WIDTH) / 16.f,
+				(int)((gh * 16 + 8) / SCREEN_HEIGHT) / 16.f);
+	log_printf(WLOG, "Graphics scale factors: %f x %f\n",
+			gengine->xscale(), gengine->yscale());
 
 	// Read back and recalculate, in case the engine has some ideas...
 	gw = (int)(SCREEN_WIDTH * gengine->xscale() + 0.5f);
 	gh = (int)(SCREEN_HEIGHT * gengine->yscale() + 0.5f);
-log_printf(WLOG, "--- Recalculated size: %d x %d\n", gw, gh);
+	log_printf(WLOG, "Recalculated display size: %d x %d\n", gw, gh);
 
-	if(!p->fullscreen)
+	if(!p->fullscreen && !desktopres)
 	{
 		//Add thin black border in windowed mode.
 		dw += 8;
 		dh += 8;
-log_printf(WLOG, "--- Border added: %d x %d\n", dw, dh);
+		log_printf(WLOG, "Window border added: %d x %d\n", dw, dh);
 	}
 
 #ifdef ENABLE_TOUCHSCREEN
 	gengine->setup_pointer_margin(dw, dh);
 #endif
 
-	gengine->size(dw, dh);
+	if(!desktopres)
+		gengine->size(dw, dh);
 
 	// Center the framework on the screen/in the window
 	xoffs = (int)((dw - gw) / (2 * gengine->xscale()) + 0.5f);
 	yoffs = (int)((dh - gh) / (2 * gengine->yscale()) + 0.5f);
-log_printf(WLOG, "--- Offsets: %d, %d\n", xoffs, yoffs);
-
-	gengine->mode(p->fullscreen);
-	gengine->vsync(p->vsync);
-	gengine->cursor(0);
+	log_printf(WLOG, "Display offsets: %d, %d\n", xoffs, yoffs);
 
 	gengine->period(game.speed);
 	sound.period(game.speed);
@@ -620,8 +649,9 @@ log_printf(WLOG, "--- Offsets: %d, %d\n", xoffs, yoffs);
 	gengine->scroll_ratio(LAYER_BASES, 1.0, 1.0);
 	gengine->wrap(MAP_SIZEX * CHIP_SIZEX, MAP_SIZEY * CHIP_SIZEY);
 
-	if(gengine->open(ENEMY_MAX) < 0)
-		return -1;
+	if(!desktopres)
+		if(gengine->open(ENEMY_MAX) < 0)
+			return -1;
 
 	gengine->clear();
 

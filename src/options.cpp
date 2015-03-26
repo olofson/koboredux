@@ -110,20 +110,14 @@ void video_options_t::build()
 		VMM_Mode *vm = vmm_FindMode(prf->videomode);
 		if(vm)
 		{
-			if(vm->flags & VMM_PC)
-				showmodes = VMM_PC;
-			else if(vm->flags & VMM_TV)
-				showmodes = VMM_TV;
-			else if(vm->flags & VMM_4_3)
-				showmodes = VMM_4_3;
-			else if(vm->flags & VMM_3_2)
-				showmodes = VMM_3_2;
-			else if(vm->flags & VMM_5_4)
-				showmodes = VMM_5_4;
-			else if(vm->flags & VMM_16_10)
-				showmodes = VMM_16_10;
-			else if(vm->flags & VMM_16_9)
-				showmodes = VMM_16_9;
+			if(vm->flags & VMM__RECOMMENDED)
+				showmodes = VMM__RECOMMENDED;
+			else if(vm->flags & VMM__COMMON)
+				showmodes = VMM__COMMON;
+			else if(vm->flags & VMM__WIDESCREEN)
+				showmodes = VMM__WIDESCREEN;
+			else if(vm->flags & VMM__NONWIDESCREEN)
+				showmodes = VMM__NONWIDESCREEN;
 			else
 				showmodes = VMM_ALL;
 			if(vm->flags & VMM_LORES)
@@ -131,7 +125,8 @@ void video_options_t::build()
 		}
 		else
 		{
-			showmodes = VMM_PC;
+			// Show recommended modes by default!
+			showmodes = VMM_DESKTOP | VMM_16_9;
 			showlow = 0;
 			prf->videomode = -1;
 		}
@@ -141,13 +136,10 @@ void video_options_t::build()
 	xoffs = 0.35;
 	list("Show Modes" , &showmodes, OS_REBUILD);
 		item("Show All", VMM_ALL);
-		item("Common PC/Mac Modes", VMM_PC);
-		item("Common TV Modes", VMM_TV);
-		item("4:3 (Standard CRT)", VMM_4_3);
-		item("3:2 (NTSC TV)", VMM_3_2);
-		item("5:4 (Some TFTs)", VMM_5_4);
-		item("16:10 (PC/Mac Widescreen)", VMM_16_10);
-		item("16:9 (TV Widescreen)", VMM_16_9);
+		item("Recommended Modes", VMM__RECOMMENDED);
+		item("Common Modes", VMM__COMMON);
+		item("Widescreen Modes", VMM__WIDESCREEN);
+		item("Non Widescreen Modes", VMM__NONWIDESCREEN);
 	xoffs = 0.7;
 	yesno("Show Odd Low Resolutions" , &showlow, OS_REBUILD);
 	xoffs = 0.5;
@@ -158,13 +150,23 @@ void video_options_t::build()
 		buf[sizeof(buf) - 1] = 0;
 		while(vm)
 		{
-			if(vm->name)
+			if(vm->flags & VMM_DESKTOP)
+				snprintf(buf, sizeof(buf) - 1, "%s", vm->name);
+			else if(vm->name)
 				snprintf(buf, sizeof(buf) - 1, "%dx%d (%s)",
-						vm->width, vm->height, vm->name);
+						vm->width, vm->height,
+						vm->name);
 			else
 				snprintf(buf, sizeof(buf) - 1, "%dx%d",
 						vm->width, vm->height);
+#if 0
 			item(buf, vm->id);
+#else
+			// Skipping this for now, as it doesn't seem to work
+			// properly.
+			if(vm->id != VMID_FULLWINDOW)
+				item(buf, vm->id);
+#endif
 			vm = vmm_Next(vm);
 		}
 		item("Custom", -1);
@@ -175,8 +177,13 @@ void video_options_t::build()
 		spin("Height", &prf->height, 32, 4096, "pixels",
 				OS_RESTART_VIDEO | OS_REBUILD);
 	}
-	space();
-	yesno("Fullscreen Display", &prf->fullscreen, OS_RESTART_VIDEO);
+	if((prf->videomode != VMID_DESKTOP) &&
+			(prf->videomode != VMID_FULLWINDOW))
+	{
+		space();
+		yesno("Fullscreen Display", &prf->fullscreen,
+				OS_RESTART_VIDEO);
+	}
 	space();
 	xoffs = 0.55;
 	yesno("Vertical Retrace Sync", &prf->vsync, OS_RESTART_VIDEO);

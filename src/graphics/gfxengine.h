@@ -34,6 +34,7 @@
 #include "sprite.h"
 #include "cs.h"
 #include "palette.h"
+#include "vidmodes.h"
 
 enum gfx_scalemodes_t
 {
@@ -64,10 +65,10 @@ class gfxengine_t
 	/*
 	 * Initialization
 	 */
+	void mode(VMM_ModeID modeid, int fullscreen);
 	void size(int w, int h);
 	void centered(int c);
 	void scale(float x, float y);
-	void mode(int fullscreen);
 
 	// 1: Enable vsync, if available
 	void vsync(int use);
@@ -206,10 +207,11 @@ class gfxengine_t
 	SoFont		*fonts[GFX_BANKS];	// Kludge.
 	GFX_palette	*_palette;
 	cs_engine_t	*csengine;
+	VMM_ModeID	_modeid;
+	int		_fullscreen;
 	int		xflags;
 	int		_pages;
 	int		_vsync;
-	int		_fullscreen;
 	int		_centered;
 	int		use_interpolation;
 	int		_width, _height;

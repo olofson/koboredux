@@ -32,6 +32,7 @@ extern "C" {
 	Data Types and Structures
 -------------------------------------------------------------------------*/
 
+/* Video mode categories */
 typedef enum
 {
 	VMM_ALL =	0xffffffff,
@@ -50,13 +51,24 @@ typedef enum
 	VMM_LORES =	0x10000000	/* Special low resolution modes */
 } VMM_Flags;
 
+#define	VMM__RECOMMENDED	(VMM_DESKTOP | VMM_16_9)
+#define	VMM__COMMON		(VMM_PC | VMM_16_10 | VMM_16_9)
+#define	VMM__WIDESCREEN		(VMM_16_10 | VMM_16_9)
+#define	VMM__NONWIDESCREEN	(VMM_TV | VMM_4_3 | VMM_3_2 | VMM_5_4)
+
+/* Special video mode IDs */
+typedef enum
+{
+	VMID_DESKTOP =		1,	/* Desktop resolution */
+	VMID_FULLWINDOW =	2	/* Fullscreen window */
+} VMM_ModeID;
 
 typedef struct VMM_Mode VMM_Mode;
 struct VMM_Mode
 {
 	VMM_Mode	*next;		/* Next mode in list */
 	char		*name;		/* Name, if any */
-	int		id;		/* Somewhat constant mode ID */
+	VMM_ModeID	id;		/* Somewhat constant mode ID */
 	int		width;		/* Display width in pixels */
 	int		height;		/* Display height in pixels */
 	int		flags;		/* (WMM_Flags) */

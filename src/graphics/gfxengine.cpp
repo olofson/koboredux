@@ -125,6 +125,16 @@ void gfxengine_t::messagebox(const char *message)
 	Initialization
 ----------------------------------------------------------*/
 
+void gfxengine_t::mode(VMM_ModeID modeid, int fullscreen)
+{
+	int was_showing = is_showing;
+	hide();
+	_modeid = modeid;
+	_fullscreen = fullscreen;
+	if(was_showing)
+		show();
+}
+
 void gfxengine_t::size(int w, int h)
 {
 	int was_showing = is_showing;
@@ -153,15 +163,6 @@ void gfxengine_t::scale(float x, float y)
 	xs = (int)(x * 256.f);
 	ys = (int)(y * 256.f);
 	log_printf(DLOG, "gfxengine: Setting scale to %d:256 x %d:256.\n", xs, ys);
-}
-
-void gfxengine_t::mode(int fullscreen)
-{
-	int was_showing = is_showing;
-	hide();
-	_fullscreen = fullscreen;
-	if(was_showing)
-		show();
 }
 
 void gfxengine_t::vsync(int use)
@@ -639,14 +640,13 @@ void gfxengine_t::close()
 
 	log_printf(DLOG ,"Closing engine...\n");
 	stop();
-	unload();
-	hide();
 	cs_engine_delete(csengine);
 	csengine = NULL;
 	s_remove_filter(NULL);
 	sf1 = sf2 = acf = bcf = dsf = NULL;
 	s_delete_container(gfx);
 	gfx = NULL;
+	hide();
 	is_open = 0;
 }
 
@@ -719,8 +719,22 @@ int gfxengine_t::video_flags()
 
 	glSDL_VSync(_vsync);
 #endif
-	if(_fullscreen)
+	if(_modeid == VMID_DESKTOP)
+	{
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		log_printf(WLOG, "SDL_WINDOW_FULLSCREEN_DESKTOP\n");
+	}
+	else if(_modeid == VMID_FULLWINDOW)
+	{
+		flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_MAXIMIZED;
+		log_printf(WLOG, "SDL_WINDOW_BORDERLESS | "
+				"SDL_WINDOW_MAXIMIZED\n");
+	}
+	else if(_fullscreen)
+	{
 		flags |= SDL_WINDOW_FULLSCREEN;
+		log_printf(WLOG, "SDL_WINDOW_FULLSCREEN\n");
+	}
 
 	flags |= xflags;
 
@@ -797,6 +811,12 @@ int gfxengine_t::show()
 		log_printf(ELOG, "Failed to open renderer! Giving up.\n");
 		return -4;
 	}
+	if(SDL_GetRendererOutputSize(sdlrenderer, &_width, &_height) < 0)
+		log_printf(WLOG, "SDL_GetRendererOutputSize() failed! (%s)\n",
+				SDL_GetError());
+	else
+		log_printf(WLOG, "SDL_GetRendererOutputSize(): %d x %d\n",
+				_width, _height);
 	SDL_RenderSetLogicalSize(sdlrenderer, _width, _height);
 
 	SDL_SetWindowTitle(sdlwindow, _title);
@@ -839,6 +859,7 @@ void gfxengine_t::hide(void)
 
 	log_printf(DLOG, "Closing screen...\n");
 	stop();
+	unload();
 	delete fullwin;
 	fullwin = NULL;
 

@@ -80,7 +80,7 @@ void prefs_t::init()
 	key("aspect", aspect, 1000); desc("Pixel Aspect Ratio");
 	key("maxfps", max_fps, 100); desc("Maximum fps");
 	key("maxfpsstrict", max_fps_strict, 0); desc("Strictly Regulated fps");
-	key("videomode", videomode, 0x04330); desc("Video Mode");
+	key("videomode", videomode, 0x10920); desc("Video Mode");
 	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
 
 	comment("--- Graphics settings ----------------------");
