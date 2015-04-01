@@ -72,6 +72,7 @@ class _manage
 	static void flush_ships();
 	static void game_stop();
 	static void run_noise();
+	static void run_leds();
   public:
 	static int ships;
 	static void init();

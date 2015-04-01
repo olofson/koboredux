@@ -23,6 +23,7 @@
 #include "config.h"
 #include "kobo.h"
 #include "random.h"
+#include "logger.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -113,6 +114,11 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	dscore->visible(vis);
 	dstage->visible(vis);
 	dships->visible(vis);
+	pxtop->visible(vis);
+	pxbottom->visible(vis);
+	pxleft->visible(vis);
+	pxright->visible(vis);
+
 	switch(_mode)
 	{
 	  case DASHBOARD_OFF:
@@ -262,14 +268,6 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 /*----------------------------------------------------------
 	Labeled text display
 ----------------------------------------------------------*/
-
-#define	D_LINE_HEIGHT	9
-
-#define	D_LINE1_POS	1
-#define	D_LINE1_TXOFFS	0
-
-#define	D_LINE2_POS	9
-#define	D_LINE2_TXOFFS	0
 
 display_t::display_t(gfxengine_t *e) : window_t(e)
 {
@@ -443,4 +441,192 @@ void bargraph_t::refresh(SDL_Rect *r)
 	fillrect(0, 0, width(), height());
 	foreground(map_rgb(red, green, blue));
 	fillrect(1, _y + 1, width() - 2, height() - _y - 2);
+}
+
+
+/*----------------------------------------------------------
+	Horizontal LED bar display
+----------------------------------------------------------*/
+
+hledbar_t::hledbar_t(gfxengine_t *e) : window_t(e)
+{
+	memset(leds, 0, sizeof(leds));
+}
+
+
+void hledbar_t::reset()
+{
+	for(int i = 0; i < PROXY_LEDS; ++i)
+	{
+		leds[i].tcolor = PCOLOR_OFF;
+		leds[i].tintensity = 0;
+	}
+}
+
+
+void hledbar_t::set(int pos, proxy_colors_t color, float intensity)
+{
+	if((pos < 0) || (pos >= PROXY_LEDS))
+		return;
+#ifdef DEBUG
+	if((color < 0) || (color > PCOLOR_HAZARD))
+	{
+		log_printf(DLOG, stderr, "hledbar_t::set(): Unrecognized "
+				"'color' %d!\n", color);
+		return;
+	}
+	if((intensity < 0.0f) || (intensity > 1.0f))
+	{
+		log_printf(DLOG, stderr, "hledbar_t::set(): 'intensity' out "
+				"of range! (%f)\n", intensity);
+		return;
+	}
+#endif
+	int ii = (int)(intensity * 65536.0f);
+	if((color >= leds[pos].tcolor) && (ii > leds[pos].tintensity))
+	{
+		leds[pos].tcolor = color;
+		leds[pos].tintensity = ii;
+	}
+}
+
+
+void hledbar_t::fx(proxy_fxtypes_t fxt, proxy_colors_t color)
+{
+	reset();
+	fxtype = fxt;
+	fxcolor = color;
+	switch(fxtype)
+	{
+	  case PFX_OFF:
+		break;
+	  case PFX_FLASH:
+		break;
+	  case PFX_BLINK:
+		break;
+	  case PFX_RUN:
+		break;
+	  case PFX_RUNREV:
+		break;
+	  case PFX_SCAN:
+		fxstate = 1;
+		fxpos = 0;
+		break;
+	  case PFX_SCANREV:
+		fxstate = -1;
+		fxpos = PROXY_LEDS;
+		break;
+	}
+}
+
+
+void hledbar_t::frame()
+{
+	// Run effects, if any
+	switch(fxtype)
+	{
+	  case PFX_OFF:
+		break;
+	  case PFX_FLASH:
+		break;
+	  case PFX_BLINK:
+		break;
+	  case PFX_RUN:
+		break;
+	  case PFX_RUNREV:
+		break;
+	  case PFX_SCAN:
+	  case PFX_SCANREV:
+		reset();
+		for(int i = 0; i < PROXY_SCAN_WIDTH; ++i)
+			set(fxpos + i, fxcolor, 1.0f);
+		fxpos += fxstate;
+		if(fxpos <= -PROXY_SCAN_WIDTH)
+		{
+			fxstate = -fxstate;
+			fxpos = -PROXY_SCAN_WIDTH;
+		}
+		else if(fxpos >= PROXY_LEDS)
+		{
+			fxstate = -fxstate;
+			fxpos = PROXY_LEDS;
+		}
+		break;
+	}
+
+	// Update LEDs!
+	for(int i = 0; i < PROXY_LEDS; ++i)
+	{
+		if(leds[i].color != leds[i].tcolor)
+		{
+			// Fade out to switch color
+			leds[i].intensity -= PROXY_FADESPEED;
+			if(leds[i].intensity <= 0)
+			{
+				leds[i].intensity = 0;
+				leds[i].color = leds[i].tcolor;
+			}
+		}
+		else if(leds[i].intensity < leds[i].tintensity)
+		{
+			// Fade up to target level
+			leds[i].intensity += PROXY_FADESPEED;
+			if(leds[i].intensity > leds[i].tintensity)
+				leds[i].intensity = leds[i].tintensity;
+		}
+		else if(leds[i].intensity > leds[i].tintensity)
+		{
+			// Fade down to target level
+			leds[i].intensity -= PROXY_FADESPEED;
+			if(leds[i].intensity < leds[i].tintensity)
+				leds[i].intensity = leds[i].tintensity;
+		}
+		else
+			continue;	// Done! No change.
+
+		// Calculate graphics frame to render
+		if(leds[i].intensity < 3 * 65536 / 8)
+		{
+			leds[i].frame = 0;	// Dark
+			continue;
+		}
+		switch(leds[i].color)
+		{
+		  case PCOLOR_OFF:
+			leds[i].frame = 0;	// Dark
+			continue;
+		  case PCOLOR_PICKUP:
+			leds[i].frame = 4;	// Green
+			break;
+		  case PCOLOR_CORE:
+			leds[i].frame = 7;	// Blue
+			break;
+		  case PCOLOR_BOSS:
+			leds[i].frame = 10;	// Yellow
+			break;
+		  case PCOLOR_HAZARD:
+			leds[i].frame = 1;	// Red
+			break;
+		}
+		leds[i].frame += (leds[i].intensity - 3 * 65536 / 8) /
+				(65536 / 4);
+	}
+}
+
+
+void hledbar_t::refresh(SDL_Rect *r)
+{
+	for(int i = 0; i < PROXY_LEDS; ++i)
+		sprite(i * 8, 0, B_HLEDS, leds[i].frame);
+}
+
+
+/*----------------------------------------------------------
+	Vertical LED bar display
+----------------------------------------------------------*/
+
+void vledbar_t::refresh(SDL_Rect *r)
+{
+	for(int i = 0; i < PROXY_LEDS; ++i)
+		sprite(0, i * 8, B_VLEDS, leds[i].frame);
 }

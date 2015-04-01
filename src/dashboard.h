@@ -25,7 +25,8 @@
 
 #include "window.h"
 
-/* "Screen" window; takes care of the border, if any */
+
+// "Screen" window; takes care of the border, if any
 class screen_window_t : public window_t
 {
 	int	_top, _left, _right, _bottom;
@@ -43,7 +44,8 @@ enum dashboard_modes_t {
 	DASHBOARD_LOADING
 };
 
-/* Dashboard window; dashboard or loading screen */
+
+// Dashboard window; dashboard or loading screen
 class dashboard_window_t : public window_t
 {
 	char			*_msg;
@@ -65,7 +67,8 @@ class dashboard_window_t : public window_t
 	void refresh(SDL_Rect *r);
 };
 
-/* Labeled text display */
+
+// Labeled text display
 class display_t : public window_t
 {
 	char	_caption[64];
@@ -84,7 +87,8 @@ class display_t : public window_t
 	void off();
 };
 
-/* Bar graph display */
+
+// Bar graph display
 class bargraph_t : public window_t
 {
 	float	_value;
@@ -100,6 +104,62 @@ class bargraph_t : public window_t
 		_redmax = rm;
 	}
 	void enable(int ena);
+};
+
+
+// NOTE: These are in order of increasing priority!
+enum proxy_colors_t {
+	PCOLOR_OFF,
+	PCOLOR_PICKUP,	// Powerups, bonuses etc
+	PCOLOR_CORE,	// Primary targets (remaining base cores)
+	PCOLOR_BOSS,	// Assassins, bosses and the like
+	PCOLOR_HAZARD	// Close or fast approaching enemies or other threats
+};
+
+enum proxy_fxtypes_t {
+	PFX_OFF,	// Normal operation via reset()/set()
+	PFX_FLASH,	// Flash all LEDs once
+	PFX_BLINK,	// Repeatedly flash all LEDs
+	PFX_RUN,	// Running lights, forward (right/down)
+	PFX_RUNREV,	// Running lights, reverse (left/up)
+	PFX_SCAN,	// Single LED bidirectional scanner
+	PFX_SCANREV	// Single LED bidirectional scanner, reverse phase
+};
+
+struct proxy_led_t
+{
+	uint8_t	tcolor;		// Target color
+	uint8_t	color;		// Current color
+	int	tintensity;	// Target intensity (16:16 fixp)
+	int	intensity;	// Current intensity (16:16 fixp)
+	uint8_t	frame;		// Current gfx frame
+};
+
+// Horizontal LED bar display
+class hledbar_t : public window_t
+{
+  protected:
+	proxy_led_t	leds[PROXY_LEDS];
+	proxy_fxtypes_t	fxtype;
+	proxy_colors_t	fxcolor;
+	int		fxstate;
+	int		fxpos;
+  public:
+	hledbar_t(gfxengine_t *e);
+	void reset();
+	void set(int pos, proxy_colors_t color, float intensity);
+	void fx(proxy_fxtypes_t fxt, proxy_colors_t color = PCOLOR_HAZARD);
+	void refresh(SDL_Rect *r);
+	void frame(void);
+};
+
+
+// Vertical LED bar display
+class vledbar_t : public hledbar_t
+{
+  public:
+	vledbar_t(gfxengine_t *e) : hledbar_t(e) { };
+	void refresh(SDL_Rect *r);
 };
 
 #endif /* KOBO_DASHBOARD_H */

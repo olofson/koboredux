@@ -34,9 +34,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <math.h>
-#ifndef M_PI
-# define M_PI 3.14159265358979323846	/* pi */
-#endif
 
 #include "kobo.h"
 #include "screen.h"
@@ -193,6 +190,15 @@ void _manage::noise_damage(float amt)
 }
 
 
+void _manage::run_leds()
+{
+	pxtop->frame();
+	pxbottom->frame();
+	pxleft->frame();
+	pxright->frame();
+}
+
+
 void _manage::game_start()
 {
 	_game_over = 0;
@@ -324,6 +330,10 @@ void _manage::init_resources_title()
 	gamecontrol.repeat(KOBO_KEY_DELAY, KOBO_KEY_REPEAT);
 	show_bars = 0;
 	set_bars();
+	pxtop->fx(PFX_SCAN, PCOLOR_CORE);
+	pxbottom->fx(PFX_SCANREV, PCOLOR_CORE);
+	pxleft->fx(PFX_SCANREV, PCOLOR_CORE);
+	pxright->fx(PFX_SCAN, PCOLOR_CORE);
 }
 
 
@@ -369,6 +379,10 @@ void _manage::init_resources_to_play(int newship)
 	gengine->scroll(PIXEL2CS(myship.get_virtx()),
 			PIXEL2CS(myship.get_virty()));
 	gengine->force_scroll();
+	pxtop->fx(PFX_OFF);
+	pxbottom->fx(PFX_OFF);
+	pxleft->fx(PFX_OFF);
+	pxright->fx(PFX_OFF);
 }
 
 
@@ -530,6 +544,7 @@ void _manage::run_intro()
 	put_ships();
 
 	run_noise();
+	run_leds();
 }
 
 
@@ -547,6 +562,7 @@ void _manage::update()
 		scroll_jump = 0;
 	}
 	run_noise();
+	run_leds();
 }
 
 

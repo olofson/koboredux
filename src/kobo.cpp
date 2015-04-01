@@ -88,6 +88,10 @@ display_t		*dhigh = NULL;
 display_t		*dscore = NULL;
 display_t		*dstage = NULL;
 display_t		*dships = NULL;
+hledbar_t		*pxtop = NULL;
+hledbar_t		*pxbottom = NULL;
+vledbar_t		*pxleft = NULL;
+vledbar_t		*pxright = NULL;
 
 int mouse_x = 0;
 int mouse_y = 0;
@@ -522,6 +526,15 @@ void KOBO_main::build_screen()
 	wttemp->background(wttemp->map_rgb(0x182838));
 	wttemp->redmax(1);
 
+	pxtop->place(xoffs + TOPLEDS_X, yoffs + TOPLEDS_Y,
+			TOPLEDS_W, TOPLEDS_H);
+	pxbottom->place(xoffs + BOTTOMLEDS_X, yoffs + BOTTOMLEDS_Y,
+			BOTTOMLEDS_W, BOTTOMLEDS_H);
+	pxleft->place(xoffs + LEFTLEDS_X, yoffs + LEFTLEDS_Y,
+			LEFTLEDS_W, LEFTLEDS_H);
+	pxright->place(xoffs + RIGHTLEDS_X, yoffs + RIGHTLEDS_Y,
+			RIGHTLEDS_W, RIGHTLEDS_H);
+
 	if(prefs->cmd_fps)
 	{
 		dfps = new display_t(gengine);
@@ -675,6 +688,10 @@ int KOBO_main::init_display(prefs_t *p)
 	wttemp = new bargraph_t(gengine);
 	dships = new display_t(gengine);
 	dstage = new display_t(gengine);
+	pxtop = new hledbar_t(gengine);
+	pxbottom = new hledbar_t(gengine);
+	pxleft = new vledbar_t(gengine);
+	pxright = new vledbar_t(gengine);
 
 	build_screen();
 
@@ -686,6 +703,14 @@ int KOBO_main::init_display(prefs_t *p)
 
 void KOBO_main::close_display()
 {
+	delete pxtop;
+	pxtop = NULL;
+	delete pxbottom;
+	pxbottom = NULL;
+	delete pxleft;
+	pxleft = NULL;
+	delete pxright;
+	pxright = NULL;
 	delete dfps;
 	dfps = NULL;
 	delete dstage;

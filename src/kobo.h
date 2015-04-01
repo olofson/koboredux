@@ -79,6 +79,10 @@ extern display_t		*dhigh;
 extern display_t		*dscore;
 extern display_t		*dstage;
 extern display_t		*dships;
+extern hledbar_t		*pxtop;
+extern hledbar_t		*pxbottom;
+extern vledbar_t		*pxleft;
+extern vledbar_t		*pxright;
 
 extern int mouse_x, mouse_y;
 extern int mouse_left, mouse_middle, mouse_right;
