@@ -143,10 +143,13 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 #define	PROXY_LEDS		42
 
 /* Proximity warning LED fade speed (units per logic frame; 16:16 fixp) */
+#define	PROXY_LIGHTSPEED	16384
 #define	PROXY_FADESPEED		8192
 
 /* Proximity warning LED effects configuration */
 #define	PROXY_SCAN_WIDTH	7
+#define	PROXY_FLASH_PERIOD	30
+#define	PROXY_FLASH_DURATION	20
 
 /* Labeled text display */
 #define	D_LINE_HEIGHT		9

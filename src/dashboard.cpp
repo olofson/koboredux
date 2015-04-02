@@ -501,16 +501,20 @@ void hledbar_t::fx(proxy_fxtypes_t fxt, proxy_colors_t color)
 	  case PFX_OFF:
 		break;
 	  case PFX_FLASH:
-		break;
 	  case PFX_BLINK:
+		fxstate = PROXY_FLASH_PERIOD;
 		break;
 	  case PFX_RUN:
+		fxstate = 1;
+		fxpos = 0;
 		break;
 	  case PFX_RUNREV:
+		fxstate = -1;
+		fxpos = PROXY_LEDS - PROXY_SCAN_WIDTH - 1;
 		break;
 	  case PFX_SCAN:
 		fxstate = 1;
-		fxpos = 0;
+		fxpos = -PROXY_SCAN_WIDTH;
 		break;
 	  case PFX_SCANREV:
 		fxstate = -1;
@@ -527,13 +531,31 @@ void hledbar_t::frame()
 	{
 	  case PFX_OFF:
 		break;
-	  case PFX_FLASH:
-		break;
 	  case PFX_BLINK:
+		if(!fxstate)
+			fxstate = PROXY_FLASH_PERIOD;
+		// Fall through!
+	  case PFX_FLASH:
+		reset();
+		if(fxstate > PROXY_FLASH_PERIOD - PROXY_FLASH_DURATION)
+		{
+			float fi = fxstate - (PROXY_FLASH_PERIOD -
+					PROXY_FLASH_DURATION);
+			fi /= PROXY_FLASH_DURATION;
+			for(int i = 0; i < PROXY_LEDS; ++i)
+				set(i, fxcolor, fi);
+		}
+		if(fxstate)
+			--fxstate;
 		break;
 	  case PFX_RUN:
-		break;
 	  case PFX_RUNREV:
+		reset();
+		for(int i = 0; i < PROXY_SCAN_WIDTH; ++i)
+			set((fxpos + i) % PROXY_LEDS, fxcolor, 1.0f);
+		fxpos += fxstate;
+		if(fxpos < 0)
+			fxpos += PROXY_LEDS;
 		break;
 	  case PFX_SCAN:
 	  case PFX_SCANREV:
@@ -570,7 +592,7 @@ void hledbar_t::frame()
 		else if(leds[i].intensity < leds[i].tintensity)
 		{
 			// Fade up to target level
-			leds[i].intensity += PROXY_FADESPEED;
+			leds[i].intensity += PROXY_LIGHTSPEED;
 			if(leds[i].intensity > leds[i].tintensity)
 				leds[i].intensity = leds[i].tintensity;
 		}
