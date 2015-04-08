@@ -1371,10 +1371,10 @@ int KOBO_main::run()
 #else
 				wdash->progress_init(progtab_sounds);
 #endif
+				sound.open();
 				if(load_sounds(prefs) < 0)
 					return 5;
 				wdash->progress_done();
-				sound.open();
 				wdash->mode(DASHBOARD_BLACK);
 				log_printf(ULOG, "--- Audio restarted.\n");
 				wdash->mode(DASHBOARD_GAME);
