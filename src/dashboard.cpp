@@ -451,6 +451,9 @@ void bargraph_t::refresh(SDL_Rect *r)
 hledbar_t::hledbar_t(gfxengine_t *e) : window_t(e)
 {
 	memset(leds, 0, sizeof(leds));
+	fxtype = PFX_OFF;
+	fxcolor = PCOLOR_OFF;
+	fxstate = fxpos = 0;
 }
 
 
