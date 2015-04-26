@@ -46,6 +46,9 @@
 
 	David Olofson 2015:
 		* SDL 2 port
+		* Glyph marker color is now anything more purple than #808080.
+		* The top (marker) pixel row is now simply cleared after
+		  glyphs have been extracted, completely disregarding contents.
 */
 
 #ifndef __SOFONT_H

@@ -79,11 +79,9 @@ namespace SoFontUtilities
 		  case 1:
 			return *((Uint8 *) Surface->pixels +
 					Y * Surface->pitch + X);
-			break;
 		  case 2:
 			return *((Uint16 *) Surface->pixels +
 					Y * Surface->pitch / 2 + X);
-			break;
 		  case 3:
 			// Format/endian independent
 			Uint8 r, g, b;
@@ -91,11 +89,9 @@ namespace SoFontUtilities
 			g = *((bits) + Surface->format->Gshift / 8);
 			b = *((bits) + Surface->format->Bshift / 8);
 			return SDL_MapRGB(Surface->format, r, g, b);
-			break;
 		  case 4:
 			return *((Uint32 *) Surface->pixels +
 					Y * Surface->pitch / 4 + X);
-			break;
 		}
 		log_printf(ELOG, "SoFontGetPixel: Unsupported pixel format!\n");
 		return 0;	// David (to get rid of warning)
@@ -245,8 +241,9 @@ using namespace SoFontUtilities;
 
 bool SoFont::DoStartNewChar(SDL_Surface *surface, Sint32 x)
 {
-	return SoFontGetPixel(surface, x, 0) ==
-			SDL_MapRGB(surface->format, 255, 0, 255);
+	Uint8 r, g, b;
+	SDL_GetRGB(SoFontGetPixel(surface, x, 0), surface->format, &r, &g, &b);
+	return (r > 128) && (g < 128) && (b > 128);
 }
 
 void SoFont::CleanSurface(SDL_Surface *surface)
@@ -257,8 +254,7 @@ void SoFont::CleanSurface(SDL_Surface *surface)
 	while(x < surface->w)
 	{
 		y = 0;
-		if(SoFontGetPixel(surface, x, y) == pix)
-			SoFontSetPixel(surface, x, y, background);
+		SoFontSetPixel(surface, x, y, background);
 		x++;
 	}
 }
