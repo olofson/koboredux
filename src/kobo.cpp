@@ -927,7 +927,7 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "Loading loading screen graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
 	{ "GFX>>olofsonarcade-do64.png", B_LOADING,	0, 0,	1.0f,
 			KOBO_CLAMP | KOBO_NOALPHA | KOBO_CENTER },
-	{ "GFX>>icefont2.png", B_NORMAL_FONT,	0, 0,	2.0f,	KOBO_FONT },
+	{ "GFX>>arcadefont.png", B_NORMAL_FONT,	0, 0,	1.0f,	KOBO_FONT },
 
 	// In-game
 	{ "Loading in-game graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
@@ -975,8 +975,10 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	// Fonts
 	{ "Loading fonts", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>goldfont.png", B_MEDIUM_FONT,	0, 0,	2.0f,	KOBO_FONT },
-	{ "GFX>>bigfont3.png", B_BIG_FONT,	0, 0,	2.0f,	KOBO_FONT },
+/* FIXME: Only one font for now... */
+	{ "GFX>>arcadefont.png", B_MEDIUM_FONT,	0, 0,	1.0f,	KOBO_FONT },
+	{ "GFX>>arcadefont.png", B_BIG_FONT,	0, 0,	1.0f,	KOBO_FONT },
+/* /FIXME */
 	{ "GFX>>counterfont.png", B_COUNTER_FONT, 0, 0,	2.0f,	KOBO_FONT },
 
 	// Special FX
