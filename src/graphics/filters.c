@@ -934,12 +934,13 @@ int s_filter_scale(s_bank_t *b, unsigned first, unsigned frames,
 			int x, sx;
 			pix_t clear = {0, 0, 0, 0};
 			/* Scale marker row with "nearest" filter */
-			for(x = 0, sx = params.start_sx; x < params.max_x;
+			for(x = 0, sx = params.start_sx + params.scx / 2 - 1;
+					x < params.max_x;
 					++x, sx += params.scx)
 				setpix32_nc(params.dst, x, 0,
 						getpix32(params.src,
 						sx >> 16, 0));
-			/* Remove marker row to avoid garbage */
+			/* Remove marker row from source, to avoid leakage */
 			for(x = 0; x < b->w; ++x)
 				setpix32_nc(params.src, x, 0, clear);
 		}
