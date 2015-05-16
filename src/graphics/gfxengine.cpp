@@ -1042,12 +1042,21 @@ int gfxengine_t::yoffs(int layer)
 
 void gfxengine_t::screenshot()
 {
-#if 0
 	char filename[1024];
-	snprintf(filename, sizeof(filename), "screen%d.bmp", screenshot_count++);
-	SDL_SaveBMP(screen_surface, filename);
-#endif
-	log_printf(WLOG, "gfxengine: screenshot() not implemented!\n");
+	SDL_Surface *ss = SDL_CreateRGBSurface(0, _width, _height,
+		32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+	if(!ss)
+	{
+		log_printf(ELOG, "gfxengine: Could not create surface for "
+				"screenshot()!\n");
+		return;
+	}
+	snprintf(filename, sizeof(filename), "screen%d.bmp",
+			screenshot_count++);
+	SDL_RenderReadPixels(sdlrenderer, NULL, SDL_PIXELFORMAT_ARGB8888,
+			ss->pixels, ss->pitch);
+	SDL_SaveBMP(ss, filename);
+	SDL_FreeSurface(ss);
 }
 
 
