@@ -975,10 +975,9 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	// Fonts
 	{ "Loading fonts", 0, 0,0, 0.0f, KOBO_MESSAGE },
-/* FIXME: Only one font for now... */
+/* FIXME: Dedicated medium size font? */
 	{ "GFX>>arcadefont.png", B_MEDIUM_FONT,	0, 0,	1.0f,	KOBO_FONT },
-	{ "GFX>>arcadefont.png", B_BIG_FONT,	0, 0,	1.0f,	KOBO_FONT },
-/* /FIXME */
+	{ "GFX>>bigfont.png", B_BIG_FONT,	0, 0,	1.0f,	KOBO_FONT },
 	{ "GFX>>counterfont.png", B_COUNTER_FONT, 0, 0,	2.0f,	KOBO_FONT },
 
 	// Special FX
