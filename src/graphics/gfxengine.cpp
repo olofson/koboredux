@@ -1131,6 +1131,12 @@ void gfxengine_t::render_sprite(cs_obj_t *o)
 	dest_rect.y += (gfxengine->wy * gfxengine->ys + 128) >> 8;
 	dest_rect.w = b->w;
 	dest_rect.h = b->h;
+	window_t *win = gfxengine->selected;
+	SDL_SetTextureAlphaMod(s->texture, win->_alphamod);
+	SDL_SetTextureColorMod(s->texture,
+			win->get_r(win->_colormod),
+			win->get_g(win->_colormod),
+			win->get_b(win->_colormod));
 	SDL_RenderCopy(gfxengine->renderer(), s->texture, NULL, &dest_rect);
 }
 

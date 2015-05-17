@@ -102,7 +102,7 @@ void _screen::render_title_plasma(int t, float fade, int y, int h)
 		int i = (int)((fx->h - 1) * (0.3f * plasma + 0.7f * shape) * fade);
 		int xo = (int)(8192 * plasma2 * gengine->xscale() / 256);
 		xo -= (int)(xo / fx->w) * fx->w;
-		int xmax = wmain->phys_rect.x + wmain->phys_rect.w;
+		int xmax = woverlay->phys_rect.x + woverlay->phys_rect.w;
 		for(int x = -xo; x < xmax; x += fx->w)
 		{
 			sr.y = i;
@@ -124,7 +124,7 @@ void _screen::render_title_noise(float fade, int y, int h, int bank, int frame)
 			continue;
 		SDL_Surface *fx = s->surface;
 		xo -= (int)(xo / fx->w) * fx->w;
-		int xmax = wmain->phys_rect.x + wmain->phys_rect.w;
+		int xmax = woverlay->phys_rect.x + woverlay->phys_rect.w;
 		for(int x = -xo; x < xmax; x += fx->w)
 			RGN_Blit(fx, NULL, x, y + ty);
 		ty += fx->h;
@@ -158,39 +158,41 @@ void _screen::title(int t, float fade, int mode)
 	float ly = mf * mf * mf * WMAIN_H - 0.5f;
 	if(ly < 0.0f)
 		ly = 0.0f;
-	wmain->sprite_fxp(PIXEL2CS(wmain->width() - 320) / 2,
-			(int)((wmain->height()  / 2 - (128 - 20) - ly) *
+	woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
+			(int)((woverlay->height()  / 2 - (128 - 20) - ly) *
 					256.0f),
 			B_LOGO, 0);
 #elif 1
-	wmain->sprite_fxp_alpha(PIXEL2CS(wmain->width() - 320) / 2,
-			PIXEL2CS(wmain->height() / 2 - (128 - 20)),
-			B_LOGO, 0, fade * fade * fade * 255);
+	woverlay->alphamod(fade * fade * fade);
+	woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
+			PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
+			B_LOGO, 0);
+	woverlay->alphamod(1.0f);
 #else
-	wmain->sprite_fxp_scale(PIXEL2CS(wmain->width() - 320) / 2,
-			PIXEL2CS(wmain->height() / 2 - (128 - 20)),
+	woverlay->sprite_fxp_scale(PIXEL2CS(woverlay->width() - 320) / 2,
+			PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
 			B_LOGO, 0, 1.0f, fade);
 #endif
 	// Version
 	if(fade > 0.9)
 	{
-		wmain->font(B_NORMAL_FONT);
-		wmain->center(195, KOBO_VERSION);
+		woverlay->font(B_NORMAL_FONT);
+		woverlay->center(195, KOBO_VERSION);
 	}
 
 	// Cheat mode warning
 	if((prefs->cmd_cheat || prefs->cmd_pushmove) && (t % 1000 < 500))
 	{
-		wmain->font(B_MEDIUM_FONT);
-		wmain->center(210, "CHEAT MODE");
+		woverlay->font(B_MEDIUM_FONT);
+		woverlay->center(210, "CHEAT MODE");
 	}
 #if 1
 	// WIP notice
 	if(!flashin(t - 2000))
 	{
-		wmain->font(B_MEDIUM_FONT);
-		wmain->center(230, "This is a Work in Progress!");
-		wmain->center(240, "Check http://koboredux.com");
+		woverlay->font(B_MEDIUM_FONT);
+		woverlay->center(230, "This is a Work in Progress!");
+		woverlay->center(240, "Check http://koboredux.com");
 	}
 #endif
 }
@@ -223,24 +225,24 @@ void _screen::highscores(int t, float fade)
 	mf *= mf * mf * mf * mf;
 	screen.set_highlight(0, 0);
 
-	wmain->font(B_BIG_FONT);
+	woverlay->font(B_BIG_FONT);
 	y = (int)(PIXEL2CS(100) * mf) - 256;
 	if(y < 0)
 		y = 0;
-	wmain->center_fxp(PIXEL2CS(20) - y, "HALL OF FAME");
+	woverlay->center_fxp(PIXEL2CS(20) - y, "HALL OF FAME");
 	int xo = (int)(50 * 256 * mf);
-	wmain->sprite_fxp(PIXEL2CS(32) - xo, PIXEL2CS(30),
+	woverlay->sprite_fxp(PIXEL2CS(32) - xo, PIXEL2CS(30),
 			B_PLAYER, (t / 50) % 16);
-	wmain->sprite_fxp(PIXEL2CS(wmain->width() - 32) + xo, PIXEL2CS(30),
-			B_PLAYER, 15 - (t / 50) % 16);
+	woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 32) + xo,
+			PIXEL2CS(30), B_PLAYER, 15 - (t / 50) % 16);
 
-	wmain->font(B_NORMAL_FONT);
+	woverlay->font(B_NORMAL_FONT);
 	y = (int)(PIXEL2CS(75) * mf - 0.5f) - 256;
 	if(y < 0)
 		y = 0;
-	wmain->center_fxp(PIXEL2CS(40) - y, "(Score/Stage/Name)");
+	woverlay->center_fxp(PIXEL2CS(40) - y, "(Score/Stage/Name)");
 
-	wmain->font(B_MEDIUM_FONT);
+	woverlay->font(B_MEDIUM_FONT);
 	float yo = t * (11*18+100) * 256.0 / 12500.0 - PIXEL2CS(110);
 	for(i = 0, y = 65; i < 10; ++i, y += 18)
 	{
@@ -252,17 +254,21 @@ void _screen::highscores(int t, float fade)
 		cy = (PIXEL2CS(y) - yo) - PIXEL2CS(65 + 5*18/2);
 		xo = cy*cy*cy*cy*cy * 1e-16;
 		snprintf(s, 16, "%d", hi_sc[i]);
-		wmain->center_token_fxp(PIXEL2CS(70)+(int)xo, real_y, s);
+		woverlay->center_token_fxp(PIXEL2CS(70) + (int)xo, real_y, s);
 		snprintf(s, 16, "%d", hi_st[i]);
-		wmain->center_token_fxp(PIXEL2CS((70+125)/2)+(int)xo, real_y, s, -1);
-		wmain->string_fxp(PIXEL2CS(125)+(int)xo, real_y, hi_nm[i]);
+		woverlay->center_token_fxp(PIXEL2CS((70 + 125) / 2) + (int)xo,
+				real_y, s, -1);
+		woverlay->string_fxp(PIXEL2CS(125) + (int)xo, real_y,
+				hi_nm[i]);
 	}
 #if 0
 	if(!flashin(t - 1000))
 	{
-		wmain->font(B_MEDIUM_FONT);
-		wmain->center(170, "NOTE: Highscores for \"Classic\" only!");
-		wmain->center(180, "The new skill levels are experimental.");
+		woverlay->font(B_MEDIUM_FONT);
+		woverlay->center(170,
+				"NOTE: Highscores for \"Classic\" only!");
+		woverlay->center(180,
+				"The new skill levels are experimental.");
 	}
 #endif
 }
@@ -279,37 +285,40 @@ void _screen::credits(int t)
 		switch(t / 4000)
 		{
 		  case 0:
-			wmain->font(B_BIG_FONT);
+			woverlay->font(B_BIG_FONT);
 			if(t2 > 0)
-				wmain->center(80, "DAVID OLOFSON");
-			wmain->font(B_NORMAL_FONT);
+				woverlay->center(80, "DAVID OLOFSON");
+			woverlay->font(B_NORMAL_FONT);
 			if(t2 > 2)
-				wmain->center(105, "New Audio & GFX Engines");
+				woverlay->center(105,
+						"New Audio & GFX Engines");
 			if(t2 > 3)
-				wmain->center(115, "Graphics, Sound & Music");
+				woverlay->center(115,
+						"Graphics, Sound & Music");
 			break;
 		  case 1:
-			wmain->font(B_BIG_FONT);
+			woverlay->font(B_BIG_FONT);
 			if(t2 > 0)
-				wmain->center(80, "AKIRA HIGUCHI");
-			wmain->font(B_NORMAL_FONT);
+				woverlay->center(80, "AKIRA HIGUCHI");
+			woverlay->font(B_NORMAL_FONT);
 			if(t2 > 2)
-				wmain->center(110, "XKobo - The Original Game");
+				woverlay->center(110,
+						"XKobo - The Original Game");
 			break;
 		}
 	if(!flashin(t - 7000))
 	{
-		wmain->font(B_MEDIUM_FONT);
-		wmain->center(170, "Additional Credits & Thanks");
-		wmain->center(180, "in the scroller below");
+		woverlay->font(B_MEDIUM_FONT);
+		woverlay->center(170, "Additional Credits & Thanks");
+		woverlay->center(180, "in the scroller below");
 	}
 }
 
 
 void _screen::help(int t)
 {
-	wmain->font(B_BIG_FONT);
-	wmain->center(53, "HOW TO PLAY");
+	woverlay->font(B_BIG_FONT);
+	woverlay->center(53, "HOW TO PLAY");
 
 	// 0..3000: Control
 	if(t < 200)
@@ -318,10 +327,11 @@ void _screen::help(int t)
 	{
 		if(t > 2700)
 			screen.set_highlight(0, 0);
-		wmain->font(B_MEDIUM_FONT);
-		wmain->sprite(wmain->width() / 2, 105, B_PLAYER, (t / 50) % 16);
-		wmain->center(125, "Use arrow keys or NumPad.");
-		wmain->center(135, "to control the ship.");
+		woverlay->font(B_MEDIUM_FONT);
+		woverlay->sprite(woverlay->width() / 2, 105, B_PLAYER,
+				(t / 50) % 16);
+		woverlay->center(125, "Use arrow keys or NumPad.");
+		woverlay->center(135, "to control the ship.");
 	}
 	else if(t < 3000)
 		return;
@@ -333,18 +343,20 @@ void _screen::help(int t)
 	{
 		if(t > 5700)
 			screen.set_highlight(0, 0);
-		wmain->font(B_MEDIUM_FONT);
+		woverlay->font(B_MEDIUM_FONT);
 		int i;
 		for(i = 0; i < 4; ++i)
 		{
 			int t2 = t + 153 * i;
-			wmain->sprite(wmain->width() / 2 - (t2 / 5) % 120, 105,
-					B_BOLT, 8 + (t2 / 50) % 4);
-			wmain->sprite(wmain->width() / 2 + (t2 / 5) % 120, 105,
-					B_BOLT, 8 + (t2 / 50) % 4);
+			woverlay->sprite(woverlay->width() / 2 - (t2 / 5) % 120,
+					105, B_BOLT, 8 + (t2 / 50) % 4);
+			woverlay->sprite(
+					woverlay->width() / 2 + (t2 / 5) % 120,
+					105, B_BOLT, 8 + (t2 / 50) % 4);
 		}
-		wmain->sprite(wmain->width() / 2, 105, B_PLAYER, 4);
-		wmain->center(135, "Use any SHIFT or CONTROL keys to fire.");
+		woverlay->sprite(woverlay->width() / 2, 105, B_PLAYER, 4);
+		woverlay->center(135,
+				"Use any SHIFT or CONTROL keys to fire.");
 	}
 	else if(t < 6000)
 		return;
@@ -356,15 +368,17 @@ void _screen::help(int t)
 	{
 		if(t > 8700)
 			screen.set_highlight(0, 0);
-		wmain->font(B_MEDIUM_FONT);
+		woverlay->font(B_MEDIUM_FONT);
 // TODO: Short demo of how to destroy a base
 		int i;
 		for(i = B_TILES1; i <= B_TILES5; ++i)
 		{
 			int xo = 24 * i - (5 * 24 / 2) + 4;
-			wmain->sprite(wmain->width() / 2 + xo, 105 - 8, i, 7);
+			woverlay->sprite(woverlay->width() / 2 + xo, 105 - 8,
+					i, 7);
 		}
-		wmain->center(135, "Destroy bases by shooting their cores.");
+		woverlay->center(135,
+				"Destroy bases by shooting their cores.");
 	}
 	else if(t < 9000)
 		return;
@@ -376,19 +390,19 @@ void _screen::help(int t)
 	{
 		if(t > 13700)
 			screen.set_highlight(0, 0);
-		wmain->font(B_MEDIUM_FONT);
+		woverlay->font(B_MEDIUM_FONT);
 // TODO: Short demo of intense battle
-		wmain->sprite(50, 110, B_RING, (t / 30) % 16);
-		wmain->sprite(65, 90, B_BOMB, (t / 40) % 16);
-		wmain->sprite(80, 110, B_BMR_GREEN, (t / 80) % 16);
-		wmain->sprite(95, 90, B_BMR_PURPLE, (t / 70) % 16);
-		wmain->sprite(110, 110, B_BMR_PINK, (t / 60) % 16);
-		wmain->sprite(125, 90, B_FIGHTER, (t / 50) % 16);
-		wmain->sprite(140, 110, B_MISSILE1, (t / 45) % 16);
-		wmain->sprite(155, 90, B_MISSILE2, (t / 40) % 16);
-		wmain->sprite(170, 110, B_MISSILE3, (t / 55) % 16);
-		wmain->center(125, "Shoot everything that moves,");
-		wmain->center(135, "but avoid getting hit!");
+		woverlay->sprite(50, 110, B_RING, (t / 30) % 16);
+		woverlay->sprite(65, 90, B_BOMB, (t / 40) % 16);
+		woverlay->sprite(80, 110, B_BMR_GREEN, (t / 80) % 16);
+		woverlay->sprite(95, 90, B_BMR_PURPLE, (t / 70) % 16);
+		woverlay->sprite(110, 110, B_BMR_PINK, (t / 60) % 16);
+		woverlay->sprite(125, 90, B_FIGHTER, (t / 50) % 16);
+		woverlay->sprite(140, 110, B_MISSILE1, (t / 45) % 16);
+		woverlay->sprite(155, 90, B_MISSILE2, (t / 40) % 16);
+		woverlay->sprite(170, 110, B_MISSILE3, (t / 55) % 16);
+		woverlay->center(125, "Shoot everything that moves,");
+		woverlay->center(135, "but avoid getting hit!");
 	}
 	else if(t < 14000)
 		return;
@@ -400,20 +414,21 @@ void _screen::help(int t)
 	{
 		if(t > 19700)
 			screen.set_highlight(0, 0);
-		wmain->font(B_MEDIUM_FONT);
+		woverlay->font(B_MEDIUM_FONT);
 // TODO: Demo destroying a rock
 		int i;
 		for(i = B_TILES1; i <= B_TILES5; ++i)
 		{
 			int xo = 24 * i - (5 * 24 / 2) + 4;
-			wmain->sprite(wmain->width() / 2 + xo, 82 - 8, i, 0);
+			woverlay->sprite(woverlay->width() / 2 + xo, 82 - 8,
+					i, 0);
 		}
-		wmain->center(87, "Some objects are indestructible...");
-		wmain->sprite(65, 120, B_ROCK1, (t / 45) % 32);
-		wmain->sprite(90, 115, B_ROCK2, (t / 40) % 32);
-		wmain->sprite(115, 125, B_ROCK3, (t / 35) % 48);
-		wmain->sprite(155, 120, B_BIGSHIP, (t / 40) % 16);
-		wmain->center(135, "...or take many hits to destroy.");
+		woverlay->center(87, "Some objects are indestructible...");
+		woverlay->sprite(65, 120, B_ROCK1, (t / 45) % 32);
+		woverlay->sprite(90, 115, B_ROCK2, (t / 40) % 32);
+		woverlay->sprite(115, 125, B_ROCK3, (t / 35) % 48);
+		woverlay->sprite(155, 120, B_BIGSHIP, (t / 40) % 16);
+		woverlay->center(135, "...or take many hits to destroy.");
 	}
 }
 
@@ -520,14 +535,14 @@ void _screen::scroller()
 	static int fdt = 0;
 	fdt += ((dt<<8) - fdt) >> 3;
 	pos -= (fdt * PIXEL2CS((int)scroller_speed) + 128000) / 256000;
-	wmain->font(B_BIG_FONT);
-	wmain->string_fxp(pos, PIXEL2CS(312), stp);
+	woverlay->font(B_BIG_FONT);
+	woverlay->string_fxp(pos, PIXEL2CS(312), stp);
 
 	/*
 	 * Chop away characters at the left edge
 	 */
 	char buf[2] = {*stp, 0};
-	int cw = wmain->textwidth_fxp(buf);
+	int cw = woverlay->textwidth_fxp(buf);
 	if(-pos > cw)
 	{
 		pos += cw;
@@ -571,6 +586,7 @@ void _screen::init_scene(int sc)
 			scene_num = -(sc+1) % scene_max;
 			level = -(sc+1) / scene_max;
 		}
+		wmain->colormod(wmain->map_rgb(128, 128, 128));
 	}
 	else
 	{
@@ -581,6 +597,7 @@ void _screen::init_scene(int sc)
 		scene_num = sc % scene_max;
 		level = sc / scene_max;
 		radar_mode = RM_RADAR;
+		wmain->colormod(wmain->map_rgb(255, 255, 255));
 	}
 	gengine->period(game.speed);
 	sound.period(game.speed);
@@ -786,7 +803,7 @@ void _screen::render_highlight(window_t *win)
 		int xo = PIXEL2CS(pubrand.get(NOISE_SIZEX_LOG2));
 		int xmax = ((WMAIN_W + CS2PIXEL(xo)) >> NOISE_SIZEX_LOG2) + 1;
 		for(int x = 0; x < xmax; ++x)
-			wmain->sprite_fxp(PIXEL2CS(x << NOISE_SIZEX_LOG2) - xo,
+			woverlay->sprite_fxp(PIXEL2CS(x << NOISE_SIZEX_LOG2) - xo,
 					ty + y,
 					B_NOISE, 6);
 	}

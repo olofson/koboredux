@@ -259,6 +259,15 @@ class window_t
 	void colorkey();
 	void alpha(float a);
 
+	void colormod(Uint32 color)
+	{
+		_colormod = color;
+	}
+	void alphamod(float a)
+	{
+		_alphamod = (int)(a * 255.0f);
+	}
+
 	void clear(SDL_Rect *r = NULL);
 	void font(int fnt);
 	void string(int _x, int _y, const char *txt);
@@ -280,7 +289,6 @@ class window_t
 
 	void sprite(int _x, int _y, int bank, int frame);
 	void sprite_fxp(int _x, int _y, int bank, int frame);
-	void sprite_fxp_alpha(int _x, int _y, int bank, int frame, Uint8 a);
 	void sprite_fxp_scale(int _x, int _y, int bank, int frame,
 			float xscale, float yscale);
 
@@ -318,6 +326,7 @@ class window_t
 	int		wx, wy;		// Engine window position
 	int		xs, ys;		// fixp 24:8
 	Uint32		fgcolor, bgcolor;
+	Uint32		_colormod, _alphamod;
 	int		bg_bank, bg_frame;
 	int		_font;
 	int		_visible;

@@ -84,6 +84,7 @@ bargraph_t		*wttemp = NULL;
 radar_map_t		*wmap = NULL;
 radar_window_t		*wradar = NULL;
 engine_window_t		*wmain = NULL;
+window_t		*woverlay = NULL;
 display_t		*dhigh = NULL;
 display_t		*dscore = NULL;
 display_t		*dstage = NULL;
@@ -504,6 +505,7 @@ void KOBO_main::build_screen()
 	dstage->text("000");
 
 	wmain->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
+	woverlay->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
 
 	// Set up the map at 1 physical pixel per tile
 	wmap->offscreen();
@@ -680,6 +682,7 @@ int KOBO_main::init_display(prefs_t *p)
 	wdash = new dashboard_window_t(gengine);
 	whealth = new bargraph_t(gengine);
 	wmain = new engine_window_t(gengine);
+	woverlay = new window_t(gengine);
 	dhigh = new display_t(gengine);
 	dscore = new display_t(gengine);
 	wmap = new radar_map_t(gengine);
@@ -729,6 +732,8 @@ void KOBO_main::close_display()
 	dscore = NULL;
 	delete dhigh;
 	dhigh = NULL;
+	delete woverlay;
+	woverlay = NULL;
 	delete wmain;
 	wmain = NULL;
 	delete whealth;
@@ -1272,7 +1277,7 @@ void KOBO_main::pause_game()
 
 void kobo_render_highlight(ct_widget_t *wg)
 {
-	screen.set_highlight(wg->y() + wg->height() / 2 - wmain->y(),
+	screen.set_highlight(wg->y() + wg->height() / 2 - woverlay->y(),
 			wg->height());
 }
 
@@ -1840,10 +1845,10 @@ void kobo_gfxengine_t::post_render()
 #if 0
 	if(!prefs->cmd_noframe)
 	{
-		wmain->sprite(0, 0, B_FRAME_TL, 0, 0);
-		wmain->sprite(WSIZE - 16, 0, B_FRAME_TR, 0, 0);
-		wmain->sprite(0, WSIZE - 16, B_FRAME_BL, 0, 0);
-		wmain->sprite(WSIZE - 16, WSIZE - 16, B_FRAME_BR, 0, 0);
+		woverlay->sprite(0, 0, B_FRAME_TL, 0, 0);
+		woverlay->sprite(WSIZE - 16, 0, B_FRAME_TR, 0, 0);
+		woverlay->sprite(0, WSIZE - 16, B_FRAME_BL, 0, 0);
+		woverlay->sprite(WSIZE - 16, WSIZE - 16, B_FRAME_BR, 0, 0);
 	}
 #endif
 #ifdef DEBUG
@@ -1852,8 +1857,8 @@ void kobo_gfxengine_t::post_render()
 		char buf[20];
 		snprintf(buf, sizeof(buf), "Obj: %d",
 				gengine->objects_in_use());
-		wmain->font(B_NORMAL_FONT);
-		wmain->string(160, 5, buf);
+		woverlay->font(B_NORMAL_FONT);
+		woverlay->string(160, 5, buf);
 	}
 #endif
 

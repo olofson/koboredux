@@ -2,6 +2,20 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* Implement color and alpha modulation for all window draw calls!
+
+* Enemy/core/... indicator subsystem:
+	* Since all objects are updated every game logic frame, it's probably
+	  most efficient if the relevant ones report to the indicators
+	  themselves.
+	* We need something to report to. Shouldn't mess directly with the LED
+	  bars from game logic code.
+
+* There are issues with deleted SDL textures being accessed after hide()!
+
+* Specifying -width or -height via the command line should automatically set
+  videomode to -1 (custom)!
+
 * Should window_t manage SDL renderer state? Probably, because the window_t
   rendering API gives the impression of keeping state per window.
 	* Well, it pretty much does already - and there isn't much state in an

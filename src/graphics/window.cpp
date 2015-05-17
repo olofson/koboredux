@@ -56,6 +56,8 @@ window_t::window_t(gfxengine_t *e)
 	link(e);
 	xs = engine->xs;
 	ys = engine->ys;
+	_alphamod = 255;
+	_colormod = 0xffffffff;
 }
 
 
@@ -602,32 +604,10 @@ void window_t::sprite_fxp(int _x, int _y, int bank, int frame)
 	r.y = phys_rect.y + _y;
 	r.w = b->w;
 	r.h = b->h;
+	SDL_SetTextureAlphaMod(s->texture, _alphamod);
+	SDL_SetTextureColorMod(s->texture,
+			get_r(_colormod), get_g(_colormod), get_b(_colormod));
 	SDL_RenderCopy(renderer, s->texture, NULL, &r);
-}
-
-
-void window_t::sprite_fxp_alpha(int _x, int _y, int bank, int frame, Uint8 a)
-{
-	if(!engine || !renderer)
-		return;
-	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
-	if(!b)
-		return;
-	s_sprite_t *s = s_get_sprite_b(b, frame);
-	if(!s || !s->texture)
-		return;
-	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 128) >> 8);
-	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 128) >> 8);
-	SDL_Rect r;
-
-	SELECT
-	r.x = phys_rect.x + _x;
-	r.y = phys_rect.y + _y;
-	r.w = b->w;
-	r.h = b->h;
-	SDL_SetTextureAlphaMod(s->texture, a);
-	SDL_RenderCopy(renderer, s->texture, NULL, &r);
-	SDL_SetTextureAlphaMod(s->texture, 255);
 }
 
 
@@ -651,6 +631,9 @@ void window_t::sprite_fxp_scale(int _x, int _y, int bank, int frame,
 	r.y = phys_rect.y + _y;
 	r.w = b->w * xscale;
 	r.h = b->h * yscale;
+	SDL_SetTextureAlphaMod(s->texture, _alphamod);
+	SDL_SetTextureColorMod(s->texture,
+			get_r(_colormod), get_g(_colormod), get_b(_colormod));
 	SDL_RenderCopy(renderer, s->texture, NULL, &r);
 }
 
