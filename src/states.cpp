@@ -67,8 +67,8 @@ void kobo_basestate_t::post_render()
 	screen.render_fx(wmain);
 	DBG(if(prefs->cmd_debug)
 	{
-		wmain->font(B_NORMAL_FONT);
-		wmain->string(30, 5, name);
+		woverlay->font(B_NORMAL_FONT);
+		woverlay->string(30, 5, name);
 	})
 }
 
@@ -455,9 +455,9 @@ void st_pause_game_t::post_render()
 	kobo_basestate_t::post_render();
 
 	float ft = SDL_GetTicks() * 0.001;
-	wmain->font(B_BIG_FONT);
+	woverlay->font(B_BIG_FONT);
 	int y = PIXEL2CS(75) + (int)floor(PIXEL2CS(15)*sin(ft * 6));
-	wmain->center_fxp(y, "PAUSED");
+	woverlay->center_fxp(y, "PAUSED");
 
 	wradar->frame();
 }
@@ -560,9 +560,9 @@ void st_get_ready_t::post_render()
 
 	float ft = SDL_GetTicks() * 0.001;
 	char counter[2] = "0";
-	wmain->font(B_BIG_FONT);
+	woverlay->font(B_BIG_FONT);
 	int y = PIXEL2CS(70) + (int)floor(PIXEL2CS(15)*sin(ft * 6));
-	wmain->center_fxp(y, "GET READY!");
+	woverlay->center_fxp(y, "GET READY!");
 
 	float z = (float)((int)SDL_GetTicks() - start_time);
 	if(10 == prefs->countdown)
@@ -573,26 +573,26 @@ void st_get_ready_t::post_render()
 		z = 1.0 - z / 700.0;
 	if((z > 0.0) && (z < 1.0))
 	{
-		float x = wmain->width() / 2;
-		wmain->foreground(wmain->map_rgb(
+		float x = woverlay->width() / 2;
+		woverlay->foreground(woverlay->map_rgb(
 				255 - (int)(z * 255.0),
 				(int)(z * 255.0),
 				0));
-		wmain->fillrect_fxp(PIXEL2CS((int)(x - z * 50.0)),
+		woverlay->fillrect_fxp(PIXEL2CS((int)(x - z * 50.0)),
 				y + PIXEL2CS(76),
 				PIXEL2CS((int)(z * 100.0)),
 				PIXEL2CS(10));
 	}
 
-	wmain->font(B_MEDIUM_FONT);
+	woverlay->font(B_MEDIUM_FONT);
 	if(10 == prefs->countdown)
-		wmain->center_fxp(y + PIXEL2CS(70), "(Press FIRE)");
+		woverlay->center_fxp(y + PIXEL2CS(70), "(Press FIRE)");
 	else if(prefs->countdown)
 	{
-		wmain->center_fxp(y + PIXEL2CS(100), "(Press FIRE)");
+		woverlay->center_fxp(y + PIXEL2CS(100), "(Press FIRE)");
 		counter[0] = countdown + '0';
-		wmain->font(B_COUNTER_FONT);
-		wmain->center_fxp(y + PIXEL2CS(60), counter);
+		woverlay->font(B_COUNTER_FONT);
+		woverlay->center_fxp(y + PIXEL2CS(60), counter);
 	}
 
 	wradar->frame();
@@ -662,9 +662,9 @@ void st_game_over_t::post_render()
 	kobo_basestate_t::post_render();
 
 	float ft = SDL_GetTicks() * 0.001;
-	wmain->font(B_BIG_FONT);
+	woverlay->font(B_BIG_FONT);
 	int y = PIXEL2CS(100) + (int)floor(PIXEL2CS(15)*sin(ft * 6));
-	wmain->center_fxp(y, "GAME OVER");
+	woverlay->center_fxp(y, "GAME OVER");
 
 	wradar->frame();
 }
@@ -682,10 +682,11 @@ st_game_over_t st_game_over;
  */
 void menu_base_t::open()
 {
-	place(wmain->x(), wmain->y(), wmain->width(), wmain->height());
+	place(woverlay->x(), woverlay->y(),
+			woverlay->width(), woverlay->height());
 	font(B_NORMAL_FONT);
-	foreground(wmain->map_rgb(0xffffff));
-	background(wmain->map_rgb(0x000000));
+	foreground(woverlay->map_rgb(0xffffff));
+	background(woverlay->map_rgb(0x000000));
 	build_all();
 }
 
@@ -863,10 +864,11 @@ void st_menu_base_t::press(int button)
 
 void new_player_t::open()
 {
-	place(wmain->x(), wmain->y(), wmain->width(), wmain->height());
+	place(woverlay->x(), woverlay->y(),
+			woverlay->width(), woverlay->height());
 	font(B_NORMAL_FONT);
-	foreground(wmain->map_rgb(255, 255, 255));
-	background(wmain->map_rgb(0, 0, 0));
+	foreground(woverlay->map_rgb(255, 255, 255));
+	background(woverlay->map_rgb(0, 0, 0));
 	memset(name, 0, sizeof(name));
 	name[0] = 'A';
 	currentIndex = 0;
@@ -1208,20 +1210,20 @@ void st_error_t::post_render()
 {
 	kobo_basestate_t::post_render();
 
-	wmain->font(B_MEDIUM_FONT);
-	wmain->center(95, msg[0]);
+	woverlay->font(B_MEDIUM_FONT);
+	woverlay->center(95, msg[0]);
 
-	wmain->font(B_NORMAL_FONT);
-	wmain->center(123, msg[1]);
+	woverlay->font(B_NORMAL_FONT);
+	woverlay->center(123, msg[1]);
 
 	if(frame_time % 1000 < 500)
 	{
-		int w = wmain->width();
-		int h = wmain->height();
-		wmain->foreground(wmain->map_rgb(0xff0000));
-		wmain->rectangle(20, 80, w - 40, h - 160);
-		wmain->rectangle(22, 82, w - 44, h - 164);
-		wmain->rectangle(24, 84, w - 48, h - 168);
+		int w = woverlay->width();
+		int h = woverlay->height();
+		woverlay->foreground(woverlay->map_rgb(0xff0000));
+		woverlay->rectangle(20, 80, w - 40, h - 160);
+		woverlay->rectangle(22, 82, w - 44, h - 164);
+		woverlay->rectangle(24, 84, w - 48, h - 168);
 	}
 }
 
@@ -1713,9 +1715,9 @@ void st_yesno_base_t::post_render()
 	st_menu_base_t::post_render();
 
 	float ft = SDL_GetTicks() * 0.001;
-	wmain->font(B_BIG_FONT);
-	int y = PIXEL2CS(100) + (int)floor(PIXEL2CS(15)*sin(ft * 6));
-	wmain->center_fxp(y, msg);
+	woverlay->font(B_BIG_FONT);
+	int y = PIXEL2CS(90) + (int)floor(PIXEL2CS(15) * sin(ft * 6));
+	woverlay->center_fxp(y, msg);
 }
 
 
