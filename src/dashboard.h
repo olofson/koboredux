@@ -40,6 +40,7 @@ class screen_window_t : public window_t
 enum dashboard_modes_t {
 	DASHBOARD_OFF = 0,
 	DASHBOARD_BLACK,
+	DASHBOARD_TITLE,
 	DASHBOARD_GAME,
 	DASHBOARD_LOADING
 };

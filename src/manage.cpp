@@ -266,6 +266,7 @@ void _manage::game_stop()
 	audio_channel_stop(0, -1);
 #endif
 	playing = 0;
+	wdash->mode(DASHBOARD_TITLE);
 }
 
 void _manage::next_scene()
@@ -334,6 +335,7 @@ void _manage::init_resources_title()
 	pxbottom->fx(PFX_SCANREV, PCOLOR_CORE);
 	pxleft->fx(PFX_SCANREV, PCOLOR_CORE);
 	pxright->fx(PFX_SCAN, PCOLOR_CORE);
+	wdash->mode(DASHBOARD_TITLE);
 }
 
 
@@ -383,6 +385,7 @@ void _manage::init_resources_to_play(int newship)
 	pxbottom->fx(PFX_OFF);
 	pxleft->fx(PFX_OFF);
 	pxright->fx(PFX_OFF);
+	wdash->mode(DASHBOARD_GAME);
 }
 
 
@@ -427,13 +430,21 @@ void _manage::put_info()
 {
 	static char s[16];
 
-	snprintf(s, 16, "%010d", scorefile.highscore());
+	snprintf(s, 16, "%d", scorefile.highscore());
 	dhigh->text(s);
 	dhigh->on();
 
-	snprintf(s, 16, "%03d", scene_num + 1);
+	snprintf(s, 16, "%d", scene_num + 1);
 	dstage->text(s);
 	dstage->on();
+
+	snprintf(s, 16, "%d", scene_num / 10 % 5 + 1);
+	dregion->text(s);
+	dregion->on();
+
+	snprintf(s, 16, "%2d", scene_num % 10 + 1);
+	dlevel->text(s);
+	dlevel->on();
 
 	score_changed = 1;
 	ships_changed = 1;
@@ -445,7 +456,7 @@ void _manage::put_score()
 	if(score_changed)
 	{
 		static char s[32];
-		snprintf(s, 16, "%010d", score);
+		snprintf(s, 16, "%d", score);
 		dscore->text(s);
 		dscore->on();
 		if(score > scorefile.highscore())
@@ -466,7 +477,7 @@ void _manage::put_ships()
 	{
 		static char s[32];
 		if(!prefs->cmd_cheat)
-			snprintf(s, 16, "%03d", ships);
+			snprintf(s, 16, "%d", ships);
 		else
 			snprintf(s, 16, "999");
 		dships->text(s);

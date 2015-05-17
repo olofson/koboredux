@@ -39,7 +39,7 @@
 
 int _screen::scene_max;
 int _screen::scene_num;
-int _screen::level;
+int _screen::restarts;
 int _screen::generate_count;
 _map _screen::map;
 int _screen::show_title = 0;
@@ -371,7 +371,7 @@ void _screen::help(int t)
 		woverlay->font(B_MEDIUM_FONT);
 // TODO: Short demo of how to destroy a base
 		int i;
-		for(i = B_TILES1; i <= B_TILES5; ++i)
+		for(i = B_R1_TILES; i <= B_R5_TILES; ++i)
 		{
 			int xo = 24 * i - (5 * 24 / 2) + 4;
 			woverlay->sprite(woverlay->width() / 2 + xo, 105 - 8,
@@ -417,7 +417,7 @@ void _screen::help(int t)
 		woverlay->font(B_MEDIUM_FONT);
 // TODO: Demo destroying a rock
 		int i;
-		for(i = B_TILES1; i <= B_TILES5; ++i)
+		for(i = B_R1_TILES; i <= B_R2_TILES; ++i)
 		{
 			int xo = 24 * i - (5 * 24 / 2) + 4;
 			woverlay->sprite(woverlay->width() / 2 + xo, 82 - 8,
@@ -575,7 +575,7 @@ void _screen::init_scene(int sc)
 			 */
 			radar_mode = RM_OFF;	/* Clear radar */
 			scene_num = 19;
-			level = 0;
+			restarts = 0;
 		}
 		else
 		{
@@ -583,8 +583,8 @@ void _screen::init_scene(int sc)
 			 * Map selection - show current map
 			 */
 			radar_mode = RM_SHOW;
-			scene_num = -(sc+1) % scene_max;
-			level = -(sc+1) / scene_max;
+			scene_num = -(sc + 1) % scene_max;
+			restarts = -(sc + 1) / scene_max;
 		}
 		wmain->colormod(wmain->map_rgb(128, 128, 128));
 	}
@@ -595,7 +595,7 @@ void _screen::init_scene(int sc)
 		 */
 		show_title = 0;
 		scene_num = sc % scene_max;
-		level = sc / scene_max;
+		restarts = sc / scene_max;
 		radar_mode = RM_RADAR;
 		wmain->colormod(wmain->map_rgb(255, 255, 255));
 	}
@@ -622,7 +622,7 @@ int _screen::prepare()
 	int count_core = 0;
 	int c = 0;
 
-	int lc = level > 31 ? 31 : level;
+	int lc = restarts > 31 ? 31 : restarts;
 	int interval_1 = (s->ek1_interval) >> lc;
 	int interval_2 = (s->ek2_interval) >> lc;
 	if(interval_1 < 4)
@@ -739,12 +739,12 @@ void _screen::render_noise(window_t *win)
 			np = 255, dnp = -dnp / 2;
 		else if(np < 0)
 			np = 0, dnp = -dnp / 2;
-		float level = np * noise_depth * (1.0f - noise_bright) / 255.0f +
+		float lv = np * noise_depth * (1.0f - noise_bright) / 255.0f +
 				noise_bright;
 		for(int x = 0; x < xmax; ++x)
 			win->sprite_fxp(PIXEL2CS(x<<NOISE_SIZEX_LOG2) - xo,
 					PIXEL2CS((int)fy),
-					noise_source, (int)(level * 15.0f +
+					noise_source, (int)(lv * 15.0f +
 					(float)pubrand.get(8) / 256.0f));
 	}
 }
@@ -984,7 +984,7 @@ void _screen::render_background(window_t *win)
 	/* Render parallax starfield */
 	render_starfield(win, vx, vy);
 
-	int tileset = B_TILES1 + (scene_num / 10) % 5;
+	int tileset = B_R1_TILES + (scene_num / 10) % 5;
 	int frame = manage.game_time();
 	for(y = 0; y < ymax; ++y)
 		for(x = 0; x < xmax; ++x)

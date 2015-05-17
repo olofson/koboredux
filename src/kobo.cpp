@@ -88,6 +88,8 @@ window_t		*woverlay = NULL;
 display_t		*dhigh = NULL;
 display_t		*dscore = NULL;
 display_t		*dstage = NULL;
+display_t		*dregion = NULL;
+display_t		*dlevel = NULL;
 display_t		*dships = NULL;
 hledbar_t		*pxtop = NULL;
 hledbar_t		*pxbottom = NULL;
@@ -494,15 +496,23 @@ void KOBO_main::build_screen()
 	dscore->caption("SCORE");
 	dscore->text("000000000");
 
-	dships->place(conx, cony + 48, conw, 18);
+	dships->place(conx, cony + 56, conw, 18);
 	dships->font(B_NORMAL_FONT);
 	dships->caption("SHIPS");
 	dships->text("000");
 
-	dstage->place(conx, cony + 72, conw, 18);
+	dstage->place(conx, cony + 88, conw / 3, 18);
 	dstage->font(B_NORMAL_FONT);
 	dstage->caption("STAGE");
 	dstage->text("000");
+	dregion->place(conx + conw / 3, cony + 88, conw / 3, 18);
+	dregion->font(B_NORMAL_FONT);
+	dregion->caption("REGION");
+	dregion->text("0");
+	dlevel->place(conx + 2 * conw / 3, cony + 88, conw / 3, 18);
+	dlevel->font(B_NORMAL_FONT);
+	dlevel->caption("LEVEL");
+	dlevel->text("00");
 
 	wmain->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
 	woverlay->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
@@ -691,6 +701,8 @@ int KOBO_main::init_display(prefs_t *p)
 	wttemp = new bargraph_t(gengine);
 	dships = new display_t(gengine);
 	dstage = new display_t(gengine);
+	dregion = new display_t(gengine);
+	dlevel = new display_t(gengine);
 	pxtop = new hledbar_t(gengine);
 	pxbottom = new hledbar_t(gengine);
 	pxleft = new vledbar_t(gengine);
@@ -718,6 +730,10 @@ void KOBO_main::close_display()
 	dfps = NULL;
 	delete dstage;
 	dstage = NULL;
+	delete dregion;
+	dregion = NULL;
+	delete dlevel;
+	dlevel = NULL;
 	delete dships;
 	dships = NULL;
 	delete wttemp;
@@ -936,11 +952,11 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	// In-game
 	{ "Loading in-game graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>tiles-green.png", B_TILES1,	16, 16,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-metal.png", B_TILES2,	16, 16,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-blood.png", B_TILES3,	16, 16,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-double.png", B_TILES4,	16, 16,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-chrome.png", B_TILES5,	16, 16,	1.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-green.png", B_R1_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-metal.png", B_R2_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-blood.png", B_R3_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-double.png", B_R4_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-chrome.png", B_R5_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
 	{ "GFX>>crosshair.png", B_CROSSHAIR,	32, 32,	1.0f,	KOBO_CENTER },
 	{ "GFX>>player.png", B_PLAYER,		40, 40,	2.0f,	KOBO_CENTER },
 	{ "GFX>>bmr-green.png", B_BMR_GREEN,	40, 40,	2.0f,	KOBO_CENTER },
@@ -1312,7 +1328,6 @@ int KOBO_main::open()
 	wdash->mode(DASHBOARD_BLACK);
 
 	ct_engine.render_highlight = kobo_render_highlight;
-	wdash->mode(DASHBOARD_GAME);
 	wradar->mode(RM_NOISE);
 	pubrand.init();
 	init_js(prefs);
@@ -1383,7 +1398,9 @@ int KOBO_main::run()
 				wdash->progress_done();
 				wdash->mode(DASHBOARD_BLACK);
 				log_printf(ULOG, "--- Audio restarted.\n");
-				wdash->mode(DASHBOARD_GAME);
+				wdash->mode(manage.game_stopped() ?
+						DASHBOARD_TITLE :
+						DASHBOARD_GAME);
 				wradar->mode(screen.radar_mode);
 				manage.set_bars();
 			}
@@ -1410,7 +1427,8 @@ int KOBO_main::run()
 				gsm.push(&st_error);
 			}
 			wdash->progress_done();
-			wdash->mode(DASHBOARD_GAME);
+			wdash->mode(manage.game_stopped() ?
+					DASHBOARD_TITLE : DASHBOARD_GAME);
 			wradar->mode(screen.radar_mode);
 			manage.set_bars();
 		}
@@ -1456,7 +1474,9 @@ int KOBO_main::run()
 				if(load_graphics(prefs) < 0)
 					return 7;
 				wdash->progress_done();
-				wdash->mode(DASHBOARD_GAME);
+				wdash->mode(manage.game_stopped() ?
+						DASHBOARD_TITLE :
+						DASHBOARD_GAME);
 				wradar->mode(screen.radar_mode);
 				manage.set_bars();
 				log_printf(ULOG, "--- Graphics reloaded.\n");

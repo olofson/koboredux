@@ -44,7 +44,7 @@ class _screen
 {
   protected:
 	static int scene_num;
-	static int level;
+	static int restarts;
 	static int generate_count;
 	static _map map;
 	static int scene_max;

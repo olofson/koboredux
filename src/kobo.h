@@ -79,6 +79,8 @@ extern window_t			*woverlay;
 extern display_t		*dhigh;
 extern display_t		*dscore;
 extern display_t		*dstage;
+extern display_t		*dregion;
+extern display_t		*dlevel;
 extern display_t		*dships;
 extern hledbar_t		*pxtop;
 extern hledbar_t		*pxbottom;
@@ -102,11 +104,11 @@ extern int exit_game;
 /* Graphics banks */
 typedef enum
 {
-	B_TILES1 =	0,
-	B_TILES2,
-	B_TILES3,
-	B_TILES4,
-	B_TILES5,
+	B_R1_TILES =	0,
+	B_R2_TILES,
+	B_R3_TILES,
+	B_R4_TILES,
+	B_R5_TILES,
 
 	B_CROSSHAIR,
 	B_PLAYER,

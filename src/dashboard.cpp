@@ -88,36 +88,43 @@ dashboard_window_t::~dashboard_window_t()
 
 void dashboard_window_t::mode(dashboard_modes_t m)
 {
-	int vis;
+	int main, score, ingame;
 	_mode = m;
 	switch(_mode)
 	{
+	  case DASHBOARD_TITLE:
+		main = 1;
+		ingame = 0;
+		score = 1;
+		break;
 	  case DASHBOARD_GAME:
-		vis = 1;
+		main = ingame = score = 1;
 		break;
 	  default:
-		vis = 0;
+		main = ingame = score = 0;
 		break;
 	}
-	wmain->visible(vis);
+	wmain->visible(main);
 #if 0
-	whealth->visible(vis);
-	wtemp->visible(vis);
-	wttemp->visible(vis);
+	whealth->visible(ingame);
+	wtemp->visible(ingame);
+	wttemp->visible(ingame);
 #else
 	whealth->visible(0);
 	wtemp->visible(0);
 	wttemp->visible(0);
 #endif
-	wradar->visible(vis);
-	dhigh->visible(vis);
-	dscore->visible(vis);
-	dstage->visible(vis);
-	dships->visible(vis);
-	pxtop->visible(vis);
-	pxbottom->visible(vis);
-	pxleft->visible(vis);
-	pxright->visible(vis);
+	wradar->visible(main);
+	dhigh->visible(score);
+	dscore->visible(score);
+	dstage->visible(ingame);
+	dregion->visible(ingame);
+	dlevel->visible(ingame);
+	dships->visible(ingame);
+	pxtop->visible(main);
+	pxbottom->visible(main);
+	pxleft->visible(main);
+	pxright->visible(main);
 
 	switch(_mode)
 	{
@@ -252,6 +259,7 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 		background(map_rgb(0x000000));
 		clear();
 		break;
+	  case DASHBOARD_TITLE:
 	  case DASHBOARD_GAME:
 		sprite(0, 0, B_SCREEN, 0);
 		break;
