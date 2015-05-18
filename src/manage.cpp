@@ -529,7 +529,7 @@ void _manage::init()
 	flush_ships_count = 0;
 	flush_score_count = 0;
 	delay_count = 0;
-	screen.init();
+	screen.init_maps();
 	init_resources_title();
 }
 
@@ -538,7 +538,7 @@ void _manage::run_intro()
 {
 	double t = SDL_GetTicks() * 0.001f;
 	gengine->scroll(PIXEL2CS(intro_x), PIXEL2CS(intro_y));
-	intro_y -= 3;
+	intro_y -= 1;
 	intro_x &= MAP_SIZEX*CHIP_SIZEX-1;
 	intro_y &= MAP_SIZEY*CHIP_SIZEY-1;
 	sound.g_position(intro_x + WMAIN_W / 2, intro_y + WMAIN_H / 2);

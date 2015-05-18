@@ -27,9 +27,7 @@
 #include "map.h"
 #include "radar.h"
 
-#define	STAR_COLORS	16
-#define	STAR_ZBITS	10
-#define	STAR_Z0		256
+#define	STAR_COLORS	8
 
 class window_t;
 
@@ -43,6 +41,7 @@ struct KOBO_Star
 class _screen
 {
   protected:
+	static window_t *target;
 	static int scene_num;
 	static int restarts;
 	static int generate_count;
@@ -69,11 +68,13 @@ class _screen
 	static Uint32 starcolors[STAR_COLORS];
 	static int star_oxo;
 	static int star_oyo;
-	static void render_noise(window_t *win);
-	static void render_highlight(window_t *win);
+	static void render_noise();
+	static void render_highlight();
 	static void render_title_plasma(int t, float fade, int y, int h);
 	static void render_title_noise(float fade, int y, int h, int bank, int frame);
-	static void render_starfield(window_t *win, int xo, int yo);
+	static void init_starfield();
+	static void init_starfield_colors();
+	static void render_starfield(int xo, int yo, int altitude, int psize);
 	static void clean_scrap_tile(int x, int y)
 	{
 		if((map.pos(x, y) & SPACE) && (MAP_TILE(map.pos(x, y))))
@@ -82,7 +83,8 @@ class _screen
   public:
 	~_screen();
 	static radar_modes_t radar_mode;	// Last set radar mode
-	static void init();
+	static void init_maps();
+	static void init_graphics(window_t *win);
 	static void init_scene(int sc);
 	static int prepare();
 	static void generate_fixed_enemies();
@@ -101,8 +103,8 @@ class _screen
 	}
 	static void set_highlight(int y, int h);
 	static void set_noise(int source, float fade, float bright, float depth);
-	static void render_background(window_t * win);
-	static void render_fx(window_t * win);
+	static void render_background();
+	static void render_fx();
 	static void title(int t, float fade, int mode);
 	static void init_highscores();
 	static void highscores(int t, float fade);

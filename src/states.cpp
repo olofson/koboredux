@@ -58,13 +58,13 @@ void kobo_basestate_t::frame()
 
 void kobo_basestate_t::pre_render()
 {
-	screen.render_background(wmain);
+	screen.render_background();
 }
 
 
 void kobo_basestate_t::post_render()
 {
-	screen.render_fx(wmain);
+	screen.render_fx();
 	DBG(if(prefs->cmd_debug)
 	{
 		woverlay->font(B_NORMAL_FONT);

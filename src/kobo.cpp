@@ -952,11 +952,17 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	// In-game
 	{ "Loading in-game graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
+
 	{ "GFX>>tiles-green.png", B_R1_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-metal.png", B_R2_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-blood.png", B_R3_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-double.png", B_R4_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-chrome.png", B_R5_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
+	{ "GFX>>testplanet-80.png", B_R1L4_PLANET, 0, 0, 1.0f,
+				KOBO_CENTER | KOBO_CLAMP },
+	{ "GFX>>testplanet-128.png", B_R1L5_PLANET, 0, 0, 1.0f,
+				KOBO_CENTER | KOBO_CLAMP },
+	{ "GFX>>testplanet-192.png", B_R1L6_PLANET, 0, 0, 1.0f,
+				KOBO_CENTER | KOBO_CLAMP },
+	{ "GFX>>testplanet-288.png", B_R1L7_PLANET, 0, 0, 1.0f,
+				KOBO_CENTER | KOBO_CLAMP },
+
 	{ "GFX>>crosshair.png", B_CROSSHAIR,	32, 32,	1.0f,	KOBO_CENTER },
 	{ "GFX>>player.png", B_PLAYER,		40, 40,	2.0f,	KOBO_CENTER },
 	{ "GFX>>bmr-green.png", B_BMR_GREEN,	40, 40,	2.0f,	KOBO_CENTER },
@@ -1114,6 +1120,8 @@ int KOBO_main::load_graphics(prefs_t *p)
 		log_printf(ELOG, "Couldn't copy B_RADAR_BACK!\n");
 	progress();
 #endif
+
+	screen.init_graphics(wmain);
 
 	// We can try to run with missing graphics, but without the menu font,
 	// the user may not even be able to find his/her way out of the game!
@@ -1453,6 +1461,7 @@ int KOBO_main::run()
 			}
 			else
 			{
+				screen.init_graphics(wmain);
 				gamecontrol.init(prefs->always_fire);
 				log_printf(ULOG, "--- Video restarted.\n");
 			}
@@ -1474,6 +1483,7 @@ int KOBO_main::run()
 				if(load_graphics(prefs) < 0)
 					return 7;
 				wdash->progress_done();
+				screen.init_graphics(wmain);
 				wdash->mode(manage.game_stopped() ?
 						DASHBOARD_TITLE :
 						DASHBOARD_GAME);

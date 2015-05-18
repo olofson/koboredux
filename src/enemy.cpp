@@ -223,6 +223,8 @@ inline void _enemy::shot_template(const enemy_kind * ekp,
 {
 	int vx = -diffx;
 	int vy = -diffy;
+	if(enemies.is_intro)
+		return;
 	if(rnd)
 	{
 		vx += (gamerand.get() & (rnd - 1)) - (rnd >> 1);
@@ -243,8 +245,6 @@ inline void _enemy::shot_template(const enemy_kind * ekp,
 	}
 	enemies.make(ekp, CS2PIXEL(x + vx), CS2PIXEL(y + vy), vx,
 			vy);
-	if(enemies.is_intro)
-		return;
 	if(&ring == ekp)
 		sound.g_launch_ring(x, y);
 	else if(&beam == ekp)
@@ -1199,12 +1199,7 @@ void _enemy::move_enemy5()
 		else
 			a = 0;
 	}
-	if(enemies.is_intro)
-	{
-		if(gamerand.get(7) > 110)
-			hit(1);
-	}
-	else if((--count) <= 0)
+	if((--count) <= 0)
 	{
 		count = 8;
 		if(norm > ((VIEWLIMIT >> 1) - 32))
@@ -1288,12 +1283,7 @@ void _enemy::move_enemy7()
 		else
 			a = 0;
 	}
-	if(enemies.is_intro)
-	{
-		if(gamerand.get(7) > 110)
-			hit(1);
-	}
-	else if((--count) <= 0)
+	if((--count) <= 0)
 	{
 		count = 8;
 		if(norm > ((VIEWLIMIT >> 1) - 32))
