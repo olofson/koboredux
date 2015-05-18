@@ -84,7 +84,7 @@ void prefs_t::init()
 	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
 
 	comment("--- Graphics settings ----------------------");
-	key("scalemode", scalemode, 1); desc("Scaling Filter Mode");
+	key("scalemode", scalemode, 0); desc("Scaling Filter Mode");
 	yesno("alpha", alpha, 1); desc("Use Alpha Blending");
 	key("brightness", brightness, 100); desc("Brightness");
 	key("contrast", contrast, 100); desc("Contrast");
