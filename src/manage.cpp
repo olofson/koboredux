@@ -547,6 +547,7 @@ void _manage::run_intro()
 			intro_y + WMAIN_H / 2 +
 			(int)(WMAIN_H * 0.3f * sin(t * 1.73)));
 	enemies.move_intro();
+	++hi.playtime;
 	enemies.put();
 
 	put_health();
