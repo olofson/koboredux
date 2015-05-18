@@ -343,8 +343,14 @@ void gfxengine_t::scalemode(gfx_scalemodes_t sm, int clamping)
 
 void gfxengine_t::source_scale(float x, float y)
 {
-	sxs = (int)(x * 256.f);
-	sys = (int)(y * 256.f);
+	if(x)
+		sxs = (int)(x * 256.f);
+	else
+		sxs = xs;
+	if(y)
+		sys = (int)(y * 256.f);
+	else
+		sys = ys;
 	scalemode(_scalemode, _clamping);
 }
 
