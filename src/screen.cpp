@@ -1016,9 +1016,13 @@ void _screen::render_background()
 	{
 	  case 1:
 	  case 2:
-	  case 3:
 		// Planet not visible; starfield only
 		altitude = 208 - level * 16;
+		break;
+	  case 3:
+		// 64x64 planet
+		planet = B_R1L3_PLANET;
+		altitude = 160;
 		break;
 	  case 4:
 		// 80x80 planet

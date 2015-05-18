@@ -954,6 +954,8 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "Loading in-game graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
 
 	{ "GFX>>tiles-green.png", B_R1_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
+	{ "GFX>>testplanet-64.png", B_R1L3_PLANET, 0, 0, 1.0f,
+				KOBO_CENTER | KOBO_CLAMP },
 	{ "GFX>>testplanet-80.png", B_R1L4_PLANET, 0, 0, 1.0f,
 				KOBO_CENTER | KOBO_CLAMP },
 	{ "GFX>>testplanet-128.png", B_R1L5_PLANET, 0, 0, 1.0f,
