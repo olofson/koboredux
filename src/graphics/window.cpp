@@ -511,22 +511,35 @@ void window_t::clear(SDL_Rect *r)
 
 void window_t::point(int _x, int _y)
 {
-	int x2 = ((_x + 1) * xs + 128) >> 8;
-	int y2 = ((_y + 1) * ys + 128) >> 8;
-	_x = (_x * xs + 128) >> 8;
-	_y = (_y * ys + 128) >> 8;
 	if(!engine || !renderer)
 		return;
-	SELECT
-	/* Quick hack; slow */
-	SDL_Rect r;
-	r.x = phys_rect.x + _x;
-	r.y = phys_rect.y + _y;
-	r.w = x2 - _x;
-	r.h = y2 - _y;
-	SDL_SetRenderDrawColor(renderer, get_r(fgcolor), get_g(fgcolor),
-			get_b(fgcolor), get_a(fgcolor));
-	SDL_RenderFillRect(renderer, &r);
+	if((_offscreen == OFFSCREEN_SOFTWARE) && (xs == 256) && (ys == 256))
+	{
+		Uint32 *p;
+		if((_x < 0) || (_x >= osurface->w) || (_y < 0) ||
+				(_y >= osurface->h))
+			return;
+		p = (Uint32 *)((char *)osurface->pixels + _y *
+				osurface->pitch);
+		p[_x] = fgcolor;
+	}
+	else
+	{
+		SELECT
+		SDL_Rect r;
+		int x2 = ((_x + 1) * xs + 128) >> 8;
+		int y2 = ((_y + 1) * ys + 128) >> 8;
+		_x = (_x * xs + 128) >> 8;
+		_y = (_y * ys + 128) >> 8;
+		r.x = phys_rect.x + _x;
+		r.y = phys_rect.y + _y;
+		r.w = x2 - _x;
+		r.h = y2 - _y;
+		SDL_SetRenderDrawColor(renderer, get_r(fgcolor),
+				get_g(fgcolor), get_b(fgcolor),
+				get_a(fgcolor));
+		SDL_RenderFillRect(renderer, &r);
+	}
 }
 
 

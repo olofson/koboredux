@@ -2,6 +2,8 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* Implement offscreen windows as a subclass? Cleaner and faster, probably.
+
 * Implement color and alpha modulation for all window draw calls!
 
 * Enemy/core/... indicator subsystem:
