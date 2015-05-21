@@ -34,8 +34,6 @@
 
 _myship_state _myship::_state;
 int _myship::di;
-int _myship::virtx;
-int _myship::virty;
 int _myship::x;
 int _myship::y;
 int _myship::_health;
@@ -47,8 +45,6 @@ int _myship::nose_alt = 0;
 int _myship::tail_reload_timer;
 int _myship::tail_temperature;
 int _myship::tail_alt = WING_GUN_OFFSET;
-int _myship::lapx;
-int _myship::lapy;
 int _myship::boltx[MAX_BOLTS];
 int _myship::bolty[MAX_BOLTS];
 int _myship::boltdx[MAX_BOLTS];
@@ -109,12 +105,8 @@ int _myship::init()
 	nose_temperature = 0;
 	tail_reload_timer = 0;
 	tail_temperature = 0;
-	x = WORLD_SIZEX >> 1;
-	y = (WORLD_SIZEY >> 2) * 3;
-	virtx = x - WMAIN_W / 2;
-	virty = y - WMAIN_H / 2;
-	lapx = 0;
-	lapy = 0;
+	x = PIXEL2CS(WORLD_SIZEX >> 1);
+	y = PIXEL2CS((WORLD_SIZEY >> 2) * 3);
 	di = 1;
 	state(normal);
 
@@ -136,7 +128,7 @@ int _myship::init()
 }
 
 
-void _myship::explode(int x, int y)
+void _myship::explode()
 {
 	if(explo_time == 56)
 		manage.noise_out(1000);
@@ -153,15 +145,16 @@ void _myship::explode(int x, int y)
 		int vy = dy * (4096 - d) >> 8;
 		dx = dx * d >> 12;
 		dy = dy * d >> 12;
-		enemies.make(enemies.randexp(), x + dx, y + dy, vx, vy,
+		enemies.make(enemies.randexp(),
+				CS2PIXEL(x) + dx, CS2PIXEL(y) + dy, vx, vy,
 				explo_time >> 4);
 	}
 	++explo_time;
 }
 
 
-#define BEAMV1           12
-#define BEAMV2           (BEAMV1*2/3)
+#define BEAMV1	12
+#define BEAMV2	(BEAMV1 * 2 / 3)
 
 int _myship::move()
 {
@@ -175,20 +168,19 @@ int _myship::move()
 			--_health;
 	}
 
-	virtx = x - WMAIN_W / 2;
-	virty = y - WMAIN_H / 2;
+	// Movement
 	if(_state == normal)
 	{
 		int vd, vo;
 		if(!prefs->cmd_pushmove)
 		{
-			vd = 2;
-			vo = 3;
+			vd = PIXEL2CS(2);
+			vo = PIXEL2CS(3);
 		}
 		else if(gamecontrol.dir_push())
 			{
-				vd = 1;
-				vo = 1;
+				vd = PIXEL2CS(1);
+				vo = PIXEL2CS(1);
 			}
 			else
 			{
@@ -198,64 +190,50 @@ int _myship::move()
 		switch (di)
 		{
 		  case 1:
-			virty -= vo;
+			y -= vo;
 			break;
 		  case 2:
-			virty -= vd;
-			virtx += vd;
+			y -= vd;
+			x += vd;
 			break;
 		  case 3:
-			virtx += vo;
+			x += vo;
 			break;
 		  case 4:
-			virtx += vd;
-			virty += vd;
+			x += vd;
+			y += vd;
 			break;
 		  case 5:
-			virty += vo;
+			y += vo;
 			break;
 		  case 6:
-			virty += vd;
-			virtx -= vd;
+			y += vd;
+			x -= vd;
 			break;
 		  case 7:
-			virtx -= vo;
+			x -= vo;
 			break;
 		  case 8:
-			virtx -= vd;
-			virty -= vd;
+			x -= vd;
+			y -= vd;
 			break;
 		}
 		explo_time = 0;
 	}
 	else if(_state == dead)
-		explode(x, y);
+		explode();
 
-	lapx = 0;
-	lapy = 0;
-	if(virtx < 0)
-	{
-		virtx += WORLD_SIZEX;
-		lapx = WORLD_SIZEX;
-	}
-	if(virtx >= WORLD_SIZEX)
-	{
-		virtx -= WORLD_SIZEX;
-		lapx = -WORLD_SIZEX;
-	}
-	if(virty < 0)
-	{
-		virty += WORLD_SIZEY;
-		lapy = WORLD_SIZEY;
-	}
-	if(virty >= WORLD_SIZEY)
-	{
-		virty -= WORLD_SIZEY;
-		lapy = -WORLD_SIZEY;
-	}
-	x = virtx + WMAIN_W / 2;
-	y = virty + WMAIN_H / 2;
+	// Wrapping
+	if(x < 0)
+		x += PIXEL2CS(WORLD_SIZEX);
+	if(x >= PIXEL2CS(WORLD_SIZEX))
+		x -= PIXEL2CS(WORLD_SIZEX);
+	if(y < 0)
+		y += PIXEL2CS(WORLD_SIZEY);
+	if(y >= PIXEL2CS(WORLD_SIZEY))
+		y -= PIXEL2CS(WORLD_SIZEY);
 
+	// Gun heat
 	nose_temperature -= game.nosecooling;
 	if(nose_temperature < 0)
 		nose_temperature = 0;
@@ -263,6 +241,7 @@ int _myship::move()
 	if(tail_temperature < 0)
 		tail_temperature = 0;
 
+	// Fire control
 	if((_state == normal) && gamecontrol.get_shot())
 	{
 		if(game.skill == SKILL_CLASSIC)
@@ -314,18 +293,18 @@ int _myship::move()
 			--tail_reload_timer;
 	}
 
+	// Bolts
 	const char animtab[8] = { 3, 2, 1, 0, 1, 2, 1, 2 };
 	for(i = 0; i < MAX_BOLTS; i++)
 	{
 		if(!boltst[i])
 			continue;
 		++boltst[i];
-		boltx[i] += lapx;
-		bolty[i] += lapy;
 		boltx[i] += boltdx[i];
 		bolty[i] += boltdy[i];
-		if((ABS(boltx[i] - x) >= (VIEWLIMIT >> 1) + 16) ||
-				(ABS(bolty[i] - y) >= (VIEWLIMIT >> 1) + 16))
+		if((ABS(boltx[i] - CS2PIXEL(x)) >= (VIEWLIMIT >> 1) + 16) ||
+				(ABS(bolty[i] - CS2PIXEL(y)) >=
+				(VIEWLIMIT >> 1) + 16))
 		{
 			boltst[i] = 0;
 			if(bolt_objects[i])
@@ -393,7 +372,7 @@ int _myship::hit_structure()
 		ch = screen.get_map(x1, y1);
 		if(!IS_SPACE(ch) && (ch & HIT_MASK))
 		{
-			sound.g_bolt_hit(x1<<12, y1<<12);
+			sound.g_bolt_hit(x1 << 12, y1 << 12);
 			enemies.make(&boltexpl, boltx[i], bolty[i]);
 			boltst[i] = 0;
 			if(bolt_objects[i])
@@ -403,8 +382,8 @@ int _myship::hit_structure()
 	}
 
 	// Check player/bases
-	x1 = (x & (WORLD_SIZEX - 1)) >> 4;
-	y1 = (y & (WORLD_SIZEY - 1)) >> 4;
+	x1 = (CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4;
+	y1 = (CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4;
 	ch = screen.get_map(x1, y1);
 	if(!IS_SPACE(ch) && (ch & HIT_MASK))
 	{
@@ -466,12 +445,12 @@ void _myship::put_crosshair()
 
 int _myship::put()
 {
-	/* Player */
+	// Player
 	apply_position();
 	if(object)
 		cs_obj_image(object, B_PLAYER, (di - 1) * 2);
 
-	/* Bullets */
+	// Bullets
 	int i;
 	for(i = 0; i < MAX_BOLTS; i++)
 	{
@@ -491,8 +470,8 @@ void _myship::shot_single(int i, int dir, int offset)
 {
 	int doffset = (offset * 7071 + (offset > 0 ? 5000 : -5000)) / 10000;
 	boltst[i] = 1;
-	boltx[i] = x;
-	bolty[i] = y;
+	boltx[i] = CS2PIXEL(x);
+	bolty[i] = CS2PIXEL(y);
 	switch((dir + 1) % 8 + 1)
 	{
 	  case 1:
@@ -650,10 +629,8 @@ int _myship::tail_fire()
 
 void _myship::set_position(int px, int py)
 {
-	x = px;
-	y = py;
-	virtx = x - WMAIN_W / 2;
-	virty = y - WMAIN_H / 2;
+	x = PIXEL2CS(px);
+	y = PIXEL2CS(py);
 
 	if(object)
 	{
@@ -667,8 +644,8 @@ void _myship::apply_position()
 {
 	if(object)
 	{
-		object->point.v.x = PIXEL2CS(x);
-		object->point.v.y = PIXEL2CS(y);
+		object->point.v.x = x;
+		object->point.v.y = y;
 	}
-	sound.g_position(x, y);
+	sound.g_position(CS2PIXEL(x), CS2PIXEL(y));
 }

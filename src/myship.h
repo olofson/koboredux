@@ -4,6 +4,7 @@
 ------------------------------------------------------------
  * Copyright (C) 1995, 1996  Akira Higuchi
  * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -40,8 +41,7 @@ enum _myship_state
 class _myship
 {
 	static _myship_state _state;
-	static int di;	/* direction */
-	static int virtx, virty;	/* scroll position */
+	static int di;		// direction
 	static int x, y;
 	static int _health;
 	static int health_time;
@@ -52,35 +52,36 @@ class _myship
 	static int tail_reload_timer;
 	static int tail_temperature;
 	static int tail_alt;
-	static int lapx, lapy;
 	static int boltx[MAX_BOLTS], bolty[MAX_BOLTS];
 	static int boltdx[MAX_BOLTS], boltdy[MAX_BOLTS];
 	static int boltst[MAX_BOLTS];
-	/* For the gfxengine connection */
+
+	// For the gfxengine connection
 	static cs_obj_t *object;
 	static cs_obj_t *bolt_objects[MAX_BOLTS];
 	static cs_obj_t *crosshair;
+
 	static void state(_myship_state s);
 	static void shot_single(int i, int dir, int offset);
 	static void apply_position();
-	static void explode(int x, int y);
+	static void explode();
   public:
 	 _myship();
 	static inline int get_x()
 	{
-		return x;
+		return CS2PIXEL(x);
 	}
 	static inline int get_y()
 	{
-		return y;
+		return CS2PIXEL(y);
 	}
 	static inline int get_virtx()
 	{
-		return virtx;
+		return CS2PIXEL(x) - WMAIN_W / 2;
 	}
 	static inline int get_virty()
 	{
-		return virty;
+		return CS2PIXEL(y) - WMAIN_H / 2;
 	}
 	static inline int get_nose_temp()
 	{
