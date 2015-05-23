@@ -378,8 +378,7 @@ void _manage::init_resources_to_play(int newship)
 	put_health(1);
 	put_temp(1);
 	myship.put();
-	gengine->scroll(PIXEL2CS(myship.get_virtx()),
-			PIXEL2CS(myship.get_virty()));
+	gengine->scroll(myship.get_virtx(), myship.get_virty());
 	gengine->force_scroll();
 	pxtop->fx(PFX_OFF);
 	pxbottom->fx(PFX_OFF);
@@ -566,8 +565,7 @@ void _manage::update()
 	enemies.put();
 	put_score();
 	put_ships();
-	gengine->scroll(PIXEL2CS(myship.get_virtx()),
-			PIXEL2CS(myship.get_virty()));
+	gengine->scroll(myship.get_virtx(), myship.get_virty());
 	if(scroll_jump)
 	{
 		gengine->force_scroll();

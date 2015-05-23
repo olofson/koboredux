@@ -28,8 +28,8 @@
 #include "gfxengine.h"
 #include "game.h"
 
-#define ABS(x)   (((x)>=0) ? (x) : (-(x)))
-#define MAX(x,y) (((x)>(y)) ? (x) : (y))
+#define ABS(x)		(((x)>=0) ? (x) : (-(x)))
+#define MAX(x,y)	(((x)>(y)) ? (x) : (y))
 
 //---------------------------------------------------------------------------//
 enum _myship_state
@@ -43,6 +43,7 @@ class _myship
 	static _myship_state _state;
 	static int di;		// direction
 	static int x, y;
+	static int vx, vy;
 	static int _health;
 	static int health_time;
 	static int explo_time;
@@ -65,6 +66,8 @@ class _myship
 	static void shot_single(int i, int dir, int offset);
 	static void apply_position();
 	static void explode();
+	static void move_classic();
+	static void move_redux();
   public:
 	 _myship();
 	static inline int get_x()
@@ -77,11 +80,11 @@ class _myship
 	}
 	static inline int get_virtx()
 	{
-		return CS2PIXEL(x) - WMAIN_W / 2;
+		return x - PIXEL2CS(WMAIN_W / 2);
 	}
 	static inline int get_virty()
 	{
-		return CS2PIXEL(y) - WMAIN_H / 2;
+		return y - PIXEL2CS(WMAIN_H / 2);
 	}
 	static inline int get_nose_temp()
 	{
@@ -109,6 +112,6 @@ class _myship
 	static int alive()		{ return _state == normal; }
 };
 
-extern _myship    myship;
+extern _myship myship;
 
 #endif // XKOBO_H_MYSHIP

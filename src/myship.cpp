@@ -36,6 +36,8 @@ _myship_state _myship::_state;
 int _myship::di;
 int _myship::x;
 int _myship::y;
+int _myship::vx;
+int _myship::vy;
 int _myship::_health;
 int _myship::health_time;
 int _myship::explo_time;
@@ -107,6 +109,7 @@ int _myship::init()
 	tail_temperature = 0;
 	x = PIXEL2CS(WORLD_SIZEX >> 1);
 	y = PIXEL2CS((WORLD_SIZEY >> 2) * 3);
+	vx = vy = 0;
 	di = 1;
 	state(normal);
 
@@ -156,6 +159,68 @@ void _myship::explode()
 #define BEAMV1	12
 #define BEAMV2	(BEAMV1 * 2 / 3)
 
+void _myship::move_classic()
+{
+	int vd, vo;
+	if(!prefs->cmd_pushmove)
+	{
+		vd = PIXEL2CS(2);
+		vo = PIXEL2CS(3);
+	}
+	else if(gamecontrol.dir_push())
+		vd = vo = PIXEL2CS(1);
+	else
+		vd = vo = 0;
+	switch (di)
+	{
+	  case 1:
+		vx = 0;
+		vy = -vo;
+		break;
+	  case 2:
+		vx = vd;
+		vy = -vd;
+		break;
+	  case 3:
+		vx = vo;
+		vy = 0;
+		break;
+	  case 4:
+		vx = vd;
+		vy = vd;
+		break;
+	  case 5:
+		vx = 0;
+		vy = vo;
+		break;
+	  case 6:
+		vx = -vd;
+		vy = vd;
+		break;
+	  case 7:
+		vx = -vo;
+		vy = 0;
+		break;
+	  case 8:
+		vx = -vd;
+		vy = -vd;
+		break;
+	}
+}
+
+void _myship::move_redux()
+{
+	int v;
+	if(gamecontrol.dir_push())
+		v = PIXEL2CS(4);
+	else if(!prefs->cmd_pushmove)
+		v = PIXEL2CS(2);
+	else
+		v = 0;
+	vx += (int)((v * sin(M_PI * (di - 1) / 4)) - vx) >> 2;
+	vy -= (int)((v * cos(M_PI * (di - 1) / 4)) + vy) >> 2;
+}
+
 int _myship::move()
 {
 	int i;
@@ -171,53 +236,9 @@ int _myship::move()
 	// Movement
 	if(_state == normal)
 	{
-		int vd, vo;
-		if(!prefs->cmd_pushmove)
-		{
-			vd = PIXEL2CS(2);
-			vo = PIXEL2CS(3);
-		}
-		else if(gamecontrol.dir_push())
-			{
-				vd = PIXEL2CS(1);
-				vo = PIXEL2CS(1);
-			}
-			else
-			{
-				vd = 0;
-				vo = 0;
-			}
-		switch (di)
-		{
-		  case 1:
-			y -= vo;
-			break;
-		  case 2:
-			y -= vd;
-			x += vd;
-			break;
-		  case 3:
-			x += vo;
-			break;
-		  case 4:
-			x += vd;
-			y += vd;
-			break;
-		  case 5:
-			y += vo;
-			break;
-		  case 6:
-			y += vd;
-			x -= vd;
-			break;
-		  case 7:
-			x -= vo;
-			break;
-		  case 8:
-			x -= vd;
-			y -= vd;
-			break;
-		}
+		move_redux();
+		x += vx;
+		y += vy;
 		explo_time = 0;
 	}
 	else if(_state == dead)
