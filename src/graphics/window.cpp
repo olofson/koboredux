@@ -35,38 +35,28 @@ enum gfx_offscreen_mode_t
 };
 
 
-window_t::window_t(gfxengine_t *e)
+  /////////////////////////////////////////////////////////////////////////////
+ // Engine window base class
+/////////////////////////////////////////////////////////////////////////////
+
+windowbase_t::windowbase_t(gfxengine_t *e)
 {
-	phys_rect.x = phys_rect.y = 0;
-	phys_rect.w = 320;
-	phys_rect.h = 240;
 	next = NULL;
 	prev = NULL;
 	engine = NULL;
 	renderer = NULL;
-	otexture = NULL;
-	osurface = NULL;
-	wx = wy = 0;
-	fgcolor = bgcolor = 0;
-	bg_bank = -1;
-	bg_frame = -1;
-	_font = 0;
 	_visible = 1;
-	_offscreen = 0;
 	link(e);
 	xs = engine->xs;
 	ys = engine->ys;
+	fgcolor = bgcolor = 0;
 	_alphamod = 255;
 	_colormod = 0xffffffff;
 }
 
 
-window_t::~window_t()
+windowbase_t::~windowbase_t()
 {
-	if(otexture)
-		SDL_DestroyTexture(otexture);
-	if(osurface)
-		SDL_FreeSurface(osurface);
 	if(engine && (engine->selected == this))
 		engine->selected = NULL;
 	unlink();
@@ -75,17 +65,7 @@ window_t::~window_t()
 }
 
 
-void window_t::visible(int vis)
-{
-	if(_offscreen)
-		return;		// Cannot be visible!
-	if(_visible == vis)
-		return;
-	_visible = vis;
-}
-
-
-void window_t::link(gfxengine_t *e)
+void windowbase_t::link(gfxengine_t *e)
 {
 	unlink();
 	engine = e;
@@ -104,7 +84,7 @@ void window_t::link(gfxengine_t *e)
 }
 
 
-void window_t::unlink(void)
+void windowbase_t::unlink(void)
 {
 	if(engine)
 	{
@@ -120,23 +100,24 @@ void window_t::unlink(void)
 }
 
 
-void window_t::place(int left, int top, int sizex, int sizey)
+void windowbase_t::visible(int vis)
+{
+	_visible = vis;
+}
+
+
+void windowbase_t::place(int left, int top, int sizex, int sizey)
 {
 	int x2 = ((left + sizex) * xs + 128) >> 8;
 	int y2 = ((top + sizey) * ys + 128) >> 8;
-	if(_offscreen)
-		phys_rect.x = phys_rect.y = 0;
-	else
-	{
-		phys_rect.x = (left * xs + 128) >> 8;
-		phys_rect.y = (top * ys + 128) >> 8;
-	}
+	phys_rect.x = (left * xs + 128) >> 8;
+	phys_rect.y = (top * ys + 128) >> 8;
 	phys_rect.w = x2 - phys_rect.x;
 	phys_rect.h = y2 - phys_rect.y;
 }
 
 
-void window_t::scale(float x, float y)
+void windowbase_t::scale(float x, float y)
 {
 	if(x > 0)
 		xs = (int)(x * 256.f);
@@ -146,6 +127,50 @@ void window_t::scale(float x, float y)
 		ys = (int)(y * 256.f);
 	else
 		ys = (int)((-y) * engine->ys);
+}
+
+
+  /////////////////////////////////////////////////////////////////////////////
+ // Normal or offscreen window
+/////////////////////////////////////////////////////////////////////////////
+
+window_t::window_t(gfxengine_t *e) : windowbase_t(e)
+{
+	phys_rect.x = phys_rect.y = 0;
+	phys_rect.w = 320;
+	phys_rect.h = 240;
+	otexture = NULL;
+	osurface = NULL;
+	bg_bank = -1;
+	bg_frame = -1;
+	_font = 0;
+	_visible = 1;
+	_offscreen = 0;
+}
+
+
+window_t::~window_t()
+{
+	if(otexture)
+		SDL_DestroyTexture(otexture);
+	if(osurface)
+		SDL_FreeSurface(osurface);
+}
+
+
+void window_t::visible(int vis)
+{
+	if(_offscreen)
+		return;		// Cannot be visible!
+	_visible = vis;
+}
+
+
+void window_t::place(int left, int top, int sizex, int sizey)
+{
+	if(_offscreen)
+		left = top = 0;
+	windowbase_t::place(left, top, sizex, sizey);
 }
 
 
@@ -698,9 +723,9 @@ void window_t::blit(int dx, int dy, window_t *src)
 }
 
 
-/*----------------------------------------------------------
-	Engine output window
-----------------------------------------------------------*/
+  /////////////////////////////////////////////////////////////////////////////
+ // Engine output window
+/////////////////////////////////////////////////////////////////////////////
 
 void engine_window_t::refresh(SDL_Rect *r)
 {

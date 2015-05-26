@@ -45,19 +45,20 @@ enum gfx_scalemodes_t
 	GFX_SCALE_DIAMOND =	4
 };
 
+class windowbase_t;
 class window_t;
 class SoFont;
 
 class gfxengine_t
 {
 	friend class window_t;
+	friend class windowbase_t;
 	friend class engine_window_t;
 	int video_flags();
   public:
 	gfxengine_t();
 	~gfxengine_t();
 
-	void screen(window_t *fullwin);
 	window_t *screen()	{ return fullwin; }
 
 	void messagebox(const char *message);
@@ -191,8 +192,8 @@ class gfxengine_t
 	SDL_Window	*sdlwindow;
 	SDL_Renderer	*sdlrenderer;
 	window_t	*fullwin;
-	window_t	*windows;	// Linked list
-	window_t	*selected;	// Currently selected for rendering
+	windowbase_t	*windows;	// Linked list
+	windowbase_t	*selected;	// Currently selected for rendering
 	int		wx, wy;
 	int		xs, ys;		// fix 24:8
 	int		sxs, sys;	// fix 24:8

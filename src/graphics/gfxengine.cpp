@@ -99,7 +99,7 @@ gfxengine_t::~gfxengine_t()
 	stop();
 	hide();
 	close();
-	window_t *w = windows;
+	windowbase_t *w = windows;
 	while(w)
 	{
 		w->engine = NULL;
@@ -1107,7 +1107,7 @@ void gfxengine_t::flip()
 	SDL_SetRenderDrawColor(sdlrenderer, 0, 0, 0, 255);
 	SDL_RenderClear(sdlrenderer);
 
-	window_t *w = windows;
+	windowbase_t *w = windows;
 	for(w = windows; w; w = w->next)
 		if(w->visible())
 			w->refresh(NULL);
@@ -1137,7 +1137,7 @@ void gfxengine_t::render_sprite(cs_obj_t *o)
 	dest_rect.y += (gfxengine->wy * gfxengine->ys + 128) >> 8;
 	dest_rect.w = b->w;
 	dest_rect.h = b->h;
-	window_t *win = gfxengine->selected;
+	windowbase_t *win = gfxengine->selected;
 	SDL_SetTextureAlphaMod(s->texture, win->_alphamod);
 	SDL_SetTextureColorMod(s->texture,
 			win->get_r(win->_colormod),

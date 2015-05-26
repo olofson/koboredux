@@ -205,23 +205,37 @@
 
 class gfxengine_t;
 
-class window_t
+
+  /////////////////////////////////////////////////////////////////////////////
+ // Engine window base class
+/////////////////////////////////////////////////////////////////////////////
+class windowbase_t
 {
 	friend class gfxengine_t;
   public:
-	window_t(gfxengine_t *e);
-	virtual ~window_t();
+	windowbase_t(gfxengine_t *e);
+	virtual ~windowbase_t();
 
-	void place(int left, int top, int sizex, int sizey);
-	void scale(float x, float y);
-	int offscreen();
-	void visible(int vis);
+	virtual void place(int left, int top, int sizex, int sizey);
+	virtual void scale(float x, float y);
+	virtual void visible(int vis);
 	int visible()	{ return _visible; }
-	void select();
-	void invalidate(SDL_Rect *r = NULL);
-	virtual void refresh(SDL_Rect *r)	{ ; }
 
-	/* Color tools */
+	virtual void invalidate(SDL_Rect *r = NULL)	{ ; };
+	virtual void refresh(SDL_Rect *r)		{ ; }
+
+	void foreground(Uint32 color)	{ fgcolor = color; }
+	void background(Uint32 color)	{ bgcolor = color; };
+	void colormod(Uint32 color)
+	{
+		_colormod = color;
+	}
+	void alphamod(float a)
+	{
+		_alphamod = (int)(a * 255.0f);
+	}
+
+	// Color tools
 	Uint32 mulrgb(Uint32 c1, Uint32 c2)
 	{
 		int r = ((c1 >> 16) & 0xff) * ((c2 >> 16) & 0xff) * 258 >> 16;
@@ -237,7 +251,6 @@ class window_t
 		return r << 16 | g << 8 | b;
 	}
 
-	/* Rendering */
 	Uint32 map_rgb(Uint8 r, Uint8 g, Uint8 b)
 	{
 		return 0xff000000 | (r << 16) | (g << 8) | b;
@@ -251,22 +264,79 @@ class window_t
 	Uint8 get_g(Uint32 c)		{ return c >> 8; }
 	Uint8 get_b(Uint32 c)		{ return c; }
 	Uint8 get_a(Uint32 c)		{ return c >> 24; }
-	void foreground(Uint32 color)	{ fgcolor = color; }
-	void background(Uint32 color)	{ bgcolor = color; };
+
+	int x()		{ return (phys_rect.x * 256 + 128) / xs; }
+	int y()		{ return (phys_rect.y * 256 + 128) / ys; }
+	int x2()
+	{
+		return ((phys_rect.x + phys_rect.w) * 256 + 128) / xs;
+	}
+	int y2()
+	{
+		return ((phys_rect.y + phys_rect.h) * 256 + 128) / ys;
+	}
+	int width()	{ return x2() - x(); }
+	int height()	{ return y2() - y(); }
+
+	SDL_Rect	phys_rect;
+
+  protected:
+	windowbase_t	*next, *prev;
+	gfxengine_t	*engine;
+	SDL_Renderer	*renderer;	// Can be engine or local renderer!
+	int		_visible;
+	int		xs, ys;		// fixp 24:8
+	Uint32		_colormod, _alphamod;
+	Uint32		fgcolor, bgcolor;
+
+	void link(gfxengine_t *e);
+	void unlink(void);
+};
+
+
+  /////////////////////////////////////////////////////////////////////////////
+ // Streaming window
+/////////////////////////////////////////////////////////////////////////////
+class stream_window_t : public windowbase_t
+{
+	friend class gfxengine_t;
+	friend class windowbase_t;
+  public:
+	stream_window_t(gfxengine_t *e);
+	virtual ~stream_window_t();
+
+  protected:
+	SDL_Surface	*surface;	// Software buffer
+	SDL_Texture	*texture;	// Hardware/API texture
+};
+
+
+  /////////////////////////////////////////////////////////////////////////////
+ // Normal or offscreen window
+/////////////////////////////////////////////////////////////////////////////
+// TODO: Offscreen should be a separate class!
+class window_t : public windowbase_t
+{
+	friend class gfxengine_t;
+	friend class windowbase_t;
+  public:
+	window_t(gfxengine_t *e);
+	virtual ~window_t();
+
+	void place(int left, int top, int sizex, int sizey);
+	void visible(int vis);
+
+	void invalidate(SDL_Rect *r = NULL);
+
+	int offscreen();
+
+	// Rendering
+	void select();
 
 	void bgimage(int bank = -1, int frame = -1);
 	void colorkey(Uint32 color);
 	void colorkey();
 	void alpha(float a);
-
-	void colormod(Uint32 color)
-	{
-		_colormod = color;
-	}
-	void alphamod(float a)
-	{
-		_alphamod = (int)(a * 255.0f);
-	}
 
 	void clear(SDL_Rect *r = NULL);
 	void font(int fnt);
@@ -296,50 +366,23 @@ class window_t
 			window_t *src);
 	void blit(int dx, int dy, window_t *src);
 
-	int x()		{ return (phys_rect.x * 256 + 128) / xs; }
-	int y()		{ return (phys_rect.y * 256 + 128) / ys; }
-	int x2()
-	{
-		return ((phys_rect.x + phys_rect.w) * 256 + 128) / xs;
-	}
-	int y2()
-	{
-		return ((phys_rect.y + phys_rect.h) * 256 + 128) / ys;
-	}
-	int width()	{ return x2() - x(); }
-	int height()	{ return y2() - y(); }
-
-	SDL_Rect	phys_rect;
-
   protected:
-	window_t	*next, *prev;
-
-	gfxengine_t	*engine;
-
-	SDL_Renderer	*renderer;	// Can be engine or local renderer!
-
 	SDL_Texture	*otexture;	// Buffer for offscreen windows
 
 	// Fallback for offscreen window, if there's no render target support
 	SDL_Surface	*osurface;
 
-	int		wx, wy;		// Engine window position
-	int		xs, ys;		// fixp 24:8
-	Uint32		fgcolor, bgcolor;
-	Uint32		_colormod, _alphamod;
 	int		bg_bank, bg_frame;
 	int		_font;
-	int		_visible;
 	int		_offscreen;
-
-	void _select();			// Internal version
-	void link(gfxengine_t *e);
-	void unlink(void);
 
 	void offscreen_invalidate(SDL_Rect *r);
 };
 
-/* Engine output window */
+
+  /////////////////////////////////////////////////////////////////////////////
+ // Engine output window
+/////////////////////////////////////////////////////////////////////////////
 class engine_window_t : public window_t
 {
   public:
