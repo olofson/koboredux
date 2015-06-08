@@ -131,7 +131,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	  case DASHBOARD_OFF:
 		break;
 	  default:
-		gengine->flip();
+		gengine->present();
 		break;
 	}
 }
@@ -141,7 +141,7 @@ void dashboard_window_t::doing(const char *msg)
 {
 	free(_msg);
 	_msg = strdup(msg);
-	gengine->flip();
+	gengine->present();
 }
 
 
@@ -175,7 +175,7 @@ void dashboard_window_t::progress()
 	}
 	else
 		_percent = 50.0f;
-	gengine->flip();
+	gengine->present();
 }
 
 

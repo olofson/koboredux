@@ -54,6 +54,7 @@ class gfxengine_t
 	friend class window_t;
 	friend class windowbase_t;
 	friend class engine_window_t;
+	friend class stream_window_t;
 	int video_flags();
   public:
 	gfxengine_t();
@@ -63,9 +64,9 @@ class gfxengine_t
 
 	void messagebox(const char *message);
 
-	/*
-	 * Initialization
-	 */
+	//
+	// Initialization
+	//
 	void mode(VMM_ModeID modeid, int fullscreen);
 	void size(int w, int h);
 	void centered(int c);
@@ -85,11 +86,11 @@ class gfxengine_t
 
 	void wrap(int x, int y);
 
-	/* Engine open/close */
+	// Engine open/close
 	int open(int objects = 1024, int extraflags = 0);
 	void close();
 
-	/* Data management (use while engine is open) */
+	// Data management (use while engine is open)
 	void reset_filters();
 	void filterflags(int fgs);
 	void scalemode(gfx_scalemodes_t sm, int clamping = 0);
@@ -111,50 +112,48 @@ class gfxengine_t
 	void reload();
 	void unload(int bank = -1);
 
-	/* Settings (use while engine is open) */
+	// Settings (use while engine is open)
 	void title(const char *win, const char *icon);
 
-	/* Display show/hide */
+	// Display show/hide
 	bool check_mode_autoswap(int *, int *);
 	int show();
 	void hide();
 
-	/* Main loop take-over */
+	// Main loop take-over
 	void run();
 
-	/*
-	 * Override these;
-	 *	frame() is called once per control system frame,
-	 *		after the control system has executed.
-	 *	pre_render() is called after the engine has advanced
-	 *		to the state for the current video frame
-	 *		(interpolated state is calculated), before
-	 *		the engine renders all graphics.
-	 *	post_render() is called after the engine have
-	 *		rendered all sprites, but before video the
-	 *		sync/flip/update operation.
-	 */
+	//
+	// Override these;
+	//	frame() is called once per control system frame,
+	//		after the control system has executed.
+	//	pre_render() is called after the engine has advanced
+	//		to the state for the current video frame
+	//		(interpolated state is calculated), before
+	//		the engine renders all graphics.
+	//	post_render() is called after the engine have
+	//		rendered all sprites, but before video the
+	//		sync/flip/update operation.
+	//
 	virtual void frame();
 	virtual void pre_render();
 	virtual void post_render();
 
-	/*
-	---------------------------------------------
-	 * The members below this line can safely be
-	 * called from within the frame() handler.
-	 */
+	////////////////////////////////////////////
+	// The members below can safely be called
+	// from within the frame() handler.
+	////////////////////////////////////////////
 
-	/* Rendering */
+	// Rendering
 	void clear(Uint32 _color = 0x000000);
 
-	/* Screenshots */
+	// Screenshots
 	void screenshot();
 
-	/* Control */
+	// Control
 	SDL_Renderer *renderer()	{ return sdlrenderer; }
 	cs_engine_t *cs()		{ return csengine; }
-	void flip();		// Flip pages
-	void update();		// Full update, making current draw page visible
+	void present();		// Render all visible windows to display
 	void stop();
 	cs_obj_t *get_obj(int layer);
 	void free_obj(cs_obj_t *obj);
@@ -178,13 +177,13 @@ class gfxengine_t
 	int xoffs(int layer);
 	int yoffs(int layer);
 
-	/* Info */
+	// Info
 	int objects_in_use();
 
 	int width()		{ return _width; }
 	int height()		{ return _height; }
-	float xscale()		{ return xs * (1.f/256.f); }
-	float yscale()		{ return ys * (1.f/256.f); }
+	float xscale()		{ return xs * (1.0f / 256.0f); }
+	float yscale()		{ return ys * (1.0f / 256.0f); }
 
   protected:
 	gfx_scalemodes_t	_scalemode;
@@ -234,9 +233,7 @@ class gfxengine_t
 	int		is_open;
 
 	int		screenshot_count;
-#if 0
-	void refresh_rect(SDL_Rect *r);
-#endif
+
 	static void on_frame(cs_engine_t *e);
 	void __frame();
 

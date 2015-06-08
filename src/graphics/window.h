@@ -218,14 +218,19 @@ class windowbase_t
 
 	virtual void place(int left, int top, int sizex, int sizey);
 	virtual void scale(float x, float y);
+
 	virtual void visible(int vis);
 	int visible()	{ return _visible; }
 
-	virtual void invalidate(SDL_Rect *r = NULL)	{ ; };
+	void autoinvalidate(int ai)	{ _autoinvalidate = ai; }
+	int autoinvalidate()		{ return _autoinvalidate; }
+
+	virtual void select();
+	virtual void invalidate(SDL_Rect *r = NULL)	{ ; }
 	virtual void refresh(SDL_Rect *r)		{ ; }
 
 	void foreground(Uint32 color)	{ fgcolor = color; }
-	void background(Uint32 color)	{ bgcolor = color; };
+	void background(Uint32 color)	{ bgcolor = color; }
 	void colormod(Uint32 color)
 	{
 		_colormod = color;
@@ -285,12 +290,15 @@ class windowbase_t
 	gfxengine_t	*engine;
 	SDL_Renderer	*renderer;	// Can be engine or local renderer!
 	int		_visible;
+	int		_autoinvalidate;// Always invalidate before rendering
 	int		xs, ys;		// fixp 24:8
 	Uint32		_colormod, _alphamod;
 	Uint32		fgcolor, bgcolor;
 
 	void link(gfxengine_t *e);
 	void unlink(void);
+
+	virtual void render(SDL_Rect *r);
 };
 
 
@@ -304,10 +312,30 @@ class stream_window_t : public windowbase_t
   public:
 	stream_window_t(gfxengine_t *e);
 	virtual ~stream_window_t();
+#if 0
+	// Lock area for updating. 'pixels' is pointed at a write-only buffer
+	// of 32 bit pixels of the same format as used by the windowbase_t
+	// color tools API. Returns the pitch (in bytes!) of the target buffer,
+	// or if the operation fails, 0.
+	int lock(int x, int y, int w, int h, Uint32 **pixels);
+
+	// Unlock update area previously locked with lock(). This will upload
+	// the changes to the GPU, or whatever is needed to apply the changes.
+	void unlock();
+
+	// Update the specified area with data from the specified buffer.
+	void update(int x, int y, int w, int h, Uint32 *pixels, int pitch);
+#endif
+	void invalidate(SDL_Rect *r = NULL);
 
   protected:
-	SDL_Surface	*surface;	// Software buffer
 	SDL_Texture	*texture;	// Hardware/API texture
+
+	// Raw buffer access - valid ONLY during refresh() calls!
+	Uint32		*buffer;	// Raw buffer
+	int		pitch;		// Raw buffer pitch (*pixels* per row)
+
+	void render(SDL_Rect *r);
 };
 
 
@@ -326,13 +354,12 @@ class window_t : public windowbase_t
 	void place(int left, int top, int sizex, int sizey);
 	void visible(int vis);
 
+	void select();
 	void invalidate(SDL_Rect *r = NULL);
 
 	int offscreen();
 
 	// Rendering
-	void select();
-
 	void bgimage(int bank = -1, int frame = -1);
 	void colorkey(Uint32 color);
 	void colorkey();

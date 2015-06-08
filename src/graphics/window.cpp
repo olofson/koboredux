@@ -130,6 +130,94 @@ void windowbase_t::scale(float x, float y)
 }
 
 
+void windowbase_t::select()
+{
+	if(!engine)
+		return;
+	if(!renderer)
+		return;
+	SDL_SetRenderTarget(renderer, NULL);
+	SDL_RenderSetClipRect(renderer, &phys_rect);
+	engine->selected = this;
+}
+
+
+void windowbase_t::render(SDL_Rect *r)
+{
+	refresh(r);
+}
+
+
+  /////////////////////////////////////////////////////////////////////////////
+ // Streaming window
+/////////////////////////////////////////////////////////////////////////////
+
+stream_window_t::stream_window_t(gfxengine_t *e) : windowbase_t(e)
+{
+	buffer = NULL;
+	texture = NULL;
+}
+
+
+stream_window_t::~stream_window_t()
+{
+	if(buffer)
+		free(buffer);
+	if(texture)
+		SDL_DestroyTexture(texture);
+}
+
+
+#if 0
+int stream_window_t::lock(int x, int y, int w, int h, Uint32 **pixels)
+{
+	int pitch;
+	SDL_Rect r;
+	r.x = x;
+	r.y = y;
+	r.w = w;
+	r.h = h;
+	if(SDL_LockTexture(texture, &r, (void **)pixels, &pitch) == 0)
+		return pitch;
+	else
+		return 0;
+}
+
+void stream_window_t::unlock()
+{
+	SDL_UnlockTexture(texture);
+}
+
+
+void stream_window_t::update(int x, int y, int w, int h, Uint32 *pixels,
+		int pitch)
+{
+	SDL_Rect r;
+	r.x = x;
+	r.y = y;
+	r.w = w;
+	r.h = h;
+	SDL_UpdateTexture(texture, &r, pixels, pitch);
+}
+#endif
+
+
+void stream_window_t::invalidate(SDL_Rect *r)
+{
+	if(_autoinvalidate)
+		return;
+	refresh(r);
+}
+
+
+void stream_window_t::render(SDL_Rect *r)
+{
+	if(_autoinvalidate)
+		invalidate();
+	SDL_RenderCopy(renderer, texture, NULL, &phys_rect);
+}
+
+
   /////////////////////////////////////////////////////////////////////////////
  // Normal or offscreen window
 /////////////////////////////////////////////////////////////////////////////

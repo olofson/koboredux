@@ -851,9 +851,9 @@ void gfxengine_t::clear(Uint32 _color)
 
 	fullwin->background(fullwin->map_rgb(_color));
 	fullwin->clear();
-	flip();
+	present();
 	fullwin->clear();
-	flip();
+	present();
 	fullwin->clear();
 }
 
@@ -948,7 +948,7 @@ void gfxengine_t::run()
 			fdt = ticks_per_frame;
 		toframe += fdt / ticks_per_frame;
 		cs_engine_advance(csengine, toframe);
-		flip();
+		present();
 	}
 	stop_engine();
 }
@@ -1099,18 +1099,15 @@ void gfxengine_t::post_render()
 }
 
 
-void gfxengine_t::flip()
+void gfxengine_t::present()
 {
 	if(!sdlrenderer)
 		return;
 
-	SDL_SetRenderDrawColor(sdlrenderer, 0, 0, 0, 255);
-	SDL_RenderClear(sdlrenderer);
-
 	windowbase_t *w = windows;
 	for(w = windows; w; w = w->next)
 		if(w->visible())
-			w->refresh(NULL);
+			w->render(NULL);
 
 	SDL_RenderPresent(sdlrenderer);
 }
