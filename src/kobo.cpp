@@ -975,16 +975,26 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "GFX>>missile2.png", B_MISSILE2,	40, 40,	2.0f,	KOBO_CENTER },
 	{ "GFX>>missile3.png", B_MISSILE3,	40, 40,	2.0f,	KOBO_CENTER },
 	{ "GFX>>orange-bolt.png", B_BOLT,	8, 8,	1.0f,	KOBO_CENTER },
-	{ "GFX>>explo1e.png", B_EXPLO1,		48, 48,	2.0f,	KOBO_CENTER },
+	{ "GFX>>explo1.png", B_EXPLO1,		24, 24,	1.0f,	KOBO_CENTER },
+#if 0
 	{ "GFX>>explo3e.png", B_EXPLO3,		64, 64,	2.0f,	KOBO_CENTER },
 	{ "GFX>>explo4e.png", B_EXPLO4,		64, 64,	2.0f,	KOBO_CENTER },
 	{ "GFX>>explo5e.png", B_EXPLO5,		64, 64,	2.0f,	KOBO_CENTER },
+#else
+	{ "GFX>>explo1.png", B_EXPLO3,		24, 24,	1.0f,	KOBO_CENTER },
+	{ "GFX>>explo1.png", B_EXPLO4,		24, 24,	1.0f,	KOBO_CENTER },
+	{ "GFX>>explo1.png", B_EXPLO5,		24, 24,	1.0f,	KOBO_CENTER },
+#endif
 	{ "GFX>>rock1c.png", B_ROCK1,		32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>rock2.png", B_ROCK2,		32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>shinyrock.png", B_ROCK3,	32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>rockexpl.png", B_ROCKEXPL,	64, 64,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bullet5b.png", B_BULLETS,	16, 16,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bulletexpl2.png", B_BULLETEXPL,	32, 32,	2.0f,	KOBO_CENTER },
+
+	{ "GFX>>bullet.png", B_BLT_GREEN,	8, 8,	1.0f,	KOBO_CENTER },
+	{ "GFX>>red-bullet.png", B_BLT_RED,	8, 8,	1.0f,	KOBO_CENTER },
+	{ "GFX>>bulletexpl2.png", B_BLTX_GREEN,	32, 32,	2.0f,	KOBO_CENTER },
+	{ "GFX>>bulletexpl2.png", B_BLTX_RED,	32, 32,	2.0f,	KOBO_CENTER },
+
 	{ "GFX>>ring.png", B_RING,		32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>ringexpl2b.png", B_RINGEXPL,	40, 40,	2.0f,	KOBO_CENTER },
 	{ "GFX>>bomb.png", B_BOMB,		24, 24,	2.0f,	KOBO_CENTER },

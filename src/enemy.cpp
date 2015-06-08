@@ -247,8 +247,8 @@ inline void _enemy::shot_template(const enemy_kind * ekp,
 			vy);
 	if(&ring == ekp)
 		sound.g_launch_ring(x, y);
-	else if(&beam == ekp)
-		sound.g_launch_beam(x, y);
+	else if(&greenbullet == ekp || &redbullet == ekp)
+		sound.g_launch_bullet(x, y);
 	else if(&bomb1 == ekp || &bomb2 == ekp)
 		sound.g_launch_bomb(x, y);
 	else
@@ -265,8 +265,8 @@ void _enemy::shot_template_8_dir(const enemy_kind * ekp)
 				vy[i]);
 	if(&ring == ekp)
 		sound.g_m_launch_ring(x, y);
-	else if(&beam == ekp)
-		sound.g_m_launch_beam(x, y);
+	else if(&greenbullet == ekp || &redbullet == ekp)
+		sound.g_m_launch_bullet(x, y);
 	else if(&bomb1 == ekp || &bomb2 == ekp)
 		sound.g_m_launch_bomb(x, y);
 	else
@@ -284,40 +284,56 @@ void _enemy::kill_default()
 
 /*
  * ===========================================================================
- *                                beam
+ *                                bullets
  * ===========================================================================
  */
 
-void _enemy::make_beam()
+void _enemy::make_bullet()
 {
-	di = 1 + pubrand.get(4);
+	di = 1 + pubrand.get(3);
 	health = 1;
 	shootable = 0;
 	damage = 20;
 }
 
-void _enemy::move_beam()
+void _enemy::move_bullet()
 {
 	if(norm >= ((VIEWLIMIT >> 1) + 32))
 		release();
 	di += pubrand.get(1) + 1;
-	if(di > 16)
+	if(di > 8)
 		di = 1;
 }
 
-void _enemy::kill_beam()
+void _enemy::kill_bullet_green()
 {
-	enemies.make(&beamexpl, CS2PIXEL(x), CS2PIXEL(y));
+	enemies.make(&greenbltexpl, CS2PIXEL(x), CS2PIXEL(y));
 	release();
 }
 
-const enemy_kind beam = {
+void _enemy::kill_bullet_red()
+{
+	enemies.make(&redbltexpl, CS2PIXEL(x), CS2PIXEL(y));
+	release();
+}
+
+const enemy_kind greenbullet = {
 	0,
-	&_enemy::make_beam,
-	&_enemy::move_beam,
-	&_enemy::kill_beam,
+	&_enemy::make_bullet,
+	&_enemy::move_bullet,
+	&_enemy::kill_bullet_green,
 	2,
-	B_BULLETS, 0,
+	B_BLT_GREEN, 0,
+	LAYER_BULLETS
+};
+
+const enemy_kind redbullet = {
+	0,
+	&_enemy::make_bullet,
+	&_enemy::move_bullet,
+	&_enemy::kill_bullet_red,
+	2,
+	B_BLT_RED, 0,
 	LAYER_BULLETS
 };
 
@@ -454,8 +470,8 @@ void _enemy::move_bomb1()
 			vx3 -= (vy3 >> 4);
 			vy3 += (tmp >> 4);
 		}
-		enemies.make(&beam, CS2PIXEL(x), CS2PIXEL(y), vx2, vy2);
-		enemies.make(&beam, CS2PIXEL(x), CS2PIXEL(y), vx3, vy3);
+		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx2, vy2);
+		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx3, vy3);
 		enemies.make(&bombdeto, CS2PIXEL(x), CS2PIXEL(y),
 				-vx1 >> 2, -vy1 >> 2);
 		sound.g_bomb_deto(x, y);
@@ -513,11 +529,11 @@ void _enemy::move_bomb2()
 			vx3 -= (vy3 >> 4);
 			vy3 += (tmp >> 4);
 		}
-		enemies.make(&beam, CS2PIXEL(x), CS2PIXEL(y), vx1, vy1);
-		enemies.make(&beam, CS2PIXEL(x), CS2PIXEL(y), vx2, vy2);
-		enemies.make(&beam, CS2PIXEL(x), CS2PIXEL(y), vx3, vy3);
-		enemies.make(&beam, CS2PIXEL(x), CS2PIXEL(y), vx4, vy4);
-		enemies.make(&beam, CS2PIXEL(x), CS2PIXEL(y), vx5, vy5);
+		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx1, vy1);
+		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx2, vy2);
+		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx3, vy3);
+		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx4, vy4);
+		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx5, vy5);
 		enemies.make(&bombdeto, CS2PIXEL(x), CS2PIXEL(y),
 				-vx1 >> 2, -vy1 >> 2);
 		sound.g_bomb_deto(x, y);
@@ -553,12 +569,14 @@ void _enemy::make_expl()
 	switch(bank)
 	{
 	  case B_EXPLO1:
-	  case B_BOMBDETO:
-		a = 8;
-		break;
 	  case B_EXPLO3:
 	  case B_EXPLO4:
 	  case B_EXPLO5:
+		a = 16;
+		break;
+	  case B_BOMBDETO:
+		a = 8;
+		break;
 	  case B_ROCKEXPL:
 		a = 12;
 		break;
@@ -566,7 +584,8 @@ void _enemy::make_expl()
 		frame = 8 * pubrand.get(1);
 		a = 8;
 		break;
-	  case B_BULLETEXPL:
+	  case B_BLTX_GREEN:
+	  case B_BLTX_RED:
 		a = 6;
 		break;
 	  case B_BOLT:
@@ -644,18 +663,28 @@ const enemy_kind ringexpl = {
 
 /*
  * ===========================================================================
- *                                 beamexpl
+ *                                 bltexpl
  *                         Enemy "bullet" discharges
  * ===========================================================================
  */
 
-const enemy_kind beamexpl = {
+const enemy_kind greenbltexpl = {
 	0,
 	&_enemy::make_expl,
 	&_enemy::move_expl,
 	&_enemy::kill_default,
 	-1,
-	B_BULLETEXPL, 0,
+	B_BLTX_GREEN, 0,
+	LAYER_FX
+};
+
+const enemy_kind redbltexpl = {
+	0,
+	&_enemy::make_expl,
+	&_enemy::move_expl,
+	&_enemy::kill_default,
+	-1,
+	B_BLTX_RED, 0,
 	LAYER_FX
 };
 
@@ -735,7 +764,8 @@ void _enemy::move_cannon()
 	(count) &= (b);
 	if(count == a && norm < ((VIEWLIMIT >> 1) + 8))
 	{
-		int shift = (enemies.ek1() == &beam) ? 6 : 5;
+		int shift = (enemies.ek1() == &greenbullet ||
+				enemies.ek1() == &redbullet) ? 6 : 5;
 		this->shot_template(enemies.ek1(), shift, 32, 0);
 	}
 }
@@ -780,7 +810,8 @@ void _enemy::move_core()
 	(count) &= (b);
 	if(count == a && norm < ((VIEWLIMIT >> 1) + 8))
 	{
-		int shift = (enemies.ek2() == &beam) ? 6 : 5;
+		int shift = (enemies.ek2() == &greenbullet ||
+				enemies.ek2() == &redbullet) ? 6 : 5;
 		this->shot_template(enemies.ek2(), shift, 0, 0);
 	}
 }
@@ -1093,7 +1124,7 @@ void _enemy::move_enemy2()
 	{
 		if(norm < ((VIEWLIMIT >> 1) + 8))
 		{
-			this->shot_template(&beam, 5, 0, 0);
+			this->shot_template(&redbullet, 5, 0, 0);
 		}
 		count = 32;
 	}
@@ -1203,7 +1234,7 @@ void _enemy::move_enemy5()
 	{
 		count = 8;
 		if(norm > ((VIEWLIMIT >> 1) - 32))
-			this->shot_template(&beam, 6, 0, 0);
+			this->shot_template(&redbullet, 6, 0, 0);
 	}
 }
 
@@ -1245,7 +1276,7 @@ void _enemy::move_enemy6()
 	{
 		count = 128;
 		if(norm > ((VIEWLIMIT >> 1) - 32))
-			this->shot_template(&beam, 6, 0, 0);
+			this->shot_template(&redbullet, 6, 0, 0);
 	}
 }
 
@@ -1287,7 +1318,7 @@ void _enemy::move_enemy7()
 	{
 		count = 8;
 		if(norm > ((VIEWLIMIT >> 1) - 32))
-			this->shot_template(&beam, 6, 0, 0);
+			this->shot_template(&redbullet, 6, 0, 0);
 	}
 }
 

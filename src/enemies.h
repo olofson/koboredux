@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001-2003, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001-2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -50,13 +51,15 @@ struct enemy_kind
 };
 
 
-extern const enemy_kind beam;
+extern const enemy_kind greenbullet;
+extern const enemy_kind redbullet;
 extern const enemy_kind explosion;
 extern const enemy_kind explosion3;
 extern const enemy_kind explosion4;
 extern const enemy_kind explosion5;
 extern const enemy_kind ringexpl;
-extern const enemy_kind beamexpl;
+extern const enemy_kind greenbltexpl;
+extern const enemy_kind redbltexpl;
 extern const enemy_kind boltexpl;
 extern const enemy_kind rockexpl;
 extern const enemy_kind enemy1;
@@ -130,9 +133,10 @@ class _enemy
 
 	void kill_default();
 
-	void make_beam();
-	void move_beam();
-	void kill_beam();
+	void make_bullet();
+	void move_bullet();
+	void kill_bullet_green();
+	void kill_bullet_red();
 
 	void make_rock();
 	void move_rock();

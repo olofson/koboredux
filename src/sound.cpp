@@ -619,9 +619,9 @@ void KOBO_sound::g_launch_ring(int x, int y)
 }
 
 
-void KOBO_sound::g_launch_beam(int x, int y)
+void KOBO_sound::g_launch_bullet(int x, int y)
 {
-	g_play(SOUND_BEAM, CS2PIXEL(x), CS2PIXEL(y));
+	g_play(SOUND_BULLET, CS2PIXEL(x), CS2PIXEL(y));
 }
 
 
@@ -644,9 +644,9 @@ void KOBO_sound::g_m_launch_ring(int x, int y)
 }
 
 
-void KOBO_sound::g_m_launch_beam(int x, int y)
+void KOBO_sound::g_m_launch_bullet(int x, int y)
 {
-	g_play(SOUND_BEAM, CS2PIXEL(x), CS2PIXEL(y));
+	g_play(SOUND_BULLET, CS2PIXEL(x), CS2PIXEL(y));
 	g_play(SOUND_ENEMYM, CS2PIXEL(x), CS2PIXEL(y));
 }
 

@@ -26,7 +26,7 @@ const _scene scene[] = {
 	/* Test map */
 	{
 		0, 32, 0,
-		&enemy_m1, 128, &beam, 16,
+		&enemy_m1, 128, &greenbullet, 16,
 		1,{
 			{&enemy_m4, 1, 5},
 //			{&enemy4,  10, 5},
@@ -40,7 +40,7 @@ const _scene scene[] = {
 	/* 1 */
 	{
 		0, 32, 96,
-		&beam, 128, &beam, 16,
+		&greenbullet, 128, &greenbullet, 16,
 		1,{
 			{&enemy4,  10, 5},
 		},
@@ -52,7 +52,7 @@ const _scene scene[] = {
 	/* 2 */
 	{
 		0, 32, 96,
-		&beam, 64, &beam, 64,
+		&greenbullet, 64, &greenbullet, 64,
 		3,{
 			{&enemy4,   10,  5},
 			{&enemy4,   10,  5},
@@ -68,7 +68,7 @@ const _scene scene[] = {
 	/* 3 */
 	{
 		64, 32, 64,
-		&beam, 64, &beam, 16,
+		&greenbullet, 64, &greenbullet, 16,
 		1,{
 			{&rock,	 20,  3},
 		},
@@ -84,7 +84,7 @@ const _scene scene[] = {
 	/* 4 */
 	{
 		0, 32, 96,
-		&beam, 32, &beam, 8,
+		&greenbullet, 32, &greenbullet, 8,
 		1,{
 			{&enemy4,  10, 5},
 		},
@@ -97,7 +97,7 @@ const _scene scene[] = {
 	/* 5 */
 	{
 		0, 32, 96,
-		&beam, 128, &beam, 128,
+		&greenbullet, 128, &greenbullet, 128,
 		3,{
 			{&enemy6,   10,  5},
 			{&enemy6,   10,  5},
@@ -161,7 +161,7 @@ const _scene scene[] = {
 	/* 9 */
 	{
 		0, 32, 96,
-		&beam, 16, &beam, 8,
+		&greenbullet, 16, &greenbullet, 8,
 		1,{
 			{&bomb2, 20, 5},
 		},
@@ -203,7 +203,7 @@ const _scene scene[] = {
 	/* 12 */
 	{
 		0, 47, 33,
-		&beam, 128, &beam, 16,
+		&greenbullet, 128, &greenbullet, 16,
 		3,{
 			{&enemy6,  10, 5},
 			{&enemy6,  10, 5},
@@ -234,7 +234,7 @@ const _scene scene[] = {
 	/* 14 */
 	{
 		0, 24, 107,
-		&enemy2, 128, &beam, 8,
+		&enemy2, 128, &greenbullet, 8,
 		4,{
 			{&enemy3,  10, 5},
 			{&enemy6,  10, 5},
@@ -283,7 +283,7 @@ const _scene scene[] = {
 	/* 17 */
 	{
 		0, 53, 17,
-		&beam, 32, &enemy1, 32,
+		&greenbullet, 32, &enemy1, 32,
 		1,{
 			{&enemy3,  10, 5},
 		},
@@ -375,7 +375,7 @@ const _scene scene[] = {
 	/* 21 */
 	{
 		0, 26, 30,
-		&enemy1, 128, &beam, 16,
+		&enemy1, 128, &greenbullet, 16,
 		2,{
 			{&enemy3,  20, 5},
 			{&rock,	50, 5},
@@ -392,7 +392,7 @@ const _scene scene[] = {
 	/* 22 */
 	{
 		0, 38, 120,
-		&ring, 128, &beam, 16,
+		&ring, 128, &greenbullet, 16,
 		6,{
 			{&ring,	10, 5},
 			{&ring,	10, 5},
@@ -455,7 +455,7 @@ const _scene scene[] = {
 	/* 24 */
 	{
 		127, 32, 41,
-		&enemy1, 128, &beam, 16,
+		&enemy1, 128, &greenbullet, 16,
 		3,{
 			{&rock,	50, 5},
 			{&enemy2,  20, 5},
@@ -475,7 +475,7 @@ const _scene scene[] = {
 	/* 25 */
 	{
 		256, 32, 96,
-		&beam, 32, &enemy1, 32,
+		&greenbullet, 32, &enemy1, 32,
 		2,{
 			{&enemy6,  50, 5},
 			{&rock,   100, 5},
@@ -530,7 +530,7 @@ const _scene scene[] = {
 	/* 27 */
 	{
 		0, 32, 64,
-		&beam, 32, &enemy5, 32,
+		&greenbullet, 32, &enemy5, 32,
 		3,{
 			{&enemy1,  20, 5},
 			{&bomb1,   50, 5},
@@ -560,7 +560,7 @@ const _scene scene[] = {
 	/* 29 */
 	{
 		0, 32, 60,
-		&enemy2, 128, &beam, 4,
+		&enemy2, 128, &greenbullet, 4,
 		5,{
 			{&enemy5,  20, 5},
 			{&bomb2,   10, 5},
@@ -579,7 +579,7 @@ const _scene scene[] = {
 	/* 30 */
 	{
 		0, 23, 71,
-		&enemy5, 64, &beam, 16,
+		&enemy5, 64, &greenbullet, 16,
 		3,{
 			{&enemy6,   2, 5},
 			{&enemy6,   2, 5},
@@ -637,7 +637,7 @@ const _scene scene[] = {
 	/* 32 */
 	{
 		0, 32, 96,
-		&beam, 128, &beam, 16,
+		&greenbullet, 128, &greenbullet, 16,
 		0,{
 			{&enemy1,  40, 10},
 		},
@@ -667,7 +667,7 @@ const _scene scene[] = {
 	/* 34 */
 	{
 		0, 54, 120,
-		&enemy6, 64, &beam, 16,
+		&enemy6, 64, &greenbullet, 16,
 		1,{
 			{&bomb2,   10, 5},
 		},
@@ -717,7 +717,7 @@ const _scene scene[] = {
 	/* 36 */
 	{
 		0, 32, 64,
-		&beam, 16, &enemy2, 64,
+		&greenbullet, 16, &enemy2, 64,
 		5,{
 			{&enemy1,   10, 10},
 			{&enemy2,   10, 10},
@@ -741,7 +741,7 @@ const _scene scene[] = {
 	/* 37 */
 	{
 		256, 32, 96,
-		&beam, 64, &ring, 64,
+		&greenbullet, 64, &ring, 64,
 		0,{
 			{&ring,	  0,  5},
 		},
@@ -851,7 +851,7 @@ const _scene scene[] = {
 	/* 41 */
 	{
 		0, 32, 96,
-		&beam, 64, &beam, 16,
+		&greenbullet, 64, &greenbullet, 16,
 		1,{
 			{&bomb2,	40, 10},
 		},
@@ -972,7 +972,7 @@ const _scene scene[] = {
 	/* 46 */
 	{
 		0, 59, 34,
-		&beam, 64, &beam, 16,
+		&greenbullet, 64, &greenbullet, 16,
 		4,{
 			{&rock,	15, 5},
 			{&enemy_m3, 1, 5},
@@ -1119,7 +1119,7 @@ const _scene scene[] = {
 	/* 49 */
 	{
 		0, 38, 67,
-		&beam, 32, &beam, 8,
+		&greenbullet, 32, &greenbullet, 8,
 		6,{
 			{&enemy2,  10, 5},
 			{&bomb1,   50, 5},
@@ -1156,7 +1156,7 @@ const _scene scene[] = {
 	/* 50 */
 	{
 		0, 32, 120,
-		&beam, 8, &enemy1, 8,
+		&greenbullet, 8, &enemy1, 8,
 		1,{
 			{&bomb2, 80, 5},
 		},

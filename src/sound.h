@@ -31,7 +31,7 @@
 #define KOBO_ALLSOUNDS	\
 	KOBO_DEFS(ONEUP,	"GiveEnergyMega")\
 	KOBO_DEFS(FINE,		"")\
-	KOBO_DEFS(BEAM,		"FireElectro")\
+	KOBO_DEFS(BULLET,	"FireElectro")\
 	KOBO_DEFS(RING,		"")\
 	KOBO_DEFS(BOMB_DETO,	"Bomb")\
 	KOBO_DEFS(EXPLO_NODE,	"SegmentDeath")\
@@ -162,11 +162,11 @@ class KOBO_sound
 	static void g_ring_explo(int x, int y);
 	static void g_bomb_deto(int x, int y);
 	static void g_launch_ring(int x, int y);
-	static void g_launch_beam(int x, int y);
+	static void g_launch_bullet(int x, int y);
 	static void g_launch_bomb(int x, int y);
 	static void g_launch(int x, int y);
 	static void g_m_launch_ring(int x, int y);
-	static void g_m_launch_beam(int x, int y);
+	static void g_m_launch_bullet(int x, int y);
 	static void g_m_launch_bomb(int x, int y);
 	static void g_m_launch(int x, int y);
 
