@@ -236,7 +236,10 @@ int _myship::move()
 	// Movement
 	if(_state == normal)
 	{
-		move_redux();
+		if(game.skill == SKILL_CLASSIC)
+			move_classic();
+		else
+			move_redux();
 		x += vx;
 		y += vy;
 		explo_time = 0;

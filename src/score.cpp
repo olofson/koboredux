@@ -146,7 +146,7 @@ void s_profile_t::clear()
 	last_scene = 0;
 	name[0] = 0;
 	version = 0;
-	skill = SKILL_CLASSIC;
+	skill = SKILL_GAMER;
 	handicap = 0;
 	color1 = -1;
 	color2 = -1;

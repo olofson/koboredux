@@ -1419,14 +1419,14 @@ void skill_menu_t::build()
 	space(1);
 
 	big();
-	button("Classic", SKILL_CLASSIC + 10);
-	small();
-	space();
-	big();
 	button("Newbie", SKILL_NEWBIE + 10);
 	button("Gamer", SKILL_GAMER + 10);
 	button("Elite", SKILL_ELITE + 10);
 	button("God", SKILL_GOD + 10);
+	small();
+	space();
+	big();
+	button("Classic", SKILL_CLASSIC + 10);
 
 	space();
 	small();
@@ -1465,19 +1465,19 @@ kobo_form_t *st_skill_menu_t::open()
 	menu->open();
 	switch(scorefile.profile()->skill)
 	{
-	  case SKILL_CLASSIC:
+	  case SKILL_NEWBIE:
 		menu->select(1);
 		break;
-	  case SKILL_NEWBIE:
+	  case SKILL_GAMER:
 		menu->select(2);
 		break;
-	  case SKILL_GAMER:
+	  case SKILL_ELITE:
 		menu->select(3);
 		break;
-	  case SKILL_ELITE:
+	  case SKILL_GOD:
 		menu->select(4);
 		break;
-	  case SKILL_GOD:
+	  case SKILL_CLASSIC:
 		menu->select(5);
 		break;
 	}
