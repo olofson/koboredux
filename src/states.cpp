@@ -1238,7 +1238,7 @@ st_error_t st_error;
 void main_menu_t::buildStartLevel(int profNum)
 {
 	char buf[50];
-	int MaxStartLevel = scorefile.last_scene(profNum);
+	int MaxStartLevel = profNum >= 0 ? scorefile.last_scene(profNum) : 500;
 	start_level = manage.scene();
 	if(start_level > MaxStartLevel)
 		start_level = MaxStartLevel;
@@ -1285,6 +1285,9 @@ void main_menu_t::build()
 #else
 		log_printf(WLOG, "Player profiles are disabled!\n");
 		button("Start Game!", 1);
+		small();
+		buildStartLevel(-1);
+		big();
 #endif
 	}
 	else
