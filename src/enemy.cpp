@@ -288,12 +288,18 @@ void _enemy::kill_default()
  * ===========================================================================
  */
 
-void _enemy::make_bullet()
+void _enemy::make_bullet_green()
 {
 	di = 1 + pubrand.get(3);
 	health = 1;
 	shootable = 0;
 	damage = 20;
+}
+
+void _enemy::make_bullet_red()
+{
+	make_bullet_green();
+	damage = 40;
 }
 
 void _enemy::move_bullet()
@@ -319,7 +325,7 @@ void _enemy::kill_bullet_red()
 
 const enemy_kind greenbullet = {
 	0,
-	&_enemy::make_bullet,
+	&_enemy::make_bullet_green,
 	&_enemy::move_bullet,
 	&_enemy::kill_bullet_green,
 	2,
@@ -329,7 +335,7 @@ const enemy_kind greenbullet = {
 
 const enemy_kind redbullet = {
 	0,
-	&_enemy::make_bullet,
+	&_enemy::make_bullet_red,
 	&_enemy::move_bullet,
 	&_enemy::kill_bullet_red,
 	2,

@@ -133,7 +133,8 @@ class _enemy
 
 	void kill_default();
 
-	void make_bullet();
+	void make_bullet_green();
+	void make_bullet_red();
 	void move_bullet();
 	void kill_bullet_green();
 	void kill_bullet_red();
