@@ -81,22 +81,6 @@
  *		-1 (default) disables the image, so that the
  *		background color is used instead.
  *
- *	void colorkey(Uint32 color);
- *	void colorkey();
- *		Set the colorkey for this window to 'color'
- *		and enable colorkeying. This affects blit()
- *		when this window is used as the source. The
- *		version without arguments disables
- *		colorkeying for this window.
- *		NOTE:	Colorkeying is only supported by
- *			offscreen windows.
- *
- *	void alpha(float a);
- *		Set the full surface alpha of this window.
- *		0.0 is fully transparent and 1.0 is opaque.
- *		NOTE:	Alpha is only supported by offscreen
- *			windows.
- *
  *	void clear(SDL_Rect *r = NULL);
  *		Fill the specified rectangle with the current
  *		background color or background image. If r is
@@ -361,9 +345,6 @@ class window_t : public windowbase_t
 
 	// Rendering
 	void bgimage(int bank = -1, int frame = -1);
-	void colorkey(Uint32 color);
-	void colorkey();
-	void alpha(float a);
 
 	void clear(SDL_Rect *r = NULL);
 	void font(int fnt);

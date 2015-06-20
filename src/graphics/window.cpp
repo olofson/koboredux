@@ -407,46 +407,6 @@ void window_t::bgimage(int bank, int frame)
 }
 
 
-void window_t::colorkey(Uint32 color)
-{
-#if 0
-	if(!engine)
-		return;
-	if(!engine->surface())
-		return;
-	if(!_offscreen)
-		return;
-	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, color);
-#endif
-}
-
-void window_t::colorkey()
-{
-#if 0
-	if(!engine)
-		return;
-	if(!engine->surface())
-		return;
-	if(!_offscreen)
-		return;
-	SDL_SetColorKey(surface, 0, 0);
-#endif
-}
-
-void window_t::alpha(float a)
-{
-#if 0
-	if(!engine)
-		return;
-	if(!engine->surface())
-		return;
-	if(!_offscreen)
-		return;
-	SDL_SetAlpha(surface, SDL_SRCALPHA, (int)(a * 255.0));
-#endif
-}
-
-
 void window_t::font(int fnt)
 {
 	_font = fnt;
