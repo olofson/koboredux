@@ -84,6 +84,7 @@ bargraph_t		*wttemp = NULL;
 radar_map_t		*wmap = NULL;
 radar_window_t		*wradar = NULL;
 engine_window_t		*wmain = NULL;
+spinplanet_t		*wplanet = NULL;
 window_t		*woverlay = NULL;
 display_t		*dhigh = NULL;
 display_t		*dscore = NULL;
@@ -514,7 +515,16 @@ void KOBO_main::build_screen()
 	dlevel->caption("LEVEL");
 	dlevel->text("00");
 
+	// Spinning planet backdrop
+	wplanet->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
+//	wplanet->set_source(0, B_R1L7_PLANET, 0);
+//	wplanet->set_source(1, B_R1L7_PLANET, 1);
+	wplanet->track_layer(LAYER_PLAYER);
+
+	// Main playfield layer
 	wmain->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
+
+	// Playfield overlay
 	woverlay->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
 
 	// Set up the map at 1 physical pixel per tile
@@ -691,6 +701,7 @@ int KOBO_main::init_display(prefs_t *p)
 
 	wdash = new dashboard_window_t(gengine);
 	whealth = new bargraph_t(gengine);
+	wplanet = new spinplanet_t(gengine);
 	wmain = new engine_window_t(gengine);
 	woverlay = new window_t(gengine);
 	dhigh = new display_t(gengine);
@@ -750,6 +761,8 @@ void KOBO_main::close_display()
 	dhigh = NULL;
 	delete woverlay;
 	woverlay = NULL;
+	delete wplanet;
+	wplanet = NULL;
 	delete wmain;
 	wmain = NULL;
 	delete whealth;

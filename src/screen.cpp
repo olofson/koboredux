@@ -612,9 +612,11 @@ void _screen::init_scene(int sc)
 		radar_mode = RM_RADAR;
 		win->colormod(win->map_rgb(255, 255, 255));
 	}
+	region = scene_num / 10 % 5;
+	level = scene_num % 10 + 1;
+	init_background();
 	gengine->period(game.speed);
 	sound.period(game.speed);
-
 	const _scene *s = &scene[scene_num];
 	int i;
 	for(i = 0; i < s->base_max; i++)
@@ -993,17 +995,80 @@ void _screen::render_starfield(int xo, int yo, int altitude, int psize)
 }
 
 
+void _screen::init_background()
+{
+	// Select layers, altitudes etc...
+	bg_altitude = 0;
+	bg_backdrop = 0;
+	bg_clouds = 0;
+	bg_planet = 0;
+	spinplanet_modes_t md = SPINPLANET_OFF;
+	switch(level)
+	{
+	  case 1:
+	  case 2:
+		// Planet not visible; starfield only
+		bg_altitude = 208 - level * 16;
+		break;
+	  case 3:
+		// 64x64 planet
+		bg_planet = B_R1L3_PLANET;
+		md = SPINPLANET_STATIC;
+		bg_altitude = 160;
+		break;
+	  case 4:
+		// 80x80 planet
+		bg_planet = B_R1L4_PLANET;
+		md = SPINPLANET_STATIC;
+		bg_altitude = 144;
+		break;
+	  case 5:
+		// 128x128 planet
+		bg_planet = B_R1L5_PLANET;
+		md = SPINPLANET_STATIC;
+		bg_altitude = 128;
+		break;
+	  case 6:
+		// 192x192 planet
+		bg_planet = B_R1L6_PLANET;
+		md = SPINPLANET_STATIC;
+		bg_altitude = 112;
+		break;
+	  case 7:
+		// 288x288 planet
+		bg_planet = B_R1L7_PLANET;
+		md = SPINPLANET_SPIN;
+		bg_altitude = 96;
+		break;
+	  case 8:
+		// Above clouds
+		bg_clouds = 1;
+		bg_backdrop = B_R1L8_GROUND;
+		bg_altitude = 64;
+		break;
+	  case 9:
+		// Below clouds
+		bg_backdrop = B_R1L9_GROUND;
+		bg_altitude = 32;
+		break;
+	  case 10:
+		// Ground level
+		bg_backdrop = B_R1L10_GROUND;
+		bg_altitude = 0;
+		break;
+	}
+	wplanet->set_source(0, bg_planet, 0);
+	wplanet->set_source(1, bg_planet, 1);
+	wplanet->set_mode(md);
+}
+
+
 void _screen::render_background()
 {
 	if(do_noise && (noise_fade >= 1.0f))
 		return;
 
-#if 0
-	int region = scene_num / 10 % 5;
-#else
-	int region = 0;		// We still only have graphics for region 1!
-#endif
-	int level = scene_num % 10 + 1;
+	window_t *win = gengine->target();
 
 	int vx, vy, xo, yo, x, y, xmax, ymax;
 	int mx, my;
@@ -1019,84 +1084,33 @@ void _screen::render_background()
 	ymax = ((WMAIN_H + CS2PIXEL(yo)) / TILE_SIZE) + 1;
 	xmax = ((WMAIN_W + CS2PIXEL(xo)) / TILE_SIZE) + 1;
 
-	target->clear();
-
-	// Select layers, altitudes etc...
-	int planet = 0, backdrop = 0, clouds = 0, altitude = 0;
-	switch(level)
-	{
-	  case 1:
-	  case 2:
-		// Planet not visible; starfield only
-		altitude = 208 - level * 16;
-		break;
-	  case 3:
-		// 64x64 planet
-		planet = B_R1L3_PLANET;
-		altitude = 160;
-		break;
-	  case 4:
-		// 80x80 planet
-		planet = B_R1L4_PLANET;
-		altitude = 144;
-		break;
-	  case 5:
-		// 128x128 planet
-		planet = B_R1L5_PLANET;
-		altitude = 128;
-		break;
-	  case 6:
-		// 192x192 planet
-		planet = B_R1L6_PLANET;
-		altitude = 112;
-		break;
-	  case 7:
-		// 288x288 planet
-		planet = B_R1L7_PLANET;
-		altitude = 96;
-		break;
-	  case 8:
-		// Above clouds
-		clouds = 1;
-		backdrop = B_R1L8_GROUND;
-		altitude = 64;
-		break;
-	  case 9:
-		// Below clouds
-		backdrop = B_R1L9_GROUND;
-		altitude = 32;
-		break;
-	  case 10:
-		// Ground level
-		backdrop = B_R1L10_GROUND;
-		altitude = 0;
-		break;
-	}
-
-	// Render planet
-	if(planet)
-		target->sprite(WMAIN_W / 2, WMAIN_H / 2, planet + region, 0);
-
+#if 0
 	// Render ground
-	if(backdrop)
+	if(bg_backdrop)
 	{
-/*TODO:*/	target->sprite(vx, vy, backdrop + region, 0);
+/*TODO:*/	win->sprite(vx, vy, bg_backdrop + region, 0);
 	}
 
 	// Render clouds
-	if(clouds)
+	if(bg_clouds)
 	{
-/*TODO:*/	target->sprite(vx, vy, clouds + region, 0);
+/*TODO:*/	win->sprite(vx, vy, bg_clouds + region, 0);
 	}
+#endif
 
 	// Render parallax starfield
-	if(altitude >= 96)
+	if(bg_altitude >= 96)
 	{
-		s_bank_t *b = NULL;
-		if(planet)
-			b = s_get_bank(gengine->get_gfx(), planet);
-		render_starfield(vx, vy, altitude,
-				b ? (int)(b->w / gfxengine->xscale()) : 0);
+		int psize = 0;
+		if(bg_planet)
+		{
+			s_bank_t *b = s_get_bank(gengine->get_gfx(),
+					bg_planet);
+			if(b)
+				psize = (int)((b->w * b->xs >> 8) /
+						gfxengine->xscale());
+		}
+		render_starfield(vx, vy, bg_altitude, psize);
 	}
 
 	// Render bases

@@ -42,11 +42,17 @@ class _screen
 {
   protected:
 	static window_t *target;
+	static int scene_max;
 	static int scene_num;
+	static int region;
+	static int level;
+	static int bg_altitude;
+	static int bg_backdrop;
+	static int bg_clouds;
+	static int bg_planet;
 	static int restarts;
 	static int generate_count;
 	static _map map;
-	static int scene_max;
 	static int show_title;
 	static int do_noise;
 	static float _fps;
@@ -74,6 +80,7 @@ class _screen
 	static void render_title_noise(float fade, int y, int h, int bank, int frame);
 	static void init_starfield();
 	static void init_starfield_colors();
+	static void init_background();
 	static void render_starfield(int xo, int yo, int altitude, int psize);
 	static void clean_scrap_tile(int x, int y)
 	{

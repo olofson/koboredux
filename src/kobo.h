@@ -34,16 +34,18 @@
 #include "radar.h"
 #include "dashboard.h"
 #include "sound.h"
+#include "spinplanet.h"
 
-/*----------------------------------------------------------
-	Singletons
-----------------------------------------------------------*/
+
+  /////////////////////////////////////////////////////////////////////////////
+ //	Singletons
+/////////////////////////////////////////////////////////////////////////////
 extern KOBO_sound	sound;
 
 
-/*----------------------------------------------------------
-	Globals
-----------------------------------------------------------*/
+  /////////////////////////////////////////////////////////////////////////////
+ //	Globals
+/////////////////////////////////////////////////////////////////////////////
 
 class kobo_gfxengine_t : public gfxengine_t
 {
@@ -75,6 +77,7 @@ extern bargraph_t		*wttemp;
 extern radar_map_t		*wmap;
 extern radar_window_t		*wradar;
 extern engine_window_t		*wmain;
+extern spinplanet_t		*wplanet;
 extern window_t			*woverlay;
 extern display_t		*dhigh;
 extern display_t		*dscore;
@@ -93,7 +96,11 @@ extern int mouse_left, mouse_middle, mouse_right;
 extern int exit_game;
 
 
-/* Sprite priority levels */
+  /////////////////////////////////////////////////////////////////////////////
+ //	Constants
+/////////////////////////////////////////////////////////////////////////////
+
+// Sprite priority levels
 #define	LAYER_OVERLAY	0	// Mouse crosshair
 #define	LAYER_BULLETS	1	// Bullets - most important!
 #define	LAYER_FX	2	// Explosions and similar effects
@@ -101,10 +108,10 @@ extern int exit_game;
 #define	LAYER_ENEMIES	4	// Enemies
 #define	LAYER_BASES	5	// Bases and stationary enemies
 
-/* Graphics banks */
+// Graphics banks
 typedef enum
 {
-	B_R1_TILES =	0,
+	B_R1_TILES =	1,	// NOTE: We use bank 0 for "no bank"!
 	B_R2_TILES,
 	B_R3_TILES,
 	B_R4_TILES,

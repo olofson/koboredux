@@ -156,34 +156,48 @@ void windowbase_t::render(SDL_Rect *r)
 
 stream_window_t::stream_window_t(gfxengine_t *e) : windowbase_t(e)
 {
-	buffer = NULL;
 	texture = NULL;
 }
 
 
 stream_window_t::~stream_window_t()
 {
-	if(buffer)
-		free(buffer);
 	if(texture)
 		SDL_DestroyTexture(texture);
 }
 
 
-#if 0
-int stream_window_t::lock(int x, int y, int w, int h, Uint32 **pixels)
+void stream_window_t::place(int left, int top, int sizex, int sizey)
+{
+	windowbase_t::place(left, top, sizex, sizey);
+	if(texture)
+	{
+		int w, h;
+		SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+		if((width() != w) || (height() != h))
+		{
+			SDL_DestroyTexture(texture);
+			texture = NULL;
+		}
+	}
+	if(!texture)
+	{
+		texture = SDL_CreateTexture(engine->renderer(),
+				KOBO_PIXELFORMAT, SDL_TEXTUREACCESS_STREAMING,
+				width(), height());
+	}
+}
+
+
+int stream_window_t::lock(SDL_Rect *r, Uint32 **pixels)
 {
 	int pitch;
-	SDL_Rect r;
-	r.x = x;
-	r.y = y;
-	r.w = w;
-	r.h = h;
-	if(SDL_LockTexture(texture, &r, (void **)pixels, &pitch) == 0)
-		return pitch;
+	if(SDL_LockTexture(texture, r, (void **)pixels, &pitch) == 0)
+		return pitch / sizeof(Uint32);
 	else
 		return 0;
 }
+
 
 void stream_window_t::unlock()
 {
@@ -191,23 +205,14 @@ void stream_window_t::unlock()
 }
 
 
-void stream_window_t::update(int x, int y, int w, int h, Uint32 *pixels,
-		int pitch)
+void stream_window_t::update(SDL_Rect *r, Uint32 *pixels, int pitch)
 {
-	SDL_Rect r;
-	r.x = x;
-	r.y = y;
-	r.w = w;
-	r.h = h;
-	SDL_UpdateTexture(texture, &r, pixels, pitch);
+	SDL_UpdateTexture(texture, r, pixels, pitch * sizeof(Uint32));
 }
-#endif
 
 
 void stream_window_t::invalidate(SDL_Rect *r)
 {
-	if(_autoinvalidate)
-		return;
 	refresh(r);
 }
 
@@ -216,6 +221,9 @@ void stream_window_t::render(SDL_Rect *r)
 {
 	if(_autoinvalidate)
 		invalidate();
+	SDL_SetTextureAlphaMod(texture, _alphamod);
+	SDL_SetTextureColorMod(texture,
+			get_r(_colormod), get_g(_colormod), get_b(_colormod));
 	SDL_RenderCopy(renderer, texture, NULL, &phys_rect);
 }
 

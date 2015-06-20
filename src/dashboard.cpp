@@ -104,6 +104,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		main = ingame = score = 0;
 		break;
 	}
+	wplanet->visible(main);
 	wmain->visible(main);
 #if 0
 	whealth->visible(ingame);

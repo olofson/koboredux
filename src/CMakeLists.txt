@@ -23,6 +23,7 @@ set(sources
 	scenes.cpp
 	screen.cpp
 	states.cpp
+	spinplanet.cpp
 	logger.c
 	graphics/gfxengine.cpp
 	graphics/sofont.cpp

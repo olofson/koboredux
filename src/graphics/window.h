@@ -313,28 +313,27 @@ class stream_window_t : public windowbase_t
   public:
 	stream_window_t(gfxengine_t *e);
 	virtual ~stream_window_t();
-#if 0
+
+	void place(int left, int top, int sizex, int sizey);
+
 	// Lock area for updating. 'pixels' is pointed at a write-only buffer
 	// of 32 bit pixels of the same format as used by the windowbase_t
-	// color tools API. Returns the pitch (in bytes!) of the target buffer,
-	// or if the operation fails, 0.
-	int lock(int x, int y, int w, int h, Uint32 **pixels);
+	// color tools API. Returns the pitch (in Uint32 pixels) of the target
+	// buffer, or if the operation fails, 0.
+	int lock(SDL_Rect *r, Uint32 **pixels);
 
 	// Unlock update area previously locked with lock(). This will upload
 	// the changes to the GPU, or whatever is needed to apply the changes.
 	void unlock();
 
-	// Update the specified area with data from the specified buffer.
-	void update(int x, int y, int w, int h, Uint32 *pixels, int pitch);
-#endif
+	// Update the specified area with data from the specified buffer. Note
+	// that 'pitch' is in Uint32 pixels!
+	void update(SDL_Rect *r, Uint32 *pixels, int pitch);
+
 	void invalidate(SDL_Rect *r = NULL);
 
   protected:
 	SDL_Texture	*texture;	// Hardware/API texture
-
-	// Raw buffer access - valid ONLY during refresh() calls!
-	Uint32		*buffer;	// Raw buffer
-	int		pitch;		// Raw buffer pitch (*pixels* per row)
 
 	void render(SDL_Rect *r);
 };
