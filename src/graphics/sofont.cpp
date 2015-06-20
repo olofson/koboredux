@@ -39,6 +39,7 @@ SoFont::SoFont(SDL_Renderer *_target)
 	cursShift = 0;
 	background = 0;
 	xspace = 1;
+	xscale = yscale = 256;
 }
 
 SoFont::~SoFont()
@@ -260,7 +261,7 @@ void SoFont::CleanSurface(SDL_Surface *surface)
 }
 
 
-bool SoFont::load(SDL_Surface *FontSurface)
+bool SoFont::Load(SDL_Surface *FontSurface)
 {
 	int x = 0, i = 0, s = 0;
 
@@ -282,7 +283,7 @@ bool SoFont::load(SDL_Surface *FontSurface)
 		if(DoStartNewChar(FontSurface, x))
 		{
 			if(i)
-				_Spacing[i - 1] = x - s + xspace;
+				_Spacing[i - 1] = x - s;
 			int p = x;
 			while((x < FontSurface->w) &&
 					(DoStartNewChar(FontSurface, x)))
@@ -331,11 +332,11 @@ bool SoFont::load(SDL_Surface *FontSurface)
 	// Spaces were *way* to wide! //David
 	spacew = 0;
 	if(!spacew)
-		spacew = TextWidth("i") * 3 / 2;
+		spacew = TextWidth("i") * 3 / 2 * 256 / xscale;
 	if(!spacew)
-		spacew = TextWidth("I") * 3 / 2;
+		spacew = TextWidth("I") * 3 / 2 * 256 / xscale;
 	if(!spacew)
-		spacew = TextWidth(".") * 3 / 2;
+		spacew = TextWidth(".") * 3 / 2 * 256 / xscale;
 	if(!spacew)
 		spacew = CharPos[1] - CharPos[0];
 
@@ -390,23 +391,21 @@ void SoFont::PutString(int x, int y, const char *text, SDL_Rect *clip)
 	{
 		if(text[i] == ' ')
 		{
-			x += spacew;
+			x += spacew * xscale >> 8;
 			i++;
 		}
 		else if((text[i] >= START_CHAR) && (text[i] <= max_i))
 		{
 			ofs = text[i] - START_CHAR;
-			srcrect.w = dstrect.w =
-					this->CharPos[ofs + 1] -
-					this->CharPos[ofs];
-			srcrect.h = dstrect.h = height;
-			srcrect.x = this->CharPos[ofs];
+			srcrect.w = CharPos[ofs + 1] - CharPos[ofs];
+			srcrect.h = height;
+			srcrect.x = CharPos[ofs];
 			srcrect.y = 1;
-			dstrect.x = x - CharOffset[ofs];
+			dstrect.x = x - (CharOffset[ofs] * xscale >> 8);
 			dstrect.y = y;
-			dstrect.w = srcrect.w;
-			dstrect.h = srcrect.h;
-			x += Spacing[ofs];
+			dstrect.w = (int)srcrect.w * xscale >> 8;
+			dstrect.h = (int)srcrect.h * yscale >> 8;
+			x += (Spacing[ofs] + xspace) * xscale >> 8;
 			if(clip)
 				sdcRects(&srcrect, &dstrect, *clip);
 			SDL_RenderCopy(target, glyphs, &srcrect, &dstrect);
@@ -449,28 +448,27 @@ void SoFont::PutStringWithCursor(int xs, int y,
 				break;
 			else if(text[i] == ' ')
 			{
-				x += spacew;
+				x += spacew * xscale >> 8;
 				i++;
 			}
 			else if((text[i] >= START_CHAR)
 					&& (text[i] <= max_i))
 			{
 				ofs = text[i] - START_CHAR;
-				x += Spacing[ofs];
+				x += (Spacing[ofs] + xspace) * xscale >> 8;
 				i++;
 			}
 			else
 				i++;
 		ofs = '|' - START_CHAR;
-
-		srcrect.w = dstrect.w = CharPos[ofs + 1] - CharPos[ofs];
-		srcrect.h = dstrect.h = height;
-		srcrect.x = this->CharPos[ofs];
+		srcrect.w = CharPos[ofs + 1] - CharPos[ofs];
+		srcrect.h = height;
+		srcrect.x = CharPos[ofs];
 		srcrect.y = 1;
-		dstrect.x = x - cursShift;
+		dstrect.x = x - (cursShift * xscale >> 8);
 		dstrect.y = y;
-		dstrect.w = srcrect.w;
-		dstrect.h = srcrect.h;
+		dstrect.w = (int)srcrect.w * xscale >> 8;
+		dstrect.h = (int)srcrect.h * xscale >> 8;
 		if(clip)
 			sdcRects(&srcrect, &dstrect, *clip);
 		SDL_RenderCopy(target, glyphs, &srcrect, &dstrect);
@@ -494,13 +492,13 @@ int SoFont::TextWidth(const char *text, int min, int max)
 		else if((text[i] >= START_CHAR) && (text[i] <= max_i))
 		{
 			ofs = text[i] - START_CHAR;
-			x += Spacing[ofs];
+			x += Spacing[ofs] + xspace;
 			i++;
 		}
 		else
 			i++;
 	}
-	return x;
+	return x * xscale >> 8;
 }
 
 void SoFont::XCenteredString(int y, const char *text, SDL_Rect *clip)
@@ -553,13 +551,13 @@ int SoFont::TextCursorAt(const char *text, int px)
 	{
 		if(text[i] == ' ')
 		{
-			x += spacew;
+			x += spacew * xscale >> 8;
 			i++;
 		}
 		else if((text[i] >= START_CHAR) && (text[i] <= max_i))
 		{
 			ofs = text[i] - START_CHAR;
-			x += Spacing[ofs];
+			x += (Spacing[ofs] + xspace) * xscale >> 8;
 			i++;
 		}
 		else

@@ -53,6 +53,7 @@ windowbase_t::windowbase_t(gfxengine_t *e)
 	fgcolor = bgcolor = 0;
 	_alphamod = 255;
 	_colormod = 0xffffffff;
+	memset(&phys_rect, 0, sizeof(phys_rect));
 }
 
 
@@ -715,21 +716,21 @@ void window_t::sprite_fxp(int _x, int _y, int bank, int frame)
 {
 	if(!engine || !renderer)
 		return;
-	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
+	s_bank_t *b = s_get_bank(engine->get_gfx(), bank);
 	if(!b)
 		return;
 	s_sprite_t *s = s_get_sprite_b(b, frame);
 	if(!s || !s->texture)
 		return;
-	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 128) >> 8);
-	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 128) >> 8);
+	_x = CS2PIXEL((_x * xs + 128) >> 8);
+	_y = CS2PIXEL((_y * ys + 128) >> 8);
 	SDL_Rect r;
 
 	SELECT
-	r.x = phys_rect.x + _x;
-	r.y = phys_rect.y + _y;
-	r.w = b->w;
-	r.h = b->h;
+	r.x = phys_rect.x + _x - (s->x * b->xs >> 8);
+	r.y = phys_rect.y + _y - (s->y * b->ys >> 8);
+	r.w = b->w * b->xs >> 8;
+	r.h = b->h * b->ys >> 8;
 	SDL_SetTextureAlphaMod(s->texture, _alphamod);
 	SDL_SetTextureColorMod(s->texture,
 			get_r(_colormod), get_g(_colormod), get_b(_colormod));
@@ -742,21 +743,21 @@ void window_t::sprite_fxp_scale(int _x, int _y, int bank, int frame,
 {
 	if(!engine || !renderer)
 		return;
-	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
+	s_bank_t *b = s_get_bank(engine->get_gfx(), bank);
 	if(!b)
 		return;
 	s_sprite_t *s = s_get_sprite_b(b, frame);
 	if(!s || !s->texture)
 		return;
-	_x = CS2PIXEL(((_x - (s->x << 8)) * xs + 128) >> 8);
-	_y = CS2PIXEL(((_y - (s->y << 8)) * ys + 128) >> 8);
+	_x = CS2PIXEL((_x * xs + 128) >> 8);
+	_y = CS2PIXEL((_y * ys + 128) >> 8);
 	SDL_Rect r;
 
 	SELECT
-	r.x = phys_rect.x + _x;
-	r.y = phys_rect.y + _y;
-	r.w = b->w * xscale;
-	r.h = b->h * yscale;
+	r.x = phys_rect.x + _x - (s->x * b->xs >> 8);
+	r.y = phys_rect.y + _y - (s->y * b->ys >> 8);
+	r.w = (b->w * b->xs >> 8) * xscale;
+	r.h = (b->h * b->ys >> 8) * yscale;
 	SDL_SetTextureAlphaMod(s->texture, _alphamod);
 	SDL_SetTextureColorMod(s->texture,
 			get_r(_colormod), get_g(_colormod), get_b(_colormod));
@@ -815,10 +816,14 @@ void window_t::blit(int dx, int dy, window_t *src)
  // Engine output window
 /////////////////////////////////////////////////////////////////////////////
 
+engine_window_t::engine_window_t(gfxengine_t *e) : window_t(e)
+{
+	e->_target = this;
+}
+
+
 void engine_window_t::refresh(SDL_Rect *r)
 {
-	engine->wx = x();
-	engine->wy = y();
 	engine->pre_render();
 	select();
 	cs_engine_render(engine->csengine);

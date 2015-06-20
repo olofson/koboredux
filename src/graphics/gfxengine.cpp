@@ -52,7 +52,7 @@ gfxengine_t::gfxengine_t()
 	fullwin = NULL;
 	windows = NULL;
 	selected = NULL;
-	wx = wy = 0;
+	wrapx = wrapy = 0;
 	xs = ys = 256;		// 1.0
 	sxs = sys = 256;	// 1.0
 	sf1 = sf2 = acf = bcf = dsf = NULL;
@@ -193,8 +193,8 @@ void gfxengine_t::period(float frameduration)
 
 void gfxengine_t::wrap(int x, int y)
 {
-	wx = x;
-	wy = y;
+	wrapx = x;
+	wrapy = y;
 	if(csengine)
 		cs_engine_set_wrap(csengine, x, y);
 }
@@ -464,7 +464,7 @@ int gfxengine_t::loadtiles(int bank, int w, int h, const char *name)
 }
 
 
-int gfxengine_t::loadfont(int bank, const char *name)
+int gfxengine_t::loadfont(int bank, const char *name, float srcscale)
 {
 	if(!csengine)
 	{
@@ -493,8 +493,8 @@ int gfxengine_t::loadfont(int bank, const char *name)
 		return -4;
 	}
 
-	fonts[bank]->ExtraSpace((xs + 127) / 256);
-	if(fonts[bank]->load(s_get_sprite(gfx, bank, 0)->surface))
+	fonts[bank]->ExtraSpace(srcscale ? (xs + 127) / 256 / srcscale : 1);
+	if(fonts[bank]->Load(s_get_sprite(gfx, bank, 0)->surface))
 	{
 		s_detach_sprite(gfx, bank, 0);
 		log_printf(DLOG, "  Ok.\n");
@@ -532,6 +532,18 @@ int gfxengine_t::copyrect(int bank, int sbank, int sframe, SDL_Rect *r)
 	}
 	log_printf(DLOG, "  Ok.\n");
 	return 0;
+}
+
+
+void gfxengine_t::draw_scale(int bank, float xs, float ys)
+{
+	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
+	if(!b)
+		return;
+	b->xs = (int)(xs * 256.f);
+	b->ys = (int)(ys * 256.f);
+	if(fonts[bank])
+		fonts[bank]->SetScale(xs, ys);
 }
 
 
@@ -622,7 +634,7 @@ int gfxengine_t::open(int objects, int extraflags)
 	}
 
 	csengine->on_frame = on_frame;
-	cs_engine_set_wrap(csengine, wx, wy);
+	cs_engine_set_wrap(csengine, wrapx, wrapy);
 
 	gfx = s_new_container(GFX_BANKS);
 	if(!gfx)
@@ -1046,6 +1058,22 @@ int gfxengine_t::yoffs(int layer)
 }
 
 
+float gfxengine_t::nxoffs(int layer)
+{
+	if(!wrapx)
+		return 0.0f;
+	return (float)xoffs(layer) / wrapx / 256.0f;
+}
+
+
+float gfxengine_t::nyoffs(int layer)
+{
+	if(!wrapy)
+		return 0.0f;
+	return (float)yoffs(layer) / wrapy / 256.0f;
+}
+
+
 void gfxengine_t::screenshot()
 {
 	char filename[1024];
@@ -1118,6 +1146,9 @@ void gfxengine_t::present()
  */
 void gfxengine_t::render_sprite(cs_obj_t *o)
 {
+	gfxengine->target()->sprite_fxp(o->point.gx, o->point.gy,
+			o->anim.bank, o->anim.frame);
+#if 0
 	SDL_Rect dest_rect;
 	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), o->anim.bank);
 	if(!b)
@@ -1126,21 +1157,21 @@ void gfxengine_t::render_sprite(cs_obj_t *o)
 	if(!s || !s->texture)
 		return;
 
-	int x = o->point.gx - (s->x << 8);
-	int y = o->point.gy - (s->y << 8);
-	dest_rect.x = CS2PIXEL((x * gfxengine->xs + 128) >> 8);
-	dest_rect.y = CS2PIXEL((y * gfxengine->ys + 128) >> 8);
-	dest_rect.x += (gfxengine->wx * gfxengine->xs + 128) >> 8;
-	dest_rect.y += (gfxengine->wy * gfxengine->ys + 128) >> 8;
-	dest_rect.w = b->w;
-	dest_rect.h = b->h;
-	windowbase_t *win = gfxengine->selected;
+	dest_rect.x = CS2PIXEL((o->point.gx * gfxengine->xs + 128) >> 8);
+	dest_rect.y = CS2PIXEL((o->point.gy * gfxengine->ys + 128) >> 8);
+	dest_rect.x += (gfxengine->wrapx * gfxengine->xs + 128) >> 8;
+	dest_rect.y += (gfxengine->wrapy * gfxengine->ys + 128) >> 8;
+	dest_rect.x -= s->x * b->xs >> 8;
+	dest_rect.y -= s->y * b->ys >> 8;
+	dest_rect.w = b->w * b->xs >> 8;
+	dest_rect.h = b->h * b->ys >> 8;
 	SDL_SetTextureAlphaMod(s->texture, win->_alphamod);
 	SDL_SetTextureColorMod(s->texture,
 			win->get_r(win->_colormod),
 			win->get_g(win->_colormod),
 			win->get_b(win->_colormod));
 	SDL_RenderCopy(gfxengine->renderer(), s->texture, NULL, &dest_rect);
+#endif
 }
 
 

@@ -53,6 +53,7 @@ typedef struct
 typedef struct
 {
 	unsigned	w, h;	/* Same size for all sprites in bank! */
+	int		xs, ys;	/* Rendering scale factor (24:8) */
 	unsigned	last;
 	unsigned	max;
 	s_sprite_t	**sprites;

@@ -37,9 +37,14 @@
 #include "config.h"
 #include "random.h"
 
-window_t *_screen::target = NULL;
 int _screen::scene_max;
 int _screen::scene_num;
+int _screen::region;
+int _screen::level;
+int _screen::bg_altitude;
+int _screen::bg_backdrop;
+int _screen::bg_clouds;
+int _screen::bg_planet;
 int _screen::restarts;
 int _screen::generate_count;
 _map _screen::map;
@@ -81,9 +86,8 @@ void _screen::init_maps()
 }
 
 
-void _screen::init_graphics(window_t *win)
+void _screen::init_graphics()
 {
-	target = win;
 	init_starfield_colors();
 }
 
@@ -567,6 +571,7 @@ void _screen::scroller()
 
 void _screen::init_scene(int sc)
 {
+	window_t *win = gengine->target();
 	map.init();
 	if(sc < 0)
 	{
@@ -594,7 +599,7 @@ void _screen::init_scene(int sc)
 			scene_num = -(sc + 1) % scene_max;
 			restarts = -(sc + 1) / scene_max;
 		}
-		wmain->colormod(wmain->map_rgb(128, 128, 128));
+		win->colormod(win->map_rgb(128, 128, 128));
 	}
 	else
 	{
@@ -605,7 +610,7 @@ void _screen::init_scene(int sc)
 		scene_num = sc % scene_max;
 		restarts = sc / scene_max;
 		radar_mode = RM_RADAR;
-		wmain->colormod(wmain->map_rgb(255, 255, 255));
+		win->colormod(win->map_rgb(255, 255, 255));
 	}
 	gengine->period(game.speed);
 	sound.period(game.speed);
@@ -625,6 +630,8 @@ int _screen::prepare()
 {
 	if(scene_num < 0)
 		return 0;
+
+	window_t *win = gengine->target();
 	const _scene *s = &scene[scene_num];
 	int i, j;
 	int count_core = 0;
@@ -640,7 +647,7 @@ int _screen::prepare()
 	enemies.set_ekind_to_generate(s->ek1, interval_1, s->ek2,
 			interval_2);
 
-	wmain->clear();
+	win->clear();
 	for(i = 0; i < MAP_SIZEX; i++)
 		for(j = 0; j < MAP_SIZEY; j++)
 		{
@@ -726,6 +733,7 @@ void _screen::render_noise()
 		return;
 	if(noise_fade < 0.01f)
 		return;
+	window_t *win = gengine->target();
 	int ymax = noise_y + noise_h;
 	int np = pubrand.get(8);
 	int dnp = pubrand.get(4) - 8;
@@ -750,7 +758,7 @@ void _screen::render_noise()
 		float lv = np * noise_depth * (1.0f - noise_bright) / 255.0f +
 				noise_bright;
 		for(int x = 0; x < xmax; ++x)
-			target->sprite_fxp(
+			win->sprite_fxp(
 					PIXEL2CS(x << NOISE_SIZEX_LOG2) - xo,
 					PIXEL2CS((int)fy),
 					noise_source, (int)(lv * 15.0f +
@@ -772,8 +780,9 @@ void _screen::set_noise(int source, float fade, float bright, float depth)
 
 void _screen::render_highlight()
 {
+	window_t *win = gengine->target();
 	if(!highlight_h)
-		highlight_y = target->height() / 2;
+		highlight_y = win->height() / 2;
 
 	static float ypos = -50;
 	static float hf = 0;
@@ -817,7 +826,7 @@ void _screen::render_highlight()
 					B_NOISE, 6);
 	}
 
-	int x0 = target->phys_rect.x;
+	int x0 = win->phys_rect.x;
 	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), B_FOCUSFX);
 	if(!b)
 		return;
@@ -825,9 +834,9 @@ void _screen::render_highlight()
 	if(!s || !s->texture)
 		return;
 	SDL_Renderer *r = gengine->renderer();
-	y = (int)((y * gengine->yscale() + 128) / 256) + target->phys_rect.y;
+	y = (int)((y * gengine->yscale() + 128) / 256) + win->phys_rect.y;
 	h = (int)(hf * gengine->yscale());
-	target->select();
+	win->select();
 	for(int ty = 0; ty < h; ++ty)
 	{
 		float sy = (float)ty / (h - 1);
@@ -907,16 +916,18 @@ void _screen::init_starfield_colors()
 		1,	52,	51,	2,
 		47,	3,	46,	4
 	};
+	window_t *win = gengine->target();
 	for(int i = 0; i < STAR_COLORS; ++i)
 		starcolors[STAR_COLORS - i - 1] =
-				target->map_rgb(gengine->palette(colors[i]));
+				win->map_rgb(gengine->palette(colors[i]));
 }
 
 void _screen::render_starfield(int xo, int yo, int altitude, int psize)
 {
+	window_t *win = gengine->target();
 	int i;
-	int w = target->width() * 256;
-	int h = target->height() * 256;
+	int w = win->width() * 256;
+	int h = win->height() * 256;
 	int xc = w / 2;
 	int yc = h / 2;
 	int pivot = altitude << 8;	// Rotation pivot z coordinate
@@ -951,7 +962,7 @@ void _screen::render_starfield(int xo, int yo, int altitude, int psize)
 	dx = (dx << 16) / w;
 	dy = (dy << 16) / h;
 
-	target->select();
+	win->select();
 	for(i = 0; i < nstars; ++i)
 	{
 		int iz = (int)stars[i].z;
@@ -976,8 +987,8 @@ void _screen::render_starfield(int xo, int yo, int altitude, int psize)
 		y += yc;
 
 		// Plot!
-		target->foreground(starcolors[iz * STAR_COLORS >> 16]);
-		target->fillrect_fxp(x, y, 256, 256);
+		win->foreground(starcolors[iz * STAR_COLORS >> 16]);
+		win->fillrect_fxp(x, y, 256, 256);
 	}
 }
 
@@ -1108,7 +1119,7 @@ void _screen::render_background()
 			}
 			else
 				tile = MAP_TILE(n);
-			target->sprite_fxp(PIXEL2CS(x * TILE_SIZE) - xo,
+			win->sprite_fxp(PIXEL2CS(x * TILE_SIZE) - xo,
 					PIXEL2CS(y * TILE_SIZE) - yo,
 					tileset, tile);
 		}

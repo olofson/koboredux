@@ -84,7 +84,7 @@ class _screen
 	~_screen();
 	static radar_modes_t radar_mode;	// Last set radar mode
 	static void init_maps();
-	static void init_graphics(window_t *win);
+	static void init_graphics();
 	static void init_scene(int sc);
 	static int prepare();
 	static void generate_fixed_enemies();

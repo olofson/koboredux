@@ -231,6 +231,7 @@ class windowbase_t
 
 	void foreground(Uint32 color)	{ fgcolor = color; }
 	void background(Uint32 color)	{ bgcolor = color; }
+
 	void colormod(Uint32 color)
 	{
 		_colormod = color;
@@ -413,7 +414,7 @@ class window_t : public windowbase_t
 class engine_window_t : public window_t
 {
   public:
-	engine_window_t(gfxengine_t *e) : window_t(e) { }
+	engine_window_t(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
 };
 

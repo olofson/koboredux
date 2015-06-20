@@ -25,8 +25,6 @@
 #define	_GFXENGINE_H_
 
 #define GFX_BANKS	256
-#define	MAX_DIRTYRECTS	1024
-#define	MAX_PAGES	3
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,6 +59,7 @@ class gfxengine_t
 	~gfxengine_t();
 
 	window_t *screen()	{ return fullwin; }
+	window_t *target()	{ return _target; }
 
 	void messagebox(const char *message);
 
@@ -105,8 +104,9 @@ class gfxengine_t
 
 	int loadimage(int bank, const char *name);
 	int loadtiles(int bank, int w, int h, const char *name);
-	int loadfont(int bank, const char *name);
+	int loadfont(int bank, const char *name, float srcscale);
 	int copyrect(int bank, int sbank, int sframe, SDL_Rect *r);
+	void draw_scale(int bank, float xs, float ys);
 
 	int is_loaded(int bank);
 	void reload();
@@ -174,8 +174,13 @@ class gfxengine_t
 	void scroll(int xs, int ys);
 	void force_scroll();
 
+	// Scroll offsets
 	int xoffs(int layer);
 	int yoffs(int layer);
+
+	// Normalized scroll offsets (only valid with wrapping!)
+	float nxoffs(int layer);
+	float nyoffs(int layer);
 
 	// Info
 	int objects_in_use();
@@ -191,9 +196,9 @@ class gfxengine_t
 	SDL_Window	*sdlwindow;
 	SDL_Renderer	*sdlrenderer;
 	window_t	*fullwin;
+	window_t	*_target;
 	windowbase_t	*windows;	// Linked list
 	windowbase_t	*selected;	// Currently selected for rendering
-	int		wx, wy;
 	int		xs, ys;		// fix 24:8
 	int		sxs, sys;	// fix 24:8
 	s_filter_t	*sf1, *sf2;	// Scaling filter plugins
@@ -201,6 +206,7 @@ class gfxengine_t
 	s_filter_t	*bcf;		// Brightness/contrast plugin
 	s_filter_t	*dsf;		// Display format plugin
 	int		xscroll, yscroll;
+	int		wrapx, wrapy;	// World wrap, or 0
 	float		xratio[CS_LAYERS];
 	float		yratio[CS_LAYERS];
 	s_container_t	*gfx;

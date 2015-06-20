@@ -264,6 +264,7 @@ s_bank_t *s_new_bank(s_container_t *c, unsigned bank, unsigned frames,
 	b->max = frames - 1;
 	b->w = w;
 	b->h = h;
+	b->xs = b->ys = 256;
 	return b;
 }
 

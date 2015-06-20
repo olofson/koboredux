@@ -49,6 +49,8 @@
 		* Glyph marker color is now anything more purple than #808080.
 		* The top (marker) pixel row is now simply cleared after
 		  glyphs have been extracted, completely disregarding contents.
+		* Added scaling support.
+		* Fixed some API naming inconsistencies.
 */
 
 #ifndef __SOFONT_H
@@ -64,7 +66,12 @@ public:
 	SoFont(SDL_Renderer *_target);
 	~SoFont();
 
-	bool load(SDL_Surface *FontSurface);
+	bool Load(SDL_Surface *FontSurface);
+	void SetScale(float xs, float ys)
+	{
+		xscale = (int)(xs * 256.0f);
+		yscale = (int)(ys * 256.0f);
+	}
 
 	// Renders a string to the target
 	void PutString(int x, int y, const char *text, SDL_Rect *clip = NULL);
@@ -93,8 +100,8 @@ public:
 	int CleverTextCursorAt(const char *text, int px, int cursPos,
 			SDL_Rect *r);
 
-	int getMinChar()	{ return START_CHAR; }
-	int getMaxChar()	{ return max_i; }
+	int GetMinChar()	{ return START_CHAR; }
+	int GetMaxChar()	{ return max_i; }
 
 	void ExtraSpace(int xs)	{ xspace = xs; }
 
@@ -108,6 +115,7 @@ protected:
 	int xspace;
 	int max_i, spacew, cursShift;
 	Uint32 background;
+	int xscale, yscale;
 	bool DoStartNewChar(SDL_Surface *surface, Sint32 x);
 	void CleanSurface(SDL_Surface *surface);
 };

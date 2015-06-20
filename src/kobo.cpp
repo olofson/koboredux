@@ -946,24 +946,34 @@ typedef struct KOBO_GfxDesc
 static KOBO_GfxDesc gfxdesc[] = {
 	// Loading screen
 	{ "Loading loading screen graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>olofsonarcade-do64.png", B_LOADING,	0, 0,	1.0f,
+	{ "GFX>>olofsonarcade-do64.png", B_LOADING,	0, 0,	0.0f,
 			KOBO_CLAMP | KOBO_NOALPHA | KOBO_CENTER },
-	{ "GFX>>arcadefont.png", B_NORMAL_FONT,	0, 0,	1.0f,	KOBO_FONT },
+	{ "GFX>>arcadefont.png", B_NORMAL_FONT,	0, 0,	0.0f,	KOBO_FONT },
 
 	// In-game
 	{ "Loading in-game graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
 
-	{ "GFX>>tiles-green.png", B_R1_TILES,	16, 16,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>testplanet-64.png", B_R1L3_PLANET, 0, 0, 1.0f,
+	{ "GFX>>tiles-green.png", B_R1_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>testplanet-64.png", B_R1L3_PLANET, 0, 0, 0.0f,
 				KOBO_CENTER | KOBO_CLAMP },
-	{ "GFX>>testplanet-80.png", B_R1L4_PLANET, 0, 0, 1.0f,
+	{ "GFX>>testplanet-80.png", B_R1L4_PLANET, 0, 0, 0.0f,
 				KOBO_CENTER | KOBO_CLAMP },
-	{ "GFX>>testplanet-128.png", B_R1L5_PLANET, 0, 0, 1.0f,
+	{ "GFX>>testplanet-128.png", B_R1L5_PLANET, 0, 0, 0.0f,
 				KOBO_CENTER | KOBO_CLAMP },
-	{ "GFX>>testplanet-192.png", B_R1L6_PLANET, 0, 0, 1.0f,
+	{ "GFX>>testplanet-192.png", B_R1L6_PLANET, 0, 0, 0.0f,
 				KOBO_CENTER | KOBO_CLAMP },
-	{ "GFX>>testplanet-288.png", B_R1L7_PLANET, 0, 0, 1.0f,
+#if 0
+	{ "GFX>>testplanet-288.png", B_R1L7_PLANET, 0, 0, 0.0f,
 				KOBO_CENTER | KOBO_CLAMP },
+#else
+	{ "GFX>>spinplanet-288.png", B_R1L7_PLANET, 288, 288, 0.0f,
+				KOBO_CENTER | KOBO_CLAMP },
+#endif
+
+	{ "GFX>>tiles-green.png", B_R2_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-green.png", B_R3_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-green.png", B_R4_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-green.png", B_R5_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
 
 	{ "GFX>>crosshair.png", B_CROSSHAIR,	32, 32,	1.0f,	KOBO_CENTER },
 	{ "GFX>>player.png", B_PLAYER,		40, 40,	2.0f,	KOBO_CENTER },
@@ -975,23 +985,23 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "GFX>>missile2.png", B_MISSILE2,	40, 40,	2.0f,	KOBO_CENTER },
 	{ "GFX>>missile3.png", B_MISSILE3,	40, 40,	2.0f,	KOBO_CENTER },
 	{ "GFX>>orange-bolt.png", B_BOLT,	8, 8,	1.0f,	KOBO_CENTER },
-	{ "GFX>>explo1.png", B_EXPLO1,		24, 24,	1.0f,	KOBO_CENTER },
+	{ "GFX>>explo1.png", B_EXPLO1,		24, 24,	0.0f,	KOBO_CENTER },
 #if 0
 	{ "GFX>>explo3e.png", B_EXPLO3,		64, 64,	2.0f,	KOBO_CENTER },
 	{ "GFX>>explo4e.png", B_EXPLO4,		64, 64,	2.0f,	KOBO_CENTER },
 	{ "GFX>>explo5e.png", B_EXPLO5,		64, 64,	2.0f,	KOBO_CENTER },
 #else
-	{ "GFX>>explo1.png", B_EXPLO3,		24, 24,	1.0f,	KOBO_CENTER },
-	{ "GFX>>explo1.png", B_EXPLO4,		24, 24,	1.0f,	KOBO_CENTER },
-	{ "GFX>>explo1.png", B_EXPLO5,		24, 24,	1.0f,	KOBO_CENTER },
+	{ "GFX>>explo1.png", B_EXPLO3,		24, 24,	0.0f,	KOBO_CENTER },
+	{ "GFX>>explo1.png", B_EXPLO4,		24, 24,	0.0f,	KOBO_CENTER },
+	{ "GFX>>explo1.png", B_EXPLO5,		24, 24,	0.0f,	KOBO_CENTER },
 #endif
 	{ "GFX>>rock1c.png", B_ROCK1,		32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>rock2.png", B_ROCK2,		32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>shinyrock.png", B_ROCK3,	32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>rockexpl.png", B_ROCKEXPL,	64, 64,	2.0f,	KOBO_CENTER },
 
-	{ "GFX>>bullet.png", B_BLT_GREEN,	8, 8,	1.0f,	KOBO_CENTER },
-	{ "GFX>>red-bullet.png", B_BLT_RED,	8, 8,	1.0f,	KOBO_CENTER },
+	{ "GFX>>bullet.png", B_BLT_GREEN,	8, 8,	0.0f,	KOBO_CENTER },
+	{ "GFX>>red-bullet.png", B_BLT_RED,	8, 8,	0.0f,	KOBO_CENTER },
 	{ "GFX>>bulletexpl2.png", B_BLTX_GREEN,	32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>bulletexpl2.png", B_BLTX_RED,	32, 32,	2.0f,	KOBO_CENTER },
 
@@ -1003,29 +1013,29 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	// Dashboard
 	{ "Loading dashboard graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>hleds.png", B_HLEDS,		8, 5,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>vleds.png", B_VLEDS,		5, 8,	1.0f,	KOBO_CLAMP },
-	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	1.0f,
+	{ "GFX>>hleds.png", B_HLEDS,		8, 5,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>vleds.png", B_VLEDS,		5, 8,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	0.0f,
 			KOBO_CLAMP_OPAQUE },
 
 	// Logo
 	{ "Loading logo", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>logo2f.png", B_LOGO,		0, 0,	1.0f,	0 },
+	{ "GFX>>logo2f.png", B_LOGO,		0, 0,	0.0f,	0 },
 
 	// Fonts
 	{ "Loading fonts", 0, 0,0, 0.0f, KOBO_MESSAGE },
 /* FIXME: Dedicated medium size font? */
-	{ "GFX>>arcadefont.png", B_MEDIUM_FONT,	0, 0,	1.0f,	KOBO_FONT },
-	{ "GFX>>bigfont.png", B_BIG_FONT,	0, 0,	1.0f,	KOBO_FONT },
+	{ "GFX>>arcadefont.png", B_MEDIUM_FONT,	0, 0,	0.0f,	KOBO_FONT },
+	{ "GFX>>bigfont.png", B_BIG_FONT,	0, 0,	0.0f,	KOBO_FONT },
 	{ "GFX>>counterfont.png", B_COUNTER_FONT, 0, 0,	2.0f,	KOBO_FONT },
 
 	// Special FX
 	{ "Loading special FX graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>noise.png", B_NOISE,		NOISE_SIZEX, 1,	1.0f,
+	{ "GFX>>noise.png", B_NOISE,		NOISE_SIZEX, 1,	0.0f,
 			KOBO_CLAMP },
-	{ "GFX>>hitnoise.png", B_HITNOISE,	NOISE_SIZEX, 1,	1.0f,
+	{ "GFX>>hitnoise.png", B_HITNOISE,	NOISE_SIZEX, 1,	0.0f,
 			KOBO_CLAMP | KOBO_NEAREST },
-	{ "GFX>>focusfx.png", B_FOCUSFX,	0, 0,	1.0f, KOBO_CLAMP },
+	{ "GFX>>focusfx.png", B_FOCUSFX,	0, 0,	0.0f, KOBO_CLAMP },
 
 	{ NULL, 0,	0, 0,	0.0f,	0 }	// Terminator
 };
@@ -1098,7 +1108,7 @@ int KOBO_main::load_graphics(prefs_t *p)
 		}
 		int res;
 		if(gd->flags & KOBO_FONT)
-			res = gengine->loadfont(gd->bank, fn);
+			res = gengine->loadfont(gd->bank, fn, gd->scale);
 		else if(!gd->w || !gd->h)
 			res = gengine->loadimage(gd->bank, fn);
 		else
@@ -1109,6 +1119,11 @@ int KOBO_main::load_graphics(prefs_t *p)
 			continue;
 		}
 
+		// Draw (real time) scale
+		if(!gd->scale)
+			gengine->draw_scale(gd->bank, gengine->xscale(),
+					gengine->yscale());
+
 		// Hotspot
 		if(gd->flags & KOBO_CENTER)
 		{
@@ -1116,24 +1131,14 @@ int KOBO_main::load_graphics(prefs_t *p)
 					gd->bank);
 			if(b)
 				gengine->set_hotspot(gd->bank, -1,
-						b->w / gengine->xscale() / 2,
-						b->h / gengine->yscale() / 2);
+						b->w / 2, b->h / 2);
 		}
 
 		// Update progress bar
 		progress();
 	}
-#if 0
-	r.x = 244;
-	r.y = (SCREEN_HEIGHT - MAP_SIZEY) / 2;
-	r.w = MAP_SIZEX;
-	r.h = MAP_SIZEY;
-	if(gengine->copyrect(B_RADAR_BACK, B_SCREEN, 0, &r) < 0)
-		log_printf(ELOG, "Couldn't copy B_RADAR_BACK!\n");
-	progress();
-#endif
 
-	screen.init_graphics(wmain);
+	screen.init_graphics();
 
 	// We can try to run with missing graphics, but without the menu font,
 	// the user may not even be able to find his/her way out of the game!
@@ -1473,7 +1478,7 @@ int KOBO_main::run()
 			}
 			else
 			{
-				screen.init_graphics(wmain);
+				screen.init_graphics();
 				gamecontrol.init(prefs->always_fire);
 				log_printf(ULOG, "--- Video restarted.\n");
 			}
@@ -1495,7 +1500,7 @@ int KOBO_main::run()
 				if(load_graphics(prefs) < 0)
 					return 7;
 				wdash->progress_done();
-				screen.init_graphics(wmain);
+				screen.init_graphics();
 				wdash->mode(manage.game_stopped() ?
 						DASHBOARD_TITLE :
 						DASHBOARD_GAME);
