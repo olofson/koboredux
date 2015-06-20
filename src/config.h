@@ -52,6 +52,13 @@
 #define vsnprintf _vsnprintf
 #endif
 
+/*
+ * SDL2 pixel format for surface and textures.
+ *
+ * NOTE: The pix_t struct in sprite.h needs to match this!
+ */
+#define	KOBO_PIXELFORMAT	SDL_PIXELFORMAT_ABGR8888
+
 /* Key/button repeat timing */
 #define	KOBO_KEY_DELAY		250
 #define	KOBO_KEY_REPEAT		40

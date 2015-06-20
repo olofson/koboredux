@@ -20,6 +20,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "config.h"
 #include "logger.h"
 #include "window.h"
 #include "gfxengine.h"
@@ -303,7 +304,7 @@ int window_t::offscreen()
 	{
 		// Texture used as render target
 		otexture = SDL_CreateTexture(engine->renderer(),
-				SDL_PIXELFORMAT_ARGB8888,
+				KOBO_PIXELFORMAT,
 				SDL_TEXTUREACCESS_TARGET,
 				phys_rect.w, phys_rect.h);
 		if(!otexture)
@@ -314,10 +315,9 @@ int window_t::offscreen()
 #endif
 	{
 		// Fallback: Texture + surface with software renderer
-		Uint32 fmt = SDL_PIXELFORMAT_ARGB8888;
 		int bpp;
 		Uint32 Rmask, Gmask, Bmask, Amask;
-		SDL_PixelFormatEnumToMasks(fmt,
+		SDL_PixelFormatEnumToMasks(KOBO_PIXELFORMAT,
 				&bpp, &Rmask, &Gmask, &Bmask, &Amask);
 		osurface = SDL_CreateRGBSurface(0,
 				phys_rect.w, phys_rect.h,
@@ -328,7 +328,7 @@ int window_t::offscreen()
 		if(!renderer)
 			return -11;
 		otexture = SDL_CreateTexture(engine->renderer(),
-				fmt, SDL_TEXTUREACCESS_STREAMING,
+				KOBO_PIXELFORMAT, SDL_TEXTUREACCESS_STREAMING,
 				phys_rect.w, phys_rect.h);
 		if(!otexture)
 			return -12;

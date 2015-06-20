@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <math.h>
+#include "config.h"
 #include "logger.h"
 #include "SDL.h"
 #include "SDL_image.h"
@@ -236,28 +237,13 @@ int s_filter_rgba8(s_bank_t *b, unsigned first, unsigned frames,
 		s_filter_args_t *args)
 {
 	unsigned i;
-	SDL_PixelFormat fmt;
-	memset(&fmt, 0, sizeof(fmt));
-	fmt.BitsPerPixel = 32;
-	fmt.BytesPerPixel = 4;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	fmt.Rmask = 0xff000000;
-	fmt.Gmask = 0x00ff0000;
-	fmt.Bmask = 0x0000ff00;
-	fmt.Amask = 0x000000ff;
-#else
-	fmt.Rmask = 0x000000ff;
-	fmt.Gmask = 0x0000ff00;
-	fmt.Bmask = 0x00ff0000;
-	fmt.Amask = 0xff000000;
-#endif
 	for(i = 0; i < frames; ++i)
 	{
 		SDL_Surface *tmp;
 		s_sprite_t *s = s_get_sprite_b(b, first+i);
 		if(!s)
 			continue;
-		tmp = SDL_ConvertSurface(s->surface, &fmt,
+		tmp = SDL_ConvertSurfaceFormat(s->surface, KOBO_PIXELFORMAT,
 				SDL_SWSURFACE);
 		if(!tmp)
 			return -1;
@@ -910,17 +896,17 @@ int s_filter_scale(s_bank_t *b, unsigned first, unsigned frames,
 
 	for(i = 0; i < frames; ++i)
 	{
+		int bpp;
+		Uint32 Rmask, Gmask, Bmask, Amask;
 		s_sprite_t *s = s_get_sprite_b(b, first+i);
 		if(!s)
 			continue;
 		params.src = s->surface;
+		SDL_PixelFormatEnumToMasks(KOBO_PIXELFORMAT, &bpp,
+				&Rmask, &Gmask, &Bmask, &Amask);
 		params.dst = SDL_CreateRGBSurface(SDL_SWSURFACE,
-				params.max_x, params.max_y, 32,
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-				0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#else
-				0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#endif
+				params.max_x, params.max_y, bpp,
+				Rmask, Gmask, Bmask, Amask);
 		if(!params.dst)
 			return -1;
 #ifdef DEBUG

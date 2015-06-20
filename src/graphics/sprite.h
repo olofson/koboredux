@@ -209,10 +209,17 @@ void s_remove_filter(s_filter_t *filter);
 /* RGBA pixel type (used internally by most filters as well) */
 typedef struct
 {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	Uint8	a;
+	Uint8	b;
+	Uint8	g;
+	Uint8	r;
+#else
 	Uint8	r;
 	Uint8	g;
 	Uint8	b;
 	Uint8	a;
+#endif
 } pix_t;
 
 /*
