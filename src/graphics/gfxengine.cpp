@@ -1062,7 +1062,7 @@ float gfxengine_t::nxoffs(int layer)
 {
 	if(!wrapx)
 		return 0.0f;
-	return (float)xoffs(layer) / wrapx / 256.0f;
+	return (float)(xoffs(layer) % (wrapx << 8)) / wrapx / 256.0f;
 }
 
 
@@ -1070,7 +1070,7 @@ float gfxengine_t::nyoffs(int layer)
 {
 	if(!wrapy)
 		return 0.0f;
-	return (float)yoffs(layer) / wrapy / 256.0f;
+	return (float)(yoffs(layer) % (wrapy << 8)) / wrapy / 256.0f;
 }
 
 
