@@ -213,12 +213,39 @@ void _myship::move_redux()
 	int v;
 	if(gamecontrol.dir_push())
 		v = PIXEL2CS(4);
-	else if(!prefs->cmd_pushmove)
-		v = PIXEL2CS(2);
 	else
-		v = 0;
-	vx += (int)((v * sin(M_PI * (di - 1) / 4)) - vx) >> 2;
-	vy -= (int)((v * cos(M_PI * (di - 1) / 4)) + vy) >> 2;
+	{
+		if(!prefs->cmd_pushmove)
+			v = PIXEL2CS(2);
+		else
+			v = 0;
+	}
+
+	int tvx = v * sin(M_PI * (di - 1) / 4);
+	if(tvx)
+	{
+		// Acceleration
+		vx += (tvx - vx) >> 2;
+	}
+	else
+	{
+		// Retardation
+		vx -= vx >> 2;
+
+		// Kill remainder creep speed caused by truncation
+		if((vx > -4) && (vx < 4))
+			vx = 0;
+	}
+
+	int tvy = v * cos(M_PI * (di - 1) / 4);
+	if(tvy)
+		vy -= (tvy + vy) >> 2;
+	else
+	{
+		vy -= vy >> 2;
+		if((vy > -4) && (vy < 4))
+			vy = 0;
+	}
 }
 
 int _myship::move()
