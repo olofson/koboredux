@@ -240,8 +240,8 @@ void gfxengine_t::scalemode(gfx_scalemodes_t sm, int clamping)
 	if(!sf1)
 		return;
 
-	int rxs = (xs * 256 + 128) / sxs;
-	int rys = (ys * 256 + 128) / sys;
+	int rxs = (xs * 256 + 127) / sxs;
+	int rys = (ys * 256 + 127) / sys;
 
 	// Filter 2 is off in most cases
 	sf2->args.x = 0;
