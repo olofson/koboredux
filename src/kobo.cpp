@@ -937,13 +937,22 @@ static float progtab_all[] = {
 
 typedef enum
 {
+	// Clamping/wrapping options for filters
 	KOBO_CLAMP =		0x0001,	// Clamp to frame edge pixels
 	KOBO_CLAMP_OPAQUE =	0x0002,	// Clamp to black; not transparent
-	KOBO_NOALPHA =		0x0004,	// Disable alpha channel
+	KOBO_WRAP =		0x0004,	// Wrap around frame edges
+
+	// Scaling filter options
 	KOBO_NEAREST =		0x0010,	// Force NEAREST scale mode
-	KOBO_CENTER =		0x0020,	// Center hotspot in frames
-	KOBO_NOBRIGHT =		0x0040,	// Disable brightness/contrast filter
-	KOBO_FONT =		0x0080,	// Load as "SFont" rather than tiles!
+	KOBO_BILINEAR =		0x0020,	// Force BILINEAR scale mode
+	KOBO_ABSSCALE =		0x0040,	// Scale factor is absolute
+
+	// Other options
+	KOBO_NOALPHA =		0x0100,	// Disable alpha channel
+	KOBO_CENTER =		0x0200,	// Center hotspot in frames
+	KOBO_NOBRIGHT =		0x0400,	// Disable brightness/contrast filter
+	KOBO_FONT =		0x0800,	// Load as "SFont" rather than tiles!
+
 	KOBO_MESSAGE =		0x1000	// Not a file! 'path' is a message.
 } KOBO_GfxDescFlags;
 
@@ -1047,7 +1056,7 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "GFX>>noise.png", B_NOISE,		NOISE_SIZEX, 1,	0.0f,
 			KOBO_CLAMP },
 	{ "GFX>>hitnoise.png", B_HITNOISE,	NOISE_SIZEX, 1,	0.0f,
-			KOBO_CLAMP | KOBO_NEAREST },
+			KOBO_CLAMP },
 	{ "GFX>>focusfx.png", B_FOCUSFX,	0, 0,	0.0f, KOBO_CLAMP },
 
 	{ NULL, 0,	0, 0,	0.0f,	0 }	// Terminator
@@ -1087,10 +1096,14 @@ int KOBO_main::load_graphics(prefs_t *p)
 			gengine->clampcolor(0, 0, 0, 255);
 			clamping = 1;
 		}
+		else if(gd->flags & KOBO_WRAP)
+			clamping = 3;
 		else
 			clamping = 0;
 		if(gd->flags & KOBO_NEAREST)
 			sm = GFX_SCALE_NEAREST;
+		else if(gd->flags & KOBO_BILINEAR)
+			sm = GFX_SCALE_BILINEAR;
 		else
 			sm = (gfx_scalemodes_t) p->scalemode;
 		gengine->scalemode(sm, clamping);
@@ -1108,8 +1121,13 @@ int KOBO_main::load_graphics(prefs_t *p)
 		else
 			gengine->noalpha(0);
 
-		// Source image scale
-		gengine->source_scale(gd->scale, gd->scale);
+		// Source image scale factor
+		if(gd->flags & KOBO_ABSSCALE)
+			gengine->absolute_scale(gd->scale, gd->scale);
+		else if(gd->scale == 0.0f)
+			gengine->absolute_scale(1.0f, 1.0f);
+		else
+			gengine->source_scale(gd->scale, gd->scale);
 
 		// Load!
 		fn = fmap->get(gd->path);

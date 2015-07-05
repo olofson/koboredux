@@ -75,12 +75,28 @@ static inline pix_t getpix32c(SDL_Surface *s, int x, int y)
 	pix_t	*p;
 	if(x < 0)
 		x = 0;
-	else if(x >= s->w-1)
-		x = s->w-1;
+	else if(x >= s->w)
+		x = s->w - 1;
 	if(y < 0)
 		y = 0;
-	else if(y >= s->h-1)
-		y = s->h-1;
+	else if(y >= s->h)
+		y = s->h - 1;
+	p = (pix_t *)((char *)s->pixels + y * s->pitch);
+	return p[x];
+}
+
+/* Wrapping version */
+static inline pix_t getpix32w(SDL_Surface *s, int x, int y)
+{
+	pix_t	*p;
+	if(x < 0)
+		x += s->w;
+	else if(x >= s->w)
+		x -= s->w;
+	if(y < 0)
+		y += s->h;
+	else if(y >= s->h)
+		y -= s->h;
 	p = (pix_t *)((char *)s->pixels + y * s->pitch);
 	return p[x];
 }
@@ -132,6 +148,13 @@ static inline pix_t getpix32i(SDL_Surface *s, int x, int y)
 static inline pix_t getpix32ic(SDL_Surface *s, int x, int y)
 {
 	GETPIXI(getpix32c)
+}
+
+
+/* Wrapping version */
+static inline pix_t getpix32iw(SDL_Surface *s, int x, int y)
+{
+	GETPIXI(getpix32w)
 }
 
 
@@ -666,6 +689,19 @@ static void do_scale_bilinear_clamp(scale_params_t *p)
 	}
 }
 
+static void do_scale_bilinear_wrap(scale_params_t *p)
+{
+	int x, y, sx, sy;
+	for(y = p->start_y, sy = p->start_sy; y < p->max_y; ++y, sy += p->scy)
+	{
+		pix_t *pix = (pix_t *)((char *)p->dst->pixels +
+				y * p->dst->pitch);
+		for(x = p->start_x, sx = p->start_sx; x < p->max_x;
+				++x, sx += p->scx)
+			pix[x] = getpix32iw(p->src, sx >> 12, sy >> 12);
+	}
+}
+
 static void scale_bilinear(scale_params_t *p)
 {
 	do_scale(p, do_scale_bilinear_clip, do_scale_bilinear_noclip);
@@ -674,6 +710,11 @@ static void scale_bilinear(scale_params_t *p)
 static void scale_bilinear_clamp(scale_params_t *p)
 {
 	do_scale(p, do_scale_bilinear_clamp, do_scale_bilinear_noclip);
+}
+
+static void scale_bilinear_wrap(scale_params_t *p)
+{
+	do_scale(p, do_scale_bilinear_wrap, do_scale_bilinear_noclip);
 }
 
 
@@ -737,6 +778,15 @@ static void do_scale_2x_clamp(scale_params_t *p)
 				x += 2, ++sx)
 			SCALE2X(getpix32c, setpix32);
 }
+
+static void do_scale_2x_wrap(scale_params_t *p)
+{
+	int x, y, sx, sy;
+	for(y = p->start_y, sy = p->start_sy >> 16; y < p->max_y; y += 2, ++sy)
+		for(x = p->start_x, sx = p->start_sx >> 16; x < p->max_x;
+				x += 2, ++sx)
+			SCALE2X(getpix32w, setpix32);
+}
 #undef	CDIFF
 #undef	SCALE2X
 
@@ -748,6 +798,11 @@ static void scale_2x(scale_params_t *p)
 static void scale_2x_clamp(scale_params_t *p)
 {
 	do_scale(p, do_scale_2x_clamp, do_scale_2x_noclip);
+}
+
+static void scale_2x_wrap(scale_params_t *p)
+{
+	do_scale(p, do_scale_2x_wrap, do_scale_2x_noclip);
 }
 
 
@@ -809,6 +864,15 @@ static void do_scale_diamond2x_clamp(scale_params_t *p)
 				x += 2, ++sx)
 			DIAMOND(getpix32c, setpix32);
 }
+
+static void do_scale_diamond2x_wrap(scale_params_t *p)
+{
+	int x, y, sx, sy;
+	for(y = p->start_y, sy = p->start_sy >> 16; y < p->max_y; y += 2, ++sy)
+		for(x = p->start_x, sx = p->start_sx >> 16; x < p->max_x;
+				x += 2, ++sx)
+			DIAMOND(getpix32w, setpix32);
+}
 #undef	MIX
 #undef	DIAMOND
 
@@ -822,12 +886,19 @@ static void scale_diamond2x_clamp(scale_params_t *p)
 	do_scale(p, do_scale_diamond2x_clamp, do_scale_diamond2x_noclip);
 }
 
+static void scale_diamond2x_wrap(scale_params_t *p)
+{
+	do_scale(p, do_scale_diamond2x_wrap, do_scale_diamond2x_noclip);
+}
+
 
 int s_filter_scale(s_bank_t *b, unsigned first, unsigned frames,
 		s_filter_args_t *args)
 {
 	scale_params_t params;
-	int fmode, smode = args->x;
+	static void (*scaler)(scale_params_t *);
+	int fmode;
+	int smode = args->x;
 	unsigned i;
 	if((args->fx <= 0.0f) && (args->fy <= 0.0f))
 		return 0;
@@ -874,23 +945,43 @@ int s_filter_scale(s_bank_t *b, unsigned first, unsigned frames,
 	}
 
 	/* Decode filter type + SF_CLAMP_EXTEND flag */
-	fmode = (args->flags & SF_CLAMP_EXTEND) ? 1 : 0;
+	if(args->flags & SF_CLAMP_EXTEND)
+		fmode = 1;
+	else if(args->flags & SF_WRAP)
+		fmode = 2;
+	else
+		fmode = 0;
 	switch(smode)
 	{
 	  case SF_SCALE_NEAREST:
-		fmode += 0;
+		scaler = scale_nearest;
 		break;
 	  case SF_SCALE_BILINEAR:
-		fmode += 2;
+		switch(fmode)
+		{
+		  case 0: scaler = scale_bilinear;		break;
+		  case 1: scaler = scale_bilinear_clamp;	break;
+		  case 2: scaler = scale_bilinear_wrap;		break;
+		}
 		/* Offset by half a pixel */
 		params.start_sx += params.scx / 2;
 		params.start_sy += params.scy / 2;
 		break;
 	  case SF_SCALE_SCALE2X:
-		fmode += 4;
+		switch(fmode)
+		{
+		  case 0: scaler = scale_2x;		break;
+		  case 1: scaler = scale_2x_clamp;	break;
+		  case 2: scaler = scale_2x_wrap;	break;
+		}
 		break;
 	  case SF_SCALE_DIAMOND:
-		fmode += 6;
+		switch(fmode)
+		{
+		  case 0: scaler = scale_diamond2x;		break;
+		  case 1: scaler = scale_diamond2x_clamp;	break;
+		  case 2: scaler = scale_diamond2x_wrap;	break;
+		}
 		break;
 	}
 
@@ -932,31 +1023,7 @@ int s_filter_scale(s_bank_t *b, unsigned first, unsigned frames,
 		}
 
 		/* Do the scaling! */
-		switch(fmode)
-		{
-		  case 0:	/*Nearest*/
-		  case 1:	/*Nearest + extend clamping*/
-			scale_nearest(&params);
-			break;
-		  case 2:	/*Bilinear*/
-			scale_bilinear(&params);
-			break;
-		  case 3:	/*Bilinear + extend clamping*/
-			scale_bilinear_clamp(&params);
-			break;
-		  case 4:	/*Scale2x*/
-			scale_2x(&params);
-			break;
-		  case 5:	/*Scale2x + extend clamping*/
-			scale_2x_clamp(&params);
-			break;
-		  case 6:	/*Diamond2x*/
-			scale_diamond2x(&params);
-			break;
-		  case 7:	/*Diamond2x + extend clamping*/
-			scale_diamond2x_clamp(&params);
-			break;
-		}
+		scaler(&params);
 
 		SDL_FreeSurface(s->surface);
 		s->surface = params.dst;

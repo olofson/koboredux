@@ -34,6 +34,7 @@ extern "C" {
  */
 #define	SF_CLAMP_EXTEND		0x00000001
 #define	SF_CLAMP_SFONT		0x00000002
+#define	SF_WRAP			0x00000004
 
 
 /*
@@ -126,6 +127,7 @@ int s_filter_brightness(s_bank_t *b, unsigned first, unsigned frames,
  *
  * args.flags;
  *	SF_CLAMP_EXTEND		Clamp at edges; image edge is extended outwards
+ *	SF_WARP			Wrap around edges.
  *	SF_CLAMP_SFONT		SFont mode; first row is treated specially.
  *
  */

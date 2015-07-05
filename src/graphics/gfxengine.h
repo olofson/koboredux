@@ -94,6 +94,7 @@ class gfxengine_t
 	void filterflags(int fgs);
 	void scalemode(gfx_scalemodes_t sm, int clamping = 0);
 	void source_scale(float x, float y);	// 0.0f ==> no scaling!
+	void absolute_scale(float x, float y);
 	void colorkey(Uint8 r, Uint8 g, Uint8 b);
 	void clampcolor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 	void dither(int type = 0);

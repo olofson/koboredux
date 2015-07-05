@@ -268,6 +268,9 @@ void gfxengine_t::scalemode(gfx_scalemodes_t sm, int clamping)
 	  case 2:
 		filterflags(SF_CLAMP_SFONT);
 		break;
+	  case 3:
+		filterflags(SF_WRAP);
+		break;
 	}
 
 	sf1->args.fx = rxs * (1.0f/256.0f);
@@ -343,14 +346,16 @@ void gfxengine_t::scalemode(gfx_scalemodes_t sm, int clamping)
 
 void gfxengine_t::source_scale(float x, float y)
 {
-	if(x)
-		sxs = (int)(x * 256.f);
-	else
-		sxs = xs;
-	if(y)
-		sys = (int)(y * 256.f);
-	else
-		sys = ys;
+	sxs = (int)(x * 256.f);
+	sys = (int)(y * 256.f);
+	scalemode(_scalemode, _clamping);
+}
+
+
+void gfxengine_t::absolute_scale(float x, float y)
+{
+	sxs = (int)(x * xs);
+	sys = (int)(y * ys);
 	scalemode(_scalemode, _clamping);
 }
 
