@@ -354,8 +354,8 @@ void gfxengine_t::source_scale(float x, float y)
 
 void gfxengine_t::absolute_scale(float x, float y)
 {
-	sxs = (int)(x * xs);
-	sys = (int)(y * ys);
+	sxs = (int)(xs / x);
+	sys = (int)(ys / y);
 	scalemode(_scalemode, _clamping);
 }
 
