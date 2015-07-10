@@ -32,11 +32,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef KOBO_HAVE_LSTAT
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <unistd.h>
-#endif
 
 #if HAVE_DIRENT_H
 # include <dirent.h>
@@ -55,7 +53,7 @@
 # endif
 #endif
 
-#if !defined(WIN32) && !defined(MACOS)
+#if !defined(_WIN32) && !defined(MACOS)
 #include <pwd.h>
 #endif
 
@@ -272,7 +270,7 @@ int s_profile_t::load(const char *fn)
 int s_profile_t::save()
 {
 	log_printf(D3LOG, "s_profile_t::save('%s')\n", filename);
-#ifndef	WIN32
+#ifndef	_WIN32
 	umask(022);
 #endif
 	if(!filename)
@@ -282,7 +280,7 @@ int s_profile_t::save()
 	}
 
 //The "safe list"; platforms that do not have symlinks:
-#if !defined(WIN32)
+#if !defined(_WIN32)
 # ifdef KOBO_HAVE_LSTAT
 	// We will not write score files via symlinks!
 	struct stat statbuf;
@@ -403,7 +401,7 @@ void score_manager_t::init()
 	// to "player profile files", which contain IFF style
 	// chunks beyond the 74 XKobo compatible bytes.
 
-#ifdef WIN32
+#ifdef _WIN32
 /*
 FIXME: This should be properly implemented on Windoze - if we
 FIXME: decide that it's actually much point. (Users, security etc
@@ -482,7 +480,7 @@ int score_manager_t::addPlayer(const char *name)
 	if(numProfiles == MAX_PROFILES)
 		return -1;
 	int ret = 0;
-#ifdef WIN32
+#ifdef _WIN32
 	int userid = 42;
 #else
 	uid_t userid = getuid();
