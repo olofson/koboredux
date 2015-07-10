@@ -44,7 +44,6 @@ int _screen::level;
 int _screen::bg_altitude;
 int _screen::bg_backdrop;
 int _screen::bg_clouds;
-int _screen::bg_planet;
 int _screen::restarts;
 int _screen::generate_count;
 _map _screen::map;
@@ -65,6 +64,9 @@ int _screen::hi_sc[10];
 int _screen::hi_st[10];
 char _screen::hi_nm[10][20];
 int _screen::nstars = 0;
+int _screen::star_alt;
+int _screen::star_psize;
+int _screen::star_pscale;
 KOBO_Star *_screen::stars = NULL;
 Uint32 _screen::starcolors[STAR_COLORS];
 int _screen::star_oxo = 0;
@@ -571,7 +573,6 @@ void _screen::scroller()
 
 void _screen::init_scene(int sc)
 {
-	window_t *win = gengine->target();
 	map.init();
 	if(sc < 0)
 	{
@@ -599,7 +600,8 @@ void _screen::init_scene(int sc)
 			scene_num = -(sc + 1) % scene_max;
 			restarts = -(sc + 1) / scene_max;
 		}
-		win->colormod(win->map_rgb(128, 128, 128));
+		wplanet->colormod(wplanet->map_rgb(128, 128, 128));
+		wmain->colormod(wmain->map_rgb(128, 128, 128));
 	}
 	else
 	{
@@ -610,7 +612,8 @@ void _screen::init_scene(int sc)
 		scene_num = sc % scene_max;
 		restarts = sc / scene_max;
 		radar_mode = RM_RADAR;
-		win->colormod(win->map_rgb(255, 255, 255));
+		wplanet->colormod(wplanet->map_rgb(128, 128, 128));
+		wmain->colormod(wmain->map_rgb(255, 255, 255));
 	}
 	region = scene_num / 10 % 5;
 	level = scene_num % 10 + 1;
@@ -633,7 +636,6 @@ int _screen::prepare()
 	if(scene_num < 0)
 		return 0;
 
-	window_t *win = gengine->target();
 	const _scene *s = &scene[scene_num];
 	int i, j;
 	int count_core = 0;
@@ -649,7 +651,6 @@ int _screen::prepare()
 	enemies.set_ekind_to_generate(s->ek1, interval_1, s->ek2,
 			interval_2);
 
-	win->clear();
 	for(i = 0; i < MAP_SIZEX; i++)
 		for(j = 0; j < MAP_SIZEY; j++)
 		{
@@ -735,7 +736,6 @@ void _screen::render_noise()
 		return;
 	if(noise_fade < 0.01f)
 		return;
-	window_t *win = gengine->target();
 	int ymax = noise_y + noise_h;
 	int np = pubrand.get(8);
 	int dnp = pubrand.get(4) - 8;
@@ -760,7 +760,7 @@ void _screen::render_noise()
 		float lv = np * noise_depth * (1.0f - noise_bright) / 255.0f +
 				noise_bright;
 		for(int x = 0; x < xmax; ++x)
-			win->sprite_fxp(
+			wmain->sprite_fxp(
 					PIXEL2CS(x << NOISE_SIZEX_LOG2) - xo,
 					PIXEL2CS((int)fy),
 					noise_source, (int)(lv * 15.0f +
@@ -782,9 +782,8 @@ void _screen::set_noise(int source, float fade, float bright, float depth)
 
 void _screen::render_highlight()
 {
-	window_t *win = gengine->target();
 	if(!highlight_h)
-		highlight_y = win->height() / 2;
+		highlight_y = wmain->height() / 2;
 
 	static float ypos = -50;
 	static float hf = 0;
@@ -828,7 +827,7 @@ void _screen::render_highlight()
 					B_NOISE, 6);
 	}
 
-	int x0 = win->phys_rect.x;
+	int x0 = wmain->phys_rect.x;
 	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), B_FOCUSFX);
 	if(!b)
 		return;
@@ -836,9 +835,9 @@ void _screen::render_highlight()
 	if(!s || !s->texture)
 		return;
 	SDL_Renderer *r = gengine->renderer();
-	y = (int)((y * gengine->yscale() + 128) / 256) + win->phys_rect.y;
+	y = (int)((y * gengine->yscale() + 128) / 256) + wmain->phys_rect.y;
 	h = (int)(hf * gengine->yscale());
-	win->select();
+	wmain->select();
 	for(int ty = 0; ty < h; ++ty)
 	{
 		float sy = (float)ty / (h - 1);
@@ -893,22 +892,32 @@ void _screen::set_highlight(int y, int h)
 //    Of course, this design means we cannot move along the Z axis (well, not
 // trivially, at least), but we don't really need that here anyway.
 //
-void _screen::init_starfield()
+void _screen::init_starfield(int altitude, int psize)
 {
 	free(stars);
 	nstars = prefs->stars;
+	star_alt = altitude;
+	star_psize = psize;
 	stars = (KOBO_Star *)malloc(nstars * sizeof(KOBO_Star));
 	if(!stars)
 	{
 		nstars = 0;
 		return;		// Out of memory!!!
 	}
+	int pivot = star_alt << 8;
+	if(star_alt < 64)
+		star_pscale = 512;
+	else if(star_alt > 192)
+		star_pscale = 256;
+	else
+		star_pscale = 512 - ((star_alt - 64) << 1);
 	for(int i = 0; i < nstars; ++i)
 	{
 		stars[i].x = pubrand.get();
 		stars[i].y = pubrand.get();
 		int zz = 255 * i / nstars;
 		stars[i].z = 65025 - zz * zz;
+		int z =  ((int)stars[i].z - pivot) * star_pscale >> 8;
 	}
 }
 
@@ -918,33 +927,24 @@ void _screen::init_starfield_colors()
 		1,	52,	51,	2,
 		47,	3,	46,	4
 	};
-	window_t *win = gengine->target();
 	for(int i = 0; i < STAR_COLORS; ++i)
 		starcolors[STAR_COLORS - i - 1] =
-				win->map_rgb(gengine->palette(colors[i]));
+				wmain->map_rgb(gengine->palette(colors[i]));
 }
 
-void _screen::render_starfield(int xo, int yo, int altitude, int psize)
+void _screen::render_starfield(int xo, int yo)
 {
-	window_t *win = gengine->target();
 	int i;
-	int w = win->width() * 256;
-	int h = win->height() * 256;
+	int w = wmain->width() * 256;
+	int h = wmain->height() * 256;
 	int xc = w / 2;
 	int yc = h / 2;
-	int pivot = altitude << 8;	// Rotation pivot z coordinate
-	int pclip = psize * psize / 4;	// Planet radius squared
+	int pivot = star_alt << 8;	// Rotation pivot z coordinate
+	int pclip = star_psize * star_psize / 4; // Planet radius squared
 	int pscale;
 
-	if(altitude < 64)
-		pscale = 512;
-	else if(altitude > 192)
-		pscale = 256;
-	else
-		pscale = 512 - ((altitude - 64) << 1);
-
 	if(nstars != prefs->stars)
-		init_starfield();
+		init_starfield(star_alt, star_psize);
 
 	// Calculate delta from last position, dealing with map position wrap
 	const int WSX = WORLD_SIZEX << 8;
@@ -964,11 +964,11 @@ void _screen::render_starfield(int xo, int yo, int altitude, int psize)
 	dx = (dx << 16) / w;
 	dy = (dy << 16) / h;
 
-	win->select();
+	wmain->select();
 	for(i = 0; i < nstars; ++i)
 	{
 		int iz = (int)stars[i].z;
-		int z =  (iz - pivot) * pscale >> 8;
+		int z =  (iz - pivot) * star_pscale >> 8;
 
 		// Move star!
 		stars[i].x += dx * z >> 16;
@@ -989,8 +989,8 @@ void _screen::render_starfield(int xo, int yo, int altitude, int psize)
 		y += yc;
 
 		// Plot!
-		win->foreground(starcolors[iz * STAR_COLORS >> 16]);
-		win->fillrect_fxp(x, y, 256, 256);
+		wmain->foreground(starcolors[iz * STAR_COLORS >> 16]);
+		wmain->fillrect_fxp(x, y, 256, 256);
 	}
 }
 
@@ -1001,65 +1001,87 @@ void _screen::init_background()
 	bg_altitude = 0;
 	bg_backdrop = 0;
 	bg_clouds = 0;
-	bg_planet = 0;
+	int planet = 0;
+	int psize = 0;
 	spinplanet_modes_t md = SPINPLANET_OFF;
+	wplanet->track_speed(0.5f, 1.0f);
+	wplanet->track_offset(0.5f, 0.5f);
+	wplanet->set_texture_repeat(2);
 	switch(level)
 	{
 	  case 1:
+		// 32x32 planet
+		psize = 32;
+		planet = B_R1L1_PLANET;
+		md = SPINPLANET_SPIN;
+		bg_altitude = 192;
+		break;
 	  case 2:
-		// Planet not visible; starfield only
-		bg_altitude = 208 - level * 16;
+		// 48x48 planet
+		psize = 48;
+		planet = B_R1L2_PLANET;
+		md = SPINPLANET_SPIN;
+		bg_altitude = 176;
 		break;
 	  case 3:
 		// 64x64 planet
-		bg_planet = B_R1L3_PLANET;
-		md = SPINPLANET_STATIC;
+		psize = 64;
+		planet = B_R1L3_PLANET;
+		md = SPINPLANET_SPIN;
 		bg_altitude = 160;
 		break;
 	  case 4:
-		// 80x80 planet
-		bg_planet = B_R1L4_PLANET;
-		md = SPINPLANET_STATIC;
+		// 96x96 planet
+		psize = 96;
+		planet = B_R1L4_PLANET;
+		md = SPINPLANET_SPIN;
 		bg_altitude = 144;
 		break;
 	  case 5:
 		// 128x128 planet
-		bg_planet = B_R1L5_PLANET;
-		md = SPINPLANET_STATIC;
+		psize = 128;
+		planet = B_R1L5_PLANET;
+		md = SPINPLANET_SPIN;
 		bg_altitude = 128;
 		break;
 	  case 6:
 		// 192x192 planet
-		bg_planet = B_R1L6_PLANET;
-		md = SPINPLANET_STATIC;
+		psize = 192;
+		planet = B_R1L6_PLANET;
+		md = SPINPLANET_SPIN;
 		bg_altitude = 112;
 		break;
 	  case 7:
-		// 288x288 planet
-		bg_planet = B_R1L7_PLANET;
+		// 256x256 planet
+		psize = 256;
+		planet = B_R1L7_PLANET;
 		md = SPINPLANET_SPIN;
 		bg_altitude = 96;
 		break;
 	  case 8:
 		// Above clouds
 		bg_clouds = 1;
-		bg_backdrop = B_R1L8_GROUND;
+		bg_backdrop = B_R1L8_GROUND/* + region*/;
 		bg_altitude = 64;
 		break;
 	  case 9:
 		// Below clouds
-		bg_backdrop = B_R1L9_GROUND;
+		bg_backdrop = B_R1L9_GROUND/* + region*/;
 		bg_altitude = 32;
 		break;
 	  case 10:
 		// Ground level
-		bg_backdrop = B_R1L10_GROUND;
+		bg_backdrop = B_R1L10_GROUND/* + region*/;
 		bg_altitude = 0;
 		break;
 	}
-	wplanet->set_source(0, bg_planet, 0);
-	wplanet->set_source(1, bg_planet, 1);
+	if(md == SPINPLANET_STATIC)
+		wplanet->set_planet(planet/* + region*/, 0);
+	else
+		wplanet->set_map(planet/* + region*/, 0);
+	wplanet->set_size(psize);
 	wplanet->set_mode(md);
+	init_starfield(bg_altitude, psize);
 }
 
 
@@ -1068,56 +1090,57 @@ void _screen::render_background()
 	if(do_noise && (noise_fade >= 1.0f))
 		return;
 
-	window_t *win = gengine->target();
-
-	int vx, vy, xo, yo, x, y, xmax, ymax;
-	int mx, my;
-	vx = gengine->xoffs(LAYER_BASES) * TILE_SIZE / 16;
-	vy = gengine->yoffs(LAYER_BASES) * TILE_SIZE / 16;
+	int vx = gengine->xoffs(LAYER_BASES) * TILE_SIZE / 16;
+	int vy = gengine->yoffs(LAYER_BASES) * TILE_SIZE / 16;
 
 	// Start exactly at the top-left corner of the tile visible in the top-
 	// left corner of the display window.
-	xo = vx % PIXEL2CS(TILE_SIZE);
-	yo = vy % PIXEL2CS(TILE_SIZE);
-	mx = CS2PIXEL(vx / TILE_SIZE);
-	my = CS2PIXEL(vy / TILE_SIZE);
-	ymax = ((WMAIN_H + CS2PIXEL(yo)) / TILE_SIZE) + 1;
-	xmax = ((WMAIN_W + CS2PIXEL(xo)) / TILE_SIZE) + 1;
+	int xo = vx % PIXEL2CS(TILE_SIZE);
+	int yo = vy % PIXEL2CS(TILE_SIZE);
+	int mx = CS2PIXEL(vx / TILE_SIZE);
+	int my = CS2PIXEL(vy / TILE_SIZE);
+	int ymax = ((WMAIN_H + CS2PIXEL(yo)) / TILE_SIZE) + 1;
+	int xmax = ((WMAIN_W + CS2PIXEL(xo)) / TILE_SIZE) + 1;
 
-#if 0
 	// Render ground
-	if(bg_backdrop)
+	s_bank_t *b = s_get_bank(gengine->get_gfx(), bg_backdrop);
+	if(bg_backdrop && b)
 	{
-/*TODO:*/	win->sprite(vx, vy, bg_backdrop + region, 0);
+		// Center background on map, and repeat the texture twice
+		// vertically, because the map aspect ratio is 1:2.
+		int bw = b->w << 8;
+		int bh = b->h << 8;
+		float nx = gengine->nxoffs(LAYER_BASES);
+		float ny = gengine->nyoffs(LAYER_BASES);
+		int xo = (1.0f - nx + 1.5f) * bw + (WMAIN_W << 7);
+		int yo = ((1.0f - ny) * 2.0f + 1.5f) * bh + (WMAIN_H << 7);
+		int x = xo % bw;
+		int y = yo % bh;
+		wmain->colormod(wmain->map_rgb(128, 128, 128));	// HalfBrite!
+		wmain->sprite_fxp(x - bw, y - bh, bg_backdrop, 0);
+		wmain->sprite_fxp(x, y - bh, bg_backdrop, 0);
+		wmain->sprite_fxp(x - bw, y, bg_backdrop, 0);
+		wmain->sprite_fxp(x, y, bg_backdrop, 0);
+		if(!show_title)
+			wmain->colormod(wmain->map_rgb(255, 255, 255));
 	}
 
 	// Render clouds
 	if(bg_clouds)
 	{
-/*TODO:*/	win->sprite(vx, vy, bg_clouds + region, 0);
+//TODO:
+//		wmain->sprite_fxp(vx, vy, bg_clouds + region, 0);
 	}
-#endif
 
 	// Render parallax starfield
 	if(bg_altitude >= 96)
-	{
-		int psize = 0;
-		if(bg_planet)
-		{
-			s_bank_t *b = s_get_bank(gengine->get_gfx(),
-					bg_planet);
-			if(b)
-				psize = (int)((b->w * b->xs >> 8) /
-						gfxengine->xscale());
-		}
-		render_starfield(vx, vy, bg_altitude, psize);
-	}
+		render_starfield(vx, vy);
 
 	// Render bases
 	int tileset = B_R1_TILES + region;
 	int frame = manage.game_time();
-	for(y = 0; y < ymax; ++y)
-		for(x = 0; x < xmax; ++x)
+	for(int y = 0; y < ymax; ++y)
+		for(int x = 0; x < xmax; ++x)
 		{
 			int n = map.pos(mx + x, my + y);
 			if(IS_SPACE(n) && (MAP_TILE(n) == 0))
@@ -1133,7 +1156,7 @@ void _screen::render_background()
 			}
 			else
 				tile = MAP_TILE(n);
-			win->sprite_fxp(PIXEL2CS(x * TILE_SIZE) - xo,
+			wmain->sprite_fxp(PIXEL2CS(x * TILE_SIZE) - xo,
 					PIXEL2CS(y * TILE_SIZE) - yo,
 					tileset, tile);
 		}

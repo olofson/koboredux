@@ -517,9 +517,7 @@ void KOBO_main::build_screen()
 
 	// Spinning planet backdrop
 	wplanet->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
-//	wplanet->set_source(0, B_R1L7_PLANET, 0);
-//	wplanet->set_source(1, B_R1L7_PLANET, 1);
-	wplanet->track_layer(LAYER_PLAYER);
+	wplanet->track_layer(LAYER_PLANET);
 
 	// Main playfield layer
 	wmain->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
@@ -676,12 +674,12 @@ int KOBO_main::init_display(prefs_t *p)
 	gengine->timefilter(p->timefilter * 0.01f);
 	gengine->interpolation(p->filter);
 
-	gengine->scroll_ratio(LAYER_OVERLAY, 0.0, 0.0);
-	gengine->scroll_ratio(LAYER_BULLETS, 1.0, 1.0);
-	gengine->scroll_ratio(LAYER_FX, 1.0, 1.0);
-	gengine->scroll_ratio(LAYER_PLAYER, 1.0, 1.0);
-	gengine->scroll_ratio(LAYER_ENEMIES, 1.0, 1.0);
-	gengine->scroll_ratio(LAYER_BASES, 1.0, 1.0);
+	gengine->scroll_ratio(LAYER_OVERLAY, 0.0f, 0.0f);
+	gengine->scroll_ratio(LAYER_BULLETS, 1.0f, 1.0f);
+	gengine->scroll_ratio(LAYER_FX, 1.0f, 1.0f);
+	gengine->scroll_ratio(LAYER_PLAYER, 1.0f, 1.0f);
+	gengine->scroll_ratio(LAYER_ENEMIES, 1.0f, 1.0f);
+	gengine->scroll_ratio(LAYER_BASES, 1.0f, 1.0f);
 	gengine->wrap(MAP_SIZEX * CHIP_SIZEX, MAP_SIZEY * CHIP_SIZEY);
 
 	if(!desktopres)
@@ -790,6 +788,7 @@ void KOBO_main::progress()
 void KOBO_main::doing(const char *msg)
 {
 	wdash->doing(msg);
+	log_printf(ULOG, "=== %s ===\n", msg);
 }
 
 
@@ -943,9 +942,10 @@ typedef enum
 	KOBO_WRAP =		0x0004,	// Wrap around frame edges
 
 	// Scaling filter options
-	KOBO_NEAREST =		0x0010,	// Force NEAREST scale mode
-	KOBO_BILINEAR =		0x0020,	// Force BILINEAR scale mode
-	KOBO_ABSSCALE =		0x0040,	// Scale factor is absolute
+	KOBO_ABSSCALE =		0x0010,	// Scale factor is absolute
+	KOBO_NEAREST =		0x0020,	// Force NEAREST scale mode
+	KOBO_BILINEAR =		0x0040,	// Force BILINEAR scale mode
+	KOBO_SCALE2X =		0x0080,	// Force Scale2X scale mode
 
 	// Other options
 	KOBO_NOALPHA =		0x0100,	// Disable alpha channel
@@ -975,26 +975,32 @@ static KOBO_GfxDesc gfxdesc[] = {
 	// In-game
 	{ "Loading in-game graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
 
-	{ "GFX>>tiles-green.png", B_R1_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
-	{ "GFX>>testplanet-64.png", B_R1L3_PLANET, 0, 0, 0.0f,
-				KOBO_CENTER | KOBO_CLAMP },
-	{ "GFX>>testplanet-80.png", B_R1L4_PLANET, 0, 0, 0.0f,
-				KOBO_CENTER | KOBO_CLAMP },
-	{ "GFX>>testplanet-128.png", B_R1L5_PLANET, 0, 0, 0.0f,
-				KOBO_CENTER | KOBO_CLAMP },
-	{ "GFX>>testplanet-192.png", B_R1L6_PLANET, 0, 0, 0.0f,
-				KOBO_CENTER | KOBO_CLAMP },
-#if 0
-	{ "GFX>>testplanet-288.png", B_R1L7_PLANET, 0, 0, 0.0f,
-				KOBO_CENTER | KOBO_CLAMP },
-#else
-	{ "GFX>>spinplanet-288.png", B_R1L7_PLANET, 288, 288, 0.0f,
-				KOBO_CENTER | KOBO_CLAMP },
-#endif
+	// NOTE: We only have map textures for every other mip level!
 
+	// Region 1 (maps 1-10)
+	{ "GFX>>tiles-green.png", B_R1_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>planet-r1l1.png", B_R1L1_PLANET, 0, 0,
+			2.0f, KOBO_ABSSCALE | KOBO_SCALE2X },
+	{ "GFX>>planet-r1l3.png", B_R1L3_PLANET, 0, 0,
+			2.0f, KOBO_ABSSCALE | KOBO_SCALE2X },
+	{ "GFX>>planet-r1l4.png", B_R1L4_PLANET, 0, 0,
+			2.0f, KOBO_ABSSCALE | KOBO_SCALE2X },
+	{ "GFX>>planet-r1l6.png", B_R1L6_PLANET, 0, 0,
+			2.0f, KOBO_ABSSCALE | KOBO_SCALE2X },
+	{ "GFX>>ground-r1l8.png", B_R1L8_GROUND, 0, 0,	0.0f, 0 },
+	{ "GFX>>ground-r1l9.png", B_R1L9_GROUND, 0, 0,	0.0f, 0 },
+	{ "GFX>>ground-r1l10.png", B_R1L10_GROUND, 0, 0, 0.0f, 0 },
+
+	// Region 2 (maps 11-20)
 	{ "GFX>>tiles-green.png", B_R2_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
+
+	// Region 3 (maps 21-30)
 	{ "GFX>>tiles-green.png", B_R3_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
+
+	// Region 4 (maps 31-40)
 	{ "GFX>>tiles-green.png", B_R4_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
+
+	// Region 5 (maps 41-50)
 	{ "GFX>>tiles-green.png", B_R5_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
 
 	{ "GFX>>crosshair.png", B_CROSSHAIR,	32, 32,	1.0f,	KOBO_CENTER },
@@ -1083,6 +1089,12 @@ int KOBO_main::load_graphics(prefs_t *p)
 			continue;
 		}
 
+		log_printf(ULOG, "Loading \"%s\"\n", gd->path);
+
+		if(s_get_bank(gfxengine->get_gfx(), gd->bank))
+			log_printf(WLOG, "WARNING: Bank %d already in use!\n",
+					gd->bank);
+
 		// Set scale (filter) mode and clamping
 		int clamping;
 		gfx_scalemodes_t sm;
@@ -1104,6 +1116,8 @@ int KOBO_main::load_graphics(prefs_t *p)
 			sm = GFX_SCALE_NEAREST;
 		else if(gd->flags & KOBO_BILINEAR)
 			sm = GFX_SCALE_BILINEAR;
+		else if(gd->flags & KOBO_SCALE2X)
+			sm = GFX_SCALE_SCALE2X;
 		else
 			sm = (gfx_scalemodes_t) p->scalemode;
 		gengine->scalemode(sm, clamping);

@@ -84,6 +84,8 @@ class gfxengine_t
 	void timefilter(float coeff);
 
 	void wrap(int x, int y);
+	int get_wrapx()	{	return wrapx; }
+	int get_wrapy()	{	return wrapy; }
 
 	// Engine open/close
 	int open(int objects = 1024, int extraflags = 0);

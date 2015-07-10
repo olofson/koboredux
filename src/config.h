@@ -146,6 +146,9 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
  */
 #define	TILE_SIZE		16
 
+/* Define to enable dithering in the spinplanet_t rotation/lens effect. */
+#undef	KOBO_PLANET_DITHER
+
 /* Number of proximity warning LEDs along each edge of the main view window. */
 #define	PROXY_LEDS		42
 

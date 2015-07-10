@@ -69,19 +69,25 @@ class _screen
 	static int hi_sc[10];
 	static int hi_st[10];
 	static char hi_nm[10][20];
+
+	// Starfield
 	static int nstars;
+	static int star_alt;
+	static int star_psize;
+	static int star_pscale;
 	static KOBO_Star *stars;
 	static Uint32 starcolors[STAR_COLORS];
 	static int star_oxo;
 	static int star_oyo;
+
 	static void render_noise();
 	static void render_highlight();
 	static void render_title_plasma(int t, float fade, int y, int h);
 	static void render_title_noise(float fade, int y, int h, int bank, int frame);
-	static void init_starfield();
+	static void init_starfield(int altitude, int psize);
 	static void init_starfield_colors();
 	static void init_background();
-	static void render_starfield(int xo, int yo, int altitude, int psize);
+	static void render_starfield(int xo, int yo);
 	static void clean_scrap_tile(int x, int y)
 	{
 		if((map.pos(x, y) & SPACE) && (MAP_TILE(map.pos(x, y))))
