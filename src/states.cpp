@@ -65,11 +65,16 @@ void kobo_basestate_t::pre_render()
 void kobo_basestate_t::post_render()
 {
 	screen.render_fx();
-	DBG(if(prefs->cmd_debug)
+	if(prefs->cmd_debug)
 	{
+		char buf[32];
 		woverlay->font(B_NORMAL_FONT);
-		woverlay->string(30, 5, name);
-	})
+		woverlay->string(4, 1, name);
+		snprintf(buf, sizeof(buf), "(%d, %d)",
+				CS2PIXEL(gengine->xoffs(LAYER_BASES)),
+				CS2PIXEL(gengine->yoffs(LAYER_BASES)));
+		woverlay->string(4, WMAIN_H - 10, buf);
+	}
 }
 
 
