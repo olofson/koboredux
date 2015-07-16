@@ -157,6 +157,9 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 /* Ingame camera filter */
 #define	KOBO_CAM_FILTER		4.0f
 
+/* Number of parallax background map levels */
+#define	KOBO_BG_MAP_LEVELS	2
+
 /* Number of proximity warning LEDs along each edge of the main view window. */
 #define	PROXY_LEDS		42
 

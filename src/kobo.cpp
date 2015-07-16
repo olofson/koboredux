@@ -992,16 +992,12 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "GFX>>ground-r1l10.png", B_R1L10_GROUND, 0, 0, 0.0f, 0 },
 
 	// Region 2 (maps 11-20)
-	{ "GFX>>tiles-green.png", B_R2_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
 
 	// Region 3 (maps 21-30)
-	{ "GFX>>tiles-green.png", B_R3_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
 
 	// Region 4 (maps 31-40)
-	{ "GFX>>tiles-green.png", B_R4_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
 
 	// Region 5 (maps 41-50)
-	{ "GFX>>tiles-green.png", B_R5_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
 
 	{ "GFX>>crosshair.png", B_CROSSHAIR,	32, 32,	1.0f,	KOBO_CENTER },
 	{ "GFX>>player.png", B_PLAYER,		40, 40,	2.0f,	KOBO_CENTER },
