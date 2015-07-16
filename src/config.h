@@ -149,6 +149,14 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 /* Define to enable dithering in the spinplanet_t rotation/lens effect. */
 #undef	KOBO_PLANET_DITHER
 
+/* Camera lead control */
+#define	KOBO_CAM_LEAD		6	/* Player speed to lead factor */
+#define	KOBO_CAM_LEAD_SPEED	256	/* Lead target slide speed */
+#define	KOBO_CAM_LEAD_FILTER	32	/* Lead target IIR filter coeff. */
+
+/* Ingame camera filter */
+#define	KOBO_CAM_FILTER		4.0f
+
 /* Number of proximity warning LEDs along each edge of the main view window. */
 #define	PROXY_LEDS		42
 

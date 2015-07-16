@@ -77,9 +77,13 @@ int _manage::noise_duration = 0;
 int _manage::noise_timer = 0;
 int _manage::noise_flash = 500;
 float _manage::noise_level = 0.0f;
-int _manage::intro_x = CHIP_SIZEX * (64-18);
-int _manage::intro_y = CHIP_SIZEY * (64-7);
+int _manage::intro_x = CHIP_SIZEX * (64 - 18);
+int _manage::intro_y = CHIP_SIZEY * (64 - 7);
 int _manage::show_bars = 0;
+int _manage::cam_lead_x = 0;
+int _manage::cam_lead_y = 0;
+int _manage::cam_lead_xf = 0;
+int _manage::cam_lead_yf = 0;
 
 #ifdef PLAYSTATS
 static Uint32 start_time = 0;
@@ -327,6 +331,7 @@ void _manage::init_resources_title()
 	put_health(1);
 	put_temp(1);
 	run_intro();
+	gengine->camfilter(0);
 	gengine->force_scroll();
 	gamecontrol.repeat(KOBO_KEY_DELAY, KOBO_KEY_REPEAT);
 	show_bars = 0;
@@ -378,7 +383,9 @@ void _manage::init_resources_to_play(int newship)
 	put_health(1);
 	put_temp(1);
 	myship.put();
-	gengine->scroll(myship.get_virtx(), myship.get_virty());
+	gengine->camfilter(KOBO_CAM_FILTER);
+	gengine->scroll(myship.get_csx() - PIXEL2CS(WMAIN_W / 2),
+			myship.get_csy() - PIXEL2CS(WMAIN_H / 2));
 	gengine->force_scroll();
 	pxtop->fx(PFX_OFF);
 	pxbottom->fx(PFX_OFF);
@@ -535,16 +542,16 @@ void _manage::init()
 
 void _manage::run_intro()
 {
-	double t = SDL_GetTicks() * 0.001f;
 	gengine->scroll(PIXEL2CS(intro_x), PIXEL2CS(intro_y));
 	intro_y -= 1;
-	intro_x &= MAP_SIZEX*CHIP_SIZEX-1;
-	intro_y &= MAP_SIZEY*CHIP_SIZEY-1;
+	intro_x &= MAP_SIZEX * CHIP_SIZEX - 1;
+	intro_y &= MAP_SIZEY * CHIP_SIZEY - 1;
+	float w = intro_y * M_PI * 2.0f * 3.0f / (MAP_SIZEX * CHIP_SIZEX);
 	sound.g_position(intro_x + WMAIN_W / 2, intro_y + WMAIN_H / 2);
 	myship.set_position(intro_x + WMAIN_W / 2 +
-			(int)(WMAIN_W * 0.3f * sin(t)),
+			(int)(WMAIN_W * 0.3f * sin(w)),
 			intro_y + WMAIN_H / 2 +
-			(int)(WMAIN_H * 0.3f * sin(t * 1.73)));
+			(int)(WMAIN_H * 0.3f * cos(w)));
 	enemies.move_intro();
 	++hi.playtime;
 	enemies.put();
@@ -565,7 +572,40 @@ void _manage::update()
 	enemies.put();
 	put_score();
 	put_ships();
-	gengine->scroll(myship.get_virtx(), myship.get_virty());
+
+	// Constant speed chase + IIR filtered camera lead
+	int tlx = myship.get_velx() * KOBO_CAM_LEAD;
+	int tly = myship.get_vely() * KOBO_CAM_LEAD;
+	if(cam_lead_x < tlx)
+	{
+		cam_lead_x += KOBO_CAM_LEAD_SPEED;
+		if(cam_lead_x > tlx)
+			cam_lead_x = tlx;
+	}
+	else if(cam_lead_x > tlx)
+	{
+		cam_lead_x -= KOBO_CAM_LEAD_SPEED;
+		if(cam_lead_x < tlx)
+			cam_lead_x = tlx;
+	}
+	if(cam_lead_y < tly)
+	{
+		cam_lead_y += KOBO_CAM_LEAD_SPEED;
+		if(cam_lead_y > tly)
+			cam_lead_y = tly;
+	}
+	else if(cam_lead_y > tly)
+	{
+		cam_lead_y -= KOBO_CAM_LEAD_SPEED;
+		if(cam_lead_y < tly)
+			cam_lead_y = tly;
+	}
+	cam_lead_xf += (cam_lead_x - cam_lead_xf) * KOBO_CAM_LEAD_FILTER >> 8;
+	cam_lead_yf += (cam_lead_y - cam_lead_yf) * KOBO_CAM_LEAD_FILTER >> 8;
+
+	gengine->scroll(myship.get_csx() + cam_lead_xf - PIXEL2CS(WMAIN_W / 2),
+			myship.get_csy() + cam_lead_yf -
+			PIXEL2CS(WMAIN_H / 2));
 	if(scroll_jump)
 	{
 		gengine->force_scroll();

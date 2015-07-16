@@ -36,8 +36,6 @@ class _manage
 	static int game_seed;
 	static int bonus_next;
 	static int scroll_jump;
-	static int delay_count;
-	static int introtime;
 	static int rest_cores;
 	static int exit_manage;
 	static int playing;
@@ -51,6 +49,16 @@ class _manage
 	static int intro_x;
 	static int intro_y;
 	static int show_bars;
+
+	// Camera lead
+	static int cam_lead_x, cam_lead_y;
+	static int cam_lead_xf, cam_lead_yf;
+
+	// Timing
+	static int delay_count;
+	static int last_tick;
+	static float dt;	// Delta time since last video frame (s)
+	static double t;	// Time elapsed since init() (s)
 
 	static void next_scene();
 	static void retry();

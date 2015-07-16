@@ -86,6 +86,7 @@ gfxengine_t::gfxengine_t()
 
 	memset(fonts, 0, sizeof(fonts));
 
+	_camfilter = 0;
 	xscroll = yscroll = 0;
 	for(int i = 0; i < CS_LAYERS ; ++i)
 		xratio[i] = yratio[i] = 0.0;
@@ -618,8 +619,8 @@ uint32_t gfxengine_t::palette(unsigned ind)
 
 void gfxengine_t::on_frame(cs_engine_t *e)
 {
-	gfxengine->__frame();
 	gfxengine->frame();
+	gfxengine->apply_scroll();
 }
 
 
@@ -1009,6 +1010,15 @@ void gfxengine_t::timefilter(float coeff)
 }
 
 
+void gfxengine_t::camfilter(float cf)
+{
+	if(cf <= 1.0f)
+		_camfilter = 0;
+	else
+		_camfilter = 256.0f / cf;
+}
+
+
 void gfxengine_t::scroll_ratio(int layer, float xr, float yr)
 {
 	if(layer < 0)
@@ -1023,10 +1033,58 @@ void gfxengine_t::scroll_ratio(int layer, float xr, float yr)
 
 void gfxengine_t::scroll(int xscr, int yscr)
 {
-	xscroll = xscr;
-	yscroll = yscr;
+	xtarget = xscr;
+	ytarget = yscr;
+}
 
-	/* Apply current scroll pos to layers */
+
+void gfxengine_t::apply_scroll()
+{
+	if(_camfilter)
+	{
+		// Hide wrapping from the filter!
+		int wx8 = wrapx << 8;
+		int wy8 = wrapy << 8;
+		if(wrapx)
+		{
+			if(xtarget > xscroll + wx8 / 2)
+				xtarget -= wx8;
+			else if(xtarget < xscroll - wx8 / 2)
+				xtarget += wx8;
+		}
+		if(wrapy)
+		{
+			if(ytarget > yscroll + wy8 / 2)
+				ytarget -= wy8;
+			else if(ytarget < yscroll - wy8 / 2)
+				ytarget += wy8;
+		}
+
+		// Filtered camera movement
+		xscroll += (xtarget - xscroll) * _camfilter >> 8;
+		yscroll += (ytarget - yscroll) * _camfilter >> 8;
+
+		// Wrapping!
+		if(wrapx)
+		{
+			if(xscroll < 0)
+				xscroll += wx8;
+			xscroll %= wx8;
+		}
+		if(wrapy)
+		{
+			if(yscroll < 0)
+				yscroll += wy8;
+			yscroll %= wy8;
+		}
+	}
+	else
+	{
+		xscroll = xtarget;
+		yscroll = ytarget;
+	}
+
+	// Apply current scroll position to layers for inter/extrapolation
 	for(int i = 0; i < CS_LAYERS ; ++i)
 	{
 		csengine->offsets[i].v.x = (int)floor(xscroll * xratio[i]);
@@ -1037,9 +1095,11 @@ void gfxengine_t::scroll(int xscr, int yscr)
 
 void gfxengine_t::force_scroll()
 {
-	if(csengine)
-		for(int i = 0; i < CS_LAYERS ; ++i)
-			cs_point_force(&csengine->offsets[i]);
+	xscroll = xtarget;
+	yscroll = ytarget;
+	apply_scroll();
+	for(int i = 0; i < CS_LAYERS ; ++i)
+		cs_point_force(&csengine->offsets[i]);
 }
 
 
@@ -1103,7 +1163,7 @@ void gfxengine_t::screenshot()
 	Internal stuff
 ----------------------------------------------------------*/
 
-/* Default frame handler */
+// Default frame handler
 void gfxengine_t::frame()
 {
 	SDL_Event ev;
@@ -1113,12 +1173,6 @@ void gfxengine_t::frame()
 			if(ev.key.keysym.sym == SDLK_ESCAPE)
 				stop();
 	}
-}
-
-
-/* Internal frame handler */
-void gfxengine_t::__frame()
-{
 }
 
 

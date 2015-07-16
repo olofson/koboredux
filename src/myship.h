@@ -70,30 +70,14 @@ class _myship
 	static void move_redux();
   public:
 	 _myship();
-	static inline int get_x()
-	{
-		return CS2PIXEL(x);
-	}
-	static inline int get_y()
-	{
-		return CS2PIXEL(y);
-	}
-	static inline int get_virtx()
-	{
-		return x - PIXEL2CS(WMAIN_W / 2);
-	}
-	static inline int get_virty()
-	{
-		return y - PIXEL2CS(WMAIN_H / 2);
-	}
-	static inline int get_nose_temp()
-	{
-		return nose_temperature;
-	}
-	static inline int get_tail_temp()
-	{
-		return tail_temperature;
-	}
+	static int get_velx()		{ return vx; }
+	static int get_vely()		{ return vy; }
+	static int get_x()		{ return CS2PIXEL(x); }
+	static int get_y()		{ return CS2PIXEL(y); }
+	static int get_csx()		{ return x; }
+	static int get_csy()		{ return y; }
+	static int get_nose_temp()	{ return nose_temperature; }
+	static int get_tail_temp()	{ return tail_temperature; }
 	static int init();
 	static void off();
 	static int move();

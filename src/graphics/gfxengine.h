@@ -70,6 +70,7 @@ class gfxengine_t
 	void size(int w, int h);
 	void centered(int c);
 	void scale(float x, float y);
+	void camfilter(float cf);
 
 	// 1: Enable vsync, if available
 	void vsync(int use);
@@ -86,6 +87,8 @@ class gfxengine_t
 	void wrap(int x, int y);
 	int get_wrapx()	{	return wrapx; }
 	int get_wrapy()	{	return wrapy; }
+
+	void scroll_ratio(int layer, float xr, float yr);
 
 	// Engine open/close
 	int open(int objects = 1024, int extraflags = 0);
@@ -173,7 +176,6 @@ class gfxengine_t
 		return s_set_hotspot(gfx, bank, _frame, x, y);
 	}
 
-	void scroll_ratio(int layer, float xr, float yr);
 	void scroll(int xs, int ys);
 	void force_scroll();
 
@@ -208,10 +210,15 @@ class gfxengine_t
 	s_filter_t	*acf;		// Alpha cleaning plugin
 	s_filter_t	*bcf;		// Brightness/contrast plugin
 	s_filter_t	*dsf;		// Display format plugin
-	int		xscroll, yscroll;
-	int		wrapx, wrapy;	// World wrap, or 0
-	float		xratio[CS_LAYERS];
+
+	// Scrolling and wrapping
+	int		_camfilter;		// Camera filter, or 0 (24:8)
+	int		xtarget, ytarget;	// Scroll target position
+	int		xscroll, yscroll;	// Current scroll position
+	int		wrapx, wrapy;		// World wrap, or 0
+	float		xratio[CS_LAYERS];	// Layer scroll ratios
 	float		yratio[CS_LAYERS];
+
 	s_container_t	*gfx;
 	SoFont		*fonts[GFX_BANKS];	// Kludge.
 	GFX_palette	*_palette;
@@ -244,11 +251,11 @@ class gfxengine_t
 	int		screenshot_count;
 
 	static void on_frame(cs_engine_t *e);
-	void __frame();
 
 	void start_engine();
 	void stop_engine();
 	static void render_sprite(cs_obj_t *o);
+	void apply_scroll();
 };
 
 
