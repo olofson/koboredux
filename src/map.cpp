@@ -25,7 +25,16 @@
 #include "map.h"
 #include "random.h"
 
-void _map::init()
+void _map::init(const _scene *s)
+{
+	clear();
+	for(int i = 0; i < s->base_max; i++)
+		make_maze(s->base[i].x, s->base[i].y, s->base[i].h,
+				s->base[i].v);
+	convert(s->ratio);
+}
+
+void _map::clear()
 {
 	int i, j;
 	for(i = 0; i < MAP_SIZEX; i++)

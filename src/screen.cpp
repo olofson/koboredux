@@ -47,6 +47,7 @@ int _screen::bg_clouds;
 int _screen::restarts;
 int _screen::generate_count;
 _map _screen::map;
+_map _screen::bg_map[KOBO_BG_MAP_LEVELS];
 int _screen::show_title = 0;
 int _screen::do_noise = 0;
 float _screen::_fps = 40;
@@ -573,7 +574,6 @@ void _screen::scroller()
 
 void _screen::init_scene(int sc)
 {
-	map.init();
 	if(sc < 0)
 	{
 		/*
@@ -617,15 +617,14 @@ void _screen::init_scene(int sc)
 	}
 	region = scene_num / 10 % 5;
 	level = scene_num % 10 + 1;
+
+	map.init(&scene[scene_num]);
+/*	for(int i = 0; i < KOBO_BG_MAP_LEVELS; ++i)
+		if(level + i <= 10)
+			bg_map[i].init(&scene[scene_num + 1 + i]);*/
 	init_background();
 	gengine->period(game.speed);
 	sound.period(game.speed);
-	const _scene *s = &scene[scene_num];
-	int i;
-	for(i = 0; i < s->base_max; i++)
-		map.make_maze(s->base[i].x, s->base[i].y, s->base[i].h,
-				s->base[i].v);
-	map.convert(s->ratio);
 	generate_count = 0;
 	wradar->mode(radar_mode);
 }
@@ -1085,22 +1084,64 @@ void _screen::init_background()
 }
 
 
+void _screen::render_bases(_map &map, int tileset, int vx, int vy)
+{
+	s_bank_t *b = s_get_bank(gengine->get_gfx(), tileset);
+	if(!b)
+		return;
+
+	// Undo centering
+	vx += PIXEL2CS(WMAIN_W / 2);
+	vy += PIXEL2CS(WMAIN_H / 2);
+
+	// Convert to the correct tile size
+	vx = vx * b->w / TILE_SIZE;
+	vy = vy * b->h / TILE_SIZE;
+
+	// Redo centering
+	vx -= PIXEL2CS(WMAIN_W / 2);
+	vy -= PIXEL2CS(WMAIN_H / 2);
+
+	// Re-wrap, because the code below can't handle negative values
+	vx = (vx + PIXEL2CS(MAP_SIZEX * b->w)) % PIXEL2CS(MAP_SIZEX * b->w);
+	vy = (vy + PIXEL2CS(MAP_SIZEY * b->h)) % PIXEL2CS(MAP_SIZEY * b->h);
+
+	// Start exactly at the top-left corner of the tile visible in the top-
+	// left corner of the display window.
+	int mx = CS2PIXEL(vx / b->w);
+	int my = CS2PIXEL(vy / b->h);
+	int xo = (vx + PIXEL2CS(MAP_SIZEX * b->w)) % PIXEL2CS(b->w);
+	int yo = (vy + PIXEL2CS(MAP_SIZEY * b->h)) % PIXEL2CS(b->h);
+	int ymax = ((WMAIN_H + CS2PIXEL(yo)) / b->w) + 1;
+	int xmax = ((WMAIN_W + CS2PIXEL(xo)) / b->h) + 1;
+	int frame = manage.game_time();
+	for(int y = 0; y < ymax; ++y)
+		for(int x = 0; x < xmax; ++x)
+		{
+			int n = map.pos(mx + x, my + y);
+			if(IS_SPACE(n) && (MAP_TILE(n) == 0))
+				continue;
+			int tile;
+			if(n & CORE)
+			{
+				if(n & (U_MASK | D_MASK))
+					tile = 16;
+				else
+					tile = 24;
+				tile += frame / 2 & 7;
+			}
+			else
+				tile = MAP_TILE(n);
+			wmain->sprite_fxp(PIXEL2CS(x * b->w) - xo,
+					PIXEL2CS(y * b->h) - yo,
+					tileset, tile);
+		}
+}
+
 void _screen::render_background()
 {
 	if(do_noise && (noise_fade >= 1.0f))
 		return;
-
-	int vx = gengine->xoffs(LAYER_BASES) * TILE_SIZE / 16;
-	int vy = gengine->yoffs(LAYER_BASES) * TILE_SIZE / 16;
-
-	// Start exactly at the top-left corner of the tile visible in the top-
-	// left corner of the display window.
-	int xo = vx % PIXEL2CS(TILE_SIZE);
-	int yo = vy % PIXEL2CS(TILE_SIZE);
-	int mx = CS2PIXEL(vx / TILE_SIZE);
-	int my = CS2PIXEL(vy / TILE_SIZE);
-	int ymax = ((WMAIN_H + CS2PIXEL(yo)) / TILE_SIZE) + 1;
-	int xmax = ((WMAIN_W + CS2PIXEL(xo)) / TILE_SIZE) + 1;
 
 	// Render ground
 	s_bank_t *b = s_get_bank(gengine->get_gfx(), bg_backdrop);
@@ -1134,32 +1175,32 @@ void _screen::render_background()
 
 	// Render parallax starfield
 	if(bg_altitude >= 96)
-		render_starfield(vx, vy);
+		render_starfield(gengine->xoffs(LAYER_BASES),
+				gengine->yoffs(LAYER_BASES));
+
+	// Render parallax level bases
+	wmain->colormod(wmain->map_rgb(128, 128, 128));	// HalfBrite!
+	for(int m = KOBO_BG_MAP_LEVELS - 1; m >= 0; --m)
+	{
+		if(level + m >= 10)
+			continue;
+		int tiles = 0/*region*/;
+		switch(m)
+		{
+		  case 0:	tiles += B_R1_TILES_SMALL;	break;
+		  case 1:	tiles += B_R1_TILES_TINY;	break;
+		}
+		render_bases(bg_map[m], tiles,
+				gengine->xoffs(LAYER_BASES),
+				gengine->yoffs(LAYER_BASES));
+	}
+	if(!show_title)
+		wmain->colormod(wmain->map_rgb(255, 255, 255));
 
 	// Render bases
-	int tileset = B_R1_TILES + region;
-	int frame = manage.game_time();
-	for(int y = 0; y < ymax; ++y)
-		for(int x = 0; x < xmax; ++x)
-		{
-			int n = map.pos(mx + x, my + y);
-			if(IS_SPACE(n) && (MAP_TILE(n) == 0))
-				continue;
-			int tile;
-			if(n & CORE)
-			{
-				if(n & (U_MASK | D_MASK))
-					tile = 16;
-				else
-					tile = 24;
-				tile += frame / 2 & 7;
-			}
-			else
-				tile = MAP_TILE(n);
-			wmain->sprite_fxp(PIXEL2CS(x * TILE_SIZE) - xo,
-					PIXEL2CS(y * TILE_SIZE) - yo,
-					tileset, tile);
-		}
+	render_bases(map, B_R1_TILES/* + region*/,
+			gengine->xoffs(LAYER_BASES),
+			gengine->yoffs(LAYER_BASES));
 }
 
 

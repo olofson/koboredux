@@ -53,6 +53,7 @@ class _screen
 	static int restarts;
 	static int generate_count;
 	static _map map;
+	static _map bg_map[KOBO_BG_MAP_LEVELS];
 	static int show_title;
 	static int do_noise;
 	static float _fps;
@@ -88,6 +89,7 @@ class _screen
 	static void init_starfield_colors();
 	static void init_background();
 	static void render_starfield(int xo, int yo);
+	static void render_bases(_map &map, int tileset, int vx, int vy);
 	static void clean_scrap_tile(int x, int y)
 	{
 		if((map.pos(x, y) & SPACE) && (MAP_TILE(map.pos(x, y))))

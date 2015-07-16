@@ -25,6 +25,7 @@
 #define XKOBO_H_MAP
 
 #include "config.h"
+#include "scenes.h"
 
 #define SITE_MAX       1024
 
@@ -47,9 +48,7 @@
 class _map
 {
   public:
-	void init();
-	void make_maze(int x, int y, int difx, int dify);
-	void convert(unsigned ratio);	/* ratio < 64 */
+	void init(const _scene *s);
 	inline unsigned short &pos(int x, int y)
 	{
 		x &= MAP_SIZEX - 1;
@@ -65,6 +64,9 @@ class _map
 	void maze_push(int x, int y);
 	void maze_move_and_push(int x, int y, int d);
 	int maze_judge(int cx, int cy, int dx, int dy, int x, int y);
+	void clear();
+	void make_maze(int x, int y, int difx, int dify);
+	void convert(unsigned ratio);	/* ratio < 64 */
 };
 
 #endif	// XKOBO_H_MAP
