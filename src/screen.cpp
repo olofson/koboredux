@@ -619,9 +619,9 @@ void _screen::init_scene(int sc)
 	level = scene_num % 10 + 1;
 
 	map.init(&scene[scene_num]);
-/*	for(int i = 0; i < KOBO_BG_MAP_LEVELS; ++i)
+	for(int i = 0; i < KOBO_BG_MAP_LEVELS; ++i)
 		if(level + i <= 10)
-			bg_map[i].init(&scene[scene_num + 1 + i]);*/
+			bg_map[i].init(&scene[scene_num + 1 + i]);
 	init_background();
 	gengine->period(game.speed);
 	sound.period(game.speed);
