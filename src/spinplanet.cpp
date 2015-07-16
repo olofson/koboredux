@@ -269,6 +269,25 @@ void spinplanet_t::refresh_static()
 
 void spinplanet_t::refresh(SDL_Rect *r)
 {
+	// "Rotation"
+	float nx = engine->nxoffs(tlayer) + trackox;
+	float ny = engine->nyoffs(tlayer) + trackoy;
+	if(fabs(nx - lastnx) > 0.5f)
+		wox += nx < lastnx ? 1.0f : -1.0f;
+	if(fabs(ny - lastny) > 0.5f)
+		woy += ny < lastny ? 1.0f : -1.0f;
+	lastnx = nx;
+	lastny = ny;
+	// + 0.5f to get (0, 0) in the center of the texture
+	int vx = ((nx + wox) * xspeed + 0.5f) * msize * 16.0f;
+	int vy = ((ny + woy) * yspeed + 0.5f) * msize * 16.0f;
+#ifndef	KOBO_PLANET_DITHER
+	if((vx == lastx) && (vy == lasty))
+		return;		// Position hasn't changed!
+	lastx = vx;
+	lasty = vy;
+#endif
+
 	// Source
 	s_bank_t *b = s_get_bank(engine->get_gfx(), sbank[2]);
 	if(!b)
@@ -299,25 +318,6 @@ void spinplanet_t::refresh(SDL_Rect *r)
 				"lock buffer!\n");
 		return;
 	}
-
-	// "Rotation"
-	float nx = engine->nxoffs(tlayer) + trackox;
-	float ny = engine->nyoffs(tlayer) + trackoy;
-	if(fabs(nx - lastnx) > 0.5f)
-		wox += nx < lastnx ? 1.0f : -1.0f;
-	if(fabs(ny - lastny) > 0.5f)
-		woy += ny < lastny ? 1.0f : -1.0f;
-	lastnx = nx;
-	lastny = ny;
-	// + 0.5f to get (0, 0) in the center of the texture
-	int vx = ((nx + wox) * xspeed + 0.5f) * msize * 16.0f;
-	int vy = ((ny + woy) * yspeed + 0.5f) * msize * 16.0f;
-#ifndef	KOBO_PLANET_DITHER
-	if((vx == lastx) && (vy == lasty))
-		return;		// Position hasn't changed!
-	lastx = vx;
-	lasty = vy;
-#endif
 
 	// Render!
 	int i = 0;
