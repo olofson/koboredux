@@ -24,6 +24,7 @@
 #define KOBO_DASHBOARD_H
 
 #include "window.h"
+#include "starfield.h"
 
 
 // "Screen" window; takes care of the border, if any
@@ -42,7 +43,8 @@ enum dashboard_modes_t {
 	DASHBOARD_BLACK,
 	DASHBOARD_TITLE,
 	DASHBOARD_GAME,
-	DASHBOARD_LOADING
+	DASHBOARD_LOADING,
+	DASHBOARD_JINGLE
 };
 
 
@@ -56,6 +58,7 @@ class dashboard_window_t : public window_t
 	float			*progress_table;
 	Uint32			progress_time;
 	int			progress_bench;
+	KOBO_Starfield		jingelstars;
 	void render_progress();
   public:
 	dashboard_window_t(gfxengine_t *e);

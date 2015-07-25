@@ -26,17 +26,9 @@
 
 #include "map.h"
 #include "radar.h"
-
-#define	STAR_COLORS	8
+#include "starfield.h"
 
 class window_t;
-
-struct KOBO_Star
-{
-	short		x;
-	short		y;
-	unsigned short	z;
-};
 
 class _screen
 {
@@ -71,15 +63,7 @@ class _screen
 	static int hi_st[10];
 	static char hi_nm[10][20];
 
-	// Starfield
-	static int nstars;
-	static int star_alt;
-	static int star_psize;
-	static int star_pscale;
-	static KOBO_Star *stars;
-	static Uint32 starcolors[STAR_COLORS];
-	static int star_oxo;
-	static int star_oyo;
+	static KOBO_Starfield stars;
 
 	static void render_noise();
 	static void render_highlight();

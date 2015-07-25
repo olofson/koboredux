@@ -64,20 +64,12 @@ int _screen::highlight_h = 0;
 int _screen::hi_sc[10];
 int _screen::hi_st[10];
 char _screen::hi_nm[10][20];
-int _screen::nstars = 0;
-int _screen::star_alt;
-int _screen::star_psize;
-int _screen::star_pscale;
-KOBO_Star *_screen::stars = NULL;
-Uint32 _screen::starcolors[STAR_COLORS];
-int _screen::star_oxo = 0;
-int _screen::star_oyo = 0;
 radar_modes_t _screen::radar_mode = RM_OFF;
+KOBO_Starfield _screen::stars;
 
 
 _screen::~_screen()
 {
-	free(stars);
 }
 
 
@@ -91,7 +83,6 @@ void _screen::init_maps()
 
 void _screen::init_graphics()
 {
-	init_starfield_colors();
 }
 
 
@@ -874,125 +865,6 @@ void _screen::set_highlight(int y, int h)
 }
 
 
-// This starfield implementation may seem a bit backwards. Instead of moving
-// around in a 3D point cloud, projecting by dividing x and y by z etc, we're
-// doing a plain orthogonal projection. That is, the z coordinates have no
-// direct impact on rendering!
-//    What actually creates the parallax effect is that we scroll the *stars*
-// around at different speeds, depending on their distance from the screen,
-// which effectively replaces the usual (x/z, y/z) operation when projecting.
-//    The interesting part is that stars wrap around the edges automatically as
-// a side effect of the integer arithmetics. Thus we can have a nice, dense
-// "3D" starfield covering the whole window - no nearby stars way off screen,
-// and no distant stars wrapping around in a small square in the middle of the
-// screen. No clipping is needed, and thus, no cycles are wasted animating off-
-// screen stars.
-//    Of course, this design means we cannot move along the Z axis (well, not
-// trivially, at least), but we don't really need that here anyway.
-//
-void _screen::init_starfield(int altitude, int psize)
-{
-	free(stars);
-	nstars = prefs->stars;
-	star_alt = altitude;
-	star_psize = psize;
-	stars = (KOBO_Star *)malloc(nstars * sizeof(KOBO_Star));
-	if(!stars)
-	{
-		nstars = 0;
-		return;		// Out of memory!!!
-	}
-	int pivot = star_alt << 8;
-	if(star_alt < 64)
-		star_pscale = 512;
-	else if(star_alt > 192)
-		star_pscale = 256;
-	else
-		star_pscale = 512 - ((star_alt - 64) << 1);
-	for(int i = 0; i < nstars; ++i)
-	{
-		stars[i].x = pubrand.get();
-		stars[i].y = pubrand.get();
-		int zz = 255 * i / nstars;
-		stars[i].z = 65025 - zz * zz;
-		int z =  ((int)stars[i].z - pivot) * star_pscale >> 8;
-	}
-}
-
-void _screen::init_starfield_colors()
-{
-	const char colors[] = {
-		1,	52,	51,	2,
-		47,	3,	46,	4
-	};
-	for(int i = 0; i < STAR_COLORS; ++i)
-		starcolors[STAR_COLORS - i - 1] =
-				wmain->map_rgb(gengine->palette(colors[i]));
-}
-
-void _screen::render_starfield(int xo, int yo)
-{
-	int i;
-	int w = wmain->width() * 256;
-	int h = wmain->height() * 256;
-	int xc = w / 2;
-	int yc = h / 2;
-	int pivot = star_alt << 8;	// Rotation pivot z coordinate
-	int pclip = star_psize * star_psize / 4; // Planet radius squared
-	int pscale;
-
-	if(nstars != prefs->stars)
-		init_starfield(star_alt, star_psize);
-
-	// Calculate delta from last position, dealing with map position wrap
-	const int WSX = WORLD_SIZEX << 8;
-	const int WSY = WORLD_SIZEY << 8;
-	int dx = (xo - star_oxo) & (WSX - 1);
-	star_oxo = xo;
-	if(dx & (WSX >> 1))
-		dx |= 1 - (WSX - 1);
-	int dy = (yo - star_oyo) & (WSY - 1);
-	star_oyo = yo;
-	if(dy & (WSY >> 1))
-		dy |= 1 - (WSY - 1);
-
-	// Scale the deltas to compensate for window/starfield size mismatch
-	// (Otherwise stars at zero distance won't sync up with the map as
-	// intended!)
-	dx = (dx << 16) / w;
-	dy = (dy << 16) / h;
-
-	wmain->select();
-	for(i = 0; i < nstars; ++i)
-	{
-		int iz = (int)stars[i].z;
-		int z =  (iz - pivot) * star_pscale >> 8;
-
-		// Move star!
-		stars[i].x += dx * z >> 16;
-		stars[i].y += dy * z >> 16;
-
-		// Scale to fixp "native" display coordinates
-		int x = stars[i].x * (w >> 8) >> 8;
-		int y = stars[i].y * (h >> 8) >> 8;
-
-		// Skip stars occluded by the planet
-		int xi = x >> 8;
-		int yi = y >> 8;
-		if((z > 0) && ((xi * xi + yi * yi) < pclip))
-			continue;
-
-		// Center
-		x += xc;
-		y += yc;
-
-		// Plot!
-		wmain->foreground(starcolors[iz * STAR_COLORS >> 16]);
-		wmain->fillrect_fxp(x, y, 256, 256);
-	}
-}
-
-
 void _screen::init_background()
 {
 	// Select layers, altitudes etc...
@@ -1079,7 +951,7 @@ void _screen::init_background()
 		wplanet->set_map(planet/* + region*/, 0);
 	wplanet->set_size(psize);
 	wplanet->set_mode(md);
-	init_starfield(bg_altitude, psize);
+	stars.init(wmain, prefs->stars, bg_altitude, psize);
 }
 
 
@@ -1174,7 +1046,7 @@ void _screen::render_background()
 
 	// Render parallax starfield
 	if(bg_altitude >= 96)
-		render_starfield(gengine->xoffs(LAYER_BASES),
+		stars.render(gengine->xoffs(LAYER_BASES),
 				gengine->yoffs(LAYER_BASES));
 
 	// Render parallax level bases

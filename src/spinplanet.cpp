@@ -203,6 +203,8 @@ void spinplanet_t::set_mode(spinplanet_modes_t md)
 	  case SPINPLANET_OFF:
 		autoinvalidate(0);
 		break;
+	  case SPINPLANET_BLACK:
+		break;
 	  case SPINPLANET_STATIC:
 		refresh_static();
 		autoinvalidate(0);

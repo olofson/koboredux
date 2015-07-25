@@ -24,6 +24,7 @@ set(sources
 	screen.cpp
 	states.cpp
 	spinplanet.cpp
+	starfield.cpp
 	logger.c
 	graphics/gfxengine.cpp
 	graphics/sofont.cpp

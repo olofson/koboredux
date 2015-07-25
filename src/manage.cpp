@@ -67,7 +67,6 @@ int _manage::flush_ships_count = 0;
 int _manage::scroll_jump = 0;
 int _manage::delay_count;
 int _manage::rest_cores;
-int _manage::introtime = 0;
 int _manage::exit_manage = 0;
 int _manage::playing = 0;
 int _manage::_get_ready = 0;

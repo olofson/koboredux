@@ -1443,6 +1443,10 @@ int KOBO_main::open()
 		return -3;
 
 	wdash->progress_done();
+	wdash->mode(DASHBOARD_JINGLE);
+
+	while(!SDL_TICKS_PASSED(SDL_GetTicks(), jtime) && !skip_requested())
+		gengine->present();
 
 	wdash->mode(DASHBOARD_BLACK);
 
@@ -1454,7 +1458,6 @@ int KOBO_main::open()
 	manage.init();
 
 	gsm.push(&st_intro_title);
-
 	return 0;
 }
 

@@ -130,6 +130,9 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	pxleft->visible(main);
 	pxright->visible(main);
 
+	if(_mode == DASHBOARD_JINGLE)
+		jingelstars.init(this, prefs->stars, 256, 0);
+
 	switch(_mode)
 	{
 	  case DASHBOARD_OFF:
@@ -197,6 +200,11 @@ void dashboard_window_t::progress_done()
 		printf("---------------------\n");
 		free(progress_table);
 		progress_bench = 0;
+	}
+	else
+	{
+		_percent = 100.0f;
+		gengine->present();
 	}
 	progress_table = NULL;
 }
@@ -270,8 +278,14 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 	  case DASHBOARD_LOADING:
 		background(map_rgb(0x000000));
 		clear();
-		sprite(width() / 2, height() / 3, B_LOADING, 0);
+		sprite(width() / 2, height() * 2 / 5, B_LOADING, 0);
 		render_progress();
+		break;
+	  case DASHBOARD_JINGLE:
+		background(map_rgb(0x000000));
+		clear();
+		jingelstars.render(0, SDL_GetTicks() * 10);
+		sprite(width() / 2, height() * 2 / 5, B_LOADING, 0);
 		break;
 	}
 }
