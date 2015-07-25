@@ -56,7 +56,7 @@ class gfxengine_t
 	int video_flags();
   public:
 	gfxengine_t();
-	~gfxengine_t();
+	virtual ~gfxengine_t();
 
 	window_t *screen()	{ return fullwin; }
 	window_t *target()	{ return _target; }
@@ -112,7 +112,7 @@ class gfxengine_t
 	int loadtiles(int bank, int w, int h, const char *name);
 	int loadfont(int bank, const char *name, float srcscale);
 	int copyrect(int bank, int sbank, int sframe, SDL_Rect *r);
-	void draw_scale(int bank, float xs, float ys);
+	void draw_scale(int bank, float _xs, float _ys);
 
 	int is_loaded(int bank);
 	void reload();

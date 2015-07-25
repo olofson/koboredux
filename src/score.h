@@ -2,9 +2,10 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2002 Jeremy Sheeley
- * Copyright (C) 2001-2002, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2002 Jeremy Sheeley
+ * Copyright 2001-2002, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -126,7 +127,7 @@ struct s_hiscore_t
 	// The fields below this line are not saved to file.
 	s_profile_t	*profile;	//Profile this entry belongs to,
 					//if any. (May be NULL!)
-	char		name[SCORE_NAME_LEN];	//(Kludge for highscore table.)
+	char		name[SCORE_NAME_LEN];
 
 	s_hiscore_t();
 	void clear();		//Reset and clear all fields.
@@ -180,7 +181,7 @@ class score_manager_t
 	int numProfiles;
 	score_manager_t();
 	~score_manager_t();
-	int addPlayer(const char *name);
+	int add_player(const char *name);
 	void init();
 	s_profile_t *profile(int prof = -1)
 	{
@@ -200,7 +201,7 @@ class score_manager_t
 		else
 			return profiles[prof].last_scene;
 	}
-	char *name(int prof = -1)
+	char *player_name(int prof = -1)
 	{
 		if(prof < 0)
 			return profiles[currentProfile].name;

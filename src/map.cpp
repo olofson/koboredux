@@ -188,8 +188,7 @@ static inline int bits2tile(int n)
 		else
 			return 15;
 	}
-	else			// Other pipe parts or normal end nodes
-		return n;
+	return n;	// Other pipe parts or normal end nodes
 }
 
 void _map::convert(unsigned ratio)

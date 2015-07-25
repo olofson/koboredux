@@ -39,7 +39,7 @@ config_form_t::config_form_t(gfxengine_t *e) : kobo_form_t(e)
 
 void config_form_t::open(prefs_t *p)
 {
-	place(wmain->x(), wmain->y(), wmain->width(), wmain->height());
+	place(wmain->px(), wmain->py(), wmain->width(), wmain->height());
 	font(B_NORMAL_FONT);
 	foreground(wmain->map_rgb(0xffffff));
 	background(wmain->map_rgb(0x000000));

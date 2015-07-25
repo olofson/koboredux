@@ -73,18 +73,21 @@ endif(WIN32)
 
 # Release build: full optimization, no debug features, no debug info
 set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 # Maintainer build: No optimizations, lots of warnings, fail on warnings
-set(f "-O1 -g -DDEBUG -Wall -Werror -Wwrite-strings -Wcast-align")
-set(f "${f} -Wbad-function-cast -Waggregate-return")
-set(f "${f} -Wstrict-prototypes -fno-builtin -Wshadow")
-set(f "${f} -Wdeclaration-after-statement -Wmissing-prototypes")
+set(f "-O1 -g -DDEBUG -Wall -Wwrite-strings -Wcast-align")
+set(f "${f} -Waggregate-return")
+set(f "${f} -fno-builtin -Wshadow")
 set(f "${f} -Wmissing-declarations -Wdisabled-optimization")
-set(CMAKE_C_FLAGS_MAINTAINER ${f})
+set(fc "${f} -Wbad-function-cast -Wstrict-prototypes")
+set(fc "${f} -Wdeclaration-after-statement -Wmissing-prototypes")
+set(CMAKE_C_FLAGS_MAINTAINER "${fc} -Werror")
+set(CMAKE_CXX_FLAGS_MAINTAINER "${f} -Werror")
 
 # Debug build: Maintainer + extra debug features, don't fail on warnings
-set(f "${f} -DDEBUG")
-set(CMAKE_C_FLAGS_DEBUG ${f})
+set(CMAKE_C_FLAGS_DEBUG ${fc})
+set(CMAKE_CXX_FLAGS_DEBUG ${f})
 
 set(CMAKE_EXTRA_INCLUDE_FILES stdio.h)
 check_function_exists(snprintf		KOBO_HAVE_SNPRINTF)

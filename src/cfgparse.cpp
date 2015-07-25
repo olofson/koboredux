@@ -2,7 +2,8 @@
 -------------------------------------------------------------------
 	cfgparse.cpp - Generic Config File and Argument Parser
 -------------------------------------------------------------------
- * Copyright (C) 2001, 2007, 2009 David Olofson
+ * Copyright 2001, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -405,34 +406,34 @@ void config_parser_t::comment(const char *text)
 }
 
 
-void config_parser_t::yesno(const char *name, int &var, int def, int save)
+void config_parser_t::yesno(const char *_name, int &var, int def, int save)
 {
-	add(new cfg_switch_t(name, var, def, save));
+	add(new cfg_switch_t(_name, var, def, save));
 }
 
 
-void config_parser_t::command(const char *name, int &var)
+void config_parser_t::command(const char *_name, int &var)
 {
-	add(new cfg_switch_t(name, var, 0, 0));
+	add(new cfg_switch_t(_name, var, 0, 0));
 }
 
 
-void config_parser_t::key(const char *name, int &var, int def, int save)
+void config_parser_t::key(const char *_name, int &var, int def, int save)
 {
-	add(new cfg_key_int_t(name, var, def, save));
+	add(new cfg_key_int_t(_name, var, def, save));
 }
 
 
-void config_parser_t::key(const char *name, float &var, float def, int save)
+void config_parser_t::key(const char *_name, float &var, float def, int save)
 {
-	add(new cfg_key_float_t(name, var, def, save));
+	add(new cfg_key_float_t(_name, var, def, save));
 }
 
 
-void config_parser_t::key(const char *name, cfg_string_t &var,
+void config_parser_t::key(const char *_name, cfg_string_t &var,
 		const cfg_string_t def, int save)
 {
-	add(new cfg_key_string_t(name, var, def, save));
+	add(new cfg_key_string_t(_name, var, def, save));
 }
 
 
@@ -684,14 +685,14 @@ void config_parser_t::_accept(void *var)
 	Generic Symbol Table Style API
 ----------------------------------------------------------*/
 
-int config_parser_t::find(const char *name)
+int config_parser_t::find(const char *_name)
 {
 	if(!table)
 		initialize();
 	if(!table)
 		return -1;
 	for(int i = 0; i < nkeys; ++i)
-		if(table[i]->test(name))
+		if(table[i]->test(_name))
 			return i;
 	return -1;
 }

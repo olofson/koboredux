@@ -80,17 +80,17 @@ void kobo_form_t::init_widget(ct_widget_t *w)
 	switch(_big)
 	{
 	  case 0:
-		w->place(x(), y()+ypos, width(), LINE_H);
+		w->place(px(), py() + ypos, width(), LINE_H);
 		w->font(B_NORMAL_FONT);
 		ypos += LINE_H;
 		break;
 	  case 1:
-		w->place(x(), y()+ypos, width(), BIG_LINE_H);
+		w->place(px(), py() + ypos, width(), BIG_LINE_H);
 		w->font(B_BIG_FONT);
 		ypos += BIG_LINE_H;
 		break;
 	  case 2:
-		w->place(x(), y()+ypos, width(), BIG_LINE_H);
+		w->place(px(), py() + ypos, width(), BIG_LINE_H);
 		w->font(B_MEDIUM_FONT);
 		ypos += BIG_LINE_H;
 		break;

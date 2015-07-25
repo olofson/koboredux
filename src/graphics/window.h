@@ -200,6 +200,8 @@ class windowbase_t
 	windowbase_t(gfxengine_t *e);
 	virtual ~windowbase_t();
 
+	gfxengine_t *get_engine()	{ return engine; }
+
 	virtual void place(int left, int top, int sizex, int sizey);
 	virtual void scale(float x, float y);
 
@@ -255,18 +257,18 @@ class windowbase_t
 	Uint8 get_b(Uint32 c)		{ return c; }
 	Uint8 get_a(Uint32 c)		{ return c >> 24; }
 
-	int x()		{ return (phys_rect.x * 256 + 128) / xs; }
-	int y()		{ return (phys_rect.y * 256 + 128) / ys; }
-	int x2()
+	int px()	{ return (phys_rect.x * 256 + 128) / xs; }
+	int py()	{ return (phys_rect.y * 256 + 128) / ys; }
+	int px2()
 	{
 		return ((phys_rect.x + phys_rect.w) * 256 + 128) / xs;
 	}
-	int y2()
+	int py2()
 	{
 		return ((phys_rect.y + phys_rect.h) * 256 + 128) / ys;
 	}
-	int width()	{ return x2() - x(); }
-	int height()	{ return y2() - y(); }
+	int width()	{ return px2() - px(); }
+	int height()	{ return py2() - py(); }
 
 	SDL_Rect	phys_rect;
 

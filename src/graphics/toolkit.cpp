@@ -178,7 +178,7 @@ int ct_widget_t::value()
 	ct_engine_t::
 ----------------------------------------------------------*/
 
-void default_render_highlight(ct_widget_t *wg)
+static void default_render_highlight(ct_widget_t *wg)
 {
 	Uint32 hlc[6];
 	hlc[0] = wg->map_rgb(0x440000);

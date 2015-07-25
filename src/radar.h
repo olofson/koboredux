@@ -62,7 +62,7 @@ class radar_window_t : public window_t
 	int time;			//for delta time calc
 	void radar();			//Drive any actual radar mode
 	void noise();			//Render noise effect
-	void set_scroll(int xs, int ys);//Set map scroll offset
+	void set_scroll(int xscroll, int yscroll);	//Set map scroll offset
   public:
 	radar_window_t(gfxengine_t *e);
 	void refresh(SDL_Rect *r);

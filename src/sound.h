@@ -75,7 +75,7 @@ class KOBO_sound
 	static int	sounds_loaded;
 	static int	music_loaded;
 
-	/* In-game sfx stuff */
+	// In-game sfx stuff
 	static int	time;
 	static int	_period;
 	static int	listener_x;
@@ -87,7 +87,7 @@ class KOBO_sound
 	static int	firing;
 	static unsigned	rumble;
 
-	/* Audiality 2 interface */
+	// Audiality 2 interface
 	static A2_state *state;
 	static A2_handle rootvoice;
 	static A2_handle sfxbank;
@@ -118,36 +118,34 @@ class KOBO_sound
 	static void frame();
 	static void run();
 
-	/* Play a user interface sound */
-	static void play(int wid, int vol = 65536, int pitch = 60<<16,
+	// Play a user interface sound
+	static void play(unsigned wid, int vol = 65536, int pitch = 60<<16,
 			int pan = 0);
 
-	/* Play a sound at a specific location on the map */
-	static void g_play(int wid, int x, int y,
+	// Play a sound at a specific location on the map
+	static void g_play(unsigned wid, int x, int y,
 			int vol = 65536, int pitch = 60<<16);
 
-	/* Play a sound right where the listener is. */
-	static void g_play0(int wid, int vol = 65536, int pitch = 60<<16);
+	// Play a sound right where the listener is
+	static void g_play0(unsigned wid, int vol = 65536, int pitch = 60<<16);
 
 	/*--------------------------------------------------
 		In-game sound
 	--------------------------------------------------*/
-	/* Play in-game music */
-	static void g_music(int scene);
+	// Play in-game music
+	static void g_music(unsigned scene);
 
-	/* Set listener position */
+	// Set listener position
 	static void g_position(int x, int y);
 
-	/* Set world size for wrapping */
+	// Set world size for wrapping
 	static void g_wrap(int w, int h);
 
-	/*
-	 * Set world scale. 'maxrange' is the distance where
-	 * a sound is out of the audible range.
-	 */
+	// Set world scale. 'maxrange' is the distance where a sound is out of
+	// the audible range.
 	static void g_scale(int maxrange, int pan_maxrange);
 
-	/* Various sound effects */
+	// Various sound effects
 	static void g_player_fire();
 	static void g_player_fire_off();
 	static void g_player_damage();
@@ -173,10 +171,10 @@ class KOBO_sound
 	/*--------------------------------------------------
 		UI sound effects
 	--------------------------------------------------*/
-	/* Low level interface */
+	// Low level interface
 	static void ui_music_title();
 
-	/* Various UI effects */
+	// Various UI effects
 	static void ui_noise(int n);
 	static void ui_ok();
 	static void ui_cancel();

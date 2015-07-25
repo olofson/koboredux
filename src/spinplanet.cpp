@@ -90,7 +90,7 @@ void spinplanet_t::set_source(int src, int bank, int frame)
 	{
 	  case 0:
 	  case 1:
-		if((b->w > width()) || (b->h > height()))
+		if(((int)b->w > width()) || ((int)b->h > height()))
 		{
 			log_printf(ELOG, "spinplanet_t::set_source(): The "
 				"sprites of bank %d are larger than the "
@@ -132,7 +132,6 @@ void spinplanet_t::init_lens()
 	lens = (int16_t *)malloc(psize * psize * 2 * sizeof(int16_t));
 	int xcenter = width() / 2;
 	int ycenter = height() / 2;
-	int yoffset = (height() - psize) / 2;
 	int r = psize / 2;
 	float norm90 = 2.0f / M_PI;	// 90° ==> 1.0
 	float a2o = msize / 4.0f * texrep;
@@ -329,18 +328,18 @@ void spinplanet_t::refresh(SDL_Rect *r)
 		if(!len)
 			break;	// Terminator!
 		Uint32 *d = &buffer[pitch * y + x];
-		int16_t *s = &lens[i];
+		int16_t *l = &lens[i];
 		for(int j = 0; j < len; ++j)
 		{
 #ifdef	KOBO_PLANET_DITHER
 			int nx = dither();
 			int ny = (nx >> 8) & 0xf;
 			nx &= 0xf;
-			int mx = ((vx + s[j * 2] + nx) >> 4) & msizemask;
-			int my = ((vy + s[j * 2 + 1] + ny) >> 4) & msizemask;
+			int mx = ((vx + l[j * 2] + nx) >> 4) & msizemask;
+			int my = ((vy + l[j * 2 + 1] + ny) >> 4) & msizemask;
 #else
-			int mx = ((vx + s[j * 2]) >> 4) & msizemask;
-			int my = ((vy + s[j * 2 + 1]) >> 4) & msizemask;
+			int mx = ((vx + l[j * 2]) >> 4) & msizemask;
+			int my = ((vy + l[j * 2 + 1]) >> 4) & msizemask;
 #endif
 			d[j] = src[srcpitch * my + mx];
 		}

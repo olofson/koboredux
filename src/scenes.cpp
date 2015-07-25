@@ -21,7 +21,7 @@
 
 #include "scenes.h"
 
-const _scene scene[] = {
+const _scene scenes[] = {
 #if 0
 	/* Test map */
 	{

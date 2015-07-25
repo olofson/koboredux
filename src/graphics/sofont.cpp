@@ -53,7 +53,7 @@ SoFont::~SoFont()
 
 namespace SoFontUtilities
 {
-	Uint32 SoFontGetPixel(SDL_Surface *Surface, Sint32 X, Sint32 Y)
+	static Uint32 SoFontGetPixel(SDL_Surface *Surface, Sint32 X, Sint32 Y)
 	{
 		Uint8 *bits;
 		Uint32 Bpp;
@@ -97,7 +97,7 @@ namespace SoFontUtilities
 		log_printf(ELOG, "SoFontGetPixel: Unsupported pixel format!\n");
 		return 0;	// David (to get rid of warning)
 	}
-	void SoFontSetPixel(SDL_Surface *Surface, Sint32 X, Sint32 Y,
+	static void SoFontSetPixel(SDL_Surface *Surface, Sint32 X, Sint32 Y,
 			Uint32 c)
 	{
 		Uint8 *bits;
@@ -145,43 +145,7 @@ namespace SoFontUtilities
 			break;
 		}
 	}
-	void clipx(SDL_Rect * srcrect, SDL_Rect * dstrect, SDL_Rect * clip)
-	{
-		// Use if destination have the same size than source.
-		int dx = clip->x - dstrect->x;
-
-		int sw = srcrect->w;	// Because SDL_Rect.w are
-					// unsigned.
-		int dw = dstrect->w;
-
-		if(dx > 0)
-		{
-			srcrect->x += dx;
-			dstrect->x += dx;
-
-			sw -= dx;
-			dw -= dx;
-		}
-
-		int dwx = (dstrect->x + dstrect->w) - (clip->x + clip->w);
-
-		if(dwx > 0)
-		{
-			sw -= dwx;
-			dw -= dwx;
-		}
-
-		if(sw > 0)
-			srcrect->w = sw;
-		else
-			srcrect->w = 0;
-
-		if(dw > 0)
-			dstrect->w = dw;
-		else
-			dstrect->w = 0;
-	}
-	void sdcRects(SDL_Rect * source, SDL_Rect * destination,
+	static void sdcRects(SDL_Rect * source, SDL_Rect * destination,
 			SDL_Rect clipping)
 	{
 		// Use if destination have the same size than source &
@@ -250,8 +214,6 @@ bool SoFont::DoStartNewChar(SDL_Surface *surface, Sint32 x)
 void SoFont::CleanSurface(SDL_Surface *surface)
 {
 	int x = 0, y = 0;
-	Uint32 pix = SDL_MapRGB(surface->format, 255, 0, 255);
-
 	while(x < surface->w)
 	{
 		y = 0;

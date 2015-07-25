@@ -474,7 +474,7 @@ FIXME: are rather foreign matters to the average winuser...)
 }
 
 
-int score_manager_t::addPlayer(const char *name)
+int score_manager_t::add_player(const char *_name)
 {
 	log_printf(D3LOG, "creating profile %d\n", numProfiles);
 	if(numProfiles == MAX_PROFILES)
@@ -486,7 +486,7 @@ int score_manager_t::addPlayer(const char *name)
 	uid_t userid = getuid();
 #endif
 	profiles[numProfiles].clear();
-	strncpy(profiles[numProfiles].name, name, SCORE_NAME_LEN);
+	strncpy(profiles[numProfiles].name, _name, SCORE_NAME_LEN);
 
 // TODO: Somewhere around here would be a nice place to check if the
 // TODO: scoredir exists, and if not, try to create one.
@@ -495,7 +495,7 @@ int score_manager_t::addPlayer(const char *name)
 	// scoredir registered. (Loaded score files are written back
 	// where they were read from when changed.)
 	char buf[1024];
-	snprintf(buf, sizeof(buf), "SCORES>>%s.%u", name, userid);
+	snprintf(buf, sizeof(buf), "SCORES>>%s.%u", _name, userid);
 	const char *fn = fmap->get(buf, FM_FILE_CREATE);
 	free(profiles[numProfiles].filename);
 	if(fn)
@@ -599,7 +599,7 @@ void score_manager_t::record(s_hiscore_t *entry, int force)
 }
 
 
-int s_table_cmp(const void *_a, const void *_b)
+static int s_table_cmp(const void *_a, const void *_b)
 {
 	s_hiscore_t *a = (s_hiscore_t *)_a;
 	s_hiscore_t *b = (s_hiscore_t *)_b;

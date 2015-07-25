@@ -84,7 +84,7 @@ _screen::~_screen()
 void _screen::init_maps()
 {
 	scene_max = 0;
-	while(scene[scene_max].ratio != -1)
+	while(scenes[scene_max].ratio != -1)
 		scene_max++;
 }
 
@@ -262,19 +262,18 @@ void _screen::highscores(int t, float fade)
 	for(i = 0, y = 65; i < 10; ++i, y += 18)
 	{
 		static char s[20];
-		float xo, cy;
+		float cy;
 		int real_y = PIXEL2CS(y) - (int)yo;
 		if(real_y < PIXEL2CS(55) || real_y > PIXEL2CS(165))
 			continue;
 		cy = (PIXEL2CS(y) - yo) - PIXEL2CS(65 + 5*18/2);
-		xo = cy*cy*cy*cy*cy * 1e-16;
+		xo = (int)(cy*cy*cy*cy*cy * 1e-16);
 		snprintf(s, 16, "%d", hi_sc[i]);
-		woverlay->center_token_fxp(PIXEL2CS(70) + (int)xo, real_y, s);
+		woverlay->center_token_fxp(PIXEL2CS(70) + xo, real_y, s);
 		snprintf(s, 16, "%d", hi_st[i]);
-		woverlay->center_token_fxp(PIXEL2CS((70 + 125) / 2) + (int)xo,
+		woverlay->center_token_fxp(PIXEL2CS((70 + 125) / 2) + xo,
 				real_y, s, -1);
-		woverlay->string_fxp(PIXEL2CS(125) + (int)xo, real_y,
-				hi_nm[i]);
+		woverlay->string_fxp(PIXEL2CS(125) + xo, real_y, hi_nm[i]);
 	}
 #if 0
 	if(!flashin(t - 1000))
@@ -618,10 +617,10 @@ void _screen::init_scene(int sc)
 	region = scene_num / 10 % 5;
 	level = scene_num % 10 + 1;
 
-	map.init(&scene[scene_num]);
+	map.init(&scenes[scene_num]);
 	for(int i = 0; i < KOBO_BG_MAP_LEVELS; ++i)
 		if(level + i <= 10)
-			bg_map[i].init(&scene[scene_num + 1 + i]);
+			bg_map[i].init(&scenes[scene_num + 1 + i]);
 	init_background();
 	gengine->period(game.speed);
 	sound.period(game.speed);
@@ -635,7 +634,7 @@ int _screen::prepare()
 	if(scene_num < 0)
 		return 0;
 
-	const _scene *s = &scene[scene_num];
+	const _scene *s = &scenes[scene_num];
 	int i, j;
 	int count_core = 0;
 	int c = 0;
@@ -686,7 +685,7 @@ void _screen::generate_fixed_enemies()
 	static int cost[16] =
 			{ 32, 30, 23, 12, 0, -12, -23, -30, -32, -30, -23,
 				-12, 0, 12, 23, 30 };
-	const _scene *s = &scene[scene_num];
+	const _scene *s = &scenes[scene_num];
 	if(generate_count < s->enemy_max)
 	{
 		int j;

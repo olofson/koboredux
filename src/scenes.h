@@ -1,8 +1,9 @@
 /*(GPLv2)
  * XKOBO, a video-oriented game
- * Copyright (C) 1995, 1996 Akira Higuchi
+ * Copyright 1995, 1996 Akira Higuchi
  *     a-higuti@math.hokudai.ac.jp
- * Copyright (C) 2006, 2007, 2009 David Olofson
+ * Copyright 2006, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -55,6 +56,6 @@ struct _scene
 	_base base[SCENE_BASE_MAX];
 };
 
-extern const _scene scene[];
+extern const _scene scenes[];
 
 #endif // XKOBO_H_SCENES

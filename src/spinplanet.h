@@ -90,10 +90,10 @@ class spinplanet_t : public stream_window_t
 	void set_mode(spinplanet_modes_t md);
 	void set_texture_repeat(int txr)	{ texrep = txr; }
 	void track_layer(int lr)		{ tlayer = lr; }
-	void track_speed(float xs, float ys)
+	void track_speed(float _xspeed, float _yspeed)
 	{
-		xspeed = xs;
-		yspeed = ys;
+		xspeed = _xspeed;
+		yspeed = _yspeed;
 	}
 	void track_offset(float tox, float toy)
 	{

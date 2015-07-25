@@ -2,7 +2,8 @@
 -------------------------------------------------------------------
 	cfgparse.h - Generic Config File and Argument Parser
 -------------------------------------------------------------------
- * Copyright (C) 2001, 2007, 2009 David Olofson
+ * Copyright 2001, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -152,11 +153,11 @@ class config_parser_t
   protected:
 	//Key registration: For use in inherited init()
 	void comment(const char *text);
-	void yesno(const char *name, int &var, int def, int save = 1);
-	void command(const char *name, int &var);
-	void key(const char *name, int &var, int def, int save = 1);
-	void key(const char *name, float &var, float def, int save = 1);
-	void key(const char *name, cfg_string_t &var, const cfg_string_t def,
+	void yesno(const char *_name, int &var, int def, int save = 1);
+	void command(const char *_name, int &var);
+	void key(const char *_name, int &var, int def, int save = 1);
+	void key(const char *_name, float &var, float def, int save = 1);
+	void key(const char *_name, cfg_string_t &var, const cfg_string_t def,
 			int save = 1);
 	void desc(const char *text);
 
@@ -185,7 +186,7 @@ class config_parser_t
 	void accept(cfg_string_t &var)		{ _accept(&var); }
 
 	/* Generic Symbol Table Style API */
-	int find(const char *name);
+	int find(const char *_name);
 	int find_next(int symbol = -1);
 	cfg_types_t type(int symbol);
 	int do_save(int symbol);

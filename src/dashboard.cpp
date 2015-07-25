@@ -47,6 +47,7 @@ void screen_window_t::refresh(SDL_Rect *r)
 {
 	int x, y, w, h;
 	foreground(map_rgb(0x000000));
+
 	x = 0;
 	y = 0;
 	w = width();
@@ -74,9 +75,11 @@ void screen_window_t::refresh(SDL_Rect *r)
 
 dashboard_window_t::dashboard_window_t(gfxengine_t *e) : window_t(e)
 {
-	_mode = DASHBOARD_BLACK;
-	_percent = 0.0f;
 	_msg = NULL;
+	_percent = 0.0f;
+	_mode = DASHBOARD_BLACK;
+	progress_index = 0;
+	progress_table = NULL;
 }
 
 
@@ -483,13 +486,13 @@ void hledbar_t::set(int pos, proxy_colors_t color, float intensity)
 #ifdef DEBUG
 	if((color < 0) || (color > PCOLOR_HAZARD))
 	{
-		log_printf(DLOG, stderr, "hledbar_t::set(): Unrecognized "
+		log_printf(DLOG, "hledbar_t::set(): Unrecognized "
 				"'color' %d!\n", color);
 		return;
 	}
 	if((intensity < 0.0f) || (intensity > 1.0f))
 	{
-		log_printf(DLOG, stderr, "hledbar_t::set(): 'intensity' out "
+		log_printf(DLOG, "hledbar_t::set(): 'intensity' out "
 				"of range! (%f)\n", intensity);
 		return;
 	}

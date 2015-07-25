@@ -399,7 +399,7 @@ void st_game_t::frame()
 		return;
 	}
 	manage.run_game();
-	last_level = manage.scene();
+	last_level = manage.current_scene();
 	if(manage.game_over())
 		gsm.change(&st_game_over);
 	else if(exit_game || manage.game_stopped())
@@ -687,7 +687,7 @@ st_game_over_t st_game_over;
  */
 void menu_base_t::open()
 {
-	place(woverlay->x(), woverlay->y(),
+	place(woverlay->px(), woverlay->py(),
 			woverlay->width(), woverlay->height());
 	font(B_NORMAL_FONT);
 	foreground(woverlay->map_rgb(0xffffff));
@@ -869,7 +869,7 @@ void st_menu_base_t::press(int button)
 
 void new_player_t::open()
 {
-	place(woverlay->x(), woverlay->y(),
+	place(woverlay->px(), woverlay->py(),
 			woverlay->width(), woverlay->height());
 	font(B_NORMAL_FONT);
 	foreground(woverlay->map_rgb(255, 255, 255));
@@ -1102,7 +1102,7 @@ void st_new_player_t::press(int button)
 			break;
 
 		  case MENU_TAG_OK:
-			switch(scorefile.addPlayer(menu->name))
+			switch(scorefile.add_player(menu->name))
 			{
 			  case 0:
 				sound.ui_ok();
@@ -1244,7 +1244,7 @@ void main_menu_t::buildStartLevel(int profNum)
 {
 	char buf[50];
 	int MaxStartLevel = profNum >= 0 ? scorefile.last_scene(profNum) : 500;
-	start_level = manage.scene();
+	start_level = manage.current_scene();
 	if(start_level > MaxStartLevel)
 		start_level = MaxStartLevel;
 	list("Start at Stage", &start_level, 5);

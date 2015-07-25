@@ -411,15 +411,17 @@ void KOBO_sound::run()
 	In-game sound
 --------------------------------------------------*/
 
-void KOBO_sound::g_music(int wid)
+void KOBO_sound::g_music(unsigned scene)
 {
+#if 0
 	if(!state || !sounds[wid])
 		return;
 	a2_Play(state, rootvoice, sounds[wid]);
+#endif
 }
 
 
-void KOBO_sound::play(int wid, int vol, int pitch, int pan)
+void KOBO_sound::play(unsigned wid, int vol, int pitch, int pan)
 {
 	if(!state || !sounds[wid])
 		return;
@@ -450,7 +452,7 @@ void KOBO_sound::g_scale(int maxrange, int pan_maxrange)
 }
 
 
-void KOBO_sound::g_play(int wid, int x, int y, int vol, int pitch)
+void KOBO_sound::g_play(unsigned wid, int x, int y, int vol, int pitch)
 {
 	int volume, vx, vy, pan;
 
@@ -500,7 +502,7 @@ void KOBO_sound::g_play(int wid, int x, int y, int vol, int pitch)
 }
 
 
-void KOBO_sound::g_play0(int wid, int vol, int pitch)
+void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
 {
 	if(!state || !sounds[wid])
 		return;

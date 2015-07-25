@@ -541,15 +541,15 @@ int gfxengine_t::copyrect(int bank, int sbank, int sframe, SDL_Rect *r)
 }
 
 
-void gfxengine_t::draw_scale(int bank, float xs, float ys)
+void gfxengine_t::draw_scale(int bank, float _xs, float _ys)
 {
 	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
 	if(!b)
 		return;
-	b->xs = (int)(xs * 256.f);
-	b->ys = (int)(ys * 256.f);
+	b->xs = (int)(_xs * 256.f);
+	b->ys = (int)(_ys * 256.f);
 	if(fonts[bank])
-		fonts[bank]->SetScale(xs, ys);
+		fonts[bank]->SetScale(_xs, _ys);
 }
 
 

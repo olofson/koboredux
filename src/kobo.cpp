@@ -264,8 +264,9 @@ class KOBO_main
 	static int init_js(prefs_t *p);
 	static void close_js();
 
-	static int escape_hammering();
-	static int quit_requested();
+	static bool escape_hammering();
+	static bool quit_requested();
+	static bool skip_requested();
 	static void brutal_quit();
 	static void pause_game();
 
@@ -323,7 +324,7 @@ void KOBO_main::print_fps_results()
 }
 
 
-int KOBO_main::escape_hammering()
+bool KOBO_main::escape_hammering()
 {
 	Uint32 nt = SDL_GetTicks();
 	if(nt - esc_tick > 300)
@@ -335,7 +336,7 @@ int KOBO_main::escape_hammering()
 }
 
 
-int KOBO_main::quit_requested()
+bool KOBO_main::quit_requested()
 {
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
@@ -373,8 +374,56 @@ int KOBO_main::quit_requested()
 		}
 	}
 	if(exit_game_fast)
-		return 1;
+		return true;
 	return SDL_QuitRequested();
+}
+
+
+bool KOBO_main::skip_requested()
+{
+	SDL_Event e;
+	bool do_skip = false;
+	while(SDL_PollEvent(&e))
+	{
+		switch(e.type)
+		{
+		  case SDL_QUIT:
+			exit_game_fast = 1;
+			break;
+		  case SDL_WINDOWEVENT:
+			switch(e.window.event)
+			{
+			  case SDL_WINDOWEVENT_SHOWN:
+			  case SDL_WINDOWEVENT_EXPOSED:
+			  case SDL_WINDOWEVENT_RESIZED:
+			  case SDL_WINDOWEVENT_MAXIMIZED:
+			  case SDL_WINDOWEVENT_RESTORED:
+				break;
+			  case SDL_WINDOWEVENT_CLOSE:
+				exit_game_fast = 1;
+				break;
+			}
+			break;
+		  case SDL_KEYUP:
+			switch(e.key.keysym.sym)
+			{
+			  case SDLK_ESCAPE:
+				if(escape_hammering())
+					exit_game_fast = 1;
+				break;
+			  case SDLK_SPACE:
+			  case SDLK_RETURN:
+				do_skip = true;
+				break;
+			  default:
+				break;
+			}
+			break;
+		}
+	}
+	if(exit_game_fast)
+		return true;
+	return do_skip;
 }
 
 
@@ -534,7 +583,7 @@ void KOBO_main::build_screen()
 	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
 	wradar->scale(-2.0f, -2.0f);
 
-	whealth->place(xoffs + 4, yoffs + 92, 8, 128);
+	whealth->place(conx + WCONSOLE_W - 8, cony, 8, WCONSOLE_H);
 	whealth->background(whealth->map_rgb(0x182838));
 	whealth->redmax(0);
 
@@ -1361,9 +1410,9 @@ void KOBO_main::pause_game()
 }
 
 
-void kobo_render_highlight(ct_widget_t *wg)
+static void kobo_render_highlight(ct_widget_t *wg)
 {
-	screen.set_highlight(wg->y() + wg->height() / 2 - woverlay->y(),
+	screen.set_highlight(wg->py() + wg->height() / 2 - woverlay->py(),
 			wg->height());
 }
 
@@ -2090,21 +2139,22 @@ static void put_options_man()
 }
 
 
-extern "C" void emergency_close(void)
-{
-	km.close();
-}
+extern "C" {
+	static void emergency_close(void)
+	{
+		km.close();
+	}
 
-
-extern "C" RETSIGTYPE breakhandler(int dummy)
-{
-	/* For platforms that drop the handlers on the first signal... */
-	signal(SIGTERM, breakhandler);
-	signal(SIGINT, breakhandler);
-	km.brutal_quit();
+	static RETSIGTYPE breakhandler(int dummy)
+	{
+		// For platforms that drop the handlers on the first signal
+		signal(SIGTERM, breakhandler);
+		signal(SIGINT, breakhandler);
+		km.brutal_quit();
 #if (RETSIGTYPE != void)
-	return 0;
+		return 0;
 #endif
+	}
 }
 
 

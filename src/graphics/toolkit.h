@@ -80,7 +80,7 @@ class ct_widget_t : public window_t
 	//Token and offsets- used by some alignment modes.
 	virtual void token(char tok)		{ _token = tok; }
 	char token()				{ return _token; }
-	virtual void offset(float x, float y)	{ xo = x; yo = y; }
+	virtual void offset(float _x, float _y)	{ xo = _x; yo = _y; }
 	int xoffs()		{ return (int)(xo * width()); }
 	int yoffs()		{ return (int)(yo * height()); }
 	float rxoffs()		{ return xo; }

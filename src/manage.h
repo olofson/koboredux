@@ -57,8 +57,6 @@ class _manage
 	// Timing
 	static int delay_count;
 	static int last_tick;
-	static float dt;	// Delta time since last video frame (s)
-	static double t;	// Time elapsed since init() (s)
 
 	static void next_scene();
 	static void retry();
@@ -104,7 +102,7 @@ class _manage
 	static void select_prev(int redraw_map = 1);
 	static void regenerate();
 	static void select_scene(int scene, int redraw_map = 1);
-	static int scene()		{ return scene_num; }
+	static int current_scene()	{ return scene_num; }
 	static void abort();
 	static void freeze_abort();
 	static int aborted()		{ return exit_manage; }
