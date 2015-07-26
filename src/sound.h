@@ -29,6 +29,7 @@
 
 /* Sound effects, songs and other program handles */
 #define KOBO_ALLSOUNDS	\
+	KOBO_DEFS(OAJINGLE,	"OAJingle")\
 	KOBO_DEFS(ONEUP,	"GiveEnergyMega")\
 	KOBO_DEFS(FINE,		"")\
 	KOBO_DEFS(BULLET,	"FireElectro")\

@@ -1422,6 +1422,14 @@ int KOBO_main::open()
 	if(init_display(prefs) < 0)
 		return -1;
 
+	sound.open();
+
+	if(load_sounds(prefs) < 0)
+		return -3;
+
+	sound.play(SOUND_OAJINGLE);
+	int jtime = SDL_GetTicks() + 7000;
+
 #ifdef TIME_PROGRESS
 	wdash->progress_init(NULL);
 #else
@@ -1436,11 +1444,6 @@ int KOBO_main::open()
 	wdash->progress_done();
 	wdash->progress_init(NULL);
 #endif
-
-	sound.open();
-
-	if(load_sounds(prefs) < 0)
-		return -3;
 
 	wdash->progress_done();
 	wdash->mode(DASHBOARD_JINGLE);

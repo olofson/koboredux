@@ -6,6 +6,15 @@ def copyright	"Copyright 2015 David Olofson"
 def license	"CC BY-NC-ND 3.0"
 def a2sversion	"1.9.1"
 
+
+import "oajingle-short.a2s" as aoj
+OAJingle()
+{
+	1:aoj.Song
+	wait 1
+}
+
+
 /*--------------------------------------------
  Based on the Kobo II Sound Effects
  Copyright 2011-2013 David Olofson
