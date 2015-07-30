@@ -221,6 +221,7 @@ void stream_window_t::render(SDL_Rect *r)
 {
 	if(_autoinvalidate)
 		invalidate();
+	SELECT
 	SDL_SetTextureAlphaMod(texture, _alphamod);
 	SDL_SetTextureColorMod(texture,
 			get_r(_colormod), get_g(_colormod), get_b(_colormod));
