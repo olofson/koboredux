@@ -198,6 +198,16 @@ void spinplanet_t::set_mode(spinplanet_modes_t md)
 #endif
 	lastnx = lastny = -1.0f;
 	wox = woy = 0.0f;
+#ifdef DEBUG
+	const char *modenames[SPINPLANET_SPIN + 1] = {
+		"SPINPLANET_OFF",
+		"SPINPLANET_BLACK",
+		"SPINPLANET_STATIC",
+		"SPINPLANET_SPIN"
+	};
+	log_printf(DLOG, "spinplanet_t::set_mode(%s) (visible: %d)\n",
+			modenames[md], visible());
+#endif
 	switch(mode)
 	{
 	  case SPINPLANET_OFF:
