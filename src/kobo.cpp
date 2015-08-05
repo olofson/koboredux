@@ -255,6 +255,7 @@ class KOBO_main
 	static int init_display(prefs_t *p);
 	static void close_display();
 
+	static void noiseburst();
 	static void show_progress(prefs_t *p);
 	static void progress();
 	static void doing(const char *msg);
@@ -819,6 +820,24 @@ void KOBO_main::close_display()
 	wdash = NULL;
 	delete wscreen;
 	wscreen = NULL;
+}
+
+
+void KOBO_main::noiseburst()
+{
+	wdash->fade(0.0f);
+	wdash->mode(DASHBOARD_NOISE);
+	int t0 = SDL_GetTicks();
+	while(1)
+	{
+		int t = SDL_GetTicks();
+		if(SDL_TICKS_PASSED(t, t0 + KOBO_NOISEBURST_DURATION))
+			break;
+		wdash->fade(sin(M_PI * (t - t0) / KOBO_NOISEBURST_DURATION) *
+				3.0f);
+		gengine->present();
+	}
+	wdash->fade(0.0f);
 }
 
 
@@ -1435,6 +1454,7 @@ int KOBO_main::open()
 		return -3;
 
 	load_palette();
+	noiseburst();
 
 	sound.play(SOUND_OAJINGLE);
 	int jtime = SDL_GetTicks() + 5000;
@@ -1460,7 +1480,7 @@ int KOBO_main::open()
 	while(!SDL_TICKS_PASSED(SDL_GetTicks(), jtime) && !skip_requested())
 		gengine->present();
 
-	wdash->mode(DASHBOARD_BLACK);
+	noiseburst();
 
 	ct_engine.render_highlight = kobo_render_highlight;
 	wradar->mode(RM_NOISE);
@@ -2293,6 +2313,8 @@ int main(int argc, char *argv[])
 	}
 
 	km.run();
+
+	km.noiseburst();
 
 	km.close();
 

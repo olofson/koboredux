@@ -287,6 +287,25 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 		background(map_rgb(0x000000));
 		clear();
 		break;
+	  case DASHBOARD_NOISE:
+	  {
+		const char entries[] = {
+			0,	1,	35,	53,
+			33,	54,	32,	55
+		};
+		int c = entries[0];
+		for(int y = 0; y < height(); ++y)
+		{
+			if(!pubrand.get(2))
+			{
+				int ci = pubrand.get(3) * _fade + 0.5f;
+				c = entries[ci];
+			}
+			foreground(map_rgb(get_engine()->palette(c)));
+			fillrect(0, y, width(), 1);
+		}
+		break;
+	  }
 	  case DASHBOARD_TITLE:
 	  case DASHBOARD_GAME:
 		colormod(map_gray(_fade));

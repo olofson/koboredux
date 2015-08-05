@@ -124,6 +124,9 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 /* Text scroller speed (pixels/second) */
 #define	SCROLLER_SPEED		120
 
+/* Raster noise burst effect duration (ms) */
+#define	KOBO_NOISEBURST_DURATION	900
+
 /* Intro loop timing */
 #define	INTRO_BLANK_TIME	1000	/* Inter-page blanking */
 #define	INTRO_TITLE_TIME	7000	/* "Real" title show time */
