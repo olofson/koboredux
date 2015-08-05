@@ -248,6 +248,11 @@ class windowbase_t
 		return 0xff000000 | (r << 16) | (g << 8) | b;
 	}
 	Uint32 map_rgb(Uint32 c)	{ return 0xff000000 | c; }
+	Uint32 map_gray(float i)
+	{
+		Uint8 ii = i * 255.0f;
+		return 0xff000000 | (ii << 16) | (ii << 8) | ii;
+	}
 	Uint32 map_rgba(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	{
 		return (a << 24) | (r << 16) | (g << 8) | b;

@@ -258,6 +258,7 @@ class KOBO_main
 	static void show_progress(prefs_t *p);
 	static void progress();
 	static void doing(const char *msg);
+	static int load_palette();
 	static int load_graphics(prefs_t *p);
 	static int load_sounds(prefs_t *p, int render_all = 0);
 
@@ -823,7 +824,11 @@ void KOBO_main::close_display()
 
 void KOBO_main::show_progress(prefs_t *p)
 {
-	wdash->mode(DASHBOARD_LOADING);
+	wdash->fade(1.0f);
+	if(s_get_bank(gfxengine->get_gfx(), B_OAPLANET))
+		wdash->mode(DASHBOARD_LOADING);
+	else
+		wdash->mode(DASHBOARD_BLACK);
 	wdash->doing("");
 }
 
@@ -844,139 +849,116 @@ void KOBO_main::doing(const char *msg)
 #ifndef TIME_PROGRESS
 static float progtab_graphics[] = {
 	0.000000,
-	1.167315,
-	4.085603,
-	5.836576,
-	7.490273,
-	9.046693,
-	10.992218,
-	12.937743,
-	13.813230,
-	15.564202,
-	17.217899,
-	18.774319,
-	20.428015,
-	22.081713,
-	23.540855,
-	25.291828,
-	26.848249,
-	28.404669,
-	29.961090,
-	32.003891,
-	33.560310,
-	35.311283,
-	36.770428,
-	38.521400,
-	40.369648,
-	41.828793,
-	43.190662,
-	44.649807,
-	46.595329,
-	48.151752,
-	49.610893,
-	51.361866,
-	53.501945,
-	58.852139,
-	60.116730,
-	61.089493,
-	63.521400,
-	66.050583,
-	68.287941,
-	69.844360,
-	72.665367,
-	74.124512,
-	76.653694,
-	77.334633,
-	79.182877,
-	80.642021,
-	82.295723,
-	83.852142,
-	85.505836,
-	87.159531,
-	88.813232,
-	90.369652,
-	92.023346,
-	93.677040,
-	95.233459,
-	96.984436,
-	98.540855,
+	3.894737,
+	7.052631,
+	10.736842,
+	12.421053,
+	14.105263,
+	15.894737,
+	17.789474,
+	20.105263,
+	23.578947,
+	24.000000,
+	25.157894,
+	27.789474,
+	28.105263,
+	30.210526,
+	31.894737,
+	33.684212,
+	35.684212,
+	37.263157,
+	38.947369,
+	40.842106,
+	42.631580,
+	44.105263,
+	45.684212,
+	47.368420,
+	49.157894,
+	50.947369,
+	53.157894,
+	54.842106,
+	56.947369,
+	58.526318,
+	59.684212,
+	61.473682,
+	63.368420,
+	65.157898,
+	67.157898,
+	68.947365,
+	70.315788,
+	72.210526,
+	74.842102,
+	77.263161,
+	78.947365,
+	81.263161,
+	84.315788,
+	87.789474,
+	89.578949,
+	92.210526,
+	94.842102,
+	96.631577,
+	98.421051,
 	100.0,
 	0
 };
 
 static float progtab_sounds[] = {
 	0.000000,
-	58.709679,
-	59.516129,
-	98.790321,
-	98.790321,
 	100.0,
 	0
 };
 
 static float progtab_all[] = {
 	0.000000,
-	1.556684,
-	2.639594,
-	3.282572,
-	4.060914,
-	4.737733,
-	5.380711,
-	8.697124,
-	8.764806,
-	10.016920,
-	10.761421,
-	11.472081,
-	12.216582,
-	12.893401,
-	13.604061,
-	14.416244,
-	15.093062,
-	15.262267,
-	16.074450,
-	17.428087,
-	18.680202,
-	19.932318,
-	20.879864,
-	21.759729,
-	23.011845,
-	24.365482,
-	24.534687,
-	24.839256,
-	25.651438,
-	26.429781,
-	26.700508,
-	27.241962,
-	29.678511,
-	38.477158,
-	40.203045,
-	40.372250,
-	40.913704,
-	42.571911,
-	45.211506,
-	45.922165,
-	46.565144,
-	46.903553,
-	48.866329,
-	48.967850,
-	49.306259,
-	49.847717,
-	50.389172,
-	50.964466,
-	51.641285,
-	52.115059,
-	52.690357,
-	53.231812,
-	53.773266,
-	54.382404,
-	54.991539,
-	55.499153,
-	56.006767,
-	57.495770,
-	82.673431,
-	82.978004,
-	99.763115,
-	99.796951,
+	4.210526,
+	7.052631,
+	10.631579,
+	12.421053,
+	14.105263,
+	15.789474,
+	17.789474,
+	20.315790,
+	23.578947,
+	24.000000,
+	25.157894,
+	28.000000,
+	28.210526,
+	30.315790,
+	31.789474,
+	33.789474,
+	35.578949,
+	37.157894,
+	39.052631,
+	40.842106,
+	42.315788,
+	44.000000,
+	45.578949,
+	47.368420,
+	49.157894,
+	50.842106,
+	52.947369,
+	54.736843,
+	56.842106,
+	58.315788,
+	59.578949,
+	61.473682,
+	63.368420,
+	65.052635,
+	67.368423,
+	68.736839,
+	70.315788,
+	72.210526,
+	75.157898,
+	77.157898,
+	78.947365,
+	81.473686,
+	84.315788,
+	87.789474,
+	89.578949,
+	92.210526,
+	94.842102,
+	96.526314,
+	98.421051,
 	100.0,
 	0
 };
@@ -1017,8 +999,10 @@ typedef struct KOBO_GfxDesc
 static KOBO_GfxDesc gfxdesc[] = {
 	// Loading screen
 	{ "Loading loading screen graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>olofsonarcade-do64.png", B_LOADING,	0, 0,	0.0f,
-			KOBO_CLAMP | KOBO_NOALPHA | KOBO_CENTER },
+	{ "GFX>>olofsonarcade-do64-ovl.png", B_OALOGO,	0, 0,	0.0f,
+			KOBO_CLAMP | KOBO_CENTER },
+	{ "GFX>>oaplanet-pcb.png", B_OAPLANET, 0, 0,
+			2.0f, KOBO_ABSSCALE | KOBO_SCALE2X },
 	{ "GFX>>arcadefont.png", B_NORMAL_FONT,	0, 0,	0.0f,	KOBO_FONT },
 
 	// In-game
@@ -1118,20 +1102,43 @@ static KOBO_GfxDesc gfxdesc[] = {
 };
 
 
+int KOBO_main::load_palette()
+{
+	const char *fn;
+	if(!(fn = fmap->get("GFX>>DO64-0.24.gpl")))
+	{
+		log_printf(ELOG, "Couldn't find palette!\n");
+		return -1;
+	}
+	if(!gengine->load_palette(fn))
+	{
+		log_printf(ELOG, "Couldn't load palette!\n");
+		return -2;
+	}
+	return 0;
+}
+
+
 int KOBO_main::load_graphics(prefs_t *p)
 {
 	const char *fn;
 	KOBO_GfxDesc *gd;
+	int loadergfx = 0;
+
+	load_palette();
+
 	gengine->reset_filters();
 	show_progress(p);
 
-	if(!(fn = fmap->get("GFX>>DO64-0.24.gpl")))
-		log_printf(ELOG, "Couldn't find palette!\n");
-	if(!gengine->load_palette(fn))
-		log_printf(ELOG, "Couldn't load palette!\n");
-
 	for(gd = gfxdesc; gd->path; ++gd)
 	{
+		// Reinit loading screen once its assets are loaded!
+		if(!loadergfx && s_get_bank(gfxengine->get_gfx(), B_OAPLANET))
+		{
+			show_progress(p);
+			loadergfx = 1;
+		}
+
 		if(gd->flags & KOBO_MESSAGE)
 		{
 			doing(gd->path);
@@ -1427,8 +1434,10 @@ int KOBO_main::open()
 	if(load_sounds(prefs) < 0)
 		return -3;
 
+	load_palette();
+
 	sound.play(SOUND_OAJINGLE);
-	int jtime = SDL_GetTicks() + 7000;
+	int jtime = SDL_GetTicks() + 5000;
 
 #ifdef TIME_PROGRESS
 	wdash->progress_init(NULL);
@@ -1523,6 +1532,7 @@ int KOBO_main::run()
 				wdash->progress_done();
 				wdash->mode(DASHBOARD_BLACK);
 				log_printf(ULOG, "--- Audio restarted.\n");
+				wdash->fade(1.0f);
 				wdash->mode(manage.game_stopped() ?
 						DASHBOARD_TITLE :
 						DASHBOARD_GAME);
@@ -1552,6 +1562,7 @@ int KOBO_main::run()
 				gsm.push(&st_error);
 			}
 			wdash->progress_done();
+			wdash->fade(1.0f);
 			wdash->mode(manage.game_stopped() ?
 					DASHBOARD_TITLE : DASHBOARD_GAME);
 			wradar->mode(screen.radar_mode);
@@ -1601,6 +1612,7 @@ int KOBO_main::run()
 					return 7;
 				wdash->progress_done();
 				screen.init_graphics();
+				wdash->fade(1.0f);
 				wdash->mode(manage.game_stopped() ?
 						DASHBOARD_TITLE :
 						DASHBOARD_GAME);

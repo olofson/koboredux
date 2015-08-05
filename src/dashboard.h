@@ -54,6 +54,7 @@ class dashboard_window_t : public window_t
 	char			*_msg;
 	float			_percent;
 	dashboard_modes_t	_mode;
+	float			_fade;
 	int			progress_index;
 	float			*progress_table;
 	Uint32			progress_time;
@@ -64,6 +65,15 @@ class dashboard_window_t : public window_t
 	dashboard_window_t(gfxengine_t *e);
 	~dashboard_window_t();
 	void mode(dashboard_modes_t m);
+	void fade(float f)
+	{
+		if(f <= 0.0f)
+			_fade = 0.0f;
+		else if(f >= 1.0f)
+			_fade = 1.0f;
+		else
+			_fade = f;
+	}
 	void doing(const char *msg);
 	void progress_init(float *progtab);
 	void progress();

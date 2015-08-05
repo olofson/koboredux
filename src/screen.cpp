@@ -945,10 +945,8 @@ void _screen::init_background()
 		bg_altitude = 0;
 		break;
 	}
-	if(md == SPINPLANET_STATIC)
-		wplanet->set_planet(planet/* + region*/, 0);
-	else
-		wplanet->set_map(planet/* + region*/, 0);
+	if(md == SPINPLANET_SPIN)
+		wplanet->set_source(planet/* + region*/, 0);
 	wplanet->set_size(psize);
 	wplanet->set_mode(md);
 	stars.init(wmain, prefs->stars, bg_altitude, psize);

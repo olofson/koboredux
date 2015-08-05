@@ -78,6 +78,7 @@ dashboard_window_t::dashboard_window_t(gfxengine_t *e) : window_t(e)
 	_msg = NULL;
 	_percent = 0.0f;
 	_mode = DASHBOARD_BLACK;
+	_fade = 1.0f;
 	progress_index = 0;
 	progress_table = NULL;
 }
@@ -91,22 +92,24 @@ dashboard_window_t::~dashboard_window_t()
 
 void dashboard_window_t::mode(dashboard_modes_t m)
 {
-	int main, score, ingame;
-	_mode = m;
-	switch(_mode)
+	const int psize = 288;
+	int main = 0;
+	int score = 0;
+	int ingame = 0;
+	switch(m)
 	{
 	  case DASHBOARD_TITLE:
-		main = 1;
-		ingame = 0;
-		score = 1;
+		main = score = 1;
 		break;
 	  case DASHBOARD_GAME:
 		main = ingame = score = 1;
 		break;
 	  default:
-		main = ingame = score = 0;
 		break;
 	}
+	// NOTE: wplanet is actually rendered in LOADING and JINGLE modes, but
+	//       due to the rendering order there, it's done manually by
+	//       dashboard_window_t::refresh()!
 	wplanet->visible(main);
 	wmain->visible(main);
 #if 0
@@ -130,10 +133,28 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	pxleft->visible(main);
 	pxright->visible(main);
 
-	if(_mode == DASHBOARD_JINGLE)
-		jingelstars.init(this, prefs->stars, 256, 0);
+	switch(m)
+	{
+	  case DASHBOARD_JINGLE:
+		// Don't reinit when switching from LOADING to JINGLE!
+		if(_mode == DASHBOARD_LOADING)
+			break;
+	  case DASHBOARD_LOADING:
+		wplanet->colormod(wplanet->map_rgb(128, 128, 128));
+		wplanet->track_speed(1.0f, 1.0f);
+		wplanet->track_offset(0.0f, 0.0f);
+		wplanet->set_texture_repeat(2);
+		wplanet->set_source(B_OAPLANET, 0);
+		wplanet->set_size(psize);
+		wplanet->set_mode(SPINPLANET_SPIN);
+		jingelstars.init(this, 1000, 100, psize);
+		break;
+	  default:
+		break;
+	}
 
-	switch(_mode)
+	_mode = m;
+	switch(m)
 	{
 	  case DASHBOARD_OFF:
 		break;
@@ -181,7 +202,7 @@ void dashboard_window_t::progress()
 			_percent = progress_table[progress_index++];
 	}
 	else
-		_percent = 50.0f;
+		_percent = 0.0f;
 	gengine->present();
 }
 
@@ -212,8 +233,13 @@ void dashboard_window_t::progress_done()
 
 void dashboard_window_t::render_progress()
 {
-	SDL_Rect r;
 	int x, y, w, h;
+	Uint32 colors[3];
+	const char entries[] = {
+		52,	51,	50
+	};
+	for(int i = 0; i < 3; ++i)
+		colors[i] = map_rgb(get_engine()->palette(entries[i]));
 
 	x = 0;
 	w = (int)(_percent * 0.01f * width() + 0.5f);
@@ -222,37 +248,26 @@ void dashboard_window_t::render_progress()
 	else if(w > width())
 		w = width();
 
-	h = 16;
+	h = 5;
 	y = height() - h;
 
-	r.x = x;
-	r.y = y;
-	r.w = w;
-	r.h = h;
-
-	foreground(map_rgb(0x000099));
+	foreground(colors[0]);
 	rectangle(x, y, w, h);
 
 	++x;
 	++y;
 	w -= 2;
 	h -= 2;
-	foreground(map_rgb(0x0000cc));
+	foreground(colors[1]);
 	rectangle(x, y, w, h);
 
 	++x;
 	++y;
 	w -= 2;
 	h -= 2;
-	foreground(map_rgb(0x0000ff));
+	foreground(colors[2]);
 	fillrect(x, y, w, h);
 	
-	r.x = 0;
-	r.y = height() - 40;
-	r.w = width();
-	r.h = 12;
-	foreground(map_rgb(0x000000));
-	fillrect(r.x, r.y, r.w, r.h);
 	if(_msg)
 	{
 		font(B_NORMAL_FONT);
@@ -263,6 +278,7 @@ void dashboard_window_t::render_progress()
 
 void dashboard_window_t::refresh(SDL_Rect *r)
 {
+	double t = SDL_GetTicks() * 15;
 	switch(_mode)
 	{
 	  case DASHBOARD_OFF:
@@ -273,19 +289,22 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 		break;
 	  case DASHBOARD_TITLE:
 	  case DASHBOARD_GAME:
+		colormod(map_gray(_fade));
 		sprite(0, 0, B_SCREEN, 0);
 		break;
 	  case DASHBOARD_LOADING:
-		background(map_rgb(0x000000));
-		clear();
-		sprite(width() / 2, height() * 2 / 5, B_LOADING, 0);
-		render_progress();
-		break;
 	  case DASHBOARD_JINGLE:
 		background(map_rgb(0x000000));
 		clear();
-		jingelstars.render(0, SDL_GetTicks() * 10);
-		sprite(width() / 2, height() * 2 / 5, B_LOADING, 0);
+		wplanet->colormod(wplanet->map_gray(_fade * 128.0f));
+		wplanet->track_offset(t * 0.000001f + 0.2f,
+				t * 0.000002f + 0.6f);
+		wplanet->render(NULL);
+		colormod(map_gray(_fade));
+		jingelstars.render(t * 2.0f, t);
+		sprite(width() / 2, height() / 2, B_OALOGO, 0);
+		if(_mode == DASHBOARD_LOADING)
+			render_progress();
 		break;
 	}
 }

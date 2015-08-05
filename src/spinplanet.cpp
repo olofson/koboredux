@@ -60,21 +60,15 @@ void spinplanet_t::clear()
 }
 
 
-void spinplanet_t::set_source(int src, int bank, int frame)
+void spinplanet_t::set_source(int bank, int frame)
 {
-	if(src < 0 || src >= 3)
-	{
-		log_printf(ELOG, "spinplanet_t::set_source(): Tried to set "
-				"undefined source %d!\n", src);
-		return;
-	}
-	sbank[src] = bank;
-	sframe[src] = frame;
-	s_bank_t *b = s_get_bank(engine->get_gfx(), sbank[src]);
+	sbank = bank;
+	sframe = frame;
+	s_bank_t *b = s_get_bank(engine->get_gfx(), sbank);
 	if(!b)
 	{
 		log_printf(ELOG, "spinplanet_t::set_source(): Sprite bank %d "
-				"not found!\n", sbank[src]);
+				"not found!\n", sbank);
 		set_mode(SPINPLANET_OFF);
 		return;
 	}
@@ -82,47 +76,22 @@ void spinplanet_t::set_source(int src, int bank, int frame)
 	{
 		log_printf(ELOG, "spinplanet_t::set_source(): The sprites of "
 				"bank %d are %dx%d, but need to be square!\n",
-				sbank[src], b->w, b->h);
+				sbank, b->w, b->h);
 		set_mode(SPINPLANET_OFF);
 		return;
 	}
-	switch(src)
+	msize = b->w;
+	msizemask = 1;
+	while(msizemask != msize && msizemask)
+		msizemask <<= 1;
+	if(!msizemask)
 	{
-	  case 0:
-	  case 1:
-		if(((int)b->w > width()) || ((int)b->h > height()))
-		{
-			log_printf(ELOG, "spinplanet_t::set_source(): The "
-				"sprites of bank %d are larger than the "
-				"window! (s: %dx%d, w: %dx%d)\n", sbank[src],
-				b->w, b->h, width(), height());
-			set_mode(SPINPLANET_OFF);
-			return;
-		}
-		break;
+		log_printf(ELOG, "spinplanet_t::set_source(): The "
+			"world map texture size needs to be a power "
+			"of two! (actual: %dx%d)\n", b->w, b->h);
+		set_mode(SPINPLANET_OFF);
 	}
-	switch(src)
-	{
-	  case 0:
-		psize = b->w;
-		free(lens);
-		lens = NULL;
-		break;
-	  case 2:
-		msize = b->w;
-		msizemask = 1;
-		while(msizemask != msize && msizemask)
-			msizemask <<= 1;
-		if(!msizemask)
-		{
-			log_printf(ELOG, "spinplanet_t::set_source(): The "
-				"world map texture size needs to be a power "
-				"of two! (actual: %dx%d)\n", b->w, b->h);
-			set_mode(SPINPLANET_OFF);
-		}
-		--msizemask;
-		break;
-	}
+	--msizemask;
 }
 
 
@@ -235,20 +204,20 @@ void spinplanet_t::refresh_static()
 	// Source
 	Uint32 *src;
 	int srcp;
-	s_bank_t *b = s_get_bank(engine->get_gfx(), sbank[0]);
+	s_bank_t *b = s_get_bank(engine->get_gfx(), sbank);
 	if(!b)
 	{
 		log_printf(ELOG, "spinplanet_t::refresh_static(): "
-				"Sprite bank %d not found!\n", sbank[0]);
+				"Sprite bank %d not found!\n", sbank);
 		set_mode(SPINPLANET_OFF);
 		return;
 	}
-	s_sprite_t *s = s_get_sprite_b(b, sframe[0]);
+	s_sprite_t *s = s_get_sprite_b(b, sframe);
 	if(!s)
 	{
 		log_printf(ELOG, "spinplanet_t::refresh_static(): "
 				"Sprite frame %d:%d not found!\n",
-				sbank[0], sframe[0]);
+				sbank, sframe);
 		set_mode(SPINPLANET_OFF);
 		return;
 	}
@@ -300,20 +269,20 @@ void spinplanet_t::refresh(SDL_Rect *r)
 #endif
 
 	// Source
-	s_bank_t *b = s_get_bank(engine->get_gfx(), sbank[2]);
+	s_bank_t *b = s_get_bank(engine->get_gfx(), sbank);
 	if(!b)
 	{
 		log_printf(ELOG, "spinplanet_t::refresh(): Sprite "
-				"bank %d not found!\n", sbank[2]);
+				"bank %d not found!\n", sbank);
 		set_mode(SPINPLANET_OFF);
 		return;
 	}
-	s_sprite_t *s = s_get_sprite_b(b, sframe[2]);
+	s_sprite_t *s = s_get_sprite_b(b, sframe);
 	if(!s)
 	{
 		log_printf(ELOG, "spinplanet_t::refresh(): Sprite "
 				"frame %d:%d not found!\n",
-				sbank[2], sframe[2]);
+				sbank, sframe);
 		set_mode(SPINPLANET_OFF);
 		return;
 	}

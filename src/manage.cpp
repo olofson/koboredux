@@ -269,6 +269,7 @@ void _manage::game_stop()
 	audio_channel_stop(0, -1);
 #endif
 	playing = 0;
+	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_TITLE);
 }
 
@@ -339,6 +340,7 @@ void _manage::init_resources_title()
 	pxbottom->fx(PFX_SCANREV, PCOLOR_CORE);
 	pxleft->fx(PFX_SCANREV, PCOLOR_CORE);
 	pxright->fx(PFX_SCAN, PCOLOR_CORE);
+	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_TITLE);
 }
 
@@ -390,6 +392,7 @@ void _manage::init_resources_to_play(int newship)
 	pxbottom->fx(PFX_OFF);
 	pxleft->fx(PFX_OFF);
 	pxright->fx(PFX_OFF);
+	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_GAME);
 }
 

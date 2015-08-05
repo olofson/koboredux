@@ -35,7 +35,7 @@ enum spinplanet_modes_t
 
 class spinplanet_t : public stream_window_t
 {
-	int sbank[3], sframe[3];
+	int sbank, sframe;
 	int tlayer;		// Engine scroll layer to track
 	int psize;		// Actual planet size
 	int msize;		// World map size
@@ -77,15 +77,7 @@ class spinplanet_t : public stream_window_t
 	spinplanet_t(gfxengine_t *e);
 	virtual ~spinplanet_t();
 	void clear();
-	void set_source(int src, int bank, int frame);
-	void set_planet(int bank, int frame)
-	{
-		set_source(0, bank, frame);
-	}
-	void set_map(int bank, int frame)
-	{
-		set_source(2, bank, frame);
-	}
+	void set_source(int bank, int frame);
 	void set_size(int size)			{ psize = size; }
 	void set_mode(spinplanet_modes_t md);
 	void set_texture_repeat(int txr)	{ texrep = txr; }
