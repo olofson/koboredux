@@ -887,29 +887,14 @@ void gfxengine_t::hide(void)
 	delete fullwin;
 	fullwin = NULL;
 
+	for(windowbase_t *w = windows; w; w = w->next)
+		if(w->renderer == sdlrenderer)
+			w->renderer = NULL;
 	SDL_DestroyRenderer(sdlrenderer);
 	sdlrenderer = NULL;
 
 	SDL_DestroyWindow(sdlwindow);
 	sdlwindow = NULL;
-#if 0
-	// Make sure no windows keep old surface pointers!
-	window_t *w = windows;
-	while(w)
-	{
-		if((w->surface == screen_surface) ||
-				(w->surface == softbuf))
-			w->surface = NULL;
-		w = w->next;
-	}
-
-	if(softbuf)
-	{
-		SDL_FreeSurface(softbuf);
-		softbuf = NULL;
-	}
-	screen_surface = NULL;
-#endif
 
 	is_showing = 0;
 }

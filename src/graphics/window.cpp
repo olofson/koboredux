@@ -162,7 +162,7 @@ stream_window_t::stream_window_t(gfxengine_t *e) : windowbase_t(e)
 
 stream_window_t::~stream_window_t()
 {
-	if(texture)
+	if(renderer && texture)
 		SDL_DestroyTexture(texture);
 }
 
@@ -250,8 +250,11 @@ window_t::window_t(gfxengine_t *e) : windowbase_t(e)
 
 window_t::~window_t()
 {
-	if(otexture)
-		SDL_DestroyTexture(otexture);
+	if(renderer)
+	{
+		if(otexture && (renderer == engine->renderer()))
+			SDL_DestroyTexture(otexture);
+	}
 	if(osurface)
 		SDL_FreeSurface(osurface);
 }
