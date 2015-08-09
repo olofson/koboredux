@@ -534,8 +534,6 @@ void KOBO_main::build_screen()
 	int cony = yoffs + WCONSOLE_Y;
 	int conw = WCONSOLE_W;
 
-	gengine->clear(0x000000);
-
 	wdash->place(xoffs, yoffs, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	dhigh->place(conx, cony, conw, 18);
