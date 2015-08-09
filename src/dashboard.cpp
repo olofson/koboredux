@@ -147,7 +147,8 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		wplanet->set_source(B_OAPLANET, 0);
 		wplanet->set_size(psize);
 		wplanet->set_mode(SPINPLANET_SPIN);
-		jingelstars.init(this, 1000, 100, psize);
+		jingelstars.set_target(this);
+		jingelstars.init(1000, 100, psize);
 		break;
 	  default:
 		break;

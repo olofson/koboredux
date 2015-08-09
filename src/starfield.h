@@ -69,8 +69,8 @@ class KOBO_Starfield
   public:
 	KOBO_Starfield();
 	~KOBO_Starfield();
-	bool init(window_t *_target, int _nstars, int _altitude,
-			int _planetsize);
+	void set_target(window_t *_target);
+	bool init(int _nstars, int _altitude, int _planetsize);
 	void render(int xo, int yo);
 };
 

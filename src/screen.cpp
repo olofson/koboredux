@@ -83,6 +83,7 @@ void _screen::init_maps()
 
 void _screen::init_graphics()
 {
+	stars.set_target(wmain);
 }
 
 
@@ -949,7 +950,7 @@ void _screen::init_background()
 		wplanet->set_source(planet/* + region*/, 0);
 	wplanet->set_size(psize);
 	wplanet->set_mode(md);
-	stars.init(wmain, prefs->stars, bg_altitude, psize);
+	stars.init(prefs->stars, bg_altitude, psize);
 }
 
 

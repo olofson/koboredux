@@ -53,11 +53,15 @@ void KOBO_Starfield::init_colors()
 }
 
 
-bool KOBO_Starfield::init(window_t *_target, int _nstars, int _altitude,
-		int _planetsize)
+void KOBO_Starfield::set_target(window_t *_target)
 {
 	target = _target;
 	init_colors();
+}
+
+
+bool KOBO_Starfield::init(int _nstars, int _altitude, int _planetsize)
+{
 	altitude = _altitude;
 	planetsize = _planetsize;
 	if(altitude < 64)
