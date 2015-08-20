@@ -71,7 +71,6 @@ class _screen
 	static void render_title_noise(float fade, int y, int h, int bank, int frame);
 	static void init_starfield(int altitude, int psize);
 	static void init_starfield_colors();
-	static void init_background();
 	static void render_starfield(int xo, int yo);
 	static void render_bases(_map &map, int tileset, int vx, int vy);
 	static void clean_scrap_tile(int x, int y)
@@ -84,6 +83,7 @@ class _screen
 	static radar_modes_t radar_mode;	// Last set radar mode
 	static void init_maps();
 	static void init_graphics();
+	static void init_background();
 	static void init_scene(int sc);
 	static int prepare();
 	static void generate_fixed_enemies();

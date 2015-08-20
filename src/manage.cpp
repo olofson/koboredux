@@ -777,6 +777,7 @@ void _manage::freeze_abort()
 void _manage::reenter()
 {
 	exit_manage = 0;
+	screen.init_background();
 	put_health(1);
 	put_temp(1);
 	put_info();
