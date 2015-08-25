@@ -362,6 +362,16 @@ bool KOBO_main::quit_requested()
 				break;
 			}
 			break;
+		  case SDL_KEYDOWN:
+			switch(e.key.keysym.sym)
+			{
+			  case SDLK_PRINTSCREEN:
+			  case SDLK_SYSREQ:
+			  case SDLK_s:
+				gengine->screenshot();
+				break;
+			}
+			break;
 		  case SDL_KEYUP:
 			switch(e.key.keysym.sym)
 			{
@@ -403,6 +413,16 @@ bool KOBO_main::skip_requested()
 				break;
 			  case SDL_WINDOWEVENT_CLOSE:
 				exit_game_fast = 1;
+				break;
+			}
+			break;
+		  case SDL_KEYDOWN:
+			switch(e.key.keysym.sym)
+			{
+			  case SDLK_PRINTSCREEN:
+			  case SDLK_SYSREQ:
+			  case SDLK_s:
+				gengine->screenshot();
 				break;
 			}
 			break;
