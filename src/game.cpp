@@ -71,9 +71,9 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		break;
 	  case SKILL_NEWBIE:
 		speed = 40;
-		lives = 5;
-		bonus_first = 5000;
-		bonus_every = 7000;
+		lives = 1;
+		bonus_first = 0;
+		bonus_every = 0;
 		health = 100;
 		damage = 100;
 		bolts = MAX_BOLTS;
@@ -85,9 +85,9 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		break;
 	  case SKILL_GAMER:
 		speed = 30;
-		lives = 5;
-		bonus_first = 8000;
-		bonus_every = 8000;
+		lives = 1;
+		bonus_first = 0;
+		bonus_every = 0;
 		health = 60;
 		damage = 100;
 		bolts = MAX_BOLTS;
@@ -98,9 +98,9 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		break;
 	  case SKILL_ELITE:
 		speed = 27;
-		lives = 4;
-		bonus_first = 10000;
-		bonus_every = 10000;
+		lives = 1;
+		bonus_first = 0;
+		bonus_every = 0;
 		health = 50;
 		damage = 50;
 		bolts = MAX_BOLTS;
@@ -110,9 +110,9 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	  case SKILL_GOD:
 	  default:
 		speed = 25;
-		lives = 3;
-		bonus_first = 10000;
-		bonus_every = 10000;
+		lives = 1;
+		bonus_first = 0;
+		bonus_every = 0;
 		health = 40;
 		damage = 30;
 		bolts = MAX_BOLTS;

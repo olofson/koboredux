@@ -78,7 +78,7 @@ kobo_gfxengine_t	*gengine = NULL;
 
 screen_window_t		*wscreen = NULL;
 dashboard_window_t	*wdash = NULL;
-bargraph_t		*whealth = NULL;
+bargraph_t		*wshield = NULL;
 bargraph_t		*wtemp = NULL;
 bargraph_t		*wttemp = NULL;
 radar_map_t		*wmap = NULL;
@@ -551,34 +551,40 @@ void KOBO_main::build_screen()
 {
 	int conx = xoffs + WCONSOLE_X;
 	int cony = yoffs + WCONSOLE_Y;
-	int conw = WCONSOLE_W;
+	const int SHIELD_W = 8;
+	const int conw = WCONSOLE_W;
+	const int dispw = conw - SHIELD_W;
 
 	wdash->place(xoffs, yoffs, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	dhigh->place(conx, cony, conw, 18);
+	wshield->place(conx + dispw, cony, SHIELD_W, WCONSOLE_H);
+	wshield->background(wshield->map_rgb(0x182838));
+	wshield->redmax(0);
+
+	dhigh->place(conx, cony, dispw, 18);
 	dhigh->font(B_NORMAL_FONT);
 	dhigh->caption("HIGHSCORE");
 	dhigh->text("000000000");
 
-	dscore->place(conx, cony + 24, conw, 18);
+	dscore->place(conx, cony + 24, dispw, 18);
 	dscore->font(B_NORMAL_FONT);
 	dscore->caption("SCORE");
 	dscore->text("000000000");
 
-	dships->place(conx, cony + 56, conw, 18);
+	dships->place(conx, cony + 56, dispw, 18);
 	dships->font(B_NORMAL_FONT);
 	dships->caption("SHIPS");
 	dships->text("000");
 
-	dstage->place(conx, cony + 88, conw / 3, 18);
+	dstage->place(conx, cony + 88, dispw / 3, 18);
 	dstage->font(B_NORMAL_FONT);
 	dstage->caption("STAGE");
 	dstage->text("000");
-	dregion->place(conx + conw / 3, cony + 88, conw / 3, 18);
+	dregion->place(conx + dispw / 3, cony + 88, dispw / 3, 18);
 	dregion->font(B_NORMAL_FONT);
 	dregion->caption("REGION");
 	dregion->text("0");
-	dlevel->place(conx + 2 * conw / 3, cony + 88, conw / 3, 18);
+	dlevel->place(conx + 2 * dispw / 3, cony + 88, dispw / 3, 18);
 	dlevel->font(B_NORMAL_FONT);
 	dlevel->caption("LEVEL");
 	dlevel->text("00");
@@ -601,10 +607,6 @@ void KOBO_main::build_screen()
 	// Have the radar window scale up to 2x2 "native" pixels per tile
 	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
 	wradar->scale(-2.0f, -2.0f);
-
-	whealth->place(conx + WCONSOLE_W - 8, cony, 8, WCONSOLE_H);
-	whealth->background(whealth->map_rgb(0x182838));
-	whealth->redmax(0);
 
 	wtemp->place(xoffs + 244, yoffs + 188, 4, 32);
 	wtemp->background(wtemp->map_rgb(0x182838));
@@ -766,7 +768,7 @@ int KOBO_main::init_display(prefs_t *p)
 			dh - gh - (int)(yoffs * gengine->yscale() + 0.5f));
 
 	wdash = new dashboard_window_t(gengine);
-	whealth = new bargraph_t(gengine);
+	wshield = new bargraph_t(gengine);
 	wplanet = new spinplanet_t(gengine);
 	wmain = new engine_window_t(gengine);
 	woverlay = new window_t(gengine);
@@ -831,8 +833,8 @@ void KOBO_main::close_display()
 	wplanet = NULL;
 	delete wmain;
 	wmain = NULL;
-	delete whealth;
-	whealth = NULL;
+	delete wshield;
+	wshield = NULL;
 	delete wdash;
 	wdash = NULL;
 	delete wscreen;

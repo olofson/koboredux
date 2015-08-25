@@ -71,7 +71,7 @@ extern prefs_t			*prefs;
 
 extern screen_window_t		*wscreen;
 extern dashboard_window_t	*wdash;
-extern bargraph_t		*whealth;
+extern bargraph_t		*wshield;
 extern bargraph_t		*wtemp;
 extern bargraph_t		*wttemp;
 extern radar_map_t		*wmap;

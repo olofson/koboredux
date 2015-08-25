@@ -24,6 +24,7 @@
 #include "kobo.h"
 #include "random.h"
 #include "logger.h"
+#include "game.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -112,12 +113,11 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	//       dashboard_window_t::refresh()!
 	wplanet->visible(main);
 	wmain->visible(main);
+	wshield->visible(ingame);
 #if 0
-	whealth->visible(ingame);
 	wtemp->visible(ingame);
 	wttemp->visible(ingame);
 #else
-	whealth->visible(0);
 	wtemp->visible(0);
 	wttemp->visible(0);
 #endif
@@ -127,7 +127,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	dstage->visible(ingame);
 	dregion->visible(ingame);
 	dlevel->visible(ingame);
-	dships->visible(ingame);
+	dships->visible(ingame && (game.skill == SKILL_CLASSIC));
 	pxtop->visible(main);
 	pxbottom->visible(main);
 	pxleft->visible(main);

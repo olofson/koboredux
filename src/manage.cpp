@@ -92,7 +92,7 @@ static int start_ships = 0;
 
 void _manage::set_bars()
 {
-	whealth->enable(show_bars);
+	wshield->enable(show_bars);
 	wtemp->enable(show_bars);
 	wttemp->enable(show_bars);
 }
@@ -406,20 +406,20 @@ void _manage::put_health(int force)
 		disp_health += (float)game.health * .05;
 		if(disp_health > h)
 			disp_health = h;
-//		whealth->background(whealth->map_rgb(0, 100, 0));
+		wshield->background(wshield->map_rgb(0, 100, 0));
 	}
 	else if(h < disp_health)
 	{
 		disp_health -= (float)game.health * .1;
 		if(disp_health < h)
 			disp_health = h;
-//		whealth->background(whealth->map_rgb(128, 0, 0));
+		wshield->background(wshield->map_rgb(128, 0, 0));
 	}
-//	else
-//		whealth->background(whealth->map_rgb(0, 0, 0));
-	whealth->value((float)disp_health / game.health);
+	else
+		wshield->background(wshield->map_rgb(0, 0, 0));
+	wshield->value((float)disp_health / game.health);
 	if(force)
-		whealth->invalidate();
+		wshield->invalidate();
 }
 
 
@@ -701,7 +701,7 @@ void _manage::add_score(int sc)
 	else if(!prefs->cmd_cheat)
 	{
 #ifndef	PLAYSTATS
-		if(score >= bonus_next)
+		if(bonus_next && (score >= bonus_next))
 		{
 			bonus_next += game.bonus_every;
 			ships++;
