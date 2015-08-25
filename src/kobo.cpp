@@ -432,7 +432,6 @@ bool KOBO_main::skip_requested()
 			  case SDLK_ESCAPE:
 				if(escape_hammering())
 					exit_game_fast = 1;
-				break;
 			  case SDLK_SPACE:
 			  case SDLK_RETURN:
 				do_skip = true;
