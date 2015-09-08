@@ -766,8 +766,8 @@ void _enemy::make_cannon()
 
 void _enemy::move_cannon()
 {
-	(count)++;
-	(count) &= (b);
+	count++;
+	count &= b;
 	if(count == a && norm < ((VIEWLIMIT >> 1) + 8))
 	{
 		int shift = (enemies.ek1() == &greenbullet ||
@@ -804,7 +804,7 @@ const enemy_kind cannon = {
 void _enemy::make_core()
 {
 	count = 0;
-	health = 20;
+	health = game.core_health;
 	damage = 150;
 	b = enemies.eint2() - 1;
 	a = gamerand.get() & b;
@@ -812,8 +812,8 @@ void _enemy::make_core()
 
 void _enemy::move_core()
 {
-	(count)++;
-	(count) &= (b);
+	count++;
+	count &= b;
 	if(count == a && norm < ((VIEWLIMIT >> 1) + 8))
 	{
 		int shift = (enemies.ek2() == &greenbullet ||

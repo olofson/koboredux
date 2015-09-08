@@ -25,6 +25,9 @@
 // Max number of player bolts flying
 #define MAX_BOLTS		40
 
+// Special value for game.health
+#define	HEALTH_INDESTRUCTIBLE	9000000
+
 enum game_types_t
 {
 	GAME_UNKNOWN = -1,
@@ -49,17 +52,23 @@ enum skill_levels_t
 class game_t
 {
   public:
+	// Master game parameters
 	int	type;
 	int	skill;
 	int	speed;		// ms per logic frame
-	int	lives;		// When starting new games of certain types
 	int	bonus_first;	// First bonus ship at this score
 	int	bonus_every;	// New bonus ship every N points
+
+	// Player ship health and damage
+	int	lives;		// When starting new games of certain types
 	int	health;		// Initial health
 	int	health_fade;	// Health fade period (logic frames/unit)
 	int	damage;		// Damage player inflicts when colliding with
 				// another object
+
+	// Player guns
 	int	bolts;		// maximum active at a time
+	int	bolt_damage;	// Damage inflicted by player fire bolt
 	int	noseloadtime;	// logic frames per nose shot
 	int	noseheatup;	// nose cannon heatup per shot
 	int	nosecooling;	// nose cannon cooling speed
@@ -67,11 +76,11 @@ class game_t
 	int	tailloadtime;	// logic frames per tail shot
 	int	tailheatup;	// tail cannon heatup per shot
 	int	tailcooling;	// tail cannon cooling speed
-	int	bolt_damage;	// Damage inflicted by player fire bolt
 
 	// Enemies
 	int	rock_health;
 	int	rock_damage;
+	int	core_health;
 
 	game_t();
 	void reset();

@@ -34,7 +34,6 @@
 #define ABS(x)   (((x)>=0) ? (x) : (-(x)))
 #define MAX(x,y) (((x)>(y)) ? (x) : (y))
 
-#define	HEALTH_INDESTRUCTIBLE	9000000
 
 class _enemy;
 class _enemies;

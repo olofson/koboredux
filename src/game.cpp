@@ -40,12 +40,25 @@ void game_t::reset()
 
 void game_t::set(game_types_t tp, skill_levels_t sk)
 {
+	// Master game parameters
 	type = tp;
 	skill = sk;
+	speed = 30;
+	bonus_first = 0;
+	bonus_every = 0;
 
-	// Enemies
-	rock_health = 255 * bolt_damage;
-	rock_damage = 1000;
+	// Player ship health and damage
+	lives = 1;
+	health = 100;
+	health_fade = 0;
+	damage = 100;
+
+	// Player guns
+	bolts = MAX_BOLTS;
+	bolt_damage = 20;
+	noseloadtime = 1;
+	altfire = 0;
+	tailloadtime = 1;
 
 	// The overheat logic is no longer used in Kobo Redux!
 	noseheatup = 0;
@@ -53,10 +66,14 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	tailheatup = 0;
 	tailcooling = 256;
 
+	// Enemies
+	rock_health = HEALTH_INDESTRUCTIBLE;
+	rock_damage = 1000;
+	core_health = 100;
+
 	switch(skill)
 	{
 	  case SKILL_CLASSIC:
-		speed = 30;
 		lives = 5;
 		bonus_first = 2000;
 		bonus_every = 3000;
@@ -64,60 +81,38 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		health_fade = 5;
 		damage = 0;
 		bolts = 10;
-		bolt_damage = 20;
-		noseloadtime = 1;
-		altfire = 0;
-		tailloadtime = 1;
+		rock_health = 255 * bolt_damage;
+		core_health = bolt_damage;
 		break;
 	  case SKILL_NEWBIE:
 		speed = 40;
-		lives = 1;
-		bonus_first = 0;
-		bonus_every = 0;
-		health = 100;
-		damage = 100;
-		bolts = MAX_BOLTS;
-		noseloadtime = 1;
 		tailloadtime = 0;
 		altfire = 1;
 		rock_health = 200;
 		rock_damage = 50;
+		core_health = 40;
 		break;
 	  case SKILL_GAMER:
-		speed = 30;
-		lives = 1;
-		bonus_first = 0;
-		bonus_every = 0;
 		health = 60;
-		damage = 100;
-		bolts = MAX_BOLTS;
 		noseloadtime = 0;
-		tailloadtime = 1;
 		rock_health = 500;
 		rock_damage = 50;
 		break;
 	  case SKILL_ELITE:
 		speed = 27;
-		lives = 1;
-		bonus_first = 0;
-		bonus_every = 0;
 		health = 50;
 		damage = 50;
-		bolts = MAX_BOLTS;
-		noseloadtime = 1;
+		rock_health = 1000;
 		tailloadtime = 2;
+		core_health = 200;
 		break;
 	  case SKILL_GOD:
 	  default:
 		speed = 25;
-		lives = 1;
-		bonus_first = 0;
-		bonus_every = 0;
 		health = 40;
 		damage = 30;
-		bolts = MAX_BOLTS;
-		noseloadtime = 1;
 		tailloadtime = 2;
+		core_health = 300;
 		break;
 	}
 }
