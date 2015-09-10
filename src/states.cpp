@@ -1431,11 +1431,18 @@ void skill_menu_t::build()
 	button("Gamer", SKILL_GAMER + 10);
 	button("Elite", SKILL_ELITE + 10);
 	button("God", SKILL_GOD + 10);
+#if 0
+	/*
+	 * Classic Mode is pretty much broken, and thus, disabled! It would be
+	 * pretty hard to support properly and faithfully in Kobo Redux at this
+	 * point, but I'm leaving the existing code around, in case someone
+	 * wants to have a go at it.
+	 */
 	small();
 	space();
 	big();
 	button("Classic", SKILL_CLASSIC + 10);
-
+#endif
 	space();
 	small();
 	switch(skill)
