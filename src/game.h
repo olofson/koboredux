@@ -69,6 +69,7 @@ class game_t
 	// Player guns
 	int	bolts;		// maximum active at a time
 	int	bolt_damage;	// Damage inflicted by player fire bolt
+	int	bolt_range;	// Max distance player bolts can travel
 	int	noseloadtime;	// logic frames per nose shot
 	int	noseheatup;	// nose cannon heatup per shot
 	int	nosecooling;	// nose cannon cooling speed

@@ -56,6 +56,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	// Player guns
 	bolts = MAX_BOLTS;
 	bolt_damage = 20;
+	bolt_range = (VIEWLIMIT >> 1) + 16 + 32;
 	noseloadtime = 1;
 	altfire = 0;
 	tailloadtime = 1;

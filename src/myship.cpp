@@ -353,9 +353,9 @@ int _myship::move()
 		++boltst[i];
 		boltx[i] += boltdx[i];
 		bolty[i] += boltdy[i];
-		if((ABS(boltx[i] - CS2PIXEL(x)) >= (VIEWLIMIT >> 1) + 16) ||
+		if((ABS(boltx[i] - CS2PIXEL(x)) >= game.bolt_range) ||
 				(ABS(bolty[i] - CS2PIXEL(y)) >=
-				(VIEWLIMIT >> 1) + 16))
+				game.bolt_range))
 		{
 			boltst[i] = 0;
 			if(bolt_objects[i])
