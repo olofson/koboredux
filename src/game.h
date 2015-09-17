@@ -61,7 +61,9 @@ class game_t
 
 	// Player ship health and damage
 	int	lives;		// When starting new games of certain types
+	int	max_health;	// Maximum health (boost)
 	int	health;		// Initial health
+	int	regen_step;	// Health regeneration step
 	int	health_fade;	// Health fade period (logic frames/unit)
 	int	damage;		// Damage player inflicts when colliding with
 				// another object

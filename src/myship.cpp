@@ -257,7 +257,17 @@ int _myship::move()
 	{
 		health_time = 0;
 		if(_health > game.health)
+		{
+			// Fade when boosted above 100%
 			--_health;
+		}
+		else if((_health > 0) && (_health < game.health))
+		{
+			// Regeneration to next threshold
+			int rn = regen_next();
+			if((_health != rn) && (_health < rn))
+				++_health;
+		}
 	}
 
 	// Movement
@@ -385,6 +395,11 @@ void _myship::hit(int dmg)
 		manage.noise_damage(1.0f);
 
 	_health -= dmg;
+
+	// Be nice if we land right on a regeneration threshold level.
+	if(_health == regen_next())
+		++_health;
+
 	if(_health > 0)
 		sound.g_player_damage();
 	else
@@ -403,8 +418,8 @@ void _myship::health_bonus(int h)
 		return;
 	_health += game.health * h / 100;
 	health_time = 0;
-	if(_health > game.health * 2)
-		_health = game.health * 2;
+	if(_health > game.max_health)
+		_health = game.max_health;
 }
 
 

@@ -50,7 +50,9 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	// Player ship health and damage
 	lives = 1;
 	health = 100;
-	health_fade = 0;
+	max_health = 250;
+	regen_step = 50;
+	health_fade = 10;
 	damage = 100;
 
 	// Player guns
@@ -79,7 +81,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		bonus_first = 2000;
 		bonus_every = 3000;
 		health = 1;
-		health_fade = 5;
+		max_health = 1;
 		damage = 0;
 		bolts = 10;
 		rock_health = 255 * bolt_damage;
@@ -95,6 +97,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		break;
 	  case SKILL_GAMER:
 		health = 60;
+		max_health = 120;
+		regen_step = 20;
 		noseloadtime = 0;
 		rock_health = 500;
 		rock_damage = 50;
@@ -102,6 +106,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	  case SKILL_ELITE:
 		speed = 27;
 		health = 50;
+		max_health = 75;
+		regen_step = 10;
 		damage = 50;
 		rock_health = 1000;
 		tailloadtime = 2;
@@ -111,6 +117,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	  default:
 		speed = 25;
 		health = 40;
+		max_health = 50;
+		regen_step = 5;
 		damage = 30;
 		tailloadtime = 2;
 		core_health = 300;

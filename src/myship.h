@@ -68,6 +68,11 @@ class _myship
 	static void explode();
 	static void move_classic();
 	static void move_redux();
+	static inline int regen_next()
+	{
+		return (_health + game.regen_step - 1) /
+				game.regen_step * game.regen_step;
+	}
   public:
 	 _myship();
 	static int get_velx()		{ return vx; }
