@@ -317,11 +317,11 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 		background(map_rgb(0x000000));
 		clear();
 		wplanet->colormod(wplanet->map_gray(_fade * 128.0f));
-		wplanet->track_offset(t * 0.000001f + 0.2f,
-				t * 0.000002f + 0.6f);
+		wplanet->track_offset(t * 0.0000015f + 0.2f,
+				t * 0.0000015f + 0.6f);
 		wplanet->render(NULL);
 		colormod(map_gray(_fade));
-		jingelstars.render(t * 2.0f, t);
+		jingelstars.render(t * 2.0f, t * 2.0f);
 		sprite(width() / 2, height() / 2, B_OALOGO, 0);
 		if(_mode == DASHBOARD_LOADING)
 			render_progress();
