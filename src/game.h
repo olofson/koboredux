@@ -58,6 +58,8 @@ class game_t
 	int	speed;		// ms per logic frame
 	int	bonus_first;	// First bonus ship at this score
 	int	bonus_every;	// New bonus ship every N points
+	int	core_destroyed_health_bonus;
+	int	stage_cleared_health_bonus;
 
 	// Player ship health and damage
 	int	lives;		// When starting new games of certain types

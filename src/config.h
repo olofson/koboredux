@@ -182,6 +182,12 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 #define	D_LINE2_POS		9
 #define	D_LINE2_TXOFFS		0
 
+/* Proximity indicator LED bars */
+#define PROXY_LED_SIZE		8
+
+/* Health/shield LED bar */
+#define	SHIELD_LED_SIZE		8
+
 /*
  * Dashboard window layout
  */
@@ -192,8 +198,13 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 
 #define WCONSOLE_X		8
 #define WCONSOLE_Y		52
-#define WCONSOLE_W		128
+#define WCONSOLE_W		116
 #define WCONSOLE_H		256
+
+#define WSHIELD_X		130
+#define WSHIELD_Y		80
+#define WSHIELD_W		12
+#define WSHIELD_H		200
 
 #define WRADAR_X		504
 #define WRADAR_Y		52

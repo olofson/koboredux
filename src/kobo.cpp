@@ -78,9 +78,9 @@ kobo_gfxengine_t	*gengine = NULL;
 
 screen_window_t		*wscreen = NULL;
 dashboard_window_t	*wdash = NULL;
-bargraph_t		*wshield = NULL;
-bargraph_t		*wtemp = NULL;
-bargraph_t		*wttemp = NULL;
+shieldbar_t		*wshield = NULL;
+plainbar_t		*wtemp = NULL;
+plainbar_t		*wttemp = NULL;
 radar_map_t		*wmap = NULL;
 radar_window_t		*wradar = NULL;
 engine_window_t		*wmain = NULL;
@@ -549,45 +549,45 @@ int KOBO_main::open_logging(prefs_t *p)
 
 void KOBO_main::build_screen()
 {
-	int conx = xoffs + WCONSOLE_X;
-	int cony = yoffs + WCONSOLE_Y;
-	const int SHIELD_W = 8;
-	const int conw = WCONSOLE_W;
-	const int dispw = conw - SHIELD_W;
-
+	// Dashboard framework
 	wdash->place(xoffs, yoffs, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	wshield->place(conx + dispw, cony, SHIELD_W, WCONSOLE_H);
-	wshield->background(wshield->map_rgb(0x182838));
-	wshield->redmax(0);
-
-	dhigh->place(conx, cony, dispw, 18);
+	// Console window
+	int conx = xoffs + WCONSOLE_X;
+	int cony = yoffs + WCONSOLE_Y;
+	dhigh->place(conx, cony, WCONSOLE_W, 18);
 	dhigh->font(B_NORMAL_FONT);
 	dhigh->caption("HIGHSCORE");
 	dhigh->text("000000000");
 
-	dscore->place(conx, cony + 24, dispw, 18);
+	dscore->place(conx, cony + 24, WCONSOLE_W, 18);
 	dscore->font(B_NORMAL_FONT);
 	dscore->caption("SCORE");
 	dscore->text("000000000");
 
-	dships->place(conx, cony + 56, dispw, 18);
+	dships->place(conx, cony + 56, WCONSOLE_W, 18);
 	dships->font(B_NORMAL_FONT);
 	dships->caption("SHIPS");
 	dships->text("000");
 
-	dstage->place(conx, cony + 88, dispw / 3, 18);
+	dstage->place(conx, cony + 88, WCONSOLE_W / 3, 18);
 	dstage->font(B_NORMAL_FONT);
 	dstage->caption("STAGE");
 	dstage->text("000");
-	dregion->place(conx + dispw / 3, cony + 88, dispw / 3, 18);
+	dregion->place(conx + WCONSOLE_W / 3, cony + 88, WCONSOLE_W / 3, 18);
 	dregion->font(B_NORMAL_FONT);
 	dregion->caption("REGION");
 	dregion->text("0");
-	dlevel->place(conx + 2 * dispw / 3, cony + 88, dispw / 3, 18);
+	dlevel->place(conx + 2 * WCONSOLE_W / 3, cony + 88,
+			WCONSOLE_W / 3, 18);
 	dlevel->font(B_NORMAL_FONT);
 	dlevel->caption("LEVEL");
 	dlevel->text("00");
+
+	// Shield bar
+	wshield->place(xoffs + WSHIELD_X, yoffs + WSHIELD_Y,
+			WSHIELD_W, WSHIELD_H);
+	wshield->background(wshield->map_rgb(0x182838));
 
 	// Spinning planet backdrop
 	wplanet->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
@@ -768,7 +768,7 @@ int KOBO_main::init_display(prefs_t *p)
 			dh - gh - (int)(yoffs * gengine->yscale() + 0.5f));
 
 	wdash = new dashboard_window_t(gengine);
-	wshield = new bargraph_t(gengine);
+	wshield = new shieldbar_t(gengine);
 	wplanet = new spinplanet_t(gengine);
 	wmain = new engine_window_t(gengine);
 	woverlay = new window_t(gengine);
@@ -776,8 +776,8 @@ int KOBO_main::init_display(prefs_t *p)
 	dscore = new display_t(gengine);
 	wmap = new radar_map_t(gengine);
 	wradar = new radar_window_t(gengine);
-	wtemp = new bargraph_t(gengine);
-	wttemp = new bargraph_t(gengine);
+	wtemp = new plainbar_t(gengine);
+	wttemp = new plainbar_t(gengine);
 	dships = new display_t(gengine);
 	dstage = new display_t(gengine);
 	dregion = new display_t(gengine);
@@ -1114,6 +1114,7 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "Loading dashboard graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
 	{ "GFX>>hleds.png", B_HLEDS,		8, 5,	0.0f,	KOBO_CLAMP },
 	{ "GFX>>vleds.png", B_VLEDS,		5, 8,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>barleds.png", B_BLEDS,		12, 8,	0.0f,	KOBO_CLAMP },
 	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	0.0f,
 			KOBO_CLAMP_OPAQUE },
 

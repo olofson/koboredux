@@ -406,17 +406,13 @@ void _manage::put_health(int force)
 		disp_health += (float)game.health * .05;
 		if(disp_health > h)
 			disp_health = h;
-		wshield->background(wshield->map_rgb(0, 100, 0));
 	}
 	else if(h < disp_health)
 	{
 		disp_health -= (float)game.health * .1;
 		if(disp_health < h)
 			disp_health = h;
-		wshield->background(wshield->map_rgb(128, 0, 0));
 	}
-	else
-		wshield->background(wshield->map_rgb(0, 0, 0));
 	wshield->value((float)disp_health / game.health);
 	if(force)
 		wshield->invalidate();
@@ -679,15 +675,15 @@ void _manage::lost_myship()
 
 void _manage::destroyed_a_core()
 {
-	// Award 10% health bonus for destroyed core!
-	myship.health_bonus(10);
+	// Award health bonus for destroyed core!
+	myship.health_bonus(game.core_destroyed_health_bonus);
 	rest_cores--;
 	if(rest_cores == 0)
 	{
 		next_state_next = 1;
 		delay_count = 50;
-		// Award another 25% health bonus for stage cleared!
-		myship.health_bonus(25);
+		// Award extra health bonus for stage cleared!
+		myship.health_bonus(game.stage_cleared_health_bonus);
 	}
 	screen.generate_fixed_enemies();
 }

@@ -71,9 +71,9 @@ extern prefs_t			*prefs;
 
 extern screen_window_t		*wscreen;
 extern dashboard_window_t	*wdash;
-extern bargraph_t		*wshield;
-extern bargraph_t		*wtemp;
-extern bargraph_t		*wttemp;
+extern shieldbar_t		*wshield;
+extern plainbar_t		*wtemp;
+extern plainbar_t		*wttemp;
 extern radar_map_t		*wmap;
 extern radar_window_t		*wradar;
 extern engine_window_t		*wmain;
@@ -233,6 +233,7 @@ typedef enum
 	B_SCREEN,
 	B_HLEDS,
 	B_VLEDS,
+	B_BLEDS,
 
 	B_LOGO,
 

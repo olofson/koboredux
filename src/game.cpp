@@ -50,7 +50,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	// Player ship health and damage
 	lives = 1;
 	health = 100;
-	max_health = 250;
+	max_health = 200;
 	regen_step = 50;
 	health_fade = 10;
 	damage = 100;
@@ -86,6 +86,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		bolts = 10;
 		rock_health = 255 * bolt_damage;
 		core_health = bolt_damage;
+		core_destroyed_health_bonus = 0;
+		stage_cleared_health_bonus = 0;
 		break;
 	  case SKILL_NEWBIE:
 		speed = 40;
@@ -94,34 +96,39 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		rock_health = 200;
 		rock_damage = 50;
 		core_health = 40;
+		core_destroyed_health_bonus = 50;
+		stage_cleared_health_bonus = 50;
 		break;
 	  case SKILL_GAMER:
-		health = 60;
-		max_health = 120;
-		regen_step = 20;
+		max_health = 175;
+		regen_step = 40;
 		noseloadtime = 0;
 		rock_health = 500;
 		rock_damage = 50;
+		core_destroyed_health_bonus = 25;
+		stage_cleared_health_bonus = 25;
 		break;
 	  case SKILL_ELITE:
 		speed = 27;
-		health = 50;
-		max_health = 75;
-		regen_step = 10;
+		max_health = 150;
+		regen_step = 25;
 		damage = 50;
 		rock_health = 1000;
 		tailloadtime = 2;
 		core_health = 200;
+		core_destroyed_health_bonus = 10;
+		stage_cleared_health_bonus = 25;
 		break;
 	  case SKILL_GOD:
 	  default:
 		speed = 25;
-		health = 40;
-		max_health = 50;
-		regen_step = 5;
+		max_health = 125;
+		regen_step = 20;
 		damage = 30;
 		tailloadtime = 2;
 		core_health = 300;
+		core_destroyed_health_bonus = 10;
+		stage_cleared_health_bonus = 10;
 		break;
 	}
 }

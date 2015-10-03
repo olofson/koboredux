@@ -103,22 +103,40 @@ class display_t : public window_t
 };
 
 
-// Bar graph display
+// Bar graph display (base)
 class bargraph_t : public window_t
 {
+  protected:
 	float	_value;
-	int	_redmax;
 	int	_y;
 	int	_enabled;
   public:
 	bargraph_t(gfxengine_t *e);
 	void value(float val);
+	void enable(int ena);
+};
+
+
+// Plain bar graph display
+class plainbar_t : public bargraph_t
+{
+	int	_redmax;
+  public:
+	plainbar_t(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
 	void redmax(int rm)
 	{
 		_redmax = rm;
 	}
-	void enable(int ena);
+};
+
+
+// Health/shield LED bar display with overcharge
+class shieldbar_t : public bargraph_t
+{
+  public:
+	shieldbar_t(gfxengine_t *e);
+	void refresh(SDL_Rect *r);
 };
 
 

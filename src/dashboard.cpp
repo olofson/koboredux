@@ -113,7 +113,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	//       dashboard_window_t::refresh()!
 	wplanet->visible(main);
 	wmain->visible(main);
-	wshield->visible(ingame);
+	wshield->visible(main);
 #if 0
 	wtemp->visible(ingame);
 	wttemp->visible(ingame);
@@ -424,13 +424,12 @@ void display_t::refresh(SDL_Rect *r)
 
 
 /*----------------------------------------------------------
-	Bar graph display
+	Bar graph display (base)
 ----------------------------------------------------------*/
 
 bargraph_t::bargraph_t(gfxengine_t *e) : window_t(e)
 {
 	_value = 0.0f;
-	_redmax = 1;
 	_y = -1000;
 	_enabled = 1;
 }
@@ -457,7 +456,17 @@ void bargraph_t::enable(int ena)
 }
 
 
-void bargraph_t::refresh(SDL_Rect *r)
+/*----------------------------------------------------------
+	Plain bar graph display
+----------------------------------------------------------*/
+
+plainbar_t::plainbar_t(gfxengine_t *e) : bargraph_t(e)
+{
+	_redmax = 1;
+}
+
+
+void plainbar_t::refresh(SDL_Rect *r)
 {
 	if(!_enabled)
 	{
@@ -506,6 +515,72 @@ void bargraph_t::refresh(SDL_Rect *r)
 	fillrect(0, 0, width(), height());
 	foreground(map_rgb(red, green, blue));
 	fillrect(1, _y + 1, width() - 2, height() - _y - 2);
+}
+
+
+/*----------------------------------------------------------
+	Health/shield LED bar display with overcharge
+----------------------------------------------------------*/
+
+#define	S_GRADIENT_SIZE	4
+
+enum shield_colors_t {
+	SCOLORS_OFF = 0,	// Off
+	SCOLORS_RED = 1,	// Almost off to full red gradient
+	SCOLORS_YELLOW = 5,	// Almost off to full yellow gradient
+	SCOLORS_GREEN = 9,	// Almost off to full green gradient
+	SCOLORS_BLUE = 13,	// Green to bright blue gradient
+};
+
+
+shieldbar_t::shieldbar_t(gfxengine_t *e) : bargraph_t(e)
+{
+}
+
+
+void shieldbar_t::refresh(SDL_Rect *r)
+{
+	int leds = height() / SHIELD_LED_SIZE;
+	if(!_enabled)
+	{
+		for(int i = 0; i < leds; ++i)
+			sprite(0, i * PROXY_LED_SIZE, B_BLEDS, SCOLORS_OFF);
+		return;
+	}
+	int off, c0;
+	float v = _value;
+	if(v <= 1.0f)
+	{
+		// Normal
+		off = SCOLORS_OFF;
+		if(v < 0.25f)
+			c0 = SCOLORS_RED;
+		else if(v < 0.5f)
+			c0 = SCOLORS_YELLOW;
+		else
+			c0 = SCOLORS_GREEN;
+	}
+	else
+	{
+		// Overcharge
+		off = SCOLORS_GREEN + S_GRADIENT_SIZE - 1;
+		c0 = SCOLORS_BLUE;
+		v -= 1.0f;
+	}
+	v += 0.5f / (leds * S_GRADIENT_SIZE);	// Rounding!
+	int led = v * leds;
+	int frame = fmod(v * leds, 1.0f) * S_GRADIENT_SIZE;
+	for(int i = 0; i < leds; ++i)
+	{
+		int c;
+		if(i < led)
+			c = c0 + S_GRADIENT_SIZE - 1;
+		else if(i > led || !frame)
+			c = off;
+		else
+			c = c0 + frame - 1;
+		sprite(0, (leds - 1 - i) * PROXY_LED_SIZE, B_BLEDS, c);
+	}
 }
 
 
@@ -707,7 +782,7 @@ void hledbar_t::frame()
 void hledbar_t::refresh(SDL_Rect *r)
 {
 	for(int i = 0; i < PROXY_LEDS; ++i)
-		sprite(i * 8, 0, B_HLEDS, leds[i].frame);
+		sprite(i * PROXY_LED_SIZE, 0, B_HLEDS, leds[i].frame);
 }
 
 
@@ -718,5 +793,5 @@ void hledbar_t::refresh(SDL_Rect *r)
 void vledbar_t::refresh(SDL_Rect *r)
 {
 	for(int i = 0; i < PROXY_LEDS; ++i)
-		sprite(0, i * 8, B_VLEDS, leds[i].frame);
+		sprite(0, i * PROXY_LED_SIZE, B_VLEDS, leds[i].frame);
 }
