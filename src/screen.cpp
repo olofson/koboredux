@@ -567,26 +567,20 @@ void _screen::init_scene(int sc)
 {
 	if(sc < 0)
 	{
-		/*
-		 * Intro mode
-		 */
+		// Intro mode
 		show_title = 1;
 		myship.off();
 		enemies.off();
 		if(sc == INTRO_SCENE)
 		{
-			/*
-			 * Plain intro - no map
-			 */
-			radar_mode = RM_OFF;	/* Clear radar */
+			// Plain intro - no map
+			radar_mode = RM_OFF;	// Clear radar
 			scene_num = 16;
 			restarts = 0;
 		}
 		else
 		{
-			/*
-			 * Map selection - show current map
-			 */
+			// Map selection - show current map
 			radar_mode = RM_SHOW;
 			scene_num = -(sc + 1) % scene_max;
 			restarts = -(sc + 1) / scene_max;
@@ -596,9 +590,7 @@ void _screen::init_scene(int sc)
 	}
 	else
 	{
-		/*
-		 * In-game mode
-		 */
+		// In-game mode
 		show_title = 0;
 		scene_num = sc % scene_max;
 		restarts = sc / scene_max;

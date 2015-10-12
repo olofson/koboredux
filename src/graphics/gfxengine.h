@@ -187,6 +187,8 @@ class gfxengine_t
 	float nxoffs(int layer);
 	float nyoffs(int layer);
 
+	double frame_delta_time()	{ return _frame_delta_time; }
+
 	// Info
 	int objects_in_use();
 
@@ -243,6 +245,7 @@ class gfxengine_t
 	int		last_tick;
 	float		ticks_per_frame;
 	float		_timefilter;
+	double		_frame_delta_time;
 
 	int		is_showing;
 	int		is_running;

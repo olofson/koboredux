@@ -68,11 +68,6 @@ class _myship
 	static void explode();
 	static void move_classic();
 	static void move_redux();
-	static inline int regen_next()
-	{
-		return (_health + game.regen_step - 1) /
-				game.regen_step * game.regen_step;
-	}
   public:
 	 _myship();
 	static int get_velx()		{ return vx; }
@@ -97,6 +92,11 @@ class _myship
 	static int health()		{ return _health; }
 	static void health(int h)	{ _health = h; }
 	static void health_bonus(int h);
+	static inline int regen_next()
+	{
+		return (_health + game.regen_step - 1) /
+				game.regen_step * game.regen_step;
+	}
 	static void set_position(int px, int py);
 	static int alive()		{ return _state == normal; }
 };

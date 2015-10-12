@@ -414,6 +414,7 @@ void _manage::put_health(int force)
 			disp_health = h;
 	}
 	wshield->value((float)disp_health / game.health);
+	wshield->marker((float)myship.regen_next() / game.health);
 	if(force)
 		wshield->invalidate();
 }

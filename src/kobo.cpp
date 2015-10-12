@@ -587,7 +587,7 @@ void KOBO_main::build_screen()
 	// Shield bar
 	wshield->place(xoffs + WSHIELD_X, yoffs + WSHIELD_Y,
 			WSHIELD_W, WSHIELD_H);
-	wshield->background(wshield->map_rgb(0x182838));
+	wshield->set_leds(B_BLEDS);
 
 	// Spinning planet backdrop
 	wplanet->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
@@ -1114,7 +1114,11 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "Loading dashboard graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
 	{ "GFX>>hleds.png", B_HLEDS,		8, 5,	0.0f,	KOBO_CLAMP },
 	{ "GFX>>vleds.png", B_VLEDS,		5, 8,	0.0f,	KOBO_CLAMP },
+#if 0
 	{ "GFX>>barleds.png", B_BLEDS,		12, 8,	0.0f,	KOBO_CLAMP },
+#else
+	{ "GFX>>barleds3.png", B_BLEDS,		12, 4,	0.0f,	KOBO_CLAMP },
+#endif
 	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	0.0f,
 			KOBO_CLAMP_OPAQUE },
 

@@ -186,7 +186,9 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
 #define PROXY_LED_SIZE		8
 
 /* Health/shield LED bar */
-#define	SHIELD_LED_SIZE		8
+#define	SHIELD_GRADIENT_SIZE	4
+#define	SHIELD_FILTER_COEFF	0.01f	// (per ms)
+#undef	SHIELD_DITHER
 
 /*
  * Dashboard window layout

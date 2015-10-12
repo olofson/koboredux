@@ -934,7 +934,7 @@ void gfxengine_t::run()
 	start_engine();
 	is_running = 1;
 	double toframe = 0.0f;
-	double fdt = 1.0f;
+	_frame_delta_time = 1.0f;
 	cs_engine_advance(csengine, 0);
 	while(is_running)
 	{
@@ -946,10 +946,11 @@ void gfxengine_t::run()
 		if(dt > 250)
 			dt = (int)ticks_per_frame;
 		if(_timefilter)
-			fdt += (dt - fdt) * _timefilter;
+			_frame_delta_time += (dt - _frame_delta_time) *
+					_timefilter;
 		else
-			fdt = ticks_per_frame;
-		toframe += fdt / ticks_per_frame;
+			_frame_delta_time = ticks_per_frame;
+		toframe += _frame_delta_time / ticks_per_frame;
 		cs_engine_advance(csengine, toframe);
 		present();
 	}

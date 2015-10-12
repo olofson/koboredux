@@ -522,8 +522,6 @@ void plainbar_t::refresh(SDL_Rect *r)
 	Health/shield LED bar display with overcharge
 ----------------------------------------------------------*/
 
-#define	S_GRADIENT_SIZE	4
-
 enum shield_colors_t {
 	SCOLORS_OFF = 0,	// Off
 	SCOLORS_RED = 1,	// Almost off to full red gradient
@@ -535,20 +533,42 @@ enum shield_colors_t {
 
 shieldbar_t::shieldbar_t(gfxengine_t *e) : bargraph_t(e)
 {
+	fvalue = 0.0f;
+	led_bank = 0;
+	_marker = 0.0f;
 }
 
 
 void shieldbar_t::refresh(SDL_Rect *r)
 {
-	int leds = height() / SHIELD_LED_SIZE;
+	s_bank_t *b = s_get_bank(engine->get_gfx(), led_bank);
+	if(!b)
+		return;
+
+	int led_height = b->h;
+	int leds = height() / led_height;
 	if(!_enabled)
 	{
 		for(int i = 0; i < leds; ++i)
-			sprite(0, i * PROXY_LED_SIZE, B_BLEDS, SCOLORS_OFF);
+			sprite(0, i * led_height, led_bank, SCOLORS_OFF);
+		fvalue = _value;
 		return;
 	}
+
 	int off, c0;
-	float v = _value;
+
+	// Filtering
+	fvalue += (_value - fvalue) * SHIELD_FILTER_COEFF *
+			engine->frame_delta_time();
+	float v = fvalue;
+
+#ifdef	SHIELD_DITHER
+	// Dithering
+	v += (pubrand.get(4) - 7.5f) / 16.0f / (leds * SHIELD_GRADIENT_SIZE);
+#endif
+
+	// Normal/overcharge
+	int marker_pos;
 	if(v <= 1.0f)
 	{
 		// Normal
@@ -559,27 +579,45 @@ void shieldbar_t::refresh(SDL_Rect *r)
 			c0 = SCOLORS_YELLOW;
 		else
 			c0 = SCOLORS_GREEN;
+		if(_marker)
+		{
+			marker_pos = _marker * leds - 0.5f;
+			if(marker_pos > leds)
+				marker_pos = leds - 1;
+		}
+		else
+			marker_pos = -1;
 	}
 	else
 	{
 		// Overcharge
-		off = SCOLORS_GREEN + S_GRADIENT_SIZE - 1;
+		off = SCOLORS_GREEN + SHIELD_GRADIENT_SIZE - 1;
 		c0 = SCOLORS_BLUE;
 		v -= 1.0f;
+		marker_pos = -1;		// No marker!
 	}
-	v += 0.5f / (leds * S_GRADIENT_SIZE);	// Rounding!
+
+	// Rounding
+	v += 0.5f / (leds * SHIELD_GRADIENT_SIZE);
+
+	// Render!
 	int led = v * leds;
-	int frame = fmod(v * leds, 1.0f) * S_GRADIENT_SIZE;
+	int frame = fmod(v * leds, 1.0f) * SHIELD_GRADIENT_SIZE;
 	for(int i = 0; i < leds; ++i)
 	{
 		int c;
 		if(i < led)
-			c = c0 + S_GRADIENT_SIZE - 1;
+			c = c0 + SHIELD_GRADIENT_SIZE - 1;
 		else if(i > led || !frame)
-			c = off;
+		{
+			if(i == marker_pos && SDL_GetTicks() % 300 > 200)
+				c = SCOLORS_GREEN;
+			else
+				c = off;
+		}
 		else
 			c = c0 + frame - 1;
-		sprite(0, (leds - 1 - i) * PROXY_LED_SIZE, B_BLEDS, c);
+		sprite(0, (leds - 1 - i) * led_height, led_bank, c);
 	}
 }
 

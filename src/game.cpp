@@ -51,7 +51,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	lives = 1;
 	health = 100;
 	max_health = 200;
-	regen_step = 50;
+	regen_step = 100;
 	health_fade = 10;
 	damage = 100;
 
@@ -104,14 +104,14 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		regen_step = 40;
 		noseloadtime = 0;
 		rock_health = 500;
-		rock_damage = 50;
+		rock_damage = 32;
 		core_destroyed_health_bonus = 25;
 		stage_cleared_health_bonus = 25;
 		break;
 	  case SKILL_ELITE:
 		speed = 27;
 		max_health = 150;
-		regen_step = 25;
+		regen_step = 20;
 		damage = 50;
 		rock_health = 1000;
 		tailloadtime = 2;
@@ -123,7 +123,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	  default:
 		speed = 25;
 		max_health = 125;
-		regen_step = 20;
+		regen_step = 16;
 		damage = 30;
 		tailloadtime = 2;
 		core_health = 300;
