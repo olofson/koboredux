@@ -66,7 +66,6 @@ class _myship
 	static void shot_single(int i, int dir, int offset);
 	static void apply_position();
 	static void explode();
-	static void move_classic();
 	static void move_redux();
   public:
 	 _myship();

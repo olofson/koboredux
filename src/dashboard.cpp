@@ -127,7 +127,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	dstage->visible(ingame);
 	dregion->visible(ingame);
 	dlevel->visible(ingame);
-	dships->visible(ingame && (game.skill == SKILL_CLASSIC));
+	dships->visible(ingame && 0);	// Removed!
 	pxtop->visible(main);
 	pxbottom->visible(main);
 	pxleft->visible(main);

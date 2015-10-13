@@ -237,8 +237,7 @@ void _manage::game_start()
 	// The new skill levels are under development!
 	// We want to mark highscores so they're not mistaken
 	// for official scores from a future finalized version.
-	if(game.skill != SKILL_CLASSIC)
-		hi.gametype |= GAME_EXPERIMENTAL;
+	hi.gametype |= GAME_EXPERIMENTAL;
 #endif
 	hi.saves = 0;
 	hi.loads = 0;
@@ -367,21 +366,8 @@ void _manage::init_resources_to_play(int newship)
 	put_info();
 	put_score();
 	put_ships();
-	switch(game.skill)
-	{
-	  case SKILL_CLASSIC:
-		show_bars = 0;
-		gengine->camfilter(0);
-		break;
-	  case SKILL_NEWBIE:
-	  case SKILL_GAMER:
-	  case SKILL_ELITE:
-	  case SKILL_GOD:
-	  default:
-		gengine->camfilter(KOBO_CAM_FILTER);
-		show_bars = 1;
-		break;
-	}
+	gengine->camfilter(KOBO_CAM_FILTER);
+	show_bars = 1;
 	set_bars();
 	put_health(1);
 	put_temp(1);
@@ -603,14 +589,10 @@ void _manage::update()
 	cam_lead_xf += (cam_lead_x - cam_lead_xf) * KOBO_CAM_LEAD_FILTER >> 8;
 	cam_lead_yf += (cam_lead_y - cam_lead_yf) * KOBO_CAM_LEAD_FILTER >> 8;
 
-	if(game.skill == SKILL_CLASSIC)
-		gengine->scroll(myship.get_csx() - PIXEL2CS(WMAIN_W / 2),
-				myship.get_csy() - PIXEL2CS(WMAIN_H / 2));
-	else
-		gengine->scroll(myship.get_csx() + cam_lead_xf -
-				PIXEL2CS(WMAIN_W / 2),
-				myship.get_csy() + cam_lead_yf -
-				PIXEL2CS(WMAIN_H / 2));
+	gengine->scroll(myship.get_csx() + cam_lead_xf -
+			PIXEL2CS(WMAIN_W / 2),
+			myship.get_csy() + cam_lead_yf -
+			PIXEL2CS(WMAIN_H / 2));
 	if(scroll_jump)
 	{
 		gengine->force_scroll();

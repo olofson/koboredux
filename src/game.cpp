@@ -34,7 +34,7 @@ game_t::game_t()
 
 void game_t::reset()
 {
-	set(GAME_SINGLE, SKILL_CLASSIC);
+	set(GAME_SINGLE, SKILL_GAMER);
 }
 
 
@@ -76,19 +76,6 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 
 	switch(skill)
 	{
-	  case SKILL_CLASSIC:
-		lives = 5;
-		bonus_first = 2000;
-		bonus_every = 3000;
-		health = 1;
-		max_health = 1;
-		damage = 0;
-		bolts = 10;
-		rock_health = 255 * bolt_damage;
-		core_health = bolt_damage;
-		core_destroyed_health_bonus = 0;
-		stage_cleared_health_bonus = 0;
-		break;
 	  case SKILL_NEWBIE:
 		speed = 40;
 		tailloadtime = 0;

@@ -254,7 +254,7 @@ int s_profile_t::load(const char *fn)
 		log_printf(D2LOG, "Old scorefile.\n");
 		//Construct a "fake" highscore entry from the old data.
 		hiscores = 1;
-		hiscoretab[0].skill = SKILL_CLASSIC;	//Can't tell speed.
+		hiscoretab[0].skill = SKILL_UNKNOWN;	//Classic removed!
 		hiscoretab[0].gametype = GAME_SINGLE;	//No others available.
 		hiscoretab[0].score = best_score;
 		hiscoretab[0].end_scene = last_scene;	//Likely, but...
@@ -669,7 +669,7 @@ void score_manager_t::gather_high_scores(int placeholders)
 			if(!sc[i])
 				break;
 			memcpy(high_tbl[highs].name, nm[i], SCORE_NAME_LEN);
-			high_tbl[highs].skill = SKILL_CLASSIC;
+			high_tbl[highs].skill = SKILL_GAMER;
 			high_tbl[highs].gametype = GAME_SINGLE;
 			high_tbl[highs].score = sc[i];
 			high_tbl[highs].start_scene = 0;

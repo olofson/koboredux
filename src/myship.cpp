@@ -159,55 +159,6 @@ void _myship::explode()
 #define BEAMV1	12
 #define BEAMV2	(BEAMV1 * 2 / 3)
 
-void _myship::move_classic()
-{
-	int vd, vo;
-	if(!prefs->cmd_pushmove)
-	{
-		vd = PIXEL2CS(2);
-		vo = PIXEL2CS(3);
-	}
-	else if(gamecontrol.dir_push())
-		vd = vo = PIXEL2CS(1);
-	else
-		vd = vo = 0;
-	switch (di)
-	{
-	  case 1:
-		vx = 0;
-		vy = -vo;
-		break;
-	  case 2:
-		vx = vd;
-		vy = -vd;
-		break;
-	  case 3:
-		vx = vo;
-		vy = 0;
-		break;
-	  case 4:
-		vx = vd;
-		vy = vd;
-		break;
-	  case 5:
-		vx = 0;
-		vy = vo;
-		break;
-	  case 6:
-		vx = -vd;
-		vy = vd;
-		break;
-	  case 7:
-		vx = -vo;
-		vy = 0;
-		break;
-	  case 8:
-		vx = -vd;
-		vy = -vd;
-		break;
-	}
-}
-
 void _myship::move_redux()
 {
 	int v;
@@ -273,10 +224,7 @@ int _myship::move()
 	// Movement
 	if(_state == normal)
 	{
-		if(game.skill == SKILL_CLASSIC)
-			move_classic();
-		else
-			move_redux();
+		move_redux();
 		x += vx;
 		y += vy;
 		explo_time = 0;
@@ -305,41 +253,28 @@ int _myship::move()
 	// Fire control
 	if((_state == normal) && gamecontrol.get_shot())
 	{
-		if(game.skill == SKILL_CLASSIC)
-		{
-			if(nose_reload_timer > 0)
-				--nose_reload_timer;
-			else
-			{
-				_myship::xkobo_shot();
-				nose_reload_timer = game.noseloadtime - 1;
-			}
-		}
+		int fired = 0;
+		if(tail_reload_timer > 0)
+			--tail_reload_timer;
+		else if(!_myship::tail_fire())
+			fired = 1;	// Ok!
 		else
-		{
-			int fired = 0;
-			if(tail_reload_timer > 0)
-				--tail_reload_timer;
-			else if(!_myship::tail_fire())
-				fired = 1;	// Ok!
-			else
-				fired = 2;	// Overheat!
-			if(nose_reload_timer > 0)
-				--nose_reload_timer;
-			else if(!_myship::nose_fire())
-				fired = 1;	// Ok!
-			else
-				fired = 2;	// Overheat!
+			fired = 2;	// Overheat!
+		if(nose_reload_timer > 0)
+			--nose_reload_timer;
+		else if(!_myship::nose_fire())
+			fired = 1;	// Ok!
+		else
+			fired = 2;	// Overheat!
 #if 0
-			if(fired == 1)
-				sound.g_player_fire();
-			else if(fired == 2)
-				sound.g_player_overheat();
+		if(fired == 1)
+			sound.g_player_fire();
+		else if(fired == 2)
+			sound.g_player_overheat();
 #else
-			if(fired)
-				sound.g_player_fire();
+		if(fired)
+			sound.g_player_fire();
 #endif
-		}
 	}
 	else
 	{
@@ -414,8 +349,6 @@ void _myship::hit(int dmg)
 
 void _myship::health_bonus(int h)
 {
-	if(game.skill == SKILL_CLASSIC)
-		return;
 	_health += game.health * h / 100;
 	health_time = 0;
 	if(_health > game.max_health)

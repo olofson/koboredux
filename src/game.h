@@ -42,7 +42,6 @@ enum game_types_t
 enum skill_levels_t
 {
 	SKILL_UNKNOWN = -1,
-	SKILL_CLASSIC,
 	SKILL_NEWBIE,
 	SKILL_GAMER,
 	SKILL_ELITE,
