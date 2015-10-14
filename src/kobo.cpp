@@ -79,8 +79,6 @@ kobo_gfxengine_t	*gengine = NULL;
 screen_window_t		*wscreen = NULL;
 dashboard_window_t	*wdash = NULL;
 shieldbar_t		*wshield = NULL;
-plainbar_t		*wtemp = NULL;
-plainbar_t		*wttemp = NULL;
 radar_map_t		*wmap = NULL;
 radar_window_t		*wradar = NULL;
 engine_window_t		*wmain = NULL;
@@ -91,7 +89,6 @@ display_t		*dscore = NULL;
 display_t		*dstage = NULL;
 display_t		*dregion = NULL;
 display_t		*dlevel = NULL;
-display_t		*dships = NULL;
 hledbar_t		*pxtop = NULL;
 hledbar_t		*pxbottom = NULL;
 vledbar_t		*pxleft = NULL;
@@ -565,11 +562,6 @@ void KOBO_main::build_screen()
 	dscore->caption("SCORE");
 	dscore->text("000000000");
 
-	dships->place(conx, cony + 56, WCONSOLE_W, 18);
-	dships->font(B_NORMAL_FONT);
-	dships->caption("SHIPS");
-	dships->text("000");
-
 	dstage->place(conx, cony + 88, WCONSOLE_W / 3, 18);
 	dstage->font(B_NORMAL_FONT);
 	dstage->caption("STAGE");
@@ -607,14 +599,6 @@ void KOBO_main::build_screen()
 	// Have the radar window scale up to 2x2 "native" pixels per tile
 	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
 	wradar->scale(-2.0f, -2.0f);
-
-	wtemp->place(xoffs + 244, yoffs + 188, 4, 32);
-	wtemp->background(wtemp->map_rgb(0x182838));
-	wtemp->redmax(1);
-
-	wttemp->place(xoffs + 248, yoffs + 188, 4, 32);
-	wttemp->background(wttemp->map_rgb(0x182838));
-	wttemp->redmax(1);
 
 	pxtop->place(xoffs + TOPLEDS_X, yoffs + TOPLEDS_Y,
 			TOPLEDS_W, TOPLEDS_H);
@@ -776,9 +760,6 @@ int KOBO_main::init_display(prefs_t *p)
 	dscore = new display_t(gengine);
 	wmap = new radar_map_t(gengine);
 	wradar = new radar_window_t(gengine);
-	wtemp = new plainbar_t(gengine);
-	wttemp = new plainbar_t(gengine);
-	dships = new display_t(gengine);
 	dstage = new display_t(gengine);
 	dregion = new display_t(gengine);
 	dlevel = new display_t(gengine);
@@ -813,12 +794,6 @@ void KOBO_main::close_display()
 	dregion = NULL;
 	delete dlevel;
 	dlevel = NULL;
-	delete dships;
-	dships = NULL;
-	delete wttemp;
-	wttemp = NULL;
-	delete wtemp;
-	wtemp = NULL;
 	delete wradar;
 	wradar = NULL;
 	delete wmap;

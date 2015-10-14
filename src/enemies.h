@@ -357,7 +357,7 @@ inline void _enemy::move()
 			sound.g_player_damage();
 		else if(myship.alive())
 		{
-			hit(game.damage);	// Ship damages object
+			hit(game.crash_damage);	// Ship damages object
 			myship.hit(damage);	// Object damages ship
 		}
 	}

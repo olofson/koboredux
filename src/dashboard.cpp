@@ -114,20 +114,12 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	wplanet->visible(main);
 	wmain->visible(main);
 	wshield->visible(main);
-#if 0
-	wtemp->visible(ingame);
-	wttemp->visible(ingame);
-#else
-	wtemp->visible(0);
-	wttemp->visible(0);
-#endif
 	wradar->visible(main);
 	dhigh->visible(score);
 	dscore->visible(score);
 	dstage->visible(ingame);
 	dregion->visible(ingame);
 	dlevel->visible(ingame);
-	dships->visible(ingame && 0);	// Removed!
 	pxtop->visible(main);
 	pxbottom->visible(main);
 	pxleft->visible(main);

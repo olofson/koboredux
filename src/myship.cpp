@@ -30,8 +30,6 @@
 #include "random.h"
 #include "sound.h"
 
-#define	WING_GUN_OFFSET	4
-
 _myship_state _myship::_state;
 int _myship::di;
 int _myship::x;
@@ -42,11 +40,7 @@ int _myship::_health;
 int _myship::health_time;
 int _myship::explo_time;
 int _myship::nose_reload_timer;
-int _myship::nose_temperature;
-int _myship::nose_alt = 0;
 int _myship::tail_reload_timer;
-int _myship::tail_temperature;
-int _myship::tail_alt = WING_GUN_OFFSET;
 int _myship::boltx[MAX_BOLTS];
 int _myship::bolty[MAX_BOLTS];
 int _myship::boltdx[MAX_BOLTS];
@@ -104,9 +98,7 @@ void _myship::off()
 int _myship::init()
 {
 	nose_reload_timer = 0;
-	nose_temperature = 0;
 	tail_reload_timer = 0;
-	tail_temperature = 0;
 	x = PIXEL2CS(WORLD_SIZEX >> 1);
 	y = PIXEL2CS((WORLD_SIZEY >> 2) * 3);
 	vx = vy = 0;
@@ -242,14 +234,6 @@ int _myship::move()
 	if(y >= PIXEL2CS(WORLD_SIZEY))
 		y -= PIXEL2CS(WORLD_SIZEY);
 
-	// Gun heat
-	nose_temperature -= game.nosecooling;
-	if(nose_temperature < 0)
-		nose_temperature = 0;
-	tail_temperature -= game.tailcooling;
-	if(tail_temperature < 0)
-		tail_temperature = 0;
-
 	// Fire control
 	if((_state == normal) && gamecontrol.get_shot())
 	{
@@ -266,23 +250,13 @@ int _myship::move()
 			fired = 1;	// Ok!
 		else
 			fired = 2;	// Overheat!
-#if 0
-		if(fired == 1)
-			sound.g_player_fire();
-		else if(fired == 2)
-			sound.g_player_overheat();
-#else
 		if(fired)
 			sound.g_player_fire();
-#endif
 	}
 	else
 	{
 		if(!gamecontrol.get_shot())
-		{
-			nose_alt = 1;
 			sound.g_player_fire_off();
-		}
 		if(nose_reload_timer > 0)
 			--nose_reload_timer;
 		if(tail_reload_timer > 0)
@@ -550,55 +524,14 @@ void _myship::shot_single(int i, int dir, int offset)
 }
 
 
-int _myship::xkobo_shot()
-{
-	int i, j;
-	for(i = 0; i < game.bolts && boltst[i]; i++)
-		;
-	for(j = i + 1; j < game.bolts && boltst[j]; j++)
-		;
-	if(j >= game.bolts)
-	{
-#if 0
-		sound.g_player_overheat(1);
-#endif
-		return 1;
-	}
-	shot_single(i, di, 0);
-	shot_single(j, (di > 4) ? (di - 4) : (di + 4), 0);
-	sound.g_player_fire();
-	return 0;
-}
-
-
 int _myship::nose_fire()
 {
-	int i, j;
-	// Logic: If firing would cause overheat, wait!
-	if(255 - nose_temperature < game.noseheatup)
-		return 1;
-	for(i = 0; i < game.bolts && boltst[i]; i++)
+	int i;
+	for(i = 0; i < MAX_BOLTS && boltst[i]; i++)
 		;
-	if(!game.altfire)
-	{
-		if(i >= game.bolts)
-			return 1;
-		shot_single(i, di, 0);
-		nose_temperature += game.noseheatup;
-		nose_reload_timer = game.noseloadtime;
-		return 0;
-	}
-	for(j = i + 1; j < game.bolts && boltst[j]; j++)
-		;
-	if(j >= game.bolts)
+	if(i >= MAX_BOLTS)
 		return 1;
-	if(++nose_alt > 2)
-		nose_alt = 0;
-	shot_single(i, di, (nose_alt - 1) * WING_GUN_OFFSET);
-	if(++nose_alt > 2)
-		nose_alt = 0;
-	shot_single(j, di, (nose_alt - 1) * WING_GUN_OFFSET);
-	nose_temperature += game.noseheatup;
+	shot_single(i, di, 0);
 	nose_reload_timer = game.noseloadtime;
 	return 0;
 }
@@ -607,20 +540,11 @@ int _myship::nose_fire()
 int _myship::tail_fire()
 {
 	int i;
-	if(255 - tail_temperature < game.tailheatup)
-		return 1;
-	for(i = 0; i < game.bolts && boltst[i]; i++)
+	for(i = 0; i < MAX_BOLTS && boltst[i]; i++)
 		;
-	if(i >= game.bolts)
+	if(i >= MAX_BOLTS)
 		return 1;
-	if(game.altfire)
-	{
-		tail_alt = -tail_alt;
-		shot_single(i, (di > 4) ? (di - 4) : (di + 4), tail_alt);
-	}
-	else
-		shot_single(i, (di > 4) ? (di - 4) : (di + 4), 0);
-	tail_temperature += game.tailheatup;
+	shot_single(i, (di > 4) ? (di - 4) : (di + 4), 0);
 	tail_reload_timer = game.tailloadtime;
 	return 0;
 }

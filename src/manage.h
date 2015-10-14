@@ -34,7 +34,6 @@ class _manage
 	static int next_state_out;
 	static int next_state_next;
 	static int game_seed;
-	static int bonus_next;
 	static int scroll_jump;
 	static int rest_cores;
 	static int exit_manage;
@@ -64,18 +63,12 @@ class _manage
 	static int scene_num;
 	static int score;
 	static float disp_health;
-	static float disp_temp;
-	static int flush_score_count;
-	static int flush_ships_count;
+	static int flash_score_count;
 	static int score_changed;
-	static int ships_changed;
 	static void put_health(int force = 0);
-	static void put_temp(int force = 0);
 	static void put_info();
 	static void put_score();
-	static void put_ships();
-	static void flush_score();
-	static void flush_ships();
+	static void flash_score();
 	static void game_stop();
 	static void run_noise();
 	static void run_leds();

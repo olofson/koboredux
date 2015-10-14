@@ -56,31 +56,22 @@ class game_t
 	int	type;
 	int	skill;
 	int	speed;		// ms per logic frame
-	int	bonus_first;	// First bonus ship at this score
-	int	bonus_every;	// New bonus ship every N points
 	int	core_destroyed_health_bonus;
 	int	stage_cleared_health_bonus;
 
 	// Player ship health and damage
-	int	lives;		// When starting new games of certain types
 	int	max_health;	// Maximum health (boost)
 	int	health;		// Initial health
 	int	regen_step;	// Health regeneration step
 	int	health_fade;	// Health fade period (logic frames/unit)
-	int	damage;		// Damage player inflicts when colliding with
+	int	crash_damage;	// Damage player inflicts when colliding with
 				// another object
 
 	// Player guns
-	int	bolts;		// maximum active at a time
 	int	bolt_damage;	// Damage inflicted by player fire bolt
 	int	bolt_range;	// Max distance player bolts can travel
 	int	noseloadtime;	// logic frames per nose shot
-	int	noseheatup;	// nose cannon heatup per shot
-	int	nosecooling;	// nose cannon cooling speed
-	int	altfire;	// use wing mounted cannons and stuff
 	int	tailloadtime;	// logic frames per tail shot
-	int	tailheatup;	// tail cannon heatup per shot
-	int	tailcooling;	// tail cannon cooling speed
 
 	// Enemies
 	int	rock_health;

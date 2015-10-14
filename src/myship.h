@@ -48,11 +48,7 @@ class _myship
 	static int health_time;
 	static int explo_time;
 	static int nose_reload_timer;
-	static int nose_temperature;
-	static int nose_alt;
 	static int tail_reload_timer;
-	static int tail_temperature;
-	static int tail_alt;
 	static int boltx[MAX_BOLTS], bolty[MAX_BOLTS];
 	static int boltdx[MAX_BOLTS], boltdy[MAX_BOLTS];
 	static int boltst[MAX_BOLTS];
@@ -75,14 +71,11 @@ class _myship
 	static int get_y()		{ return CS2PIXEL(y); }
 	static int get_csx()		{ return x; }
 	static int get_csy()		{ return y; }
-	static int get_nose_temp()	{ return nose_temperature; }
-	static int get_tail_temp()	{ return tail_temperature; }
 	static int init();
 	static void off();
 	static int move();
 	static int put();
 	static void put_crosshair();
-	static int xkobo_shot();
 	static int nose_fire();
 	static int tail_fire();
 	static int hit_structure();
