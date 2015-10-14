@@ -1427,25 +1427,24 @@ void skill_menu_t::build()
 	space(1);
 
 	big();
-	button("Newbie", SKILL_NEWBIE + 10);
-	button("Gamer", SKILL_GAMER + 10);
-	button("Elite", SKILL_ELITE + 10);
-	button("God", SKILL_GOD + 10);
+	button("Normal", SKILL_NORMAL + 10);
+	button("Hard", SKILL_HARD + 10);
+	button("Insane", SKILL_INSANE + 10);
 	space();
 	small();
 	switch(skill)
 	{
-	  case SKILL_NEWBIE:
-		label("\"Damn, this is hard...!\"");
+	  case SKILL_NORMAL:
+		label("\"Let's warm up a little first.\"");
 		break;
-	  case SKILL_GAMER:
-		label("\"Classic is too retro for me!\"");
-		break;
-	  case SKILL_ELITE:
+	  case SKILL_HARD:
 		label("\"Bah! Gimme some resistance here.\"");
 		break;
-	  case SKILL_GOD:
+	  case SKILL_INSANE:
 		label("\"The dark is afraid of me.\"");
+		break;
+	  default:
+		label("<Unimplemented skill level!>");
 		break;
 	}
 }
@@ -1465,17 +1464,15 @@ kobo_form_t *st_skill_menu_t::open()
 	menu->open();
 	switch(scorefile.profile()->skill)
 	{
-	  case SKILL_NEWBIE:
+	  default:
+	  case SKILL_NORMAL:
 		menu->select(1);
 		break;
-	  case SKILL_GAMER:
+	  case SKILL_HARD:
 		menu->select(2);
 		break;
-	  case SKILL_ELITE:
+	  case SKILL_INSANE:
 		menu->select(3);
-		break;
-	  case SKILL_GOD:
-		menu->select(4);
 		break;
 	}
 	return menu;

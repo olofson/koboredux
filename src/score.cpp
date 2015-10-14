@@ -144,7 +144,7 @@ void s_profile_t::clear()
 	last_scene = 0;
 	name[0] = 0;
 	version = 0;
-	skill = SKILL_GAMER;
+	skill = SKILL_NORMAL;
 	handicap = 0;
 	color1 = -1;
 	color2 = -1;
@@ -669,7 +669,7 @@ void score_manager_t::gather_high_scores(int placeholders)
 			if(!sc[i])
 				break;
 			memcpy(high_tbl[highs].name, nm[i], SCORE_NAME_LEN);
-			high_tbl[highs].skill = SKILL_GAMER;
+			high_tbl[highs].skill = SKILL_NORMAL;
 			high_tbl[highs].gametype = GAME_SINGLE;
 			high_tbl[highs].score = sc[i];
 			high_tbl[highs].start_scene = 0;

@@ -34,7 +34,7 @@ game_t::game_t()
 
 void game_t::reset()
 {
-	set(GAME_SINGLE, SKILL_GAMER);
+	set(GAME_SINGLE, SKILL_NORMAL);
 }
 
 
@@ -51,13 +51,11 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	lives = 1;
 	health = 100;
 	max_health = 200;
-	regen_step = 100;
+	regen_step = 20;
 	health_fade = 10;
-	damage = 100;
 
 	// Player guns
 	bolts = MAX_BOLTS;
-	bolt_damage = 20;
 	bolt_range = (VIEWLIMIT >> 1) + 16 + 32;
 	noseloadtime = 1;
 	altfire = 0;
@@ -69,50 +67,32 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	tailheatup = 0;
 	tailcooling = 256;
 
-	// Enemies
-	rock_health = HEALTH_INDESTRUCTIBLE;
-	rock_damage = 1000;
-	core_health = 100;
-
 	switch(skill)
 	{
-	  case SKILL_NEWBIE:
-		speed = 40;
-		tailloadtime = 0;
-		altfire = 1;
-		rock_health = 200;
-		rock_damage = 50;
-		core_health = 40;
-		core_destroyed_health_bonus = 50;
-		stage_cleared_health_bonus = 50;
-		break;
-	  case SKILL_GAMER:
-		max_health = 175;
-		regen_step = 40;
-		noseloadtime = 0;
+	  case SKILL_NORMAL:
+		damage = 100;
+		bolt_damage = 40;
 		rock_health = 500;
-		rock_damage = 32;
+		rock_damage = 40;
+		core_health = 100;
 		core_destroyed_health_bonus = 25;
 		stage_cleared_health_bonus = 25;
 		break;
-	  case SKILL_ELITE:
-		speed = 27;
-		max_health = 150;
-		regen_step = 20;
+	  case SKILL_HARD:
 		damage = 50;
+		bolt_damage = 30;
 		rock_health = 1000;
-		tailloadtime = 2;
+		rock_damage = 100;
 		core_health = 200;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 25;
 		break;
-	  case SKILL_GOD:
+	  case SKILL_INSANE:
 	  default:
-		speed = 25;
-		max_health = 125;
-		regen_step = 16;
 		damage = 30;
-		tailloadtime = 2;
+		bolt_damage = 20;
+		rock_health = HEALTH_INDESTRUCTIBLE;
+		rock_damage = 1000;
 		core_health = 300;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 10;
