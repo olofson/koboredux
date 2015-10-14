@@ -323,6 +323,9 @@ void _myship::hit(int dmg)
 
 void _myship::health_bonus(int h)
 {
+	if(_state != normal)
+		return;
+
 	_health += game.health * h / 100;
 	health_time = 0;
 	if(_health > game.max_health)
