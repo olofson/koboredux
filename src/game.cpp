@@ -59,7 +59,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	switch(skill)
 	{
 	  case SKILL_NORMAL:
-		crash_damage = 100;
+		ram_damage = 100;
 		bolt_damage = 40;
 		rock_health = 500;
 		rock_damage = 40;
@@ -68,7 +68,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		stage_cleared_health_bonus = 25;
 		break;
 	  case SKILL_HARD:
-		crash_damage = 50;
+		ram_damage = 50;
 		bolt_damage = 30;
 		rock_health = 1000;
 		rock_damage = 100;
@@ -78,7 +78,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		break;
 	  case SKILL_INSANE:
 	  default:
-		crash_damage = 30;
+		ram_damage = 30;
 		bolt_damage = 20;
 		rock_health = HEALTH_INDESTRUCTIBLE;
 		rock_damage = 1000;

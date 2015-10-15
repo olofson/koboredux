@@ -3,6 +3,7 @@
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
  * Copyright (C) 2002, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -64,7 +65,7 @@ class game_t
 	int	health;		// Initial health
 	int	regen_step;	// Health regeneration step
 	int	health_fade;	// Health fade period (logic frames/unit)
-	int	crash_damage;	// Damage player inflicts when colliding with
+	int	ram_damage;	// Damage player inflicts when colliding with
 				// another object
 
 	// Player guns
