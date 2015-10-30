@@ -734,7 +734,7 @@ int KOBO_main::init_display(prefs_t *p)
 	gengine->scroll_ratio(LAYER_PLAYER, 1.0f, 1.0f);
 	gengine->scroll_ratio(LAYER_ENEMIES, 1.0f, 1.0f);
 	gengine->scroll_ratio(LAYER_BASES, 1.0f, 1.0f);
-	gengine->wrap(MAP_SIZEX * CHIP_SIZEX, MAP_SIZEY * CHIP_SIZEY);
+	gengine->wrap(WORLD_SIZEX, WORLD_SIZEY);
 
 	if(!desktopres)
 		if(gengine->open(ENEMY_MAX) < 0)

@@ -68,8 +68,8 @@ int _manage::noise_duration = 0;
 int _manage::noise_timer = 0;
 int _manage::noise_flash = 500;
 float _manage::noise_level = 0.0f;
-int _manage::intro_x = CHIP_SIZEX * (64 - 18);
-int _manage::intro_y = CHIP_SIZEY * (64 - 7);
+int _manage::intro_x = TILE_SIZEX * (64 - 18);
+int _manage::intro_y = TILE_SIZEY * (64 - 7);
 int _manage::show_bars = 0;
 int _manage::cam_lead_x = 0;
 int _manage::cam_lead_y = 0;
@@ -85,7 +85,7 @@ void _manage::set_bars()
 
 // NOTE:
 //	After a noise out has faded out the sound effects, it's the
-//	noise/interfecence effect when the playfield is reinitialized
+//	noise/interference effect when the playfield is reinitialized
 //	that "accidentally" restores volume!
 //
 void _manage::run_noise()
@@ -430,9 +430,9 @@ void _manage::run_intro()
 {
 	gengine->scroll(PIXEL2CS(intro_x), PIXEL2CS(intro_y));
 	intro_y -= 1;
-	intro_x &= MAP_SIZEX * CHIP_SIZEX - 1;
-	intro_y &= MAP_SIZEY * CHIP_SIZEY - 1;
-	float w = intro_y * M_PI * 2.0f * 3.0f / (MAP_SIZEX * CHIP_SIZEX);
+	intro_x &= WORLD_SIZEX - 1;
+	intro_y &= WORLD_SIZEY - 1;
+	float w = intro_y * M_PI * 2.0f * 3.0f / WORLD_SIZEX;
 	sound.g_position(intro_x + WMAIN_W / 2, intro_y + WMAIN_H / 2);
 	myship.set_position(intro_x + WMAIN_W / 2 +
 			(int)(WMAIN_W * 0.3f * sin(w)),
@@ -537,7 +537,8 @@ void _manage::run_game()
 
 	myship.move();
 	enemies.move();
-	myship.hit_structure();
+	myship.check_base_bolts();
+
 	update();
 	++hi.playtime;
 }

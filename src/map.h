@@ -44,6 +44,11 @@
 #define	MAP_TILE(x)	((x) >> 8)
 
 #define	IS_SPACE(x)	((x) & SPACE)
+#define	IS_BASE(x)	(!IS_SPACE(x) && ((x) & HIT_MASK))
+
+#define	COLL_HORIZONTAL 0x01
+#define	COLL_VERTICAL	0x02
+#define	COLL_STUCK	0x04
 
 class _map
 {
@@ -55,6 +60,14 @@ class _map
 		y &= MAP_SIZEY - 1;
 		return data[(y << MAP_SIZEX_LOG2) + x];
 	}
+	// Find first tile collision on the line (x1, y1)-(x3, y3). If there is
+	// a solution, the return value indicates if a horizontal and/or
+	// vertical wall was hit, the position of the collision is written
+	// to (hx, hy), and the intersection point (effectively the point right
+	// before collision) is written to (x2, y2). (24:8 world coordinates.)
+	int test_line(int x1, int y1, int x3, int y3,
+			int *x2, int *y2, int *hx, int *hy);
+
   protected:
 	int sitex[SITE_MAX];
 	int sitey[SITE_MAX];
@@ -66,7 +79,7 @@ class _map
 	int maze_judge(int cx, int cy, int dx, int dy, int x, int y);
 	void clear();
 	void make_maze(int x, int y, int difx, int dify);
-	void convert(unsigned ratio);	/* ratio < 64 */
+	void convert(unsigned ratio);	// ratio < 64
 };
 
 #endif	// XKOBO_H_MAP

@@ -2,8 +2,9 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996 Akira Higuchi
- * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 1995, 1996 Akira Higuchi
+ * Copyright 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -168,6 +169,15 @@ int _enemies::erase_cannon(int x, int y)
 	return count;
 }
 
+void _enemies::hit_map(int x, int y, int dmg)
+{
+	if(!dmg)
+		return;
+	for(_enemy *enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
+		if(enemyp->can_hit_map(x, y))
+			enemyp->hit(dmg);
+}
+
 int _enemies::exist_pipe()
 {
 	int count = 0;
@@ -185,4 +195,32 @@ void _enemies::set_ekind_to_generate(const enemy_kind * e1, int i1,
 	ekind_to_generate_2 = e2;
 	e1_interval = i1;
 	e2_interval = i2;
+}
+
+void _enemies::splash_damage(int x, int y, int damage)
+{
+	int maxdist = PIXEL2CS(damage);
+	int dist;
+
+	// Enemies
+	for(_enemy *enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
+	{
+		if(!enemyp->can_splash_damage())
+			continue;
+		if(!enemyp->in_range(x, y, maxdist, dist))
+			continue;
+		int dmg = damage * ENEMY_SPLASH_DAMAGE_MULTIPLIER *
+				(maxdist - dist) / maxdist;
+		if(dmg)
+			enemyp->hit(dmg);
+	}
+
+	// Player
+	if(myship.in_range(x, y, maxdist, dist))
+	{
+		int dmg = damage * game.splash_damage_multiplier *
+				(maxdist - dist) / maxdist;
+		if(dmg)
+			myship.hit(dmg);
+	}
 }

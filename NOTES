@@ -2,6 +2,45 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* Not sure about this whole idea of balancing the skill levels through shields
+  and damage... It just makes the harder skill levels slow and boring, as you
+  have to play defensive and attack over and over!
+
+* Visual shock wave effect for splash damage?
+
+* Push/shockwaves to go with splash damage?
+
+* Higher firing rate? Only for higher skill levels...?
+
+* Do we have enough "bolts"!?
+
+* Rocks are too small and/or too hard to distinguish!
+
+* Specifying -width or -height via the command line should automatically set
+  videomode to -1 (custom)!
+
+* Don't lock the entire spinplanet buffer unless we need to!
+	* Resize the window? Calls for clearing the border around it.
+
+* Audiality 2 is using SDL 1.2...!?
+
+* Make some less annoying GUI sound effects..
+	* "Small radio style" group! (See the a2jingle demo.)
+
+* Bosses with complex collision zones, so they need to be shot from particular
+  directions to take damage - a bit like mobile bases.
+
+* 90/180/270° sprite rotation!
+
+* Double buffered stream window! (For reduced spinplanet frame rate on very
+  low end hardware.)
+
+* Do we really need z coordinates for the rotating starfield? They're all
+  fixed anyway.
+
+* Implement a wrapping scroll offset in stream_window_t, so we can use it for
+  the radar! Or maybe we can just use the current offscreen window like that?
+
 * Implement offscreen windows as a subclass? Cleaner and faster, probably.
 
 * Implement color and alpha modulation for all window draw calls!
@@ -12,11 +51,6 @@ TODO:
 	  themselves.
 	* We need something to report to. Shouldn't mess directly with the LED
 	  bars from game logic code.
-
-* There are issues with deleted SDL textures being accessed after hide()!
-
-* Specifying -width or -height via the command line should automatically set
-  videomode to -1 (custom)!
 
 * Should window_t manage SDL renderer state? Probably, because the window_t
   rendering API gives the impression of keeping state per window.
@@ -39,6 +73,7 @@ Kobo DL install on Ubuntu:
 	/var/games/kobo-deluxe/scores/
 
 	* How do we create the scores dir with correct permissions with CMake?
+		* Are we even supposed to bother with this? Non-portable...
 
 -------------------------------------------------------------------------------
 
@@ -72,3 +107,5 @@ MetaRetroScreenFX:
 			* Source position (x, y)
 			* Destination (pointer to top-left pixel)
 			* Destination pitch (bytes per row)
+
+-------------------------------------------------------------------------------

@@ -91,6 +91,11 @@ class _screen
 	{
 		return map.pos(x, y);
 	}
+	static inline int test_line(int x1, int y1, int x3, int y3,
+			int *x2, int *y2, int *hx, int *hy)
+	{
+		return map.test_line(x1, y1, x3, y3, x2, y2, hx, hy);
+	}
 	static void set_map(int x, int y, int n);
 	static void clean_scrap(int x, int y)
 	{

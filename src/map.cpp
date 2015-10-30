@@ -221,3 +221,76 @@ void _map::convert(unsigned ratio)
 			pos(i, j) = (bits2tile(p) << 8) | p;
 		}
 }
+
+int _map::test_line(int x1, int y1, int x3, int y3,
+		int *x2, int *y2, int *hx, int *hy)
+{
+	// Brute force implementation
+	float dx = x3 - x1;
+	float dy = y3 - y1;
+
+	// World unit steps
+	int steps = ABS(dx) > ABS(dy) ? ABS(dx) : ABS(dy);
+	if(steps)
+	{
+		dx /= steps;
+		dy /= steps;
+	}
+
+	// Find first collision
+	float x = x1;
+	float y = y1;
+	float px, py;
+	int mx, my, pmx, pmy;
+	for(int z = 0; ; ++z)
+	{
+		if(z >= steps)
+		{
+			if(z == steps)
+			{
+				// We must never ever leave with an undetected
+				// collision at (x3, y3)! So, we test that pos
+				// last, to circumvent rounding errors.
+				x = x3;
+				y = y3;
+			}
+			else
+				return 0;	// No collisions!
+		}
+
+		mx = WORLD2MAPX(CS2PIXEL((int)x));
+		my = WORLD2MAPY(CS2PIXEL((int)y));
+		if(IS_BASE(pos(mx, my)))
+		{
+			if(!z)
+			{
+				// This is an error condition that only
+				// occurs when starting inside a tile!
+				return COLL_STUCK;
+			}
+			break;
+		}
+		px = x;
+		py = y;
+		pmy = my;
+		pmx = mx;
+		x += dx;
+		y += dy;
+	}
+
+	// Step back and evaluate the situation right before the collision
+	int res = 0;
+	*x2 = (int)px;
+	*y2 = (int)py;
+	*hx = (int)x;
+	*hy = (int)y;
+	if(mx != pmx)
+		for(int z = MIN(my, pmy); z <= MAX(my, pmy); ++z)
+			if(IS_BASE(pos(mx, z)))
+				res |= COLL_VERTICAL;
+	if(my != pmy)
+		for(int z = MIN(mx, pmx); z <= MAX(mx, pmx); ++z)
+			if(IS_BASE(pos(z, my)))
+				res |= COLL_HORIZONTAL;
+	return res;
+}

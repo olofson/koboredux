@@ -221,10 +221,12 @@ inline void _enemy::move_enemy_template_3(int quick, int maxspeed)
 inline void _enemy::shot_template(const enemy_kind * ekp,
 		int shift, int rnd, int maxspeed)
 {
+#ifndef NOENEMYFIRE
+	if(enemies.is_intro)
+#endif
+		return;
 	int vx = -diffx;
 	int vy = -diffy;
-	if(enemies.is_intro)
-		return;
 	if(rnd)
 	{
 		vx += (gamerand.get() & (rnd - 1)) - (rnd >> 1);
@@ -243,8 +245,7 @@ inline void _enemy::shot_template(const enemy_kind * ekp,
 		else if(vy < -maxspeed)
 			vy = -maxspeed;
 	}
-	enemies.make(ekp, CS2PIXEL(x + vx), CS2PIXEL(y + vy), vx,
-			vy);
+	enemies.make(ekp, x + vx, y + vy, vx, vy);
 	if(&ring == ekp)
 		sound.g_launch_ring(x, y);
 	else if(&greenbullet == ekp || &redbullet == ekp)
@@ -261,8 +262,7 @@ void _enemy::shot_template_8_dir(const enemy_kind * ekp)
 	static int vy[] = { -300, -200, 0, 200, 300, 200, 0, -200 };
 	int i;
 	for(i = 0; i < 8; i++)
-		enemies.make(ekp, CS2PIXEL(x), CS2PIXEL(y), vx[i],
-				vy[i]);
+		enemies.make(ekp, x, y, vx[i], vy[i]);
 	if(&ring == ekp)
 		sound.g_m_launch_ring(x, y);
 	else if(&greenbullet == ekp || &redbullet == ekp)
@@ -275,8 +275,7 @@ void _enemy::shot_template_8_dir(const enemy_kind * ekp)
 
 void _enemy::kill_default()
 {
-	enemies.make(enemies.randexp(), CS2PIXEL(x), CS2PIXEL(y),
-			h >> 1, v >> 1);
+	enemies.make(enemies.randexp(), x, y, h >> 1, v >> 1);
 	sound.g_enemy_explo(x, y);
 	release();
 }
@@ -294,6 +293,7 @@ void _enemy::make_bullet_green()
 	health = 1;
 	shootable = 0;
 	damage = 20;
+	takes_splash_damage = false;
 }
 
 void _enemy::make_bullet_red()
@@ -313,13 +313,13 @@ void _enemy::move_bullet()
 
 void _enemy::kill_bullet_green()
 {
-	enemies.make(&greenbltexpl, CS2PIXEL(x), CS2PIXEL(y));
+	enemies.make(&greenbltexpl, x, y);
 	release();
 }
 
 void _enemy::kill_bullet_red()
 {
-	enemies.make(&redbltexpl, CS2PIXEL(x), CS2PIXEL(y));
+	enemies.make(&redbltexpl, x, y);
 	release();
 }
 
@@ -387,7 +387,7 @@ void _enemy::move_rock()
 
 void _enemy::kill_rock()
 {
-	enemies.make(&rockexpl, CS2PIXEL(x), CS2PIXEL(y), h >> 1, v >> 1);
+	enemies.make(&rockexpl, x, y, h >> 1, v >> 1);
 	sound.g_rock_explo(x, y);
 	release();
 }
@@ -426,7 +426,7 @@ void _enemy::move_ring()
 
 void _enemy::kill_ring()
 {
-	enemies.make(&ringexpl, CS2PIXEL(x), CS2PIXEL(y), h >> 1, v >> 1);
+	enemies.make(&ringexpl, x, y, h >> 1, v >> 1);
 	sound.g_ring_explo(x, y);
 	release();
 }
@@ -476,10 +476,9 @@ void _enemy::move_bomb1()
 			vx3 -= (vy3 >> 4);
 			vy3 += (tmp >> 4);
 		}
-		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx2, vy2);
-		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx3, vy3);
-		enemies.make(&bombdeto, CS2PIXEL(x), CS2PIXEL(y),
-				-vx1 >> 2, -vy1 >> 2);
+		enemies.make(&redbullet, x, y, vx2, vy2);
+		enemies.make(&redbullet, x, y, vx3, vy3);
+		enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
 		sound.g_bomb_deto(x, y);
 		release();
 	}
@@ -535,13 +534,12 @@ void _enemy::move_bomb2()
 			vx3 -= (vy3 >> 4);
 			vy3 += (tmp >> 4);
 		}
-		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx1, vy1);
-		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx2, vy2);
-		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx3, vy3);
-		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx4, vy4);
-		enemies.make(&redbullet, CS2PIXEL(x), CS2PIXEL(y), vx5, vy5);
-		enemies.make(&bombdeto, CS2PIXEL(x), CS2PIXEL(y),
-				-vx1 >> 2, -vy1 >> 2);
+		enemies.make(&redbullet, x, y, vx1, vy1);
+		enemies.make(&redbullet, x, y, vx2, vy2);
+		enemies.make(&redbullet, x, y, vx3, vy3);
+		enemies.make(&redbullet, x, y, vx4, vy4);
+		enemies.make(&redbullet, x, y, vx5, vy5);
+		enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
 		sound.g_bomb_deto(x, y);
 		release();
 	}
@@ -757,9 +755,11 @@ const enemy_kind bombdeto = {
 
 void _enemy::make_cannon()
 {
+	mapcollide = 1;
 	count = 0;
-	health = 20;
-	damage = 75;
+	health = game.node_health;
+	damage = 0;
+	splash_damage = 25;
 	b = enemies.eint1() - 1;
 	a = gamerand.get() & b;
 }
@@ -776,12 +776,19 @@ void _enemy::move_cannon()
 	}
 }
 
-void _enemy::kill_cannon()
+// For destruction via core chain reaction
+void _enemy::destroy_cannon()
 {
 	sound.g_base_node_explo(x, y);
-	enemies.make(&pipein, CS2PIXEL(x), CS2PIXEL(y));
-	enemies.make(enemies.randexp(), CS2PIXEL(x), CS2PIXEL(y));
+	enemies.make(enemies.randexp(), x, y);
 	release();
+}
+
+// For destruction via normal damage
+void _enemy::kill_cannon()
+{
+	enemies.make(&pipein, x, y);
+	destroy_cannon();
 }
 
 const enemy_kind cannon = {
@@ -803,9 +810,11 @@ const enemy_kind cannon = {
 
 void _enemy::make_core()
 {
+	mapcollide = 1;
 	count = 0;
 	health = game.core_health;
-	damage = 150;
+	damage = 0;
+	splash_damage = 50;
 	b = enemies.eint2() - 1;
 	a = gamerand.get() & b;
 }
@@ -824,11 +833,11 @@ void _enemy::move_core()
 
 void _enemy::kill_core()
 {
-	enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y), 0, 0, 3);
-	enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y), 0, 0, 7);
-	enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y), 0, 0, 1);
-	enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y), 0, 0, 5);
-	enemies.make(&explosion4, CS2PIXEL(x), CS2PIXEL(y));
+	enemies.make(&pipeout, x, y, 0, 0, 3);
+	enemies.make(&pipeout, x, y, 0, 0, 7);
+	enemies.make(&pipeout, x, y, 0, 0, 1);
+	enemies.make(&pipeout, x, y, 0, 0, 5);
+	enemies.make(&explosion4, x, y);
 	sound.g_base_core_explo(x, y);
 	release();
 	manage.destroyed_a_core();
@@ -876,6 +885,9 @@ void _enemy::move_pipein()
 	int p = MAP_BITS(m);
 	if(IS_SPACE(p))
 	{
+		// Clean scrap here too, in case we were set off by a core
+		// detonation chain reaction!
+		screen.clean_scrap(x1, y1);
 		release();
 		return;
 	}
@@ -912,8 +924,8 @@ void _enemy::move_pipein()
 	{
 		sound.g_pipe_rumble(x, y);
 		enemies.make(enemies.randexp(),
-				CS2PIXEL(x) + pubrand.get(4) - 8,
-				CS2PIXEL(y) + pubrand.get(4) - 8, 0, 0, 1);
+				x + PIXEL2CS(pubrand.get(4) - 8),
+				y + PIXEL2CS(pubrand.get(4) - 8), 0, 0, 1);
 	}
 	screen.clean_scrap(x1, y1);
 	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
@@ -999,10 +1011,6 @@ void _enemy::move_pipeout()
 		release();
 		enemies.erase_cannon(x1, y1);
 		screen.set_map(x1, y1, SPACE);
-		sound.g_base_node_explo(x, y);
-		if(norm < ((VIEWLIMIT >> 1) + 32))
-			enemies.make(enemies.randexp(),
-					CS2PIXEL(x), CS2PIXEL(y));
 		return;
 	}
 
@@ -1012,8 +1020,7 @@ void _enemy::move_pipeout()
 		screen.set_map(x1, y1, SPACE);
 		sound.g_pipe_rumble(x, y);
 		if(norm < ((VIEWLIMIT >> 1) + 32))
-			enemies.make(enemies.randexp(),
-					CS2PIXEL(x), CS2PIXEL(y), 0, 0, 1);
+			enemies.make(enemies.randexp(), x, y, 0, 0, 1);
 		return;
 	}
 
@@ -1042,17 +1049,13 @@ void _enemy::move_pipeout()
 	  default:
 		p ^= a;
 		if(p & U_MASK)
-			enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y),
-					0, 0, 1);
+			enemies.make(&pipeout, x, y, 0, 0, 1);
 		if(p & R_MASK)
-			enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y),
-					0, 0, 3);
+			enemies.make(&pipeout, x, y, 0, 0, 3);
 		if(p & D_MASK)
-			enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y),
-					0, 0, 5);
+			enemies.make(&pipeout, x, y, 0, 0, 5);
 		if(p & L_MASK)
-			enemies.make(&pipeout, CS2PIXEL(x), CS2PIXEL(y),
-					0, 0, 7);
+			enemies.make(&pipeout, x, y, 0, 0, 7);
 		manage.add_score(10);
 		release();
 		return;
@@ -1061,8 +1064,8 @@ void _enemy::move_pipeout()
 	sound.g_pipe_rumble(x, y);
 	if(norm < ((VIEWLIMIT >> 1) + 32))
 		enemies.make(&explosion,
-				CS2PIXEL(x) + pubrand.get(4) - 8,
-				CS2PIXEL(y) + pubrand.get(4) - 8,
+				x + PIXEL2CS(pubrand.get(4) - 8),
+				y + PIXEL2CS(pubrand.get(4) - 8),
 				0, 0, 1);
 	x += x_next;
 	y += y_next;
@@ -1119,7 +1122,7 @@ const enemy_kind enemy1 = {
 void _enemy::make_enemy2()
 {
 	di = 1;
-	health = 20;
+	health = 80;
 	count = gamerand.get() & 63;
 }
 
@@ -1157,7 +1160,7 @@ const enemy_kind enemy2 = {
 void _enemy::make_enemy3()
 {
 	di = 1;
-	health = 20;
+	health = 40;
 }
 
 void _enemy::move_enemy3()
@@ -1186,7 +1189,7 @@ const enemy_kind enemy3 = {
 void _enemy::make_enemy4()
 {
 	di = 1;
-	health = 20;
+	health = 40;
 }
 
 void _enemy::move_enemy4()
@@ -1216,7 +1219,7 @@ void _enemy::make_enemy()
 {
 	count = gamerand.get() & 127;
 	di = 1;
-	health = 20;
+	health = 60;
 	a = 0;
 }
 
@@ -1348,7 +1351,7 @@ const enemy_kind enemy7 = {
 void _enemy::make_enemy_m1()
 {
 	di = 1;
-	health = 20 * 26;
+	health = 1000;		// Originally 26 hits
 	count = gamerand.get() & 15;
 }
 
@@ -1392,7 +1395,7 @@ const enemy_kind enemy_m1 = {
 void _enemy::make_enemy_m2()
 {
 	di = 1;
-	health = 20 * 26;
+	health = 1000;
 	count = gamerand.get() & 15;
 }
 
@@ -1436,7 +1439,7 @@ const enemy_kind enemy_m2 = {
 void _enemy::make_enemy_m3()
 {
 	di = 1;
-	health = 20 * 26;
+	health = 1000;
 	count = gamerand.get() & 15;
 }
 
@@ -1480,7 +1483,7 @@ const enemy_kind enemy_m3 = {
 void _enemy::make_enemy_m4()
 {
 	di = 1;
-	health = 20 * 26;
+	health = 1000;
 	count = gamerand.get() & 15;
 }
 

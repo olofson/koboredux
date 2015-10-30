@@ -22,6 +22,8 @@
 
 #include "config.h"
 #include "game.h"
+#include "cs.h"
+#include <math.h>
 
 game_t game;
 
@@ -50,6 +52,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	max_health = 200;
 	regen_step = 20;
 	health_fade = 10;
+	top_speed = 4;
+	cruise_speed = 2;
 
 	// Player guns
 	bolt_range = (VIEWLIMIT >> 1) + 16 + 32;
@@ -63,7 +67,10 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		bolt_damage = 40;
 		rock_health = 500;
 		rock_damage = 40;
+		crash_damage = 30;
+		splash_damage_multiplier = 2;
 		core_health = 100;
+		node_health = 40;
 		core_destroyed_health_bonus = 25;
 		stage_cleared_health_bonus = 25;
 		break;
@@ -71,20 +78,35 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		ram_damage = 50;
 		bolt_damage = 30;
 		rock_health = 1000;
-		rock_damage = 100;
-		core_health = 200;
+		rock_damage = 60;
+		crash_damage = 40;
+		splash_damage_multiplier = 3;
+		core_health = 150;
+		node_health = 50;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 25;
 		break;
 	  case SKILL_INSANE:
 	  default:
 		ram_damage = 30;
-		bolt_damage = 20;
+		bolt_damage = 25;
 		rock_health = HEALTH_INDESTRUCTIBLE;
-		rock_damage = 1000;
-		core_health = 300;
+		rock_damage = 80;
+		crash_damage = 50;
+		splash_damage_multiplier = 5;
+		core_health = 200;
+		node_health = 60;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 10;
 		break;
 	}
+}
+
+
+int game_t::scale_vel_damage(int vel, int dmg)
+{
+	float ds = (float)vel / PIXEL2CS(top_speed);
+	if(fabs(ds) < KOBO_MIN_DAMAGE_SPEED)
+		return 0;
+	return dmg * ds*ds;
 }

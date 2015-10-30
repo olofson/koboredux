@@ -149,7 +149,7 @@ class KOBO_sound
 	// Various sound effects
 	static void g_player_fire();
 	static void g_player_fire_off();
-	static void g_player_damage();
+	static void g_player_damage(float level = 1.0f);
 	static void g_player_explo_start();
 	static void g_bolt_hit(int x, int y);
 	static void g_bolt_hit_rock(int x, int y);

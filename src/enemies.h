@@ -103,12 +103,14 @@ class _enemy
 	int		count;
 	int		health;
 	int		damage;
+	int		splash_damage;
+	bool		takes_splash_damage;
 	int		shootable;
 	int		diffx, diffy;
 	int		norm;
 	int		hitsize;
+	int		mapcollide;
 	int		bank, frame;
-	void hit(int dmg);
 	void move_enemy_m(int quick, int maxspeed);
 	void move_enemy_template(int quick, int maxspeed);
 	void move_enemy_template_2(int quick, int maxspeed);
@@ -128,6 +130,10 @@ class _enemy
 			int px, int py, int h1, int v1, int dir = 0);
 	inline int realize();
 	inline int is_pipe();
+	void hit(int dmg);
+	inline bool can_hit_map(int px, int py);
+	inline bool can_splash_damage()	{ return takes_splash_damage; }
+	inline bool in_range(int px, int py, int range, int &dist);
 	inline int erase_cannon(int px, int py);
 
 	void kill_default();
@@ -155,6 +161,7 @@ class _enemy
 
 	void make_cannon();
 	void move_cannon();
+	void destroy_cannon();
 	void kill_cannon();
 
 	void make_core();
@@ -219,8 +226,10 @@ class _enemies
 	static const enemy_kind *randexp();
 	static int erase_cannon(int x, int y);
 	static int exist_pipe();
+	static void hit_map(int x, int y, int dmg);
 	static void set_ekind_to_generate(const enemy_kind * ek1, int i1,
 			const enemy_kind * ek2, int i2);
+	static void splash_damage(int x, int y, int damage);
 	static inline const enemy_kind *ek1()
 	{
 		return ekind_to_generate_1;
@@ -260,8 +269,8 @@ inline int _enemy::make(const enemy_kind * k, int px, int py,
 
 	ek = k;
 	state(reserved);
-	x = PIXEL2CS(px);
-	y = PIXEL2CS(py);
+	x = px;
+	y = py;
 	di = dir;
 	h = h1;
 	v = v1;
@@ -270,7 +279,10 @@ inline int _enemy::make(const enemy_kind * k, int px, int py,
 	count = 0;
 	health = 20;
 	damage = 50;
+	splash_damage = 0;
+	takes_splash_damage = true;
 	shootable = 1;
+	mapcollide = 0;
 	hitsize = ek->hitsize;
 	bank = ek->bank;
 	frame = ek->frame;
@@ -286,13 +298,14 @@ inline void _enemy::hit(int dmg)
 	{
 		if(health <= 0)
 		{
-			enemies.make(&explosion, CS2PIXEL(x), CS2PIXEL(y));
+			enemies.make(&explosion, x, y);
 			release();
 		}
 		return;
 	}
 	else if(health > 0)
 	{
+		// Damaged but not destroyed!
 		if(ek == &rock)
 			sound.g_bolt_hit_rock(x, y);
 		else
@@ -300,18 +313,48 @@ inline void _enemy::hit(int dmg)
 		return;
 	}
 
+	// Enemy destroyed.
+	if(splash_damage)
+		enemies.splash_damage(x, y, splash_damage);
 	manage.add_score(ek->score);
 	(this->*(ek->kill)) ();
 }
 
+inline bool _enemy::can_hit_map(int px, int py)
+{
+	if(_state == notuse)
+		return false;
+	if(!mapcollide)
+		return false;
+	return ((signed)(CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4 == px) &&
+			((signed)(CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4 == py);
+}
+
+inline bool _enemy::in_range(int px, int py, int range, int &dist)
+{
+	if(_state == notuse)
+		return false;
+	if(mapcollide)
+		return false;	// Non-fixed enemies only!
+	int dx = labs(x - px);
+	if(dx > PIXEL2CS(WORLD_SIZEX))
+		dx = PIXEL2CS(WORLD_SIZEX) - dx;
+	if(dx > range)
+		return false;
+	int dy = labs(y - py);
+	if(dy > PIXEL2CS(WORLD_SIZEY))
+		dy = PIXEL2CS(WORLD_SIZEY) - dy;
+	if(dy > range)
+		return false;
+	dist = sqrt(dx*dx + dy*dy);
+	return dist <= range;
+}
+
 inline int _enemy::erase_cannon(int px, int py)
 {
-	if( (_state != notuse) && (ek == &cannon)
-			&& ((signed)(CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4 == px)
-			&& ((signed)(CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4 == py)
-	  )
+	if( (ek == &cannon) && can_hit_map(px, py) )
 	{
-		release();
+		destroy_cannon();
 		return 1;
 	}
 	return 0;
@@ -351,7 +394,11 @@ inline void _enemy::move()
 	(this->*(ek->move)) ();
 
 	// Handle collisions with the player ship
-	if((hitsize >= 0) && (norm < (hitsize + HIT_MYSHIP)))
+	//
+	// NOTE: Cores and cannons have mapcollide == 1, and are handled via
+	//       the new ship/base "physics" instead.
+	//
+	if(!mapcollide && (hitsize >= 0) && (norm < (hitsize + HIT_MYSHIP)))
 	{
 		if(prefs->cmd_indicator)
 			sound.g_player_damage();
@@ -373,7 +420,7 @@ inline void _enemy::move()
 	{
 		if(prefs->cmd_indicator)
 			sound.g_player_damage();
-		else
+		else if(shootable)
 			hit(dmg);	// Bolt damages object
 	}
 }
@@ -443,3 +490,4 @@ inline int _enemy::is_pipe()
 
 
 #endif				// XKOBO_H_ENEMIES
+

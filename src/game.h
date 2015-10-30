@@ -23,11 +23,56 @@
 #ifndef	_KOBO_GAME_H_
 #define	_KOBO_GAME_H_
 
-// Max number of player bolts flying
+
+  ////////////////////////////////////////////////////
+ // Constant game parameters
+////////////////////////////////////////////////////
+
+#define	ENEMY_SPLASH_DAMAGE_MULTIPLIER	2
+
+
+// This was originally 1024, but was changed in Kobo Deluxe 0.4.1 to avoid the
+// bug where we run out of enemies when destroying a base, and thus leave
+// parts of it behind.
+// FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
+#define ENEMY_MAX		2048
+
+// Max number of player bolts in... space at once
 #define MAX_BOLTS		40
 
-// Special value for game.health
+// In XKobo, WSIZE was used where VIEWLIMIT is used now; in the game logic
+// code. The original value was 224.
+//
+// Kobo Redux replaces WSIZE with WMAIN_W and WMAIN_H, but VIEWLIMIT is still
+// what that determines what the game logic considers "in view!" The value is
+// changed to 336, to match the new view size.
+#define VIEWLIMIT		336
+
+// Player ship hit rect size
+#define HIT_MYSHIP		5
+
+// Player bolt hit rect size
+#define HIT_BOLT		5
+
+// Minimum speed for impact damage (fraction of game.top_speed)
+#define	KOBO_MIN_DAMAGE_SPEED	0.5f
+
+// Define to have the player ship bounce off bases, rather than cling to them
+#define	BASE_BOUNCE
+
+// Gameplay debug tools
+#undef	INVULNERABLE	// Player ship cannot take damage
+#undef	NOSPEEDLIMIT	// Player ship controlled via acceleration; no drag
+#undef	NOENEMYFIRE	// Enemies don't fire bullets at the player
+
+
+  ////////////////////////////////////////////////////
+ // Skill level dependent game parameters
+////////////////////////////////////////////////////
+
+// Special values for game.health
 #define	HEALTH_INDESTRUCTIBLE	9000000
+#define	HEALTH_DESTROY		(HEALTH_INDESTRUCTIBLE - 1)
 
 enum game_types_t
 {
@@ -59,14 +104,19 @@ class game_t
 	int	speed;		// ms per logic frame
 	int	core_destroyed_health_bonus;
 	int	stage_cleared_health_bonus;
+	int	splash_damage_multiplier;
 
 	// Player ship health and damage
+	int	top_speed;	// Maximum speed when pushing stick
+	int	cruise_speed;	// Speed with stick in neutral
 	int	max_health;	// Maximum health (boost)
 	int	health;		// Initial health
 	int	regen_step;	// Health regeneration step
 	int	health_fade;	// Health fade period (logic frames/unit)
 	int	ram_damage;	// Damage player inflicts when colliding with
 				// another object
+	int	crash_damage;	// Damage inflicted on ship when hitting a base
+				// at full speed
 
 	// Player guns
 	int	bolt_damage;	// Damage inflicted by player fire bolt
@@ -78,10 +128,13 @@ class game_t
 	int	rock_health;
 	int	rock_damage;
 	int	core_health;
+	int	node_health;
 
 	game_t();
 	void reset();
 	void set(game_types_t tp, skill_levels_t sk);
+
+	int scale_vel_damage(int vel, int dmg);
 };
 
 extern game_t game;

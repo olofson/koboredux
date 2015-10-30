@@ -36,6 +36,8 @@ int _myship::x;
 int _myship::y;
 int _myship::vx;
 int _myship::vy;
+int _myship::ax;
+int _myship::ay;
 int _myship::_health;
 int _myship::health_time;
 int _myship::explo_time;
@@ -102,6 +104,7 @@ int _myship::init()
 	x = PIXEL2CS(WORLD_SIZEX >> 1);
 	y = PIXEL2CS((WORLD_SIZEY >> 2) * 3);
 	vx = vy = 0;
+	ax = ay = 0;
 	di = 1;
 	state(normal);
 
@@ -138,10 +141,9 @@ void _myship::explode()
 		int dy = (int)(pubrand.get(6)) - 32;
 		int vx = dx * (4096 - d) >> 8;
 		int vy = dy * (4096 - d) >> 8;
-		dx = dx * d >> 12;
-		dy = dy * d >> 12;
-		enemies.make(enemies.randexp(),
-				CS2PIXEL(x) + dx, CS2PIXEL(y) + dy, vx, vy,
+		dx = PIXEL2CS(dx * d >> 12);
+		dy = PIXEL2CS(dy * d >> 12);
+		enemies.make(enemies.randexp(), x + dx, y + dy, vx, vy,
 				explo_time >> 4);
 	}
 	++explo_time;
@@ -151,47 +153,47 @@ void _myship::explode()
 #define BEAMV1	12
 #define BEAMV2	(BEAMV1 * 2 / 3)
 
-void _myship::move_redux()
+void _myship::handle_controls()
 {
 	int v;
-	if(gamecontrol.dir_push())
-		v = PIXEL2CS(4);
+	if(prefs->cmd_pushmove)
+		v = gamecontrol.dir_push() ? PIXEL2CS(1) : 0;
+	else if(gamecontrol.dir_push())
+		v = PIXEL2CS(game.top_speed);
 	else
-	{
-		if(!prefs->cmd_pushmove)
-			v = PIXEL2CS(2);
-		else
-			v = 0;
-	}
+#ifdef NOSPEEDLIMIT
+		v = 0;
+#else
+		v = PIXEL2CS(game.cruise_speed);
+#endif
 
 	int tvx = v * sin(M_PI * (di - 1) / 4);
-	if(tvx)
+	int tvy = -v * cos(M_PI * (di - 1) / 4);
+#ifdef NOSPEEDLIMIT
+	ax = tvx >> 3;
+	ay = tvy >> 3;
+	if(gamecontrol.get_shot())
 	{
-		// Acceleration
-		vx += (tvx - vx) >> 2;
+		ax = ay = vx = vy = 0;
 	}
-	else
+#else
+	ax = (tvx - vx) >> 2;
+	ay = (tvy - vy) >> 2;
+	if(!tvx)
 	{
-		// Retardation
-		vx -= vx >> 2;
-
 		// Kill remainder creep speed caused by truncation
 		if((vx > -4) && (vx < 4))
-			vx = 0;
+			ax = -vx;
 	}
-
-	int tvy = v * cos(M_PI * (di - 1) / 4);
-	if(tvy)
-		vy -= (tvy + vy) >> 2;
-	else
+	if(!tvy)
 	{
-		vy -= vy >> 2;
 		if((vy > -4) && (vy < 4))
-			vy = 0;
+			ay = -vy;
 	}
+#endif
 }
 
-int _myship::move()
+void _myship::move()
 {
 	int i;
 	di = gamecontrol.dir();
@@ -213,12 +215,11 @@ int _myship::move()
 		}
 	}
 
-	// Movement
+	// Movement and collisions
 	if(_state == normal)
 	{
-		move_redux();
-		x += vx;
-		y += vy;
+		handle_controls();
+		update_position();
 		explo_time = 0;
 	}
 	else if(_state == dead)
@@ -286,18 +287,22 @@ int _myship::move()
 					(bolt_objects[i]->anim.frame &
 					0xfffffff8) + animtab[boltst[i] & 7]);
 	}
-	return 0;
+	// NOTE: We can't check bolt/base collisions here, as that would kill
+	//       bolts before core (enemy) collisions are checked!
 }
 
 
 void _myship::hit(int dmg)
 {
+	if(!dmg)
+		return;
+
 	if(_state != normal)
 		return;
 
-	if(!dmg)
-		dmg = 1000;
-
+#ifdef	INVULNERABLE
+	printf("INVULNERABLE: Ignored %d damage to player ship.\n", dmg);
+#else
 	if(_health && (dmg < _health))
 		manage.noise_damage((float)dmg / _health);
 	else
@@ -308,10 +313,14 @@ void _myship::hit(int dmg)
 	// Be nice if we land right on a regeneration threshold level.
 	if(_health == regen_next())
 		++_health;
+#endif
 
-	if(_health > 0)
-		sound.g_player_damage();
+	if(dmg < game.health / 2)
+		sound.g_player_damage((float)dmg / game.health * 2.0f);
 	else
+		sound.g_player_damage(1.0f);
+
+	if(_health <= 0)
 	{
 		_health = 0;
 		manage.lost_myship();
@@ -333,42 +342,133 @@ void _myship::health_bonus(int h)
 }
 
 
-int _myship::hit_structure()
+// Check and handle base/bolt collisions
+void _myship::check_base_bolts()
 {
-	int x1, y1;
-	int i, ch;
-
-	// Check bolts/objects
-	for(i = 0; i < MAX_BOLTS; i++)
+	for(int i = 0; i < MAX_BOLTS; i++)
 	{
 		if(!boltst[i])
 			continue;
-		x1 = (boltx[i] & (WORLD_SIZEX - 1)) >> 4;
-		y1 = (bolty[i] & (WORLD_SIZEY - 1)) >> 4;
-		ch = screen.get_map(x1, y1);
-		if(!IS_SPACE(ch) && (ch & HIT_MASK))
+
+		int x1 = WORLD2MAPX(boltx[i]);
+		int y1 = WORLD2MAPY(bolty[i]);
+		if(IS_BASE(screen.get_map(x1, y1)))
 		{
 			sound.g_bolt_hit(x1 << 12, y1 << 12);
-			enemies.make(&boltexpl, boltx[i], bolty[i]);
+			enemies.make(&boltexpl, PIXEL2CS(boltx[i]),
+					PIXEL2CS(bolty[i]));
 			boltst[i] = 0;
 			if(bolt_objects[i])
 				gengine->free_obj(bolt_objects[i]);
 			bolt_objects[i] = NULL;
 		}
 	}
+}
 
-	// Check player/bases
-	x1 = (CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4;
-	y1 = (CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4;
-	ch = screen.get_map(x1, y1);
-	if(!IS_SPACE(ch) && (ch & HIT_MASK))
+
+// Calculate bounce
+static inline void calc_bounce(int p2, int *p3, int *v)
+{
+#ifdef BASE_BOUNCE
+	*p3 = 2 * p2 - *p3;
+	*v = -*v;
+#else
+	*p3 = p2;
+	*v = 0;
+#endif
+}
+
+// Check and handle base/ship collisions
+void _myship::update_position()
+{
+	if(prefs->cmd_indicator)
 	{
-		if(prefs->cmd_indicator)
+		// No collision response; just update and test.
+		x += vx;
+		y += vy;
+		if(IS_BASE(screen.get_map(WORLD2MAPX(CS2PIXEL(x)),
+				WORLD2MAPY(CS2PIXEL(y)))))
 			sound.g_player_damage();
-		else
-			_myship::hit(1000);
+		return;
 	}
-	return 0;
+
+	// Approximation: Apply half of the acceleration before collision
+	// handling, and half after, to avoid continuous acceleration fun.
+	vx += ax / 2;
+	vy += ay / 2;
+
+	// Calculate target for the "no collisions" case
+	int x3 = x + vx;
+	int y3 = y + vy;
+
+	bool contact = 0;	// 'true' in case of collisions or contact
+	int impact = 0;		// Collision velocity
+	while(1)
+	{
+		// Find first collision, if any
+		int x2, y2, hx, hy;
+		int cd = screen.test_line(x, y, x3, y3, &x2, &y2, &hx, &hy);
+		if(!cd)
+		{
+			// No (more) collisions!
+			x = x3;
+			y = y3;
+			vx += ax / 2;
+			vy += ay / 2;
+			break;
+		}
+
+		contact = true;
+
+		if(cd & COLL_STUCK)
+			break;	// Stuck inside tile!
+
+		// With bounce enabled:
+		//	On collision, mirror the target position over the
+		//	collision line, move the current position to the point
+		//	of collision, and try again!
+		//
+		// With bounce disabled:
+		//	Set the current and target positions to tho point of
+		//	collision, and stop!
+		//
+		int imp = 0;
+		if(cd & COLL_VERTICAL)
+		{
+			imp += ABS(vx);
+			calc_bounce(x2, &x3, &vx);
+		}
+		if(cd & COLL_HORIZONTAL)
+		{
+			imp += ABS(vy);
+			calc_bounce(y2, &y3, &vy);
+		}
+
+		// Deal velocity based damage to any fixed enemies attached to
+		// the tile we just hit.
+		enemies.hit_map(WORLD2MAPX(CS2PIXEL(hx)),
+				WORLD2MAPY(CS2PIXEL(hy)),
+				game.scale_vel_damage(imp, game.ram_damage));
+		impact += imp;
+		x = x2;
+		y = y2;
+	}
+#ifdef DEBUG
+	if(IS_BASE(screen.get_map(WORLD2MAPX(CS2PIXEL(x)),
+			WORLD2MAPY(CS2PIXEL(y)))))
+		printf("!!! Bounce calculation failed at (%x, %x)\n", x, y);
+#endif
+
+	if(contact)
+	{
+#if 0
+		// TODO: Grinding noise.
+		float grind = sqrt(vx*vx + vy*vy) / PIXEL2CS(game.top_speed);
+#endif
+	}
+
+	// Deal velocity based damage to the ship
+	hit(game.scale_vel_damage(impact, game.crash_damage));
 }
 
 
@@ -391,7 +491,8 @@ int _myship::hit_bolt(int ex, int ey, int hitsize, int health)
 				gengine->free_obj(bolt_objects[i]);
 			bolt_objects[i] = NULL;
 		}
-		enemies.make(&boltexpl, boltx[i], bolty[i]);
+		enemies.make(&boltexpl,
+				PIXEL2CS(boltx[i]), PIXEL2CS(bolty[i]));
 		dmg += game.bolt_damage;
 		if(dmg >= health)
 			break;
@@ -574,4 +675,21 @@ void _myship::apply_position()
 		object->point.v.y = y;
 	}
 	sound.g_position(CS2PIXEL(x), CS2PIXEL(y));
+}
+
+
+bool _myship::in_range(int px, int py, int range, int &dist)
+{
+	int dx = labs(x - px);
+	if(dx > PIXEL2CS(WORLD_SIZEX))
+		dx = PIXEL2CS(WORLD_SIZEX) - dx;
+	if(dx > range)
+		return false;
+	int dy = labs(y - py);
+	if(dy > PIXEL2CS(WORLD_SIZEY))
+		dy = PIXEL2CS(WORLD_SIZEY) - dy;
+	if(dy > range)
+		return false;
+	dist = sqrt(dx*dx + dy*dy);
+	return dist <= range;
 }

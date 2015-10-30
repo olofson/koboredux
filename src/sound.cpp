@@ -22,6 +22,7 @@
 
 #include "sound.h"
 #include "kobo.h"
+#include "game.h"
 #include "kobolog.h"
 #include "random.h"
 
@@ -249,7 +250,7 @@ int KOBO_sound::open()
 	audio_channel_control(SOUND_GROUP_UI, AVT_ALL, ACC_PRIORITY, 3);
 	audio_channel_control(SOUND_GROUP_SFX, AVT_ALL, ACC_PRIORITY, 4);
 #endif
-	g_wrap(MAP_SIZEX*CHIP_SIZEX, MAP_SIZEY*CHIP_SIZEY);
+	g_wrap(WORLD_SIZEX, WORLD_SIZEY);
 	g_scale(VIEWLIMIT * 3 / 2, VIEWLIMIT);
 #if 0
 	// For the noise "bzzzt" effect :-)
@@ -534,13 +535,13 @@ void KOBO_sound::g_player_fire_off()
 }
 
 
-void KOBO_sound::g_player_damage()
+void KOBO_sound::g_player_damage(float level)
 {
 	int p0 = (60<<16) + (pubrand.get(9) << 8);
 	g_play(SOUND_DAMAGE, listener_x - 100, listener_y,
-			65536, p0 + 3000);
+			65536 * level, p0 + 3000);
 	g_play(SOUND_DAMAGE, listener_x + 100, listener_y,
-			65536, p0 - 3000);
+			65536 * level, p0 - 3000);
 }
 
 

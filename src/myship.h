@@ -29,6 +29,7 @@
 #include "game.h"
 
 #define ABS(x)		(((x)>=0) ? (x) : (-(x)))
+#define MIN(x,y)	(((x)<(y)) ? (x) : (y))
 #define MAX(x,y)	(((x)>(y)) ? (x) : (y))
 
 //---------------------------------------------------------------------------//
@@ -41,9 +42,10 @@ enum _myship_state
 class _myship
 {
 	static _myship_state _state;
-	static int di;		// direction
-	static int x, y;
-	static int vx, vy;
+	static int di;		// Direction
+	static int x, y;	// Position
+	static int vx, vy;	// Velocity
+	static int ax, ay;	// Acceleration
 	static int _health;
 	static int health_time;
 	static int explo_time;
@@ -62,7 +64,8 @@ class _myship
 	static void shot_single(int i, int dir, int offset);
 	static void apply_position();
 	static void explode();
-	static void move_redux();
+	static void handle_controls();
+	static void update_position();
   public:
 	 _myship();
 	static int get_velx()		{ return vx; }
@@ -73,13 +76,13 @@ class _myship
 	static int get_csy()		{ return y; }
 	static int init();
 	static void off();
-	static int move();
+	static void move();
 	static int put();
 	static void put_crosshair();
 	static int nose_fire();
 	static int tail_fire();
-	static int hit_structure();
 	static int hit_bolt(int ex, int ey, int hitsize, int health);
+	static void check_base_bolts();
 	static void hit(int dmg);
 	static int health()		{ return _health; }
 	static void health(int h)	{ _health = h; }
@@ -91,6 +94,7 @@ class _myship
 	}
 	static void set_position(int px, int py);
 	static int alive()		{ return _state == normal; }
+	static bool in_range(int px, int py, int range, int &dist);
 };
 
 extern _myship myship;

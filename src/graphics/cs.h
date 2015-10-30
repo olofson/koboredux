@@ -3,7 +3,8 @@
 ----------------------------------------------------------------------
 	cs.h - Simplistic Control System
 ----------------------------------------------------------------------
- * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -122,9 +123,22 @@ extern "C" {
 #include <stdlib.h>
 
 
+/* Fixed point radix position (24:8) */
 #define	__CS_SHIFT	8
+#define __CS_FACTOR	( (float)(1 << __CS_SHIFT) )
+#define __CS_IFACTOR	( 1.0f / (1 << __CS_SHIFT) )
+
+/* Integer/fixp point conversions */
 #define	CS2PIXEL(x)	( (x) >> __CS_SHIFT )
 #define	PIXEL2CS(x)	( (x) << __CS_SHIFT )
+
+/* Rounding/centering integer/fixp conversions */
+#define	CS2PIXELR(x)	CS2PIXEL( (x) + (1 << (__CS_SHIFT - 1)) )
+#define	PIXEL2CSC(x)	( PIXEL2CS(x) + (1 << (__CS_SHIFT - 1)) )
+
+/* Fixed/floating point conversions */
+#define	CS2F(x)		( (x) * __CS_IFACTOR )
+#define	F2CS(x)		( (int)((x) * __CS_FACTOR) )
 
 #define	CS_LAYERS		8
 #define	CS_DEFAULT_LAYER	1	/*0 is normally for overlays*/

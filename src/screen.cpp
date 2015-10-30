@@ -642,14 +642,14 @@ int _screen::prepare()
 			if((m == U_MASK) || (m == R_MASK) || (m == D_MASK)
 					|| (m == L_MASK))
 			{
-				enemies.make(&cannon, i * 16 + 8,
-						j * 16 + 8);
+				enemies.make(&cannon, PIXEL2CS(i * 16 + 8),
+						PIXEL2CS(j * 16 + 8));
 				c++;
 			}
 			else if(m & CORE)
 			{
-				enemies.make(&core, i * 16 + 8,
-						j * 16 + 8);
+				enemies.make(&core, PIXEL2CS(i * 16 + 8),
+						PIXEL2CS(j * 16 + 8));
 				count_core++;
 				c++;
 			}
@@ -695,8 +695,8 @@ void _screen::generate_fixed_enemies()
 			t = gamerand.get(4);
 			h = PIXEL2CS(sp * sint[t]) / 64;
 			v = PIXEL2CS(sp * cost[t]) / 64;
-			enemies.make(s->enemy[generate_count].kind, x, y,
-					h, v);
+			enemies.make(s->enemy[generate_count].kind,
+					PIXEL2CS(x), PIXEL2CS(y), h, v);
 		}
 		generate_count++;
 	}

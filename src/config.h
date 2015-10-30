@@ -64,14 +64,6 @@
 #define	KOBO_KEY_REPEAT		40
 
 /*
- * This was originally 1024, but was changed in Kobo Deluxe 0.4.1
- * to avoid the bug where we run out of enemies when destroying a
- * base, and thus leave parts of it behind.
-FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
- */
-#define ENEMY_MAX		2048
-
-/*
  * Fraction of the screen size in which clicks are not considered
  * clicks but movements in that direction (as regarded from the
  * center of the screen) or other special things (pause & exit).
@@ -88,38 +80,26 @@ FIXME: Is 2048 actually enough with the new effects in 0.5.x+...?
  * Used only in touchscreen mode.
  */
 #define POINTER_MARGIN_PERCENT	10
-
-/*
- * In XKobo, WSIZE was used where VIEWLIMIT is used now; in the game logic
- * code. The original value was 224.
- *
- * Kobo Redux replaces WSIZE with WMAIN_W and WMAIN_H, but VIEWLIMIT is still
- * what that determines what the game logic considers "in view!" The value is
- * changed to 336, to match the new view size.
- */
-#define VIEWLIMIT		336
-
-// Player ship hit rect size
-#define HIT_MYSHIP		5
-
-// Player bolt hit rect size
-#define HIT_BOLT		5
 
 /* Various size info (DO NOT EDIT!) */
-#define CHIP_SIZEX_LOG2		4
-#define CHIP_SIZEY_LOG2		4
+#define TILE_SIZEX_LOG2		4
+#define TILE_SIZEY_LOG2		4
 #define MAP_SIZEX_LOG2		6
 #define MAP_SIZEY_LOG2		7
-#define WORLD_SIZEX_LOG2	(MAP_SIZEX_LOG2 + CHIP_SIZEX_LOG2)
-#define WORLD_SIZEY_LOG2	(MAP_SIZEY_LOG2 + CHIP_SIZEY_LOG2)
+#define WORLD_SIZEX_LOG2	(MAP_SIZEX_LOG2 + TILE_SIZEX_LOG2)
+#define WORLD_SIZEY_LOG2	(MAP_SIZEY_LOG2 + TILE_SIZEY_LOG2)
 #define NOISE_SIZEX_LOG2	8
-#define CHIP_SIZEX		(1 << CHIP_SIZEX_LOG2)
-#define CHIP_SIZEY		(1 << CHIP_SIZEY_LOG2)
+#define TILE_SIZEX		(1 << TILE_SIZEX_LOG2)
+#define TILE_SIZEY		(1 << TILE_SIZEY_LOG2)
 #define MAP_SIZEX		(1 << MAP_SIZEX_LOG2)
 #define MAP_SIZEY		(1 << MAP_SIZEY_LOG2)
 #define WORLD_SIZEX		(1 << WORLD_SIZEX_LOG2)
 #define WORLD_SIZEY		(1 << WORLD_SIZEY_LOG2)
 #define NOISE_SIZEX		(1 << NOISE_SIZEX_LOG2)
+
+/* World to map coordinate translation */
+#define	WORLD2MAPX(x)	(((x) & (WORLD_SIZEX - 1)) >> TILE_SIZEX_LOG2)
+#define	WORLD2MAPY(y)	(((y) & (WORLD_SIZEY - 1)) >> TILE_SIZEY_LOG2)
 
 /* Text scroller speed (pixels/second) */
 #define	SCROLLER_SPEED		120
