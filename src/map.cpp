@@ -225,72 +225,109 @@ void _map::convert(unsigned ratio)
 int _map::test_line(int x1, int y1, int x3, int y3,
 		int *x2, int *y2, int *hx, int *hy)
 {
-	// Brute force implementation
-	float dx = x3 - x1;
-	float dy = y3 - y1;
+	// End position (map)
+	int mx3 = CS2PIXEL(x3) >> TILE_SIZEX_LOG2;
+	int my3 = CS2PIXEL(y3) >> TILE_SIZEY_LOG2;
 
-	// World unit steps
-	int steps = ABS(dx) > ABS(dy) ? ABS(dx) : ABS(dy);
-	if(steps)
+	// Are we actually crossing any tile boundaries?
+	if((WORLD2MAPX(CS2PIXEL(x1)) == mx3) &&
+			(WORLD2MAPY(CS2PIXEL(y1)) == my3))
 	{
-		dx /= steps;
-		dy /= steps;
+		if(IS_BASE(pos(mx3, my3)))
+			return COLL_STUCK;
+		else
+			return 0;
 	}
 
-	// Find first collision
-	float x = x1;
-	float y = y1;
-	float px, py;
-	int mx, my, pmx, pmy;
-	for(int z = 0; ; ++z)
-	{
-		if(z >= steps)
-		{
-			if(z == steps)
-			{
-				// We must never ever leave with an undetected
-				// collision at (x3, y3)! So, we test that pos
-				// last, to circumvent rounding errors.
-				x = x3;
-				y = y3;
-			}
-			else
-				return 0;	// No collisions!
-		}
+	// Current position
+	int x = x1;
+	int y = y1;
 
-		mx = WORLD2MAPX(CS2PIXEL((int)x));
-		my = WORLD2MAPY(CS2PIXEL((int)y));
+	// Position right before current
+	int px = x;
+	int py = y;
+
+	int next_test = COLL_STUCK;
+
+	while(1)
+	{
+		// Check the current tile
+		int mx = CS2PIXEL(x) >> TILE_SIZEX_LOG2;
+		int my = CS2PIXEL(y) >> TILE_SIZEY_LOG2;
 		if(IS_BASE(pos(mx, my)))
 		{
-			if(!z)
-			{
-				// This is an error condition that only
-				// occurs when starting inside a tile!
-				return COLL_STUCK;
-			}
-			break;
+			// Collision!
+			*x2 = px;
+			*y2 = py;
+			*hx = x;
+			*hy = y;
+			return next_test;
 		}
-		px = x;
-		py = y;
-		pmy = my;
-		pmx = mx;
-		x += dx;
-		y += dy;
-	}
 
-	// Step back and evaluate the situation right before the collision
-	int res = 0;
-	*x2 = (int)px;
-	*y2 = (int)py;
-	*hx = (int)x;
-	*hy = (int)y;
-	if(mx != pmx)
-		for(int z = MIN(my, pmy); z <= MAX(my, pmy); ++z)
-			if(IS_BASE(pos(mx, z)))
-				res |= COLL_VERTICAL;
-	if(my != pmy)
-		for(int z = MIN(mx, pmx); z <= MAX(mx, pmx); ++z)
-			if(IS_BASE(pos(z, my)))
-				res |= COLL_HORIZONTAL;
-	return res;
+		// If we're clear, and in the end position tile, we're done!
+		if((mx == mx3) && (my == my3))
+			return 0;
+
+		// Figure out which side of the current tile we're going to
+		// exit through, so we can check the correct adjacent tile.
+
+		// Next vertical collision
+		int vcx = 0, vcy = 0, vd2;
+		if(mx3 != mx)
+		{
+			if(x3 > x)
+				vcx = PIXEL2CS((mx + 1) << TILE_SIZEX_LOG2);
+			else
+				vcx = PIXEL2CS(mx << TILE_SIZEX_LOG2) - 1;
+			vcy = y1 + (y3 - y1) * (vcx - x1) / (x3 - x1);
+			int dx = vcx - x;
+			int dy = vcy - y;
+			vd2 = dx*dx + dy*dy;
+		}
+		else
+			vd2 = 0x7fffffff;
+
+		// Next horizontal collision
+		int hcx, hcy, hd2;
+		if(my3 != my)
+		{
+			if(y3 > y)
+				hcy = PIXEL2CS((my + 1) << TILE_SIZEY_LOG2);
+			else
+				hcy = PIXEL2CS(my << TILE_SIZEY_LOG2) - 1;
+			hcx = x1 + (x3 - x1) * (hcy - y1) / (y3 - y1);
+			int dx = hcx - x;
+			int dy = hcy - y;
+			hd2 = dx*dx + dy*dy;
+		}
+		else
+			hd2 = 0x7fffffff;
+
+		// Which one is closer?
+		if(vd2 > hd2)
+		{
+			x = hcx;
+			y = hcy;
+			next_test = COLL_HORIZONTAL;
+			px = x;
+			py = y - (y3 > y1 ? 1 : -1);
+		}
+		else if(vd2 < hd2)
+		{
+			x = vcx;
+			y = vcy;
+			next_test = COLL_VERTICAL;
+			px = x - (x3 > x1 ? 1 : -1);
+			py = y;
+		}
+		else
+		{
+			// Both: Diagonal corner hit!
+			x = vcx;
+			y = vcy;
+			next_test = COLL_VERTICAL | COLL_HORIZONTAL;
+			px = x - (x3 > x1 ? 1 : -1);
+			py = y - (y3 > y1 ? 1 : -1);
+		}
+	}
 }
