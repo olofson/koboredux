@@ -373,6 +373,7 @@ void _enemy::make_rock()
 
 void _enemy::move_rock()
 {
+#if 0
 	if(bank == B_ROCK3)
 	{
 		di += a;
@@ -382,7 +383,8 @@ void _enemy::move_rock()
 			di -= 48;
 	}
 	else
-		di = ((di + a - 1) & 31) + 1;
+#endif
+	di = ((di + a - 1) & 31) + 1;
 }
 
 void _enemy::kill_rock()
@@ -397,7 +399,7 @@ const enemy_kind rock = {
 	&_enemy::make_rock,
 	&_enemy::move_rock,
 	&_enemy::kill_rock,
-	4,
+	12,
 	B_ROCK1, 0,
 	LAYER_ENEMIES
 };

@@ -1069,10 +1069,16 @@ static KOBO_GfxDesc gfxdesc[] = {
 	{ "GFX>>explo1.png", B_EXPLO4,		24, 24,	0.0f,	KOBO_CENTER },
 	{ "GFX>>explo1.png", B_EXPLO5,		24, 24,	0.0f,	KOBO_CENTER },
 #endif
+#if 0
 	{ "GFX>>rock1c.png", B_ROCK1,		32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>rock2.png", B_ROCK2,		32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>shinyrock.png", B_ROCK3,	32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>rockexpl.png", B_ROCKEXPL,	64, 64,	2.0f,	KOBO_CENTER },
+#else
+	{ "GFX>>rock2.png", B_ROCK1,		32, 32,	1.0f,	KOBO_CENTER },
+	{ "GFX>>rock2.png", B_ROCK2,		32, 32,	1.0f,	KOBO_CENTER },
+	{ "GFX>>rock2.png", B_ROCK3,		32, 32,	1.0f,	KOBO_CENTER },
+#endif
+	{ "GFX>>rockexpl.png", B_ROCKEXPL,	64, 64,	1.0f,	KOBO_CENTER },
 
 	{ "GFX>>bullet.png", B_BLT_GREEN,	8, 8,	0.0f,	KOBO_CENTER },
 	{ "GFX>>red-bullet.png", B_BLT_RED,	8, 8,	0.0f,	KOBO_CENTER },
