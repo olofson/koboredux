@@ -34,6 +34,9 @@
 #include "palette.h"
 #include "vidmodes.h"
 
+#define MIN(x,y)	(((x)<(y)) ? (x) : (y))
+#define MAX(x,y)	(((x)>(y)) ? (x) : (y))
+
 enum gfx_scalemodes_t
 {
 	GFX_SCALE_NEAREST =	0,

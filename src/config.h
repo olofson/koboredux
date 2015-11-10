@@ -101,6 +101,13 @@
 #define	WORLD2MAPX(x)	(((x) & (WORLD_SIZEX - 1)) >> TILE_SIZEX_LOG2)
 #define	WORLD2MAPY(y)	(((y) & (WORLD_SIZEY - 1)) >> TILE_SIZEY_LOG2)
 
+static inline int wrapdist(int a, int b, int w)
+{
+	int d1 = (a - b) & (w - 1);
+	int d2 = (b - a) & (w - 1);
+	return d1 < d2 ? d1 : -d2;
+}
+
 /* Text scroller speed (pixels/second) */
 #define	SCROLLER_SPEED		120
 

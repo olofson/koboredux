@@ -226,14 +226,8 @@ void _myship::move()
 		explode();
 
 	// Wrapping
-	if(x < 0)
-		x += PIXEL2CS(WORLD_SIZEX);
-	if(x >= PIXEL2CS(WORLD_SIZEX))
-		x -= PIXEL2CS(WORLD_SIZEX);
-	if(y < 0)
-		y += PIXEL2CS(WORLD_SIZEY);
-	if(y >= PIXEL2CS(WORLD_SIZEY))
-		y -= PIXEL2CS(WORLD_SIZEY);
+	x &= PIXEL2CS(WORLD_SIZEX) - 1;
+	y &= PIXEL2CS(WORLD_SIZEY) - 1;
 
 	// Fire control
 	if((_state == normal) && gamecontrol.get_shot())
@@ -273,9 +267,11 @@ void _myship::move()
 		++boltst[i];
 		boltx[i] += boltdx[i];
 		bolty[i] += boltdy[i];
-		if((ABS(boltx[i] - CS2PIXEL(x)) >= game.bolt_range) ||
-				(ABS(bolty[i] - CS2PIXEL(y)) >=
-				game.bolt_range))
+		boltx[i] &= WORLD_SIZEX - 1;
+		bolty[i] &= WORLD_SIZEY - 1;
+		int dx = labs(wrapdist(boltx[i], CS2PIXEL(x), WORLD_SIZEX));
+		int dy = labs(wrapdist(bolty[i], CS2PIXEL(y), WORLD_SIZEY));
+		if(dx >= game.bolt_range || dy >= game.bolt_range)
 		{
 			boltst[i] = 0;
 			if(bolt_objects[i])
@@ -435,12 +431,12 @@ void _myship::update_position()
 		int imp = 0;
 		if(cd & COLL_VERTICAL)
 		{
-			imp += ABS(vx);
+			imp += labs(vx);
 			calc_bounce(x2, &x3, &vx);
 		}
 		if(cd & COLL_HORIZONTAL)
 		{
-			imp += ABS(vy);
+			imp += labs(vy);
 			calc_bounce(y2, &y3, &vy);
 		}
 
@@ -480,9 +476,9 @@ int _myship::hit_bolt(int ex, int ey, int hitsize, int health)
 	{
 		if(boltst[i] == 0)
 			continue;
-		if(ABS(ex - boltx[i]) >= hitsize)
+		if(labs(wrapdist(ex, boltx[i], WORLD_SIZEX)) >= hitsize)
 			continue;
-		if(ABS(ey - bolty[i]) >= hitsize)
+		if(labs(wrapdist(ey, bolty[i], WORLD_SIZEY)) >= hitsize)
 			continue;
 		if(!prefs->cmd_cheat)
 		{
@@ -680,14 +676,10 @@ void _myship::apply_position()
 
 bool _myship::in_range(int px, int py, int range, int &dist)
 {
-	int dx = labs(x - px);
-	if(dx > PIXEL2CS(WORLD_SIZEX))
-		dx = PIXEL2CS(WORLD_SIZEX) - dx;
+	int dx = labs(wrapdist(x, px, PIXEL2CS(WORLD_SIZEX)));
 	if(dx > range)
 		return false;
-	int dy = labs(y - py);
-	if(dy > PIXEL2CS(WORLD_SIZEY))
-		dy = PIXEL2CS(WORLD_SIZEY) - dy;
+	int dy = labs(wrapdist(y, py, PIXEL2CS(WORLD_SIZEY)));
 	if(dy > range)
 		return false;
 	dist = sqrt(dx*dx + dy*dy);

@@ -31,10 +31,6 @@
 #include "manage.h"
 #include "sound.h"
 
-#define ABS(x)   (((x)>=0) ? (x) : (-(x)))
-#define MAX(x,y) (((x)>(y)) ? (x) : (y))
-
-
 class _enemy;
 class _enemies;
 //---------------------------------------------------------------------------//
@@ -366,31 +362,11 @@ inline void _enemy::move()
 		return;
 	x += h;
 	y += v;
-	diffx = CS2PIXEL(x) - myship.get_x();
-	diffy = CS2PIXEL(y) - myship.get_y();
-
-	if(diffx > (WORLD_SIZEX >> 1))
-	{
-		diffx -= WORLD_SIZEX;
-		x -= PIXEL2CS(WORLD_SIZEX);
-	}
-	if(diffx < -(WORLD_SIZEX >> 1))
-	{
-		diffx += WORLD_SIZEX;
-		x += PIXEL2CS(WORLD_SIZEX);
-	}
-	if(diffy > (WORLD_SIZEY >> 1))
-	{
-		diffy -= WORLD_SIZEY;
-		y -= PIXEL2CS(WORLD_SIZEY);
-	}
-	if(diffy < -(WORLD_SIZEY >> 1))
-	{
-		diffy += WORLD_SIZEY;
-		y += PIXEL2CS(WORLD_SIZEY);
-	}
-
-	norm = MAX(ABS(diffx), ABS(diffy));
+	x &= PIXEL2CS(WORLD_SIZEX) - 1;
+	y &= PIXEL2CS(WORLD_SIZEY) - 1;
+	diffx = wrapdist(CS2PIXEL(x), myship.get_x(), WORLD_SIZEX);
+	diffy = wrapdist(CS2PIXEL(y), myship.get_y(), WORLD_SIZEY);
+	norm = MAX(labs(diffx), labs(diffy));
 	(this->*(ek->move)) ();
 
 	// Handle collisions with the player ship
@@ -431,31 +407,11 @@ inline void _enemy::move_intro()
 		return;
 	x += h;
 	y += v;
-	diffx = CS2PIXEL(x) - myship.get_x();
-	diffy = CS2PIXEL(y) - myship.get_y();
-
-	if(diffx > (WORLD_SIZEX >> 1))
-	{
-		diffx -= WORLD_SIZEX;
-		x -= PIXEL2CS(WORLD_SIZEX);
-	}
-	if(diffx < -(WORLD_SIZEX >> 1))
-	{
-		diffx += WORLD_SIZEX;
-		x += PIXEL2CS(WORLD_SIZEX);
-	}
-	if(diffy > (WORLD_SIZEY >> 1))
-	{
-		diffy -= WORLD_SIZEY;
-		y -= PIXEL2CS(WORLD_SIZEY);
-	}
-	if(diffy < -(WORLD_SIZEY >> 1))
-	{
-		diffy += WORLD_SIZEY;
-		y += PIXEL2CS(WORLD_SIZEY);
-	}
-
-	norm = MAX(ABS(diffx), ABS(diffy));
+	x &= PIXEL2CS(WORLD_SIZEX) - 1;
+	y &= PIXEL2CS(WORLD_SIZEY) - 1;
+	diffx = wrapdist(CS2PIXEL(x), myship.get_x(), WORLD_SIZEX);
+	diffy = wrapdist(CS2PIXEL(y), myship.get_y(), WORLD_SIZEY);
+	norm = MAX(labs(diffx), labs(diffy));
 	(this->*(ek->move)) ();
 }
 

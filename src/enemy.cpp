@@ -460,8 +460,8 @@ void _enemy::make_bomb()
 
 void _enemy::move_bomb1()
 {
-	int h1 = ABS(diffx);
-	int v1 = ABS(diffy);
+	int h1 = labs(diffx);
+	int v1 = labs(diffy);
 	if(((h1 < 100) && (v1 < 30)) || ((h1 < 30) && (v1 < 100)))
 	{
 		int vx1 = PIXEL2CS(-diffx) / (3*8);
@@ -507,8 +507,8 @@ const enemy_kind bomb1 = {
 
 void _enemy::move_bomb2()
 {
-	int h1 = ABS(diffx);
-	int v1 = ABS(diffy);
+	int h1 = labs(diffx);
+	int v1 = labs(diffy);
 	if(((h1 < 100) && (v1 < 20)) || ((h1 < 20) && (v1 < 100)))
 	{
 		int vx1 = PIXEL2CS(-diffx) / (3*8);
