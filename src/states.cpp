@@ -1342,6 +1342,7 @@ void st_main_menu_t::reenter()
 {
 	menu->rebuild();
 	st_menu_base_t::reenter();
+	manage.select_scene(menu->start_level);
 }
 
 
@@ -1530,6 +1531,7 @@ kobo_form_t *st_options_main_t::open()
 {
 	options_main_t *m = new options_main_t(gengine);
 	m->open();
+	manage.select_scene(KOBO_OPTIONS_BACKGROUND_LEVEL);
 	return m;
 }
 

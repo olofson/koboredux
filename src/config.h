@@ -122,6 +122,9 @@ static inline int wrapdist(int a, int b, int w)
 #define	INTRO_HIGHSCORE_TIME	11700
 #define	INTRO_CREDITS_TIME	13700
 
+/* Level used as backdrop for the Options menus */
+#define	KOBO_OPTIONS_BACKGROUND_LEVEL	6
+
 /*
  * This was originally 320x240. Kobo Redux changes the "native" resolution to
  * 640x360, while keeping the 16x16 tile size, so the view size is now 50%
