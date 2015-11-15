@@ -1576,12 +1576,29 @@ kobo_form_t *st_options_base_t::open()
 void st_options_base_t::close()
 {
 	cfg_form->close();
+	cfg_form = NULL;
 }
 
 void st_options_base_t::enter()
 {
 	sound.ui_ok();
 	st_menu_base_t::enter();
+}
+
+void st_options_base_t::check_update()
+{
+	// Handle changes that require only an update...
+	if(cfg_form->status() & OS_UPDATE_AUDIO)
+		sound.prefschange();
+	if(cfg_form->status() & OS_UPDATE_ENGINE)
+	{
+		gengine->timefilter(prefs->timefilter * 0.01f);
+		gengine->interpolation(prefs->filter);
+		gengine->vsync(prefs->vsync);
+	}
+	if(cfg_form->status() & OS_UPDATE_SCREEN)
+		screen.init_background();
+	cfg_form->clearstatus(OS_UPDATE);
 }
 
 void st_options_base_t::select(int tag)
@@ -1596,27 +1613,20 @@ void st_options_base_t::select(int tag)
 			manage.freeze_abort();
 		}
 	}
-
 	if(cfg_form->status() & (OS_CANCEL | OS_CLOSE))
 		pop();
 }
 
 void st_options_base_t::press(int button)
 {
+	// NOTE:
+	//	This may result in select() above being called, and that in
+	//	turn, may result in close() being called before when we get
+	//	back here! Thus, we need to check cfg_form.
 	st_menu_base_t::press(button);
 
-	// Handle changes that require only an update...
-	if(cfg_form->status() & OS_UPDATE_AUDIO)
-		sound.prefschange();
-	if(cfg_form->status() & OS_UPDATE_ENGINE)
-	{
-		gengine->timefilter(prefs->timefilter * 0.01f);
-		gengine->interpolation(prefs->filter);
-		gengine->vsync(prefs->vsync);
-	}
-	if(cfg_form->status() & OS_UPDATE_SCREEN)
-		screen.init_background();
-	cfg_form->clearstatus(OS_UPDATE);
+	if(cfg_form)
+		check_update();
 }
 
 void st_options_base_t::escape()

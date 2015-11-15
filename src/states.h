@@ -381,6 +381,7 @@ class st_options_main_t : public st_menu_base_t
 class st_options_base_t : public st_menu_base_t
 {
 	config_form_t	*cfg_form;
+	void check_update();
   public:
 	st_options_base_t()
 	{
