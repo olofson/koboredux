@@ -1025,10 +1025,14 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	// Region 1 (maps 1-10)
 	{ "GFX>>tiles-green.png", B_R1_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-green-small.png", B_R1_TILES_SMALL,	12, 12,	0.0f,
-			KOBO_CLAMP },
-	{ "GFX>>tiles-green-tiny.png", B_R1_TILES_TINY,		8, 8,	0.0f,
-			KOBO_CLAMP },
+	{ "GFX>>tiles-green-small-space.png", B_R1_TILES_SMALL_SPACE,
+			12, 12,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-green-tiny-space.png", B_R1_TILES_TINY_SPACE,
+			8, 8,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-green-small-ground.png", B_R1_TILES_SMALL_GROUND,
+			12, 12,	0.0f,	KOBO_CLAMP },
+	{ "GFX>>tiles-green-tiny-ground.png", B_R1_TILES_TINY_GROUND,
+			8, 8,	0.0f,	KOBO_CLAMP },
 	{ "GFX>>planet-r1l1.png", B_R1L1_PLANET, 0, 0,
 			2.0f, KOBO_ABSSCALE | KOBO_SCALE2X },
 	{ "GFX>>planet-r1l3.png", B_R1L3_PLANET, 0, 0,

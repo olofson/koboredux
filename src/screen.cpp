@@ -1047,11 +1047,18 @@ void _screen::render_background()
 		if(level + m >= 10)
 			continue;
 		int tiles = 0/*region*/;
-		switch(m)
-		{
-		  case 0:	tiles += B_R1_TILES_SMALL;	break;
-		  case 1:	tiles += B_R1_TILES_TINY;	break;
-		}
+		if(bg_altitude >= 96)
+			switch(m)
+			{
+			  case 0: tiles += B_R1_TILES_SMALL_SPACE; break;
+			  case 1: tiles += B_R1_TILES_TINY_SPACE; break;
+			}
+		else
+			switch(m)
+			{
+			  case 0: tiles += B_R1_TILES_SMALL_GROUND; break;
+			  case 1: tiles += B_R1_TILES_TINY_GROUND; break;
+			}
 		render_bases(bg_map[m], tiles,
 				gengine->xoffs(LAYER_BASES),
 				gengine->yoffs(LAYER_BASES));
