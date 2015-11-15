@@ -1597,9 +1597,15 @@ void st_options_base_t::select(int tag)
 		}
 	}
 
-	/* 
-	 * Handle changes that require only an update...
-	 */
+	if(cfg_form->status() & (OS_CANCEL | OS_CLOSE))
+		pop();
+}
+
+void st_options_base_t::press(int button)
+{
+	st_menu_base_t::press(button);
+
+	// Handle changes that require only an update...
 	if(cfg_form->status() & OS_UPDATE_AUDIO)
 		sound.prefschange();
 	if(cfg_form->status() & OS_UPDATE_ENGINE)
@@ -1608,17 +1614,9 @@ void st_options_base_t::select(int tag)
 		gengine->interpolation(prefs->filter);
 		gengine->vsync(prefs->vsync);
 	}
+	if(cfg_form->status() & OS_UPDATE_SCREEN)
+		screen.init_background();
 	cfg_form->clearstatus(OS_UPDATE);
-
-	if(cfg_form->status() & (OS_CANCEL | OS_CLOSE))
-		pop();
-}
-
-void st_options_base_t::press(int button)
-{
-	st_menu_base_t::press(button);
-	gengine->timefilter(prefs->timefilter * 0.01f);
-	gengine->interpolation(prefs->filter);
 }
 
 void st_options_base_t::escape()
