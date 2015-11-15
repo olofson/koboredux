@@ -86,6 +86,7 @@ class prefs_t : public config_parser_t
 	int	alpha;		//Alpha blending
 	int	brightness;	//Graphics brightness
 	int	contrast;	//Graphics contrast
+	int	planetdither;	//Spinning planet dither style
 
 	//File paths
 	cfg_string_t	dir;		//Path to kobo-deluxe/

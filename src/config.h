@@ -55,9 +55,10 @@
 /*
  * SDL2 pixel format for surface and textures.
  *
- * NOTE: The pix_t struct in sprite.h needs to match this!
+ * NOTE: The pix_t struct in sprite.h, and the color mapping methods of
+ *       window_t need to match this!
  */
-#define	KOBO_PIXELFORMAT	SDL_PIXELFORMAT_ABGR8888
+#define	KOBO_PIXELFORMAT	SDL_PIXELFORMAT_ARGB8888
 
 /* Key/button repeat timing */
 #define	KOBO_KEY_DELAY		250
@@ -138,9 +139,6 @@ static inline int wrapdist(int a, int b, int w)
  * indirectly derived from CHIP_SIZE*, rather than defined explicitly.
  */
 #define	TILE_SIZE		16
-
-/* Define to enable dithering in the spinplanet_t rotation/lens effect. */
-#undef	KOBO_PLANET_DITHER
 
 /* Camera lead control */
 #define	KOBO_CAM_LEAD		6	/* Player speed to lead factor */

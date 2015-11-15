@@ -25,12 +25,26 @@
 #include "window.h"
 #include "config.h"
 
+#define	SPINPLANET_MAX_COLORS	16
+
 enum spinplanet_modes_t
 {
 	SPINPLANET_OFF,
 	SPINPLANET_BLACK,
-	SPINPLANET_STATIC,
 	SPINPLANET_SPIN
+};
+
+enum spinplanet_dither_t
+{
+	SPINPLANET_DITHER_RAW,		// Use source texture pixels as is
+	SPINPLANET_DITHER_NONE,		// Map to nearest palette entry
+	SPINPLANET_DITHER_RANDOM,	// Random dither pattern
+	SPINPLANET_DITHER_ORDERED,	// 4x4 ordered pattern
+	SPINPLANET_DITHER_SKEWED,	// 4x4 skewed pattern
+	SPINPLANET_DITHER_NOISE,	// Temporal noise dither
+	SPINPLANET_DITHER_SEMIINTERLACE,// 4x4 pattern, two frames
+	SPINPLANET_DITHER_INTERLACE,	// 4x4 pattern, four frames
+	SPINPLANET_DITHER_TRUECOLOR	// Interpolate between palette entries
 };
 
 class spinplanet_t : public stream_window_t
@@ -48,11 +62,13 @@ class spinplanet_t : public stream_window_t
 	float lastnx, lastny;	// Last normalized offsets
 	float wox, woy;		// Wrap offsets
 
-#ifdef	KOBO_PLANET_DITHER
 	unsigned ditherstate;	// Dither state
-#else
+	int dither_brightness;
+	int dither_contrast;
+	Uint32 colors[SPINPLANET_MAX_COLORS + 1];	// Dither palette
 	int lastx, lasty;	// Last rendered map position
-#endif
+
+	bool needs_prepare;
 
 	// Lens encoding:
 	//	[i + 0]: target X (pixels)
@@ -62,24 +78,42 @@ class spinplanet_t : public stream_window_t
 	//	[i + 3 + n + 1]: source Y offset (12:4)
 	int16_t *lens;
 
+	// Source texture; either 32 bpp xRGB or 8 bpp grayscale
+	void *source;
+	int sourcepitch;
+	bool free_source;
+
 	spinplanet_modes_t mode;
-	void refresh_static();
+	spinplanet_dither_t dither;
+
 	void init_lens();
-#ifdef	KOBO_PLANET_DITHER
-	int dither()
+	uint8_t *grayscale_convert(uint32_t *src, int sp, int w, int h,
+			int brightness, int contrast);
+	uint32_t *palette_remap(uint8_t *src, int sp, int w, int h,
+			uint32_t *palette, int palettesize);
+	void dth_prepare();
+
+	inline int noise()
 	{
 		ditherstate *= 1566083941UL;
 		ditherstate++;
 		return (int)(ditherstate * (ditherstate >> 16) >> 16);
 	}
-#endif
+	inline void dth_raw(uint32_t *s, int sp, Uint32 *d,
+			int16_t *l, int len, int x, int y, int vx, int vy);
+	inline void dth_random(uint8_t *s, int sp, Uint32 *d,
+			int16_t *l, int len, int x, int y, int vx, int vy);
+	inline void dth_ordered(uint8_t *s, int sp, Uint32 *d,
+			int16_t *l, int len, int x, int y, int vx, int vy);
   public:
 	spinplanet_t(gfxengine_t *e);
 	virtual ~spinplanet_t();
 	void clear();
 	void set_source(int bank, int frame);
+	void set_colors(const unsigned char *c, int nc);
 	void set_size(int size)			{ psize = size; }
 	void set_mode(spinplanet_modes_t md);
+	void set_dither(spinplanet_dither_t dth, int brightness, int contrast);
 	void set_texture_repeat(int txr)	{ texrep = txr; }
 	void track_layer(int lr)		{ tlayer = lr; }
 	void track_speed(float _xspeed, float _yspeed)

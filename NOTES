@@ -2,6 +2,13 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* Implement downscale filters, so we can use a single texture per planet...?
+	* We could also implement that in spinplanet_t, as it preprocesses the
+	  texture anyway.
+
+* The teal fighter ships are REALLY dangerous currently... Maybe have them fire
+  weaker ammo again?
+
 * Rock explosion looks bland. There should also be pieces of rock flying!
 
 * Not sure about this whole idea of balancing the skill levels through shields
@@ -15,8 +22,6 @@ TODO:
 * Higher firing rate? Only for higher skill levels...?
 
 * Do we have enough "bolts"!?
-
-* Rocks are too small and/or too hard to distinguish!
 
 * Specifying -width or -height via the command line should automatically set
   videomode to -1 (custom)!

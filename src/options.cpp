@@ -202,6 +202,15 @@ void graphics_options_t::build()
 	space();
 	small();
 	xoffs = 0.6;
+	list("Planet Dither Style", &prf->planetdither, OS_UPDATE_SCREEN);
+		item("None", SPINPLANET_DITHER_NONE);
+		item("Random", SPINPLANET_DITHER_RANDOM);
+		item("Ordered", SPINPLANET_DITHER_ORDERED);
+		item("Skewed", SPINPLANET_DITHER_SKEWED);
+		item("Noise", SPINPLANET_DITHER_NOISE);
+		item("Semi Interlace", SPINPLANET_DITHER_SEMIINTERLACE);
+		item("Interlace", SPINPLANET_DITHER_INTERLACE);
+		item("TrueColor", SPINPLANET_DITHER_TRUECOLOR);
 	list("Scale Mode", &prf->scalemode, OS_RELOAD_GRAPHICS);
 		item("Nearest", GFX_SCALE_NEAREST);
 		item("Bilinear", GFX_SCALE_BILINEAR);
