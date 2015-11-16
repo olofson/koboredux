@@ -79,18 +79,22 @@ class spinplanet_t : public stream_window_t
 	int16_t *lens;
 
 	// Source texture; either 32 bpp xRGB or 8 bpp grayscale
-	void *source;
-	int sourcepitch;
+	void *source;		// uint8_t grayscale, or uint32_t xRGB
+	int sourcepitch;	// Pixels
 	bool free_source;
 
 	spinplanet_modes_t mode;
 	spinplanet_dither_t dither;
 
+	void set_msize(int size);
 	void init_lens();
 	uint8_t *grayscale_convert(uint32_t *src, int sp, int w, int h,
 			int brightness, int contrast);
 	uint32_t *palette_remap(uint8_t *src, int sp, int w, int h,
 			uint32_t *palette, int palettesize);
+	uint8_t *downscale_8bpp(uint8_t *src, int sp, int w, int h, int n);
+	uint32_t *downscale_32bpp(uint32_t *src, int sp, int w, int h, int n);
+	void scale_texture();
 	void dth_prepare();
 
 	inline int noise()

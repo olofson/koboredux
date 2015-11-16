@@ -2,9 +2,9 @@
 TODO:
 -------------------------------------------------------------------------------
 
-* Implement downscale filters, so we can use a single texture per planet...?
-	* We could also implement that in spinplanet_t, as it preprocesses the
-	  texture anyway.
+* Maybe a bit of blur as well, when downscaling spinplanet textures...?
+
+* Skewed dithering without breaking the 50% checkerboard pattern...?
 
 * The teal fighter ships are REALLY dangerous currently... Maybe have them fire
   weaker ammo again?
@@ -72,6 +72,8 @@ TODO:
   API.
 
 * Remove all load time image filters?
+	* ...or just turn them into a stand-alone library operating on raw
+	  32bpp buffers or something? It's just too messy to use as it is.
 
 Kobo DL install on Ubuntu:
 	/usr/share/kobo-deluxe/

@@ -67,6 +67,19 @@ void spinplanet_t::clear()
 }
 
 
+void spinplanet_t::set_msize(int size)
+{
+	msize = size;
+	msizemask = 1;
+	while(msizemask != msize && msizemask)
+		msizemask <<= 1;
+	if(!msizemask)
+		set_mode(SPINPLANET_OFF);
+	else
+		--msizemask;
+}
+
+
 void spinplanet_t::set_source(int bank, int frame)
 {
 	sbank = bank;
@@ -87,18 +100,11 @@ void spinplanet_t::set_source(int bank, int frame)
 		set_mode(SPINPLANET_OFF);
 		return;
 	}
-	msize = b->w;
-	msizemask = 1;
-	while(msizemask != msize && msizemask)
-		msizemask <<= 1;
+	set_msize(b->w);
 	if(!msizemask)
-	{
 		log_printf(ELOG, "spinplanet_t::set_source(): The "
 			"world map texture size needs to be a power "
 			"of two! (actual: %dx%d)\n", b->w, b->h);
-		set_mode(SPINPLANET_OFF);
-	}
-	--msizemask;
 	needs_prepare = true;
 }
 
@@ -190,8 +196,6 @@ void spinplanet_t::set_mode(spinplanet_modes_t md)
 	  case SPINPLANET_BLACK:
 		break;
 	  case SPINPLANET_SPIN:
-		init_lens();
-		refresh(NULL);
 		autoinvalidate(1);
 		break;
 	}
@@ -261,6 +265,101 @@ uint32_t *spinplanet_t::palette_remap(uint8_t *src, int sp, int w, int h,
 			d[i++] = palette[c];
 		}
 	return d;
+}
+
+
+uint8_t *spinplanet_t::downscale_8bpp(uint8_t *src, int sp, int w, int h,
+		int n)
+{
+	int n2 = n * n;
+	uint8_t *d = (uint8_t *)malloc(w * h / n2);
+	if(!d)
+		return NULL;
+	int i = 0;
+	for(int y = 0; y < h; y += n, src += sp * n)
+		for(int x = 0; x < w; x += n)
+		{
+			int c = 0;
+			uint8_t *s2 = src;
+			for(int sy = 0; sy < n; ++sy, s2 += sp)
+				for(int sx = 0; sx < n; ++sx)
+					c += src[x + sx];
+			d[i++] = c / n2;
+		}
+	return d;
+}
+
+
+uint32_t *spinplanet_t::downscale_32bpp(uint32_t *src, int sp, int w, int h,
+		int n)
+{
+	int n2 = n * n;
+	uint32_t *d = (uint32_t *)malloc(w * h / n2 * sizeof(uint32_t));
+	if(!d)
+		return NULL;
+	int i = 0;
+	for(int y = 0; y < h; y += n, src += sp * n)
+		for(int x = 0; x < w; x += n)
+		{
+			int r = 0;
+			int g = 0;
+			int b = 0;
+			uint32_t *s2 = src;
+			for(int sy = 0; sy < n; ++sy, s2 += sp)
+				for(int sx = 0; sx < n; ++sx)
+				{
+					int c = src[x + sx];
+					r += (c >> 16) & 0xff;
+					g += (c >> 8) & 0xff;
+					b += c & 0xff;
+				}
+			d[i++] = (r / n2 << 16) | (g / n2 << 8) | b / n2;
+		}
+	return d;
+}
+
+
+void spinplanet_t::scale_texture()
+{
+	void *newsource = NULL;
+	int newmsize = msize;
+	while(newmsize > psize * 6)
+		newmsize >>= 1;
+	if(newmsize == msize)
+		return;
+
+	switch(dither)
+	{
+	  case SPINPLANET_DITHER_RAW:
+		// We never scale in raw mode!
+		return;
+	  case SPINPLANET_DITHER_NONE:
+	  case SPINPLANET_DITHER_TRUECOLOR:
+		newsource = downscale_32bpp((uint32_t *)source, sourcepitch,
+				msize, msize, msize / newmsize);
+		break;
+	  case SPINPLANET_DITHER_RANDOM:
+	  case SPINPLANET_DITHER_ORDERED:
+	  case SPINPLANET_DITHER_SKEWED:
+	  case SPINPLANET_DITHER_NOISE:
+	  case SPINPLANET_DITHER_SEMIINTERLACE:
+	  case SPINPLANET_DITHER_INTERLACE:
+		newsource = downscale_8bpp((uint8_t *)source, sourcepitch,
+				msize, msize, msize / newmsize);
+		break;
+	}
+	if(!newsource)
+		return;
+
+	if(free_source)
+	{
+		free(source);
+		free_source = false;
+	}
+	source = newsource;
+	sourcepitch = newmsize;
+	free_source = true;
+	set_msize(newmsize);
 }
 
 
@@ -364,6 +463,7 @@ void spinplanet_t::dth_prepare()
 		free_source = true;
 		break;
 	}
+	scale_texture();
 }
 
 
@@ -410,6 +510,7 @@ void spinplanet_t::refresh(SDL_Rect *r)
 	if(needs_prepare)
 	{
 		dth_prepare();
+		init_lens();
 		needs_prepare = false;
 	}
 
