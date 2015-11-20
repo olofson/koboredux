@@ -73,14 +73,14 @@ void prefs_t::init()
 	key("vol_boost", vol_boost, 0); desc("Volume Boost");
 
 	comment("--- Video settings -------------------------");
-	yesno("fullscreen", fullscreen, 0); desc("Fullscreen Display");
+	yesno("fullscreen", fullscreen, 1); desc("Fullscreen Display");
 	key("width", width, 0); desc("Horizontal Resolution");
 	key("height", height, 0); desc("Vertical Resolution");
 	yesno("autoswap", autoswap, 0); desc("Automatically swap display dimension");
 	key("aspect", aspect, 1000); desc("Pixel Aspect Ratio");
 	key("maxfps", max_fps, 100); desc("Maximum fps");
 	key("maxfpsstrict", max_fps_strict, 0); desc("Strictly Regulated fps");
-	key("videomode", videomode, 0x10920); desc("Video Mode");
+	key("videomode", videomode, 1); desc("Video Mode");
 	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
 
 	comment("--- Graphics settings ----------------------");
