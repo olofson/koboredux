@@ -40,9 +40,9 @@ cfg_key_t::cfg_key_t()
 {
 	next = NULL;
 	name = "<unnamed>";
-	save = 1;
+	save = true;
 	typecode = CFG_NONE;
-	redefined = 0;
+	redefined = false;
 	description = NULL;
 }
 
@@ -89,7 +89,7 @@ int cfg_comment_t::copy(cfg_key_t *from)
 	cfg_switch_t
 ----------------------------------------------------------*/
 
-cfg_switch_t::cfg_switch_t(const char *_name, int &var, int def, int _save)
+cfg_switch_t::cfg_switch_t(const char *_name, int &var, int def, bool _save)
 {
 	name = _name;
 	value = &var;
@@ -156,7 +156,7 @@ int cfg_switch_t::is_your_var(void *var)
 	cfg_key_int_t
 ----------------------------------------------------------*/
 
-cfg_key_int_t::cfg_key_int_t(const char *_name, int &var, int def, int _save)
+cfg_key_int_t::cfg_key_int_t(const char *_name, int &var, int def, bool _save)
 {
 	name = _name;
 	value = &var;
@@ -207,7 +207,8 @@ int cfg_key_int_t::is_your_var(void *var)
 	cfg_key_float_t
 ----------------------------------------------------------*/
 
-cfg_key_float_t::cfg_key_float_t(const char *_name, float &var, float def, int _save)
+cfg_key_float_t::cfg_key_float_t(const char *_name, float &var, float def,
+		bool _save)
 {
 	name = _name;
 	value = &var;
@@ -261,7 +262,7 @@ int cfg_key_float_t::is_your_var(void *var)
 ----------------------------------------------------------*/
 
 cfg_key_string_t::cfg_key_string_t(const char *_name, cfg_string_t &var,
-		const cfg_string_t def, int _save)
+		const cfg_string_t def, bool _save)
 {
 	name = _name;
 	value = &var;
@@ -406,7 +407,7 @@ void config_parser_t::comment(const char *text)
 }
 
 
-void config_parser_t::yesno(const char *_name, int &var, int def, int save)
+void config_parser_t::yesno(const char *_name, int &var, int def, bool save)
 {
 	add(new cfg_switch_t(_name, var, def, save));
 }
@@ -418,20 +419,20 @@ void config_parser_t::command(const char *_name, int &var)
 }
 
 
-void config_parser_t::key(const char *_name, int &var, int def, int save)
+void config_parser_t::key(const char *_name, int &var, int def, bool save)
 {
 	add(new cfg_key_int_t(_name, var, def, save));
 }
 
 
-void config_parser_t::key(const char *_name, float &var, float def, int save)
+void config_parser_t::key(const char *_name, float &var, float def, bool save)
 {
 	add(new cfg_key_float_t(_name, var, def, save));
 }
 
 
 void config_parser_t::key(const char *_name, cfg_string_t &var,
-		const cfg_string_t def, int save)
+		const cfg_string_t def, bool save)
 {
 	add(new cfg_key_string_t(_name, var, def, save));
 }
@@ -455,7 +456,7 @@ void config_parser_t::set_defaults()
 	while(k)
 	{
 		k->set_default();
-		k->redefined = 0;
+		k->redefined = false;
 		k = k->next;
 	}
 }
@@ -593,7 +594,7 @@ int config_parser_t::parse(int argc, char *argv[])
 				grabbed = k->read(argc - i, argv + i);
 				if(grabbed > 0)
 				{
-					k->redefined = 1;
+					k->redefined = true;
 					break;
 				}
 				else if(grabbed < 0)
@@ -652,7 +653,7 @@ int config_parser_t::write(FILE *f)
 }
 
 
-int config_parser_t::_redefined(void *var)
+bool config_parser_t::_redefined(void *var)
 {
 	cfg_key_t *k = keys;
 	while(k)
@@ -661,7 +662,7 @@ int config_parser_t::_redefined(void *var)
 			return k->redefined;
 		k = k->next;
 	}
-	return 0;
+	return false;
 }
 
 
@@ -672,7 +673,7 @@ void config_parser_t::_accept(void *var)
 	{
 		if(k->is_your_var(var))
 		{
-			k->redefined = 0;
+			k->redefined = false;
 			break;
 		}
 		k = k->next;
@@ -684,6 +685,16 @@ void config_parser_t::_accept(void *var)
 /*----------------------------------------------------------
 	Generic Symbol Table Style API
 ----------------------------------------------------------*/
+
+int config_parser_t::get(void *var)
+{
+	if(!table)
+		return -1;
+	for(int i = 0; i < nkeys; ++i)
+		if(table[i]->is_your_var(var))
+			return i;
+	return -1;
+}
 
 int config_parser_t::find(const char *_name)
 {
@@ -737,10 +748,10 @@ cfg_types_t config_parser_t::type(int symbol)
 }
 
 
-int config_parser_t::do_save(int symbol)
+bool config_parser_t::do_save(int symbol)
 {
 	if(check_symbol(symbol) < 0)
-		return CFG_NONE;
+		return false;
 	return table[symbol]->save;
 }
 
@@ -800,7 +811,7 @@ void config_parser_t::set(int symbol, int value)
 		}
 		break;
 	}
-	table[symbol]->redefined = 1;
+	table[symbol]->redefined = true;
 }
 
 
@@ -837,7 +848,7 @@ void config_parser_t::set(int symbol, float value)
 		}
 		break;
 	}
-	table[symbol]->redefined = 1;
+	table[symbol]->redefined = true;
 }
 
 
@@ -889,7 +900,7 @@ void config_parser_t::set(int symbol, const char *text)
 		}
 		break;
 	}
-	table[symbol]->redefined = 1;
+	table[symbol]->redefined = true;
 }
 
 

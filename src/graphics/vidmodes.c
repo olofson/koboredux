@@ -33,6 +33,7 @@ typedef struct VMM_IMode
 static VMM_IMode modetab[] =
 {
 	// Special modes
+	{0,			0,	0,	VMID_CUSTOM,	"Custom"},
 	{VMM_DESKTOP,		0,	0,	VMID_DESKTOP,	"Desktop"},
 	{VMM_DESKTOP,		0,	0,	VMID_FULLWINDOW,"Fullwindow"},
 
@@ -96,7 +97,7 @@ static VMM_IMode modetab[] =
 	{VMM_CINEMA | VMM_PC,	4096,	2160,	0x10ba0,	"4K"},
 
 	// End of table
-	{0}
+	{0, -1}
 };
 
 
@@ -116,7 +117,7 @@ int vmm_Init(int show, int hide)
 TODO: Include detected SDL modes, if requested.
  */
 
-	for(i = 0; modetab[i].flags; ++i)
+	for(i = 0; modetab[i].width != -1; ++i)
 	{
 		VMM_Mode *m;
 		double nominal_aspect;

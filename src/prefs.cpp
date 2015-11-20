@@ -74,8 +74,8 @@ void prefs_t::init()
 
 	comment("--- Video settings -------------------------");
 	yesno("fullscreen", fullscreen, 0); desc("Fullscreen Display");
-	key("width", width, 640); desc("Horizontal Resolution");
-	key("height", height, 480); desc("Vertical Resolution");
+	key("width", width, 0); desc("Horizontal Resolution");
+	key("height", height, 0); desc("Vertical Resolution");
 	yesno("autoswap", autoswap, 0); desc("Automatically swap display dimension");
 	key("aspect", aspect, 1000); desc("Pixel Aspect Ratio");
 	key("maxfps", max_fps, 100); desc("Maximum fps");

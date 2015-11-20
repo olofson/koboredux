@@ -635,18 +635,22 @@ int KOBO_main::init_display(prefs_t *p)
 
 	vmm_Init(-1, 0);
 	VMM_Mode *vm = vmm_FindMode(p->videomode);
-	if(vm)
+	if(vm && (vm->id != VMID_CUSTOM))
 	{
 		log_printf(WLOG, "Video mode: %s (%x)\n", vm->name,
 				p->videomode);
 		if(vm->width && vm->height)
 		{
+			// Specific resolution
 			dw = vm->width;
 			dh = vm->height;
 			log_printf(WLOG, "Video mode size: %d x %d\n", dw, dh);
 		}
 		else
 		{
+			// Desktop resolution. To do this, we need to open the
+			// engine *first*, to find out what resolution we're
+			// actually using!
 			if(gengine->open(ENEMY_MAX) < 0)
 				return -1;
 			dw = gengine->width();
@@ -657,8 +661,13 @@ int KOBO_main::init_display(prefs_t *p)
 	}
 	else
 	{
+		// Custom resolution
 		dw = p->width;
 		dh = p->height;
+		if(dw <= 0)
+			dw = 640;
+		if(dh <= 0)
+			dh = 360;
 		log_printf(WLOG, "Requested size: %d x %d\n", dw, dh);
 	}
 
@@ -2250,11 +2259,19 @@ int main(int argc, char *argv[])
 	if((argc < 1) || (strcmp("-override", argv[0]) != 0))
 		km.load_config(prefs);
 
+	prefs->accept(prefs->width);
+	prefs->accept(prefs->height);
 	if((prefs->parse(argc, argv) < 0) || prefs->cmd_help)
 	{
 		put_usage();
 		main_cleanup();
 		return 1;
+	}
+	if(prefs->redefined(prefs->width) && prefs->redefined(prefs->height))
+	{
+		// Automatically set custom mode if 'width' and 'height' are
+		// specified on the command line.
+		prefs->set(prefs->get(&prefs->videomode), VMID_CUSTOM);
 	}
 
 	if(prefs->cmd_options_man)

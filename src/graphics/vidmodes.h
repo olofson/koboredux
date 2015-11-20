@@ -59,6 +59,7 @@ typedef enum
 /* Special video mode IDs */
 typedef enum
 {
+	VMID_CUSTOM =		0,	/* Custom size/resolution */
 	VMID_DESKTOP =		1,	/* Desktop resolution */
 	VMID_FULLWINDOW =	2	/* Fullscreen window */
 } VMM_ModeID;
