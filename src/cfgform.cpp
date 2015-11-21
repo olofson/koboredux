@@ -119,7 +119,7 @@ void config_form_t::setstatus(int mask)
 	// from the video mode manager!
 	if(prf->videomode)
 	{
-		VMM_Mode *m = vmm_FindMode(prf->videomode);
+		VMM_Mode *m = vmm_GetMode(prf->videomode);
 		if(m)
 		{
 			prf->width = m->width;

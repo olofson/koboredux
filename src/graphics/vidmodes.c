@@ -21,6 +21,7 @@
  */
 
 #include "vidmodes.h"
+#include "SDL.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -107,31 +108,37 @@ static VMM_IMode modetab[] =
 
 static VMM_Mode *vmm_modes = NULL;
 
-int vmm_Init(int show, int hide)
+int vmm_Init(void)
 {
 	int i;
+	SDL_DisplayMode dm;
 	VMM_Mode *lastm = NULL;
 	vmm_Close();
 
-/*
-TODO: Include detected SDL modes, if requested.
- */
+	if(SDL_GetDesktopDisplayMode(0, &dm) != 0)
+		dm.w = dm.h = 0;
+
+	/* TODO: Include detected SDL modes! */
 
 	for(i = 0; modetab[i].width != -1; ++i)
 	{
 		VMM_Mode *m;
 		double nominal_aspect;
 		VMM_IMode *im = &modetab[i];
-		if(im->flags & hide)
-			continue;
-		if(!(im->flags & show))
-			continue;
 		m = calloc(1, sizeof(VMM_Mode));
 		if(!m)
 			return -1;	/* Out of memory! */
 		m->id = im->id;
-		m->width = im->width;
-		m->height = im->height;
+		if(im->flags & VMM_DESKTOP)
+		{
+			m->width = dm.w;
+			m->height = dm.h;
+		}
+		else
+		{
+			m->width = im->width;
+			m->height = im->height;
+		}
 		m->flags = im->flags;
 		if(im->flags & VMM_3_2)
 			nominal_aspect = 3.0f / 2.0f;
@@ -162,7 +169,7 @@ TODO: Include detected SDL modes, if requested.
 
 void vmm_Close(void)
 {
-	VMM_Mode *m = vmm_First();
+	VMM_Mode *m = vmm_Next(NULL);
 	while(m)
 	{
 		VMM_Mode *dm = m;
@@ -178,15 +185,32 @@ void vmm_Close(void)
 	Scanning
 -------------------------------------------------------------------------*/
 
-VMM_Mode *vmm_First(void)
+VMM_Mode *vmm_Next(VMM_Mode *current)
 {
-	return vmm_modes;
+	if(current)
+		return current->next;
+	else
+		return vmm_modes;
 }
 
 
-VMM_Mode *vmm_Next(VMM_Mode *current)
+VMM_Mode *vmm_FindNext(VMM_Mode *current, int include, int skip,
+		int maxwidth, int maxheight)
 {
-	return current->next;
+	VMM_Mode *m = current;
+	while((m = vmm_Next(m)))
+	{
+		if(m->flags & skip)
+			continue;
+		if(!(m->flags & include))
+			continue;
+		if(maxwidth && m->width && (m->width > maxwidth))
+			continue;
+		if(maxheight && m->height && (m->height > maxheight))
+			continue;
+		return m;
+	}
+	return m;
 }
 
 
@@ -194,9 +218,9 @@ VMM_Mode *vmm_Next(VMM_Mode *current)
 	Indexing
 -------------------------------------------------------------------------*/
 
-VMM_Mode *vmm_FindMode(int id)
+VMM_Mode *vmm_GetMode(int id)
 {
-	VMM_Mode *m = vmm_First();
+	VMM_Mode *m = vmm_Next(NULL);
 	while(m)
 	{
 		if(m->id == id)

@@ -633,8 +633,8 @@ int KOBO_main::init_display(prefs_t *p)
 	gengine->cursor(0);
 	gengine->mode((VMM_ModeID)p->videomode, p->fullscreen);
 
-	vmm_Init(-1, 0);
-	VMM_Mode *vm = vmm_FindMode(p->videomode);
+	vmm_Init();
+	VMM_Mode *vm = vmm_GetMode(p->videomode);
 	if(vm && (vm->id != VMID_CUSTOM))
 	{
 		log_printf(WLOG, "Video mode: %s (%x)\n", vm->name,

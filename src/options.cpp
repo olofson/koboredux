@@ -104,12 +104,13 @@ void video_options_t::build()
 	space();
 	small();
 
+	vmm_Init();
 	if(firstbuild)
 	{
-		vmm_Init(VMM_ALL, 0);
-		VMM_Mode *vm = vmm_FindMode(prf->videomode);
+		VMM_Mode *vm = vmm_GetMode(prf->videomode);
 		if(vm)
 		{
+			// Set up filter based on current mode
 			if(vm->flags & VMM__RECOMMENDED)
 				showmodes = VMM__RECOMMENDED;
 			else if(vm->flags & VMM__COMMON)
@@ -144,14 +145,25 @@ void video_options_t::build()
 	yesno("Show Odd Low Resolutions" , &showlow, OS_REBUILD);
 	xoffs = 0.5;
 	list("Display Mode", &prf->videomode, OS_RESTART_VIDEO | OS_REBUILD);
-		vmm_Init(showmodes, showlow ? 0 : VMM_LORES);
-		VMM_Mode *vm = vmm_First();
 		char buf[256];
 		buf[sizeof(buf) - 1] = 0;
-		while(vm)
+		for(VMM_Mode *vm = NULL; ; )
 		{
+			if(!(vm = vmm_FindNext(vm,
+					showmodes,
+					showlow ? 0 : VMM_LORES,
+					0, 0)))
+				break;
+
+			// Skipping this for now, as it doesn't seem to work
+			// properly.
+			if(vm->id == VMID_FULLWINDOW)
+				continue;
+
 			if(vm->flags & VMM_DESKTOP)
-				snprintf(buf, sizeof(buf) - 1, "%s", vm->name);
+				snprintf(buf, sizeof(buf) - 1, "%s (%dx%d)",
+						vm->name,
+						vm->width, vm->height);
 			else if(vm->name)
 				snprintf(buf, sizeof(buf) - 1, "%dx%d (%s)",
 						vm->width, vm->height,
@@ -159,15 +171,7 @@ void video_options_t::build()
 			else
 				snprintf(buf, sizeof(buf) - 1, "%dx%d",
 						vm->width, vm->height);
-#if 0
 			item(buf, vm->id);
-#else
-			// Skipping this for now, as it doesn't seem to work
-			// properly.
-			if(vm->id != VMID_FULLWINDOW)
-				item(buf, vm->id);
-#endif
-			vm = vmm_Next(vm);
 		}
 		item("Custom", -1);
 	if(prf->videomode < 0)

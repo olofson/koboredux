@@ -80,21 +80,22 @@ struct VMM_Mode
 /*-------------------------------------------------------------------------
 	Gathering and constructing modes
 -------------------------------------------------------------------------*/
-int vmm_Init(int show, int hide);
+int vmm_Init(void);
 void vmm_Close(void);
 
 
 /*-------------------------------------------------------------------------
 	Scanning
 -------------------------------------------------------------------------*/
-VMM_Mode *vmm_First(void);
 VMM_Mode *vmm_Next(VMM_Mode *current);
+VMM_Mode *vmm_FindNext(VMM_Mode *current, int include, int skip,
+		int maxwidth, int maxheight);
 
 
 /*-------------------------------------------------------------------------
 	Indexing
 -------------------------------------------------------------------------*/
-VMM_Mode *vmm_FindMode(int id);
+VMM_Mode *vmm_GetMode(int id);
 
 
 /*-------------------------------------------------------------------------
