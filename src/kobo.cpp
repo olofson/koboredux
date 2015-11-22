@@ -218,6 +218,7 @@ class KOBO_main
 
 	static Uint32		esc_tick;
 	static int		esc_count;
+	static int		esc_hammering_trigs;
 	static int		exit_game_fast;
 
 	// Frame rate counter
@@ -264,9 +265,10 @@ class KOBO_main
 	static void close_js();
 
 	static bool escape_hammering();
+	static bool escape_hammering_quit();
 	static bool quit_requested();
 	static bool skip_requested();
-	static void brutal_quit();
+	static void brutal_quit(bool force = false);
 	static void pause_game();
 
 	static void print_fps_results();
@@ -283,6 +285,7 @@ FILE		*KOBO_main::logfile = NULL;
 
 Uint32		KOBO_main::esc_tick = 0;
 int		KOBO_main::esc_count = 0;
+int		KOBO_main::esc_hammering_trigs = 0;
 int		KOBO_main::exit_game_fast = 0;
 
 int		KOBO_main::fps_count = 0;
@@ -330,8 +333,21 @@ bool KOBO_main::escape_hammering()
 		esc_count = 1;
 	else
 		++esc_count;
+	if(nt - esc_tick > 3000)
+		esc_hammering_trigs = 0;
 	esc_tick = nt;
-	return esc_count >= 5;
+	if(esc_count == 5)
+	{
+		++esc_hammering_trigs;
+		return true;
+	}
+	return false;
+}
+
+
+bool KOBO_main::escape_hammering_quit()
+{
+	return esc_hammering_trigs >= 2;
 }
 
 
@@ -1425,9 +1441,9 @@ void KOBO_main::save_config(prefs_t *p)
 }
 
 
-void KOBO_main::brutal_quit()
+void KOBO_main::brutal_quit(bool force)
 {
-	if(exit_game_fast)
+	if(exit_game_fast || force)
 	{
 		log_printf(ULOG, "Second try quitting; using brutal method!\n");
 		atexit(SDL_Quit);
@@ -1821,8 +1837,11 @@ void kobo_gfxengine_t::frame()
 			gsm.press(k, ev.key.keysym.sym);
 			break;
 		  case SDL_KEYUP:
-			if((ev.key.keysym.sym == SDLK_ESCAPE) && km.escape_hammering())
+			if((ev.key.keysym.sym == SDLK_ESCAPE) &&
+					km.escape_hammering())
 			{
+				if(km.escape_hammering_quit())
+					km.brutal_quit(true);
 				km.pause_game();
 				safe_video_mode();
 				prefs->scalemode = (int)GFX_SCALE_NEAREST;
