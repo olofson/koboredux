@@ -115,6 +115,9 @@ int vmm_Init(void)
 	VMM_Mode *lastm = NULL;
 	vmm_Close();
 
+	if(!SDL_WasInit(SDL_INIT_VIDEO))
+		SDL_InitSubSystem(SDL_INIT_VIDEO);
+
 	if(SDL_GetDesktopDisplayMode(0, &dm) != 0)
 		dm.w = dm.h = 0;
 
@@ -150,8 +153,8 @@ int vmm_Init(void)
 			nominal_aspect = 16.0f / 9.0f;
 		else
 			nominal_aspect = 4.0f / 3.0f;
-		if(im->width)
-			m->aspect = nominal_aspect / im->width * im->height;
+		if(m->width)
+			m->aspect = nominal_aspect / m->width * m->height;
 		else
 			m->aspect = 1.0f;
 		if(im->name)
