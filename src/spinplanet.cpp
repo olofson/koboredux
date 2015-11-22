@@ -27,6 +27,8 @@
 
 spinplanet_t::spinplanet_t(gfxengine_t *e) : stream_window_t(e)
 {
+	sbank = -1;
+	sframe = 0;
 	mode = SPINPLANET_OFF;
 	dither = SPINPLANET_DITHER_RAW;
 	lens = NULL;
@@ -74,7 +76,10 @@ void spinplanet_t::set_msize(int size)
 	while(msizemask != msize && msizemask)
 		msizemask <<= 1;
 	if(!msizemask)
+	{
 		set_mode(SPINPLANET_OFF);
+		sbank = -1;
+	}
 	else
 		--msizemask;
 }
@@ -373,6 +378,12 @@ void spinplanet_t::dth_prepare()
 		free_source = false;
 	}
 
+	if(sbank < 0)
+	{
+		set_mode(SPINPLANET_OFF);
+		return;
+	}
+
 	s_bank_t *bank = s_get_bank(engine->get_gfx(), sbank);
 	if(!bank)
 	{
@@ -512,6 +523,12 @@ void spinplanet_t::refresh(SDL_Rect *r)
 		dth_prepare();
 		init_lens();
 		needs_prepare = false;
+	}
+
+	if(sbank < 0)
+	{
+		set_mode(SPINPLANET_OFF);
+		return;
 	}
 
 	// "Rotation"

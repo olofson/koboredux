@@ -241,15 +241,12 @@ void gfxengine_t::scalemode(gfx_scalemodes_t sm, int clamping)
 	if(!sf1)
 		return;
 
-	int rxs = (xs * 256 + 127) / sxs;
-	int rys = (ys * 256 + 127) / sys;
-
 	// Filter 2 is off in most cases
 	sf2->args.x = 0;
 	sf2->args.fx = 0.0f;
 	sf2->args.fy = 0.0f;
 
-	if((rxs == 256) && (rys == 256))
+	if((sxs == 256) && (sys == 256))
 	{
 		sf1->args.x = SF_SCALE_NEAREST;
 		sf1->args.fx = 1.0f;
@@ -274,8 +271,8 @@ void gfxengine_t::scalemode(gfx_scalemodes_t sm, int clamping)
 		break;
 	}
 
-	sf1->args.fx = rxs * (1.0f/256.0f);
-	sf1->args.fy = rys * (1.0f/256.0f);
+	sf1->args.fx = sxs * (1.0f / 256.0f);
+	sf1->args.fy = sys * (1.0f / 256.0f);
 
 	switch(_scalemode)
 	{
@@ -347,16 +344,22 @@ void gfxengine_t::scalemode(gfx_scalemodes_t sm, int clamping)
 
 void gfxengine_t::source_scale(float x, float y)
 {
-	sxs = (int)(x * 256.f);
-	sys = (int)(y * 256.f);
+	if(x)
+		sxs = (int)(xs / x);
+	else
+		sxs = 256;
+	if(y)
+		sys = (int)(ys / y);
+	else
+		sys = 256;
 	scalemode(_scalemode, _clamping);
 }
 
 
 void gfxengine_t::absolute_scale(float x, float y)
 {
-	sxs = (int)(xs / x);
-	sys = (int)(ys / y);
+	sxs = (int)(x * 256.f);
+	sys = (int)(y * 256.f);
 	scalemode(_scalemode, _clamping);
 }
 

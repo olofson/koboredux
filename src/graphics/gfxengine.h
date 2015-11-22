@@ -209,8 +209,8 @@ class gfxengine_t
 	window_t	*_target;
 	windowbase_t	*windows;	// Linked list
 	windowbase_t	*selected;	// Currently selected for rendering
-	int		xs, ys;		// fix 24:8
-	int		sxs, sys;	// fix 24:8
+	int		xs, ys;		// Display scale (fixp 24:8)
+	int		sxs, sys;	// Load scale (fixp 24:8)
 	s_filter_t	*sf1, *sf2;	// Scaling filter plugins
 	s_filter_t	*acf;		// Alpha cleaning plugin
 	s_filter_t	*bcf;		// Brightness/contrast plugin
