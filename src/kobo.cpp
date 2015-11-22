@@ -1694,6 +1694,72 @@ void kobo_gfxengine_t::setup_pointer_margin(int dw, int dh)
 }
 #endif
 
+
+void kobo_gfxengine_t::safe_video_mode()
+{
+	prefs->fullscreen = 0;
+	prefs->videomode = 0x10920;
+	prefs->width = 640;
+	prefs->height = 360;
+	prefs->changed = 1;
+	global_status |= OS_RELOAD_GRAPHICS | OS_RESTART_VIDEO;
+}
+
+
+void kobo_gfxengine_t::fullscreen_toggle()
+{
+	VMM_Mode *vm = vmm_GetMode(prefs->videomode);
+	VMM_Mode *dvm = vmm_GetMode(VMID_DESKTOP);
+
+	// Let's just assume we'll change *something*. If all else fails, at
+	// least this will cause the display subsystem to be reinitialized, and
+	// if the result works, the updated config will be saved on exit.
+	prefs->changed = 1;
+	global_status |= OS_RELOAD_GRAPHICS | OS_RESTART_VIDEO;
+
+	if(!vm || !dvm)
+	{
+		// Can't get modes! Enforce safe fallback.
+		safe_video_mode();
+		return;
+	}
+
+	if(prefs->fullscreen || (vm->flags & VMM_DESKTOP))
+	{
+		// Fullscreen or similar; switch to a "reasonably sized" window
+		int maxw = dvm->width * 75 / 100;
+		int maxh = dvm->height * 75 / 100;
+		VMM_Mode *bestm = NULL;
+
+		// Find largest 16:9 mode that fits in 75% of the desktop size
+		for(vm = NULL; (vm = vmm_FindNext(vm, VMM_16_9, VMM_DESKTOP,
+				maxw, maxh)); )
+			if(!bestm || (vm->width >= bestm->width) ||
+					(vm->height >= bestm->height))
+				bestm = vm;
+		if(!bestm)
+		{
+			// Could not find an appropriate mode!
+			safe_video_mode();
+			return;
+		}
+
+		prefs->fullscreen = 0;
+		prefs->videomode = bestm->id;
+		prefs->width = bestm->width;
+		prefs->height = bestm->height;
+	}
+	else
+	{
+		// Only ever use desktop resolution fullscreen mode here!
+		// Anything else is way too likely to cause trouble these days,
+		// so users will just have to select those modes manually.
+		prefs->fullscreen = 1;
+		prefs->videomode = VMID_DESKTOP;
+	}
+}
+
+
 void kobo_gfxengine_t::frame()
 {
 	sound.frame();
@@ -1737,10 +1803,7 @@ void kobo_gfxengine_t::frame()
 				if(!(ms & KMOD_ALT))
 					break;
 				km.pause_game();
-				prefs->fullscreen = !prefs->fullscreen;
-				prefs->changed = 1;
-				global_status |= OS_RELOAD_GRAPHICS |
-						OS_RESTART_VIDEO;
+				fullscreen_toggle();
 				stop();
 				return;
 			  case SDLK_PRINTSCREEN:
@@ -1761,10 +1824,7 @@ void kobo_gfxengine_t::frame()
 			if((ev.key.keysym.sym == SDLK_ESCAPE) && km.escape_hammering())
 			{
 				km.pause_game();
-				prefs->fullscreen = 0;
-				prefs->videomode = 0x10920;
-				prefs->width = 640;
-				prefs->height = 360;
+				safe_video_mode();
 				prefs->scalemode = (int)GFX_SCALE_NEAREST;
 				prefs->brightness = 100;
 				prefs->contrast = 100;

@@ -59,6 +59,8 @@ class kobo_gfxengine_t : public gfxengine_t
 	void frame();
 	void pre_render();
 	void post_render();
+	void safe_video_mode();
+	void fullscreen_toggle();
   public:
 #ifdef ENABLE_TOUCHSCREEN
 	void setup_pointer_margin(int, int);
