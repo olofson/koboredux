@@ -1765,7 +1765,6 @@ void kobo_gfxengine_t::frame()
 				prefs->videomode = 0x10920;
 				prefs->width = 640;
 				prefs->height = 360;
-				prefs->aspect = 1000;
 				prefs->scalemode = (int)GFX_SCALE_NEAREST;
 				prefs->brightness = 100;
 				prefs->contrast = 100;

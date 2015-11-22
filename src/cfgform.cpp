@@ -124,7 +124,6 @@ void config_form_t::setstatus(int mask)
 		{
 			prf->width = m->width;
 			prf->height = m->height;
-			prf->aspect = (int)(m->aspect * 1000.0f + .5f);
 		}
 	}
 

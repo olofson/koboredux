@@ -74,7 +74,6 @@ class prefs_t : public config_parser_t
 	int	width;		//Screen/window width
 	int	height;		//Screen/window height
 	int	autoswap;	//Automatically swap dimensions if init fails
-	int	aspect;		//Pixel aspect ratio * 1000
 	int	max_fps;	//Maximum fps
 	int	max_fps_strict;	//Strictly regulated fps limiter
 	int	doublebuf;	//Use double buffering
