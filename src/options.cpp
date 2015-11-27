@@ -298,38 +298,44 @@ void audio_options_t::build()
 			}
 		}
 
-		//Mixer
-		list("Sound Effects Level", &prf->sfx_vol, OS_UPDATE_AUDIO);
+		space();
+
+		//Master section
+		list("Master Volume", &prf->volume, OS_UPDATE_AUDIO);
 			item("OFF", 0);
 			perc_list(10, 90, 10);
 			perc_list(100, 200, 25);
-		if(prf->use_music)
-		{
-			list("Intro Music Level", &prf->intro_vol, OS_UPDATE_AUDIO);
-				item("OFF", 0);
-				perc_list(10, 90, 10);
-				perc_list(100, 200, 25);
-			list("In-Game Music Level", &prf->music_vol, OS_UPDATE_AUDIO);
-				item("OFF", 0);
-				perc_list(10, 90, 10);
-				perc_list(100, 200, 25);
-		}
-
-#if 0
-		//Master effects
-		list("Reverb", &prf->reverb, OS_UPDATE_AUDIO);
-			item("OFF", 0);
-			item("Low", 50);
-			item("Normal", 100);
-			item("High", 175);
-			item("Extreme", 250);
 		list("Volume Boost", &prf->vol_boost, OS_UPDATE_AUDIO);
 			item("OFF", 0);
 			item("Low", 1);
 			item("Moderate", 2);
 			item("High", 3);
 			item("Extreme", 4);
-#endif
+
+		space();
+
+		//Mixer
+		list("Sound Effects Volume", &prf->sfx_vol, OS_UPDATE_AUDIO);
+			item("OFF", 0);
+			perc_list(10, 90, 10);
+			perc_list(100, 200, 25);
+		list("User Interface Volume", &prf->ui_vol, OS_UPDATE_AUDIO);
+			item("OFF", 0);
+			perc_list(10, 90, 10);
+			perc_list(100, 200, 25);
+		if(prf->use_music)
+		{
+			list("Title Music Volume", &prf->title_vol,
+					OS_UPDATE_AUDIO);
+				item("OFF", 0);
+				perc_list(10, 90, 10);
+				perc_list(100, 200, 25);
+			list("In-Game Music Volume", &prf->music_vol,
+					OS_UPDATE_AUDIO);
+				item("OFF", 0);
+				perc_list(10, 90, 10);
+				perc_list(100, 200, 25);
+		}
 	}
 	space();
 	big();

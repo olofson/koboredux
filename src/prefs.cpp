@@ -65,12 +65,12 @@ void prefs_t::init()
 	yesno("cached_sounds", cached_sounds, 0); desc("Use Cached Sounds");
 	key("samplerate", samplerate, 44100); desc("Sample Rate");
 	key("latency", latency, 50); desc("Sound Latency");
-	key("vol", volume, 100); desc("Master Volume");
-	key("intro_vol", intro_vol, 100); desc("Intro Music Volume");
-	key("sfx_vol", sfx_vol, 100); desc("Sound Effects Volume");
-	key("music_vol", music_vol, 30); desc("In-Game Music Volume");
-	key("reverb", reverb, 100); desc("Reverb Level");
-	key("vol_boost", vol_boost, 0); desc("Volume Boost");
+	key("volume", volume, 100); desc("Master Volume");
+	key("vol_boost", vol_boost, 2); desc("Volume Boost");
+	key("ui_vol", ui_vol, 50); desc("User Interface Volume");
+	key("sfx_vol", sfx_vol, 70); desc("Sound Effects Volume");
+	key("music_vol", music_vol, 50); desc("Music Volume");
+	key("title_vol", title_vol, 70); desc("Title Music Volume");
 
 	comment("--- Video settings -------------------------");
 	yesno("fullscreen", fullscreen, 1); desc("Fullscreen Display");

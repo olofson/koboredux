@@ -26,41 +26,51 @@
 #include "config.h"
 #include "audiality2.h"
 
-
-/* Sound effects, songs and other program handles */
-#define KOBO_ALLSOUNDS	\
-	KOBO_DEFS(OAJINGLE,	"OAJingle")\
-	KOBO_DEFS(ONEUP,	"GiveEnergyMega")\
-	KOBO_DEFS(FINE,		"")\
-	KOBO_DEFS(BULLET,	"FireElectro")\
-	KOBO_DEFS(RING,		"")\
-	KOBO_DEFS(BOMB_DETO,	"Bomb")\
-	KOBO_DEFS(EXPLO_NODE,	"SegmentDeath")\
-	KOBO_DEFS(EXPLO_CORE,	"MegaDeath")\
-	KOBO_DEFS(EXPLO_ENEMY,	"BoomerangDeath")\
-	KOBO_DEFS(EXPLO_PLAYER,	"KoboDeath")\
-	KOBO_DEFS(EXPLO_RING,	"LavaImpact")\
-	KOBO_DEFS(EXPLO_ROCK,	"")\
-	KOBO_DEFS(BZZZT,	"")\
-	KOBO_DEFS(GAMEOVER,	"")\
-	KOBO_DEFS(READY,	"WarbleUp")\
-	KOBO_DEFS(PLAY,		"")\
-	KOBO_DEFS(PAUSE,	"ScratchDown")\
-	KOBO_DEFS(CANCEL,	"")\
-	KOBO_DEFS(ERROR,	"")\
-	KOBO_DEFS(LAUNCH2,	"Launch")\
-	KOBO_DEFS(LAUNCH,	"Launch")\
-	KOBO_DEFS(RUMBLE,	"BaseRumble")\
-	KOBO_DEFS(SHOT_START,	"")\
-	KOBO_DEFS(SHOT,		"FirePlasma")\
-	KOBO_DEFS(SHOT_END,	"")\
-	KOBO_DEFS(METALLIC,	"Klank")\
-	KOBO_DEFS(DAMAGE,	"Impact")\
-	KOBO_DEFS(MOVE,		"")\
-	KOBO_DEFS(HIT_ROCK,	"ImpactGround")\
-	KOBO_DEFS(TICK,		"Tick")\
-	KOBO_DEFS(ENEMYM,	"Teleport")
-
+// Sound effects, songs and other program handles
+#define KOBO_ALLSOUNDS						\
+	KOBO_DEFS(G_MASTER,	"MasterGroup")			\
+	KOBO_DEFS(G_UI,		"UIGroup")			\
+	KOBO_DEFS(G_SFX,	"SFXGroup")			\
+	KOBO_DEFS(G_MUSIC,	"MusicGroup")			\
+	KOBO_DEFS(G_TITLE,	"TitleMusicGroup")		\
+	KOBO_DEFS(OAJINGLE,	"OAJingle")			\
+	KOBO_DEFS(TITLESONG,	"TitleSong")			\
+	KOBO_DEFS(INGAMESONG,	"IngameSong")			\
+	KOBO_DEFS(ONEUP,	"GiveEnergyMega")		\
+	KOBO_DEFS(FINE,		"")				\
+	KOBO_DEFS(BULLET,	"FireElectro")			\
+	KOBO_DEFS(RING,		"")				\
+	KOBO_DEFS(BOMB_DETO,	"Bomb")				\
+	KOBO_DEFS(EXPLO_NODE,	"SegmentDeath")			\
+	KOBO_DEFS(EXPLO_CORE,	"MegaDeath")			\
+	KOBO_DEFS(EXPLO_ENEMY,	"BoomerangDeath")		\
+	KOBO_DEFS(EXPLO_PLAYER,	"KoboDeath")			\
+	KOBO_DEFS(EXPLO_RING,	"LavaImpact")			\
+	KOBO_DEFS(EXPLO_ROCK,	"")				\
+	KOBO_DEFS(BZZZT,	"")				\
+	KOBO_DEFS(LAUNCH2,	"Launch")			\
+	KOBO_DEFS(LAUNCH,	"Launch")			\
+	KOBO_DEFS(RUMBLE,	"BaseRumble")			\
+	KOBO_DEFS(SHOT_START,	"")				\
+	KOBO_DEFS(SHOT,		"FirePlasma")			\
+	KOBO_DEFS(SHOT_END,	"")				\
+	KOBO_DEFS(METALLIC,	"Klank")			\
+	KOBO_DEFS(DAMAGE,	"Impact")			\
+	KOBO_DEFS(HIT_ROCK,	"ImpactGround")			\
+	KOBO_DEFS(ENEMYM,	"Teleport")			\
+	KOBO_DEFS(UI_OPEN,	"UIOpen")			\
+	KOBO_DEFS(UI_OK,	"UIOK")				\
+	KOBO_DEFS(UI_MOVE,	"UIMove")			\
+	KOBO_DEFS(UI_TICK,	"UITick")			\
+	KOBO_DEFS(UI_CDTICK,	"UICountdownTick")		\
+	KOBO_DEFS(UI_GAMEOVER,	"UIGameOver")			\
+	KOBO_DEFS(UI_READY,	"UIReady")			\
+	KOBO_DEFS(UI_PLAY,	"UIPlay")			\
+	KOBO_DEFS(UI_PAUSE,	"UIPause")			\
+	KOBO_DEFS(UI_CANCEL,	"UICancel")			\
+	KOBO_DEFS(UI_ERROR,	"UIError")			\
+	KOBO_DEFS(UI_LOADER,	"UILoader")			\
+	KOBO_DEFS(UI_NOISE,	"UINoise")
 
 #define	KOBO_DEFS(x, y)	SOUND_##x,
 enum KOBO_sounds
@@ -90,9 +100,28 @@ class KOBO_sound
 
 	// Audiality 2 interface
 	static A2_state *state;
-	static A2_handle rootvoice;
-	static A2_handle sfxbank;
-	static A2_handle sounds[SOUND__COUNT];
+	static A2_handle rootvoice;	// Engine root voice
+	static A2_handle master_g;	// Master group
+	static A2_handle ui_g;		// UI sfx group
+	static A2_handle sfx_g;		// Ingame sfx group
+	static A2_handle music_g;	// Ingame music group
+	static A2_handle title_g;	// Title music group
+	static A2_handle noisehandle;	// Transition noise effect
+	static A2_handle musichandle;	// Currently playing song
+	static A2_handle *modules;	// Loaded A2S modules
+	static A2_handle sounds[SOUND__COUNT];	// Sounds, songs etc
+
+	static int load_a2s(const char *path);
+	static void init_mixdown();
+
+	static inline float pref2vol(int v)
+	{
+		float f = (float)v / 100.0f;
+		if(f < 1.0f)
+			return f * f;
+		else
+			return f;
+	}
 
   public:
 	KOBO_sound();
@@ -104,23 +133,20 @@ class KOBO_sound
 	static int open();
 	static void prefschange();
 	static int load(int (*prog)(const char *msg), int force);
-	static void stop();
 	static void close();
 
 	/*--------------------------------------------------
 		Main controls
 	--------------------------------------------------*/
-	static void master_reverb(float rvb);
-	static void set_boost(int vol_boost);
-	static void sfx_volume(float vol);
-	static void intro_volume(float vol);
-	static void music_volume(float vol);
 	static void period(int ms);	// 0 to reset time
 	static void frame();
 	static void run();
 
+	// Play anything through one of the music groups
+	static void music(int sng, bool ingame = false);
+
 	// Play a user interface sound
-	static void play(unsigned wid, int vol = 65536, int pitch = 60<<16,
+	static void ui_play(unsigned wid, int vol = 65536, int pitch = 60<<16,
 			int pan = 0);
 
 	// Play a sound at a specific location on the map
@@ -133,7 +159,7 @@ class KOBO_sound
 	/*--------------------------------------------------
 		In-game sound
 	--------------------------------------------------*/
-	// Play in-game music
+	// Play in-game music for the specified scene
 	static void g_music(unsigned scene);
 
 	// Set listener position
@@ -177,6 +203,7 @@ class KOBO_sound
 
 	// Various UI effects
 	static void ui_noise(int n);
+	static void ui_open();
 	static void ui_ok();
 	static void ui_cancel();
 	static void ui_move();
@@ -186,7 +213,6 @@ class KOBO_sound
 	static void ui_pause();
 	static void ui_ready();
 	static void ui_countdown(int remain);
-	static void ui_oneup();
 	static void ui_gameover();
 };
 

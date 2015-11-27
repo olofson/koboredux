@@ -1,0 +1,78 @@
+def title	"KRMaster"
+def version	"0.7.0"
+def description	"Kobo Redux master section"
+def author	"David Olofson"
+def copyright	"Copyright 2015 David Olofson"
+def license	"CC BY-NC-ND 3.0"
+def a2sversion	"1.9.1"
+
+MasterGroup()
+{
+	struct {
+		inline 0 2
+		dcblock DCB 2 2
+		waveshaper WS 2 2
+		panmix PM 2 >
+	}
+	DCB.cutoff 10f
+	WS.amount .5
+	PM.vol .5
+	setall
+.restart
+	d 100
+	2(V)	{ PM.vol V; force restart }
+	3(WSA)	{ WS.amount (WSA * .25); force restart }
+}
+
+UIGroup()
+{
+	struct {
+		inline 0 1
+		dcblock DCB 1 1
+		filter12 LPF 1 1
+		filter12 APF 1 1
+		waveshaper WS 1 1
+		panmix PM 1 2
+		fbdelay FBD 2 >
+	}
+	DCB.cutoff 200f
+	LPF.cutoff 3000f; LPF.q .01
+	APF.cutoff 1500f; APF.q .015; APF.lp 1; APF.bp 1; APF.hp .5;
+	WS.amount 1
+	PM.vol .5; PM.pan .2
+	FBD.fbdelay 67; FBD.fbgain .1
+	FBD.ldelay 70; FBD.lgain .1
+	FBD.rdelay 83; FBD.rgain .1
+	setall
+.restart
+	d 100
+	2(V)	{ PM.vol V; force restart }
+}
+
+SFXGroup()
+{
+	struct {
+		inline 0 2
+		panmix PM 2 >
+	}
+	PM.vol .5
+	setall
+.restart
+	d 100
+	2(V)	{ PM.vol V; force restart }
+}
+
+MusicGroup()
+{
+	struct {
+		inline 0 2
+		panmix PM 2 >
+	}
+	PM.vol .5
+	setall
+.restart
+	d 100
+	2(V)	{ PM.vol V; force restart }
+}
+
+def TitleMusicGroup MusicGroup

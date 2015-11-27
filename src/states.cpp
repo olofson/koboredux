@@ -725,7 +725,7 @@ void st_menu_base_t::enter()
 	if(manage.game_stopped())
 		run_intro = 1;
 	if(sounds)
-		sound.ui_ok();
+		sound.ui_open();
 }
 
 // Because we may get back here after changing the configuration!
@@ -949,7 +949,7 @@ void st_new_player_t::enter()
 {
 	menu->open();
 	run_intro = 0;
-	sound.ui_ok();
+	sound.ui_open();
 }
 
 void st_new_player_t::leave()
@@ -1205,9 +1205,10 @@ void st_error_t::frame()
 	manage.run_intro();
 
 	frame_time = (int)SDL_GetTicks() - start_time;
-
+#if 0
 	if(frame_time % 1000 < 500)
 		sound.ui_error();
+#endif
 }
 
 
@@ -1586,7 +1587,7 @@ void st_options_base_t::close()
 
 void st_options_base_t::enter()
 {
-	sound.ui_ok();
+	sound.ui_open();
 	st_menu_base_t::enter();
 }
 

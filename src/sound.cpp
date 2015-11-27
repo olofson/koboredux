@@ -42,9 +42,25 @@ unsigned KOBO_sound::rumble = 0;
 
 A2_state *KOBO_sound::state = NULL;
 A2_handle KOBO_sound::rootvoice = 0;
-A2_handle KOBO_sound::sfxbank = 0;
+A2_handle KOBO_sound::master_g = 0;
+A2_handle KOBO_sound::ui_g = 0;
+A2_handle KOBO_sound::sfx_g = 0;
+A2_handle KOBO_sound::music_g = 0;
+A2_handle KOBO_sound::title_g = 0;
+A2_handle KOBO_sound::noisehandle = 0;
+A2_handle KOBO_sound::musichandle = 0;
+A2_handle *KOBO_sound::modules = NULL;
 A2_handle KOBO_sound::sounds[SOUND__COUNT];
 
+static const char *kobo_a2sfiles[] =
+{
+	"SFX>>master.a2s",
+	"SFX>>sfx.a2s",
+	"SFX>>uisfx.a2s",
+	"SFX>>music.a2s"
+};
+
+#define	A2SFILE__COUNT	((int)(sizeof(kobo_a2sfiles) / sizeof(char *)))
 
 #define	KOBO_DEFS(x, y)	y,
 static const char *kobo_soundnames[] =
@@ -56,12 +72,34 @@ static const char *kobo_soundnames[] =
 
 KOBO_sound::KOBO_sound()
 {
+	modules = (A2_handle *)calloc(A2SFILE__COUNT, sizeof(A2_handle));
 }
 
 
 KOBO_sound::~KOBO_sound()
 {
+	free(modules);
 	close();
+}
+
+
+A2_handle KOBO_sound::load_a2s(const char *path)
+{
+	A2_handle h;
+	log_printf(ULOG, "Loading A2S bank \"%s\"\n", path);
+	const char *p = fmap->get(path);
+	if(!p)
+	{
+		log_printf(ELOG, "Couldn't find \"%s\"!\n", path);
+		return -1;
+	}
+	if((h = a2_Load(state, p, 0)) < 0)
+	{
+		log_printf(ELOG, "Couldn't load\"%s\"! (%s)\n", path,
+				a2_ErrorString((A2_errors)-h));
+		return -1;
+	}
+	return h;
 }
 
 
@@ -72,118 +110,95 @@ KOBO_sound::~KOBO_sound()
 
 int KOBO_sound::load(int (*prog)(const char *msg), int force)
 {
-	int i, h;
-	const char *p = fmap->get("SFX>>sfx.a2s");
-	if(!p)
-	{
-		log_printf(ELOG, "Couldn't find sound effects!\n");
-		return -1;
-	}
+	for(int i = 0; i < A2SFILE__COUNT; ++i)
+		modules[i] = load_a2s(kobo_a2sfiles[i]);
 
-	if((h = a2_Load(state, p, 0)) < 0)
+	for(int i = 0; i < SOUND__COUNT; ++i)
 	{
-		log_printf(ELOG, "Couldn't load sound effects! (%s)\n",
-				a2_ErrorString((A2_errors)-h));
-		return -1;
-	}
-	sfxbank = h;
-
-	for(i = 0; i < SOUND__COUNT; ++i)
-	{
-		h = a2_Get(state, sfxbank, kobo_soundnames[i]);
-		if(h < 0)
+		A2_handle h = -1;
+		for(int j = 0; j < A2SFILE__COUNT; ++j)
+		{
+			int hh = a2_Get(state, modules[j], kobo_soundnames[i]);
+			if(hh >= 0)
+			{
+				h = hh;
+				break;
+			}
+		}
+		if(h > 0)
+		{
+			sounds[i] = h;
+#if 0
+			printf("%s: %d\n", kobo_soundnames[i], sounds[i]);
+#endif
+		}
+		else
 		{
 			log_printf(WLOG, "Couldn't find sound effect \"%s\"!"
 					" (%s)\n", kobo_soundnames[i],
 					a2_ErrorString((A2_errors)-h));
+			sounds[i] = -1;
 		}
-		else
-			sounds[i] = h;
-	}
-#if 0
-	audio_set_path(ap);
-
-	if(!sounds_loaded || force)
-	{
-		if(prog("Loading sound effects"))
-			return -999;
-		res = -1;
-		if(prefs->cached_sounds && !force)
-		{
-			res = audio_wave_load(0, "sfx_c.agw", 0);
-			if(res < 0)
-				save_to_disk = 1;
-		}
-		if(res < 0)
-			res = audio_wave_load(0, "sfx.agw", 0);
-		if(res >= 0)
-			sounds_loaded = 1;
-		else
-			log_printf(ELOG, "Could not load sound effects!\n");
-		prog(NULL);
 	}
 
-	if((prefs->use_music && !music_loaded) || force)
-	{
-		if(prog("Loading music"))
-			return -999;
-		res = -1;
-		if(prefs->cached_sounds && !force)
-		{
-			res = audio_wave_load(0, "music_c.agw", 0);
-			if(res < 0)
-				save_to_disk = 1;
-		}
-		if(res < 0)
-			res = audio_wave_load(0, "music.agw", 0);
-		if(res >= 0)
-			music_loaded = 1;
-		else
-			log_printf(ELOG, "Could not load music!\n");
-		prog(NULL);
-	}
+	init_mixdown();
+	prefschange();
 
-	if(save_to_disk)
-		if(prog("Preparing audio engine"))
-			return -999;
-
-	audio_wave_prepare(-1);
-
-	if(save_to_disk)
-	{
-		if(prog("Writing sounds to disk"))
-			return -999;
-		if(audio_wave_load(0, "save_waves.agw", 0) < 0)
-			log_printf(ELOG, "Could not save sounds to disk!\n");
-	}
-
-	audio_wave_info(-1);
-#endif
 	return prog(NULL);
+}
+
+
+void KOBO_sound::init_mixdown()
+{
+	master_g = a2_Start(state, rootvoice, sounds[SOUND_G_MASTER]);
+	if(master_g < 0)
+	{
+		log_printf(WLOG, "Couldn't create master mixer group!\n");
+		master_g = a2_NewGroup(state, rootvoice);
+	}
+
+	ui_g = a2_Start(state, master_g, sounds[SOUND_G_UI]);
+	if(ui_g < 0)
+	{
+		log_printf(WLOG, "Couldn't create UI mixer group!\n");
+		ui_g = a2_NewGroup(state, master_g);
+	}
+
+	sfx_g = a2_Start(state, master_g, sounds[SOUND_G_SFX]);
+	if(sfx_g < 0)
+	{
+		log_printf(WLOG, "Couldn't create SFX mixer group!\n");
+		sfx_g = a2_NewGroup(state, master_g);
+	}
+
+	music_g = a2_Start(state, master_g, sounds[SOUND_G_MUSIC]);
+	if(music_g < 0)
+	{
+		log_printf(WLOG, "Couldn't create music mixer group!\n");
+		music_g = a2_NewGroup(state, master_g);
+	}
+
+	title_g = a2_Start(state, master_g, sounds[SOUND_G_TITLE]);
+	if(title_g < 0)
+	{
+		log_printf(WLOG, "Couldn't create music mixer group!\n");
+		title_g = a2_NewGroup(state, master_g);
+	}
 }
 
 
 void KOBO_sound::prefschange()
 {
-#if 0
-	/* Levels */
-//	audio_master_volume((float)prefs->volume/100.0);
-	audio_group_controlf(SOUND_GROUP_UI, ACC_VOLUME,
-			(float)prefs->intro_vol/100.0);
-	audio_group_controlf(SOUND_GROUP_UIMUSIC, ACC_VOLUME,
-			(float)prefs->intro_vol/100.0);
-	audio_group_controlf(SOUND_GROUP_SFX, ACC_VOLUME,
-			(float)prefs->sfx_vol/100.0);
-	audio_group_controlf(SOUND_GROUP_BGMUSIC, ACC_VOLUME,
-			(float)prefs->music_vol/100.0);
-	set_boost(prefs->vol_boost);
-	audio_quality((audio_quality_t)prefs->mixquality);
-
-	// Bus 7: Our "Master Reverb Bus"
-	master_reverb((float)prefs->reverb/100.0);
-#endif
+	if(!state)
+		return;
+	a2_Send(state, master_g, 3, (float)prefs->vol_boost);
+	a2_Send(state, master_g, 2, pref2vol(prefs->volume));
+	a2_Send(state, sfx_g, 2, pref2vol(prefs->sfx_vol));
+	a2_Send(state, ui_g, 2, pref2vol(prefs->ui_vol));
+	a2_Send(state, music_g, 2, pref2vol(prefs->music_vol));
+	a2_Send(state, title_g, 2, pref2vol(prefs->title_vol));
 }
-	
+
 
 int KOBO_sound::open()
 {
@@ -224,57 +239,14 @@ int KOBO_sound::open()
 	}
 
 	rootvoice = a2_RootVoice(state);
+	if(rootvoice < 0)
+		log_printf(ELOG, "Couldn't find root voice!\n");
 
-#if 0
-
-	if(audio_start(prefs->samplerate, prefs->latency, prefs->use_oss, prefs->cmd_midi,
-			prefs->cmd_pollaudio) < 0)
-	{
-		log_printf(ELOG, "Couldn't initialize audio;"
-				" disabling sound effects.\n");
-		return -1;
-	}
-
-	// Channel grouping. We use only one chanel per group here, so we
-	// just assign the first channels to the available groups.
-	for(int i = 0; i < AUDIO_MAX_GROUPS; ++i)
-		audio_channel_control(i, -1, ACC_GROUP, i);
-
-	// Dirty hack for the music; the sequencer uses channels 16..31.
-	for(int i = 16; i < 32; ++i)
-		audio_channel_control(i, -1, ACC_GROUP, SOUND_GROUP_BGMUSIC);
-
-	// Higher priority for music and UI effects
-	audio_channel_control(SOUND_GROUP_BGMUSIC, AVT_ALL, ACC_PRIORITY, 1);
-	audio_channel_control(SOUND_GROUP_UIMUSIC, AVT_ALL, ACC_PRIORITY, 2);
-	audio_channel_control(SOUND_GROUP_UI, AVT_ALL, ACC_PRIORITY, 3);
-	audio_channel_control(SOUND_GROUP_SFX, AVT_ALL, ACC_PRIORITY, 4);
-#endif
 	g_wrap(WORLD_SIZEX, WORLD_SIZEY);
 	g_scale(VIEWLIMIT * 3 / 2, VIEWLIMIT);
-#if 0
-	// For the noise "bzzzt" effect :-)
-	audio_channel_control(3, -1, ACC_PRIM_BUS, 1);
-
-	// Bus 0: Sound effects
-	audio_bus_control(0, 1, ABC_FX_TYPE, AFX_NONE);
-	audio_bus_controlf(0, 0, ABC_SEND_MASTER, 1.0);
-	audio_bus_controlf(0, 0, ABC_SEND_BUS_7, 0.5); // Always a little rvb!
-
-	// Bus 1: Sound effects with less reverb
-	audio_bus_control(1, 1, ABC_FX_TYPE, AFX_NONE);
-	audio_bus_controlf(1, 0, ABC_SEND_MASTER, 1.0);
-	audio_bus_controlf(1, 0, ABC_SEND_BUS_7, 0.1);
-#endif
-	prefschange();
 
 	time = SDL_GetTicks();
 	return 0;
-}
-
-
-void KOBO_sound::stop()
-{
 }
 
 
@@ -288,7 +260,14 @@ void KOBO_sound::close()
 	sounds_loaded = 0;
 	music_loaded = 0;
 	rootvoice = 0;
-	sfxbank = 0;
+	master_g = 0;
+	ui_g = 0;
+	sfx_g = 0;
+	music_g = 0;
+	title_g = 0;
+	noisehandle = 0;
+	musichandle = 0;
+	memset(modules, 0, sizeof(modules));
 	memset(sounds, 0, sizeof(sounds));
 }
 
@@ -297,73 +276,6 @@ void KOBO_sound::close()
 /*--------------------------------------------------
 	Main controls
 --------------------------------------------------*/
-
-void KOBO_sound::master_reverb(float rvb)
-{
-#if 0
-	int master_rvb = (int)(rvb * 65536.0);
-	audio_bus_controlf(7, 0, ABC_SEND_MASTER, 0.0);
-	audio_bus_control(7, 1, ABC_SEND_MASTER, master_rvb);
-	if(master_rvb)
-		audio_bus_control(7, 1, ABC_FX_TYPE, AFX_REVERB);
-	else
-		audio_bus_control(7, 1, ABC_FX_TYPE, AFX_NONE);
-#endif
-}
-
-
-void KOBO_sound::set_boost(int boost)
-{
-#if 0
-	switch(boost)
-	{
-	  case 0:
-		audio_set_limiter(1.0, 5.0);
-		break;
-	  case 1:
-		audio_set_limiter(.9, 4.5);
-		break;
-	  case 2:
-	  default:
-		audio_set_limiter(.75, 4.0);
-		break;
-	  case 3:
-		audio_set_limiter(.5, 3.5);
-		break;
-	  case 4:
-		audio_set_limiter(.25, 3.0);
-		break;
-	}
-#endif
-}
-
-
-void KOBO_sound::sfx_volume(float vol)
-{
-#if 0
-	audio_group_controlf(SOUND_GROUP_SFX, ACC_VOLUME,
-			(float)prefs->sfx_vol * vol / 100.0f);
-#endif
-}
-
-
-void KOBO_sound::intro_volume(float vol)
-{
-#if 0
-	audio_group_controlf(SOUND_GROUP_UIMUSIC, ACC_VOLUME,
-			(float)prefs->intro_vol * vol / 100.0f);
-#endif
-}
-
-
-void KOBO_sound::music_volume(float vol)
-{
-#if 0
-	audio_group_controlf(SOUND_GROUP_BGMUSIC, ACC_VOLUME,
-			(float)prefs->music_vol * vol / 100.0f);
-#endif
-}
-
 
 void KOBO_sound::period(int ms)
 {
@@ -408,27 +320,40 @@ void KOBO_sound::run()
 }
 
 
+void KOBO_sound::music(int sng, bool ingame)
+{
+	if(!state)
+		return;
+	if(musichandle)
+	{
+		a2_Send(state, musichandle, 1);
+		a2_Release(state, musichandle);
+		musichandle = 0;
+	}
+	if((sng >= 0) && sounds[sng])
+		musichandle = a2_Start(state, ingame ? music_g : title_g,
+				sounds[sng]);
+}
+
+
 /*--------------------------------------------------
 	In-game sound
 --------------------------------------------------*/
 
 void KOBO_sound::g_music(unsigned scene)
 {
-#if 0
-	if(!state || !sounds[wid])
-		return;
-	a2_Play(state, rootvoice, sounds[wid]);
-#endif
+//FIXME
+	music(SOUND_INGAMESONG, true);
+//FIXME
 }
 
 
-void KOBO_sound::play(unsigned wid, int vol, int pitch, int pan)
+void KOBO_sound::ui_play(unsigned wid, int vol, int pitch, int pan)
 {
 	if(!state || !sounds[wid])
 		return;
-	a2_Play(state, rootvoice, sounds[wid],
-			(pitch / 65536.0f - 60.0f)  / 12.0f, vol / 65536.0f,
-			pan / 65536.0f);
+	a2_Play(state, ui_g, sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
+			vol / 65536.0f, pan / 65536.0f);
 }
 
 
@@ -460,7 +385,7 @@ void KOBO_sound::g_play(unsigned wid, int x, int y, int vol, int pitch)
 	if(!state || !sounds[wid])
 		return;
 
-	/* Calculate volume */
+	// Calculate volume
 	x -= listener_x;
 	y -= listener_y;
 	if(wrap_x)
@@ -480,7 +405,7 @@ void KOBO_sound::g_play(unsigned wid, int x, int y, int vol, int pitch)
 		y -= wrap_y / 2;
 	}
 
-	/* Approximation of distance attenuation */
+	// Approximation of distance attenuation
 	vx = abs(x * scale);
 	vy = abs(y * scale);
 	if((vx | vy) & 0xffff0000)
@@ -497,8 +422,7 @@ void KOBO_sound::g_play(unsigned wid, int x, int y, int vol, int pitch)
 	else if(pan > 65536)
 		pan = 65536;
 
-	a2_Play(state, rootvoice, sounds[wid],
-			(pitch / 65536.0f - 60.0f)  / 12.0f,
+	a2_Play(state, sfx_g, sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
 			volume / 65536.0f, pan / 65536.0f);
 }
 
@@ -507,8 +431,7 @@ void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
 {
 	if(!state || !sounds[wid])
 		return;
-	a2_Play(state, rootvoice, sounds[wid],
-			(pitch / 65536.0f - 60.0f)  / 12.0f,
+	a2_Play(state, sfx_g, sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
 			vol / 65536.0f);
 }
 
@@ -674,109 +597,87 @@ void KOBO_sound::g_m_launch(int x, int y)
 
 void KOBO_sound::ui_music_title()
 {
-#if 0
-// KLUDGE UNTIL MIDI SONGS AND FX CONTROL IS FIXED!
-	audio_bus_control(0, 1, ABC_FX_TYPE, AFX_NONE);
-	audio_bus_controlf(0, 0, ABC_SEND_MASTER, 1.0);
-	audio_bus_controlf(0, 0, ABC_SEND_BUS_7, 0.5);
-// KLUDGE UNTIL MIDI SONGS AND FX CONTROL IS FIXED!
-	audio_channel_control(SOUND_GROUP_UIMUSIC, AVT_FUTURE, ACC_PATCH, wid);
-	audio_channel_play(SOUND_GROUP_UIMUSIC, 0, 60<<16, 65536);
-#endif
+	music(SOUND_TITLESONG);
 }
 
 
 void KOBO_sound::ui_noise(int n)
 {
-#if 0
-	if(n < 0)
-	{
-		sound.sfx_volume(0.0f);
-		audio_channel_control(SOUND_GROUP_UI,
-				AVT_FUTURE, ACC_PATCH, SOUND_BZZZT);
-		audio_channel_play(SOUND_GROUP_UI, 0, 60<<16,
-				10000 + pubrand.get(14));
+	if(!state || !sounds[SOUND_UI_NOISE])
 		return;
-	}
-	if(n && pubrand.get(1))
+	if(noisehandle)
 	{
-		sound.sfx_volume(0.0f);
-		audio_channel_control(SOUND_GROUP_UI,
-				AVT_FUTURE, ACC_PATCH, SOUND_BZZZT);
-		audio_channel_play(SOUND_GROUP_UI, 0, 60<<16,
-				20000 + pubrand.get(14));
+		a2_Send(state, noisehandle, 1);
+		a2_Release(state, noisehandle);
+		noisehandle = 0;
 	}
-	else
-		sound.sfx_volume(1.0f);
-#endif
+	if(n)
+		noisehandle = a2_Start(state, ui_g, sounds[
+				n == 1 ? SOUND_UI_NOISE : SOUND_UI_LOADER]);
+}
+
+
+void KOBO_sound::ui_open()
+{
+	ui_play(SOUND_UI_OPEN);
 }
 
 
 void KOBO_sound::ui_ok()
 {
-	play(SOUND_EXPLO_NODE, 32768);
+	ui_play(SOUND_UI_OK);
 }
 
 
 void KOBO_sound::ui_cancel()
 {
-	play(SOUND_CANCEL, 20000);
+	ui_play(SOUND_UI_CANCEL);
 }
 
 
 void KOBO_sound::ui_move()
 {
-	play(SOUND_MOVE, 20000);
+	ui_play(SOUND_UI_MOVE);
 }
 
 
 void KOBO_sound::ui_tick()
 {
-	play(SOUND_METALLIC, 15000);
+	ui_play(SOUND_UI_TICK);
 }
 
 
 void KOBO_sound::ui_error()
 {
-	play(SOUND_ERROR, 20000);
+	ui_play(SOUND_UI_ERROR);
 }
 
 
 void KOBO_sound::ui_play()
 {
-	play(SOUND_PLAY, 32768, (60<<16) + 2000, -40000);
-	play(SOUND_PLAY, 32768, (60<<16) - 2000, 40000);
+	ui_play(SOUND_UI_PLAY);
 }
 
 
 void KOBO_sound::ui_pause()
 {
-	play(SOUND_PAUSE, 32768, (60<<16) + 2000, -40000);
-	play(SOUND_PAUSE, 32768, (60<<16) - 2000, 40000);
+	ui_play(SOUND_UI_PAUSE);
 }
 
 
 void KOBO_sound::ui_ready()
 {
-	play(SOUND_READY, 15000, (60<<16) + 3000, -40000);
-	play(SOUND_READY, 15000, (60<<16) - 3000, 40000);
+	ui_play(SOUND_UI_READY);
 }
 
 
 void KOBO_sound::ui_countdown(int remain)
 {
-	play(SOUND_TICK, 20000, (60 - remain)<<16);
-}
-
-
-void KOBO_sound::ui_oneup()
-{
-	play(SOUND_ONEUP, 32768, (60<<16) + 5000, -40000);
-	play(SOUND_ONEUP, 32768, (60<<16) - 5000, 40000);
+	ui_play(SOUND_UI_CDTICK, 32768, (60 - remain)<<16);
 }
 
 
 void KOBO_sound::ui_gameover()
 {
-	play(SOUND_GAMEOVER);
+	ui_play(SOUND_UI_GAMEOVER);
 }

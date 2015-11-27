@@ -1,0 +1,32 @@
+def title	"KRMusic"
+def version	"0.7.0"
+def description	"Kobo Redux music"
+def author	"David Olofson"
+def copyright	"Copyright 2015 David Olofson"
+def license	"CC BY-NC-ND 3.0"
+def a2sversion	"1.9.1"
+
+import "oajingle-short.a2s" as aoj
+def OAJingle aoj.Song
+
+import "k2intro.a2s" as k2i
+TitleSong(P V=1 L=1)
+{
+	1:k2i.Song P V L 0
+	wait 1
+
+	1() {
+		1<1
+	}
+}
+
+import "wstest.a2s" as igs
+IngameSong(P V=1 L=1)
+{
+	1:igs.Song P V L
+	wait 1
+
+	1() {
+		1<1
+	}
+}

@@ -846,6 +846,7 @@ void KOBO_main::close_display()
 
 void KOBO_main::noiseburst()
 {
+	sound.ui_noise(2);
 	wdash->fade(0.0f);
 	wdash->mode(DASHBOARD_NOISE);
 	int t0 = SDL_GetTicks();
@@ -859,6 +860,7 @@ void KOBO_main::noiseburst()
 		gengine->present();
 	}
 	wdash->fade(0.0f);
+	sound.ui_noise(0);
 }
 
 
@@ -1486,7 +1488,7 @@ int KOBO_main::open()
 	load_palette();
 	noiseburst();
 
-	sound.play(SOUND_OAJINGLE);
+	sound.music(SOUND_OAJINGLE);
 	int jtime = SDL_GetTicks() + 5000;
 
 #ifdef TIME_PROGRESS
@@ -1570,13 +1572,14 @@ int KOBO_main::run()
 			if(prefs->use_sound)
 			{
 				log_printf(ULOG, "--- Restarting audio...\n");
-				sound.stop();
+				sound.close();
 #ifdef TIME_PROGRESS
 				wdash->progress_init(NULL);
 #else
 				wdash->progress_init(progtab_sounds);
 #endif
-				sound.open();
+				if(sound.open() < 0)
+					return 4;
 				if(load_sounds(prefs) < 0)
 					return 5;
 				wdash->progress_done();
@@ -1829,6 +1832,17 @@ void kobo_gfxengine_t::frame()
 // FIXME: Doesn't this trigger when entering names and stuff...?
 			  case SDLK_s:
 				gengine->screenshot();
+				break;
+			  case SDLK_r:
+				if(!prefs->cmd_debug)
+					break;
+				ms = SDL_GetModState();
+				if(ms & (KMOD_ALT | KMOD_SHIFT | KMOD_GUI))
+					break;
+				if(!(ms & KMOD_CTRL))
+					break;
+				global_status |= OS_RESTART_AUDIO;
+				stop();
 				break;
 			  default:
 				break;
@@ -2476,6 +2490,7 @@ int main(int argc, char *argv[])
 
 	km.run();
 
+	sound.music(-1);
 	km.noiseburst();
 
 	km.close();

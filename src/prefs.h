@@ -60,14 +60,14 @@ class prefs_t : public config_parser_t
 	int	cached_sounds;	//Use prerendered waveforms
 	int	samplerate;
 	int	latency;	//Audio latency in ms
-	int	volume;		//Digital master volume
+
 	//Sound: Mixer
-	int	intro_vol;	//Intro music volume
-	int	sfx_vol;	//Sound effects volume
-	int	music_vol;	//In-game music volume
-	//Sound: Master Effects
-	int	reverb;		//Master reverb level
+	int	volume;		//Digital master volume
 	int	vol_boost;	//Master volume boost
+	int	ui_vol;		//User interface volume
+	int	sfx_vol;	//Sound effects volume
+	int	music_vol;	//Music volume
+	int	title_vol;	//Title music volume
 
 	//Video settings
 	int	fullscreen;	//Use fullscreen mode

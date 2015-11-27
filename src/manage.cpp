@@ -117,7 +117,9 @@ void _manage::run_noise()
 		screen.set_noise(B_NOISE, 1.0f - t,
 				sin(a * 0.5f) * 0.3f,
 				0.3f + t * 0.5f);
+#if 0
 		sound.sfx_volume(t);
+#endif
 		return;
 	}
 
@@ -130,6 +132,7 @@ void _manage::run_noise()
 		noise_timer -= game.speed;
 		noise = 1;
 	}
+#if 0
 	else if(noise_timer > 0)
 	{
 		unsigned prob = noise_flash - noise_timer;
@@ -138,17 +141,17 @@ void _manage::run_noise()
 		noise_timer -= game.speed;
 		noise = pubrand.get(8) > prob;
 	}
+#endif
 	else
 	{
 		noise_timer = 0;
 		noise = 0;
+		sound.ui_noise(0);
 	}
 
 	noise_level += (noise - noise_level) * 0.3f;
 	screen.set_noise(B_NOISE, noise_level, 0.0f, noise_level);
 	screen.noise(noise_level > 0.1f);
-
-	sound.ui_noise(noise);
 }
 
 
@@ -156,9 +159,9 @@ void _manage::noise(int duration, int flash)
 {
 	noise_flash = flash;
 	noise_duration = noise_timer = duration;
-	sound.ui_noise(-1);
 	screen.set_noise(B_NOISE, 1.0f, 0.0f, 1.0f);
 	noise_level = 1.0f;
+	sound.ui_noise(1);
 }
 
 

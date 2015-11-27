@@ -2,14 +2,31 @@
 TODO:
 -------------------------------------------------------------------------------
 
-* Maybe a bit of blur as well, when downscaling spinplanet textures...?
+* Sound fixes:
+	* No pause sound when already paused! (Happens when getting back from
+	  menus to a paused game.)
+	* Pause effect when pausing game to enter menu!
+	* sound::run()?
+	* Volumes need to be applied when canceling the options menu!
+		* sound.prefschange() called before cfg_form->undo()?
 
-* Skewed dithering without breaking the 50% checkerboard pattern...?
 
 * The teal fighter ships are REALLY dangerous currently... Maybe have them fire
   weaker ammo again?
 
 * Rock explosion looks bland. There should also be pieces of rock flying!
+
+* Maybe a bit of blur as well, when downscaling spinplanet textures...? (The
+  original texture is scaled up at load time specifically to serve as a very
+  low resolution "interpolation.")
+	* NOTE: RAW and NONE textures should not be blurred unconditionally,
+	        as that would add extra colors! (RAW ones aren't even scaled,
+	        so no problem there.)
+
+* More contrast and/or detail in the backgrounds? More traditional hand drawn
+  pixel art style?
+
+* Skewed dithering without breaking the 50% checkerboard pattern...?
 
 * Not sure about this whole idea of balancing the skill levels through shields
   and damage... It just makes the harder skill levels slow and boring, as you
@@ -74,6 +91,8 @@ TODO:
 * Remove all load time image filters?
 	* ...or just turn them into a stand-alone library operating on raw
 	  32bpp buffers or something? It's just too messy to use as it is.
+		* If we go for EEL, we just implement each theme as a script
+		  that performs all loading and processing.
 
 Kobo DL install on Ubuntu:
 	/usr/share/kobo-deluxe/
