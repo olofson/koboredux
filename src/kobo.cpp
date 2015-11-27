@@ -54,6 +54,8 @@
 #include "myship.h"
 #include "enemies.h"
 
+#include "SDL_revision.h"
+
 #define	MAX_FPS_RESULTS	64
 
 /* Joystick support */
@@ -2268,6 +2270,90 @@ static void put_options_man()
 }
 
 
+static void put_versions()
+{
+	printf(	PACKAGE "\n"
+		"Build date: " __DATE__ " " __TIME__ "\n"
+		"Build options:"
+#ifdef DEBUG
+        	"  DEBUG"
+#endif
+#ifdef ENABLE_TOUCHSCREEN
+        	"  ENABLE_TOUCHSCREEN"
+#endif
+		"\n\n");
+
+	SDL_version sdlver;
+	SDL_VERSION(&sdlver);
+	unsigned a2ver = a2_HeaderVersion();
+	printf(	"Built with:\n"
+		"  SDL          %d.%d.%d.%d (%s)\n"
+		"  Audiality 2  %d.%d.%d.%d\n\n",
+			sdlver.major, sdlver.minor, sdlver.patch,
+			SDL_REVISION_NUMBER, SDL_REVISION,
+			A2_MAJOR(a2ver), A2_MINOR(a2ver), A2_MICRO(a2ver),
+			A2_BUILD(a2ver));
+
+	SDL_GetVersion(&sdlver);
+	a2ver = a2_LinkedVersion();
+	printf(	"Linked with:\n"
+		"  SDL          %d.%d.%d.%d (%s)\n"
+		"  Audiality 2  %d.%d.%d.%d\n\n",
+			sdlver.major, sdlver.minor, sdlver.patch,
+			SDL_GetRevisionNumber(), SDL_GetRevision(),
+			A2_MAJOR(a2ver), A2_MINOR(a2ver), A2_MICRO(a2ver),
+			A2_BUILD(a2ver));
+}
+
+
+static void put_copyright()
+{
+	printf("\n"
+#if 1
+	"     ,--.   ,--.,--------. ,-------.  ,--------.\n"
+	"     |  |  /  / |  ,--.  | |  ,--.  \\ |  ,--.  |\n"
+	"     |  '-´  /  |  |  |  | |  `--´  / |  |  |  |\n"
+	"     |  ,-.  \\  |  |  |  | |  ,--.  \\ |  |  |  |\n"
+	"     |  |  \\  \\ |  `--'  | |  `--´  / |  `--´  |\n"
+	"     `--´   `--'`--------´ `-------´  `--------´\n"
+	"      R    -    E    -    D    -    U    -    X\n"
+#elif 0
+	"     ----   ---- --------  --------    --------\n"
+	"     ----  ---- ----  ---- ----  ---- ----  ----\n"
+	"     ---------  ----  ---- ---------  ----  ----\n"
+	"     ----  ---- ----  ---- ----  ---- ----  ----\n"
+	"     ----   ---- --------  --------    --------\n"
+	"      R    -    E    -    D    -    U    -    X\n"
+#else
+	"   ====   ====   =======    ========      =======\n"
+	"   ====  ====  ====   ====  ===   ====  ====   ====\n"
+	"   =========   ===     ===  =========   ===     ===\n"
+	"   ====  ====  ====   ====  ===   ====  ====   ====\n"
+	"   ====   ====   =======    ========      =======\n"
+	"\n"
+	"    R          E          D          U          X\n"
+#endif
+	"\n"
+	"  Copyright 2015 Olofson Arcade. All rights reserved.\n"
+	"\n"
+	".----------------------------------------------------.\n"
+	"| The  source code  of this game  is  Free.  See the |\n"
+	"| respective  source files  for  copying conditions. |\n"
+	"| There is NO warranty; not even for MERCHANTABILITY |\n"
+	"| or    FITNESS    FOR   A    PARTICULAR    PURPOSE. |\n"
+	"'----------------------------------------------------'\n"
+	"  Copyright 1995, 1996 Akira Higuchi\n"
+	"  Copyright 1997 Masanao Izumo\n"
+	"  Copyright 1999-2001 Simon Peter\n"
+	"  Copyright 2002 Florian Schulze\n"
+	"  Copyright 2002 Jeremy Sheeley\n"
+	"  Copyright 2005 Erik Auerswald\n"
+	"  Copyright 2008 Robert Schuster\n"
+	"  Copyright 1999-2009, 2015 David Olofson\n"
+	"\n");
+}
+
+
 extern "C" {
 	static void emergency_close(void)
 	{
@@ -2291,31 +2377,8 @@ int main(int argc, char *argv[])
 {
 	int cmd_exit = 0;
 
-	puts(PACKAGE " ("
-		"Build date: " __DATE__ " " __TIME__ ")\n"
-		"Copyright 2015 Olofson Arcade. All rights reserved.\n"
-		"\n"
-		"Build options:"
-#ifdef DEBUG
-        	" DEBUG"
-#endif
-#ifdef ENABLE_TOUCHSCREEN
-        	" ENABLE_TOUCHSCREEN"
-#endif
-		"\n\n"
-		"The source code of this game is Free. See the\n"
-		"respective source files for copying conditions.\n"
-		"There is NO warranty; not even for MERCHANTABILITY\n"
-		"or FITNESS FOR A PARTICULAR PURPOSE.\n"
-		"\n"
-		"Copyright 1995, 1996 Akira Higuchi\n"
-		"Copyright 1997 Masanao Izumo\n"
-		"Copyright 1999-2001 Simon Peter\n"
-		"Copyright 2002 Florian Schulze\n"
-		"Copyright 2002 Jeremy Sheeley\n"
-		"Copyright 2005 Erik Auerswald\n"
-		"Copyright 2008 Robert Schuster\n"
-		"Copyright 1999-2009, 2015 David Olofson\n");
+	put_copyright();
+	put_versions();
 
 	atexit(emergency_close);
 	signal(SIGTERM, breakhandler);
