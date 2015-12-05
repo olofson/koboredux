@@ -34,6 +34,7 @@ config_form_t::config_form_t(gfxengine_t *e) : kobo_form_t(e)
 {
 	prf = NULL;
 	stat = 0;
+	undostat = 0;
 }
 
 
@@ -60,6 +61,7 @@ void config_form_t::close()
 void config_form_t::undo()
 {
 	*prf = prfbak;
+	stat = undostat;
 	undo_hook();
 }
 
@@ -80,6 +82,7 @@ void config_form_t::clearstatus(int mask)
 void config_form_t::setstatus(int mask)
 {
 	stat |= mask;
+	undostat |= mask;
 	global_status = stat & (OS_RELOAD | OS_RESTART | OS_UPDATE);
 }
 

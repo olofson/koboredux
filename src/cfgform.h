@@ -57,6 +57,7 @@ class config_form_t : public kobo_form_t
 	prefs_t		*prf;
 	prefs_t		prfbak;
 	int		stat;
+	int		undostat;
   public:
 	config_form_t(gfxengine_t *e);
 	void open(prefs_t *p);
