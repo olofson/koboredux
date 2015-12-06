@@ -338,12 +338,6 @@ void audio_options_t::build()
 	button("CANCEL", OS_CANCEL | OS_UPDATE_AUDIO);
 }
 
-void audio_options_t::undo_hook()
-{
-	clearstatus(OS_RELOAD | OS_RESTART | OS_UPDATE);
-	setstatus(OS_UPDATE_AUDIO);
-}
-
 
 void control_options_t::build()
 {
@@ -442,10 +436,4 @@ void game_options_t::build()
 	xoffs = 0.5;
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL | OS_UPDATE_ENGINE);
-}
-
-void game_options_t::undo_hook()
-{
-	clearstatus(OS_RELOAD | OS_RESTART | OS_UPDATE);
-	setstatus(OS_UPDATE_ENGINE);
 }

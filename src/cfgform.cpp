@@ -62,7 +62,6 @@ void config_form_t::undo()
 {
 	*prf = prfbak;
 	stat = undostat;
-	undo_hook();
 }
 
 
@@ -140,10 +139,4 @@ void config_form_t::setstatus(int mask)
 
 /* virtual */void config_form_t::build()
 {
-}
-
-/* virtual */ void config_form_t::undo_hook()
-{
-	stat = 0;
-	global_status = 0;
 }

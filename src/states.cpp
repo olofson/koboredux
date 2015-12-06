@@ -1579,6 +1579,7 @@ kobo_form_t *st_options_base_t::open()
 
 void st_options_base_t::close()
 {
+	check_update();
 	cfg_form->close();
 	cfg_form = NULL;
 }

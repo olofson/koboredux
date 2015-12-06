@@ -64,7 +64,6 @@ class config_form_t : public kobo_form_t
 	virtual void build();		// <-- Override this!
 	//...and this, if you need. Normally,
 	//it just sets the status to 0.
-	virtual void undo_hook();
 	void close();
 	int status();
 	void setstatus(int mask);

@@ -60,7 +60,6 @@ class audio_options_t : public config_form_t
   public:
 	audio_options_t(gfxengine_t *e) : config_form_t(e) { }
 	void build();
-	void undo_hook();
 };
 
 class control_options_t : public config_form_t
@@ -75,7 +74,6 @@ class game_options_t : public config_form_t
   public:
 	game_options_t(gfxengine_t *e) : config_form_t(e) { }
 	void build();
-	void undo_hook();
 };
 
 #endif 	//_KOBO_OPTIONS_H_
