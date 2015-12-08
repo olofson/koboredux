@@ -2,7 +2,8 @@
 ------------------------------------------------------------
 	Game State Manager
 ------------------------------------------------------------
- * Copyright (C) 2001-2003, 2009 David Olofson
+ * Copyright 2001-2003, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,6 +23,8 @@
 #ifndef	_GAMESTATEMANAGER_H_
 #define	_GAMESTATEMANAGER_H_
 
+#include "gamectl.h"
+
 class gamestatemanager_t;
 
 class gamestate_t
@@ -32,11 +35,10 @@ class gamestate_t
 	gamestatemanager_t	*manager;
   protected:
 	const char		*name;
-	int			unicode;	//for last press()/release()
 	void pop();
 
-	virtual void press(int button);
-	virtual void release(int button);
+	virtual void press(buttons_t button);
+	virtual void release(buttons_t button);
 	virtual void pos(int x, int y);
 	virtual void delta(int dx, int dy);
 
@@ -62,18 +64,20 @@ class gamestatemanager_t
 	gamestatemanager_t();
 	~gamestatemanager_t();
 
-	/* Event router interface */
-	void press(int button, int unicode = 0);
-	void release(int button, int unicode = 0);
+	// Event router interface
+	void press(SDL_Keysym sym);
+	void release(SDL_Keysym sym);
+	void pressbtn(buttons_t button);
+	void releasebtn(buttons_t button);
 	void pos(int x, int y);
 	void delta(int dx, int dy);
 
-	/* CS frame and rendering callbacks */
+	// CS frame and rendering callbacks
 	void frame();
 	void pre_render();
 	void post_render();
 
-	/* State management */
+	// State management
 	void change(gamestate_t *gs);
 	void push(gamestate_t *gs);
 	void pop();

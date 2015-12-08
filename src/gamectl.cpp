@@ -85,40 +85,38 @@ void gamecontrol_t::clear()
 }
 
 
-int gamecontrol_t::map(SDL_Keycode sym)
+buttons_t gamecontrol_t::map(SDL_Keysym sym)
 {
-/*
-FIXME: This should be replaced by a configurable mapping system.
-*/
-	switch(sym)
+//FIXME: This should be replaced by a configurable mapping system.
+	switch(sym.sym)
 	{
-	  case KEY_KP_LEFT:
+	  case SDLK_KP_4:
 	  case SDLK_LEFT:
 	  case SDLK_a:		// Qwerty + Dvorak
 		return BTN_LEFT;
-	  case KEY_KP_RIGHT:
+	  case SDLK_KP_6:
 	  case SDLK_RIGHT:
 	  case SDLK_d:		// Qwerty
 	  case SDLK_e:		// Dvorak
 		return BTN_RIGHT;
-	  case KEY_KP_UP:
+	  case SDLK_KP_8:
 	  case SDLK_UP:
 	  case SDLK_w:		// Qwerty
 	  case SDLK_COMMA:	// Some Swedish Dvorak variants
 	  case SDLK_LESS:	// US Dvorak?
 		return BTN_UP;
-	  case KEY_KP_DOWN:
+	  case SDLK_KP_2:
 	  case SDLK_DOWN:
 	  case SDLK_s:		// Qwerty
 	  case SDLK_o:		// Dvorak
 		return BTN_DOWN;
-	  case KEY_KP_DL:
+	  case SDLK_KP_1:
 		return BTN_DL;
-	  case KEY_KP_DR:
+	  case SDLK_KP_3:
 		return BTN_DR;
-	  case KEY_KP_UL:
+	  case SDLK_KP_7:
 		return BTN_UL;
-	  case KEY_KP_UR:
+	  case SDLK_KP_9:
 		return BTN_UR;
 
 	  case SDLK_PAGEUP:
@@ -135,12 +133,12 @@ FIXME: This should be replaced by a configurable mapping system.
 		if(prefs->broken_numdia)
 			return BTN_UL;
 		else
-			return -1;
+			return BTN_NONE;
 	  case SDLK_END:
 		if(prefs->broken_numdia)
 			return BTN_UL;
 		else
-			return -1;
+			return BTN_NONE;
 
 	  case SDLK_LSHIFT:
 	  case SDLK_RSHIFT:
@@ -192,14 +190,26 @@ FIXME: This should be replaced by a configurable mapping system.
 	  case SDLK_F12:
 		return BTN_F12;
 	  default:
-		return -1;
+		return BTN_NONE;
 	}
 }
 
 
-void gamecontrol_t::press(int k)
+void gamecontrol_t::press(SDL_Keysym sym)
 {
-	switch(k)
+	pressbtn(map(sym));
+}
+
+
+void gamecontrol_t::release(SDL_Keysym sym)
+{
+	releasebtn(map(sym));
+}
+
+
+void gamecontrol_t::pressbtn(buttons_t b)
+{
+	switch(b)
 	{
 	  case BTN_LEFT:
 		left = 1;
@@ -228,13 +238,16 @@ void gamecontrol_t::press(int k)
 	  case BTN_FIRE:
 		shot = 1;
 		break;
+	  default:
+		return;
 	}
 	gamecontrol_t::change();
 }
 
-void gamecontrol_t::release(int k)
+
+void gamecontrol_t::releasebtn(buttons_t b)
 {
-	switch(k)
+	switch(b)
 	{
 	  case BTN_LEFT:
 		left = 0;
@@ -263,6 +276,8 @@ void gamecontrol_t::release(int k)
 	  case BTN_FIRE:
 		shot = 0;
 		break;
+	  default:
+		return;
 	}
 	gamecontrol_t::change();
 }

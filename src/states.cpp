@@ -118,7 +118,7 @@ void st_introbase_t::reenter()
 }
 
 
-void st_introbase_t::press(int button)
+void st_introbase_t::press(buttons_t button)
 {
 	switch (button)
 	{
@@ -372,7 +372,7 @@ void st_game_t::reenter()
 }
 
 
-void st_game_t::press(int button)
+void st_game_t::press(buttons_t button)
 {
 	switch (button)
 	{
@@ -386,6 +386,8 @@ void st_game_t::press(int button)
 	  case BTN_START:
 	  case BTN_PAUSE:
 		gsm.push(&st_pause_game);
+		break;
+	  default:
 		break;
 	}
 }
@@ -434,7 +436,7 @@ void st_pause_game_t::enter()
 }
 
 
-void st_pause_game_t::press(int button)
+void st_pause_game_t::press(buttons_t button)
 {
 	switch (button)
 	{
@@ -491,7 +493,7 @@ void st_get_ready_t::enter()
 }
 
 
-void st_get_ready_t::press(int button)
+void st_get_ready_t::press(buttons_t button)
 {
 	if(frame_time < 500)
 		return;
@@ -519,6 +521,8 @@ void st_get_ready_t::press(int button)
 	  case BTN_START:
 	  case BTN_PAUSE:
 		gsm.change(&st_pause_game);
+		break;
+	  default:
 		break;
 	}
 }
@@ -624,7 +628,7 @@ void st_game_over_t::enter()
 }
 
 
-void st_game_over_t::press(int button)
+void st_game_over_t::press(buttons_t button)
 {
 	if(frame_time < 500)
 		return;
@@ -647,6 +651,8 @@ void st_game_over_t::press(int button)
 	  case BTN_YES:
 		sound.ui_ok();
 		pop();
+		break;
+	  default:
 		break;
 	}
 }
@@ -780,7 +786,7 @@ int st_menu_base_t::translate(int tag, int button)
 	}
 }
 
-void st_menu_base_t::press(int button)
+void st_menu_base_t::press(buttons_t button)
 {
 	int selection;
 	if(!form)
@@ -842,6 +848,8 @@ void st_menu_base_t::press(int button)
 			break;
 		  case BTN_DOWN:
 			form->next();
+			break;
+		  default:
 			break;
 		}
 
@@ -963,7 +971,7 @@ void st_new_player_t::post_render()
 	menu->render();
 }
 
-void st_new_player_t::press(int button)
+void st_new_player_t::press(buttons_t button)
 {
 	if(menu->editing)
 	{
@@ -1040,6 +1048,7 @@ void st_new_player_t::press(int button)
 			break;
 
 		  default:
+#if 0
 			if(((unicode >= 'a') && (unicode <= 'z')) ||
 				((unicode >= 'A') && (unicode <= 'Z')))
 			{
@@ -1054,6 +1063,7 @@ void st_new_player_t::press(int button)
 			}
 			else
 				sound.ui_error();
+#endif
 			break;
 		}
 		menu->rebuild();
@@ -1086,6 +1096,9 @@ void st_new_player_t::press(int button)
 		  case BTN_DEC:
 		  case BTN_DOWN:
 			menu->next();
+			break;
+
+		  default:
 			break;
 		}
 
@@ -1172,7 +1185,7 @@ void st_error_t::enter()
 }
 
 
-void st_error_t::press(int button)
+void st_error_t::press(buttons_t button)
 {
 	if(frame_time < 500)
 		return;
@@ -1195,6 +1208,8 @@ void st_error_t::press(int button)
 	  case BTN_YES:
 		sound.ui_ok();
 		pop();
+		break;
+	  default:
 		break;
 	}
 }
@@ -1482,7 +1497,7 @@ kobo_form_t *st_skill_menu_t::open()
 }
 
 
-void st_skill_menu_t::press(int button)
+void st_skill_menu_t::press(buttons_t button)
 {
 	st_menu_base_t::press(button);
 	switch (button)
@@ -1491,6 +1506,8 @@ void st_skill_menu_t::press(int button)
 	  case BTN_DOWN:
 		menu->set_skill(menu->selected()->tag - 10);
 		menu->rebuild();
+		break;
+	  default:
 		break;
 	}
 }
@@ -1626,7 +1643,7 @@ void st_options_base_t::select(int tag)
 		pop();
 }
 
-void st_options_base_t::press(int button)
+void st_options_base_t::press(buttons_t button)
 {
 	// NOTE:
 	//	This may result in select() above being called, and that in
@@ -1699,7 +1716,7 @@ void st_yesno_base_t::reenter()
 	st_menu_base_t::reenter();
 }
 
-void st_yesno_base_t::press(int button)
+void st_yesno_base_t::press(buttons_t button)
 {
 	switch (button)
 	{

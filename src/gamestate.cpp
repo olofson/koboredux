@@ -2,7 +2,8 @@
 ------------------------------------------------------------
 	Game State Manager
 ------------------------------------------------------------
- * Copyright (C) 2001-2003, 2009 David Olofson
+ * Copyright 2001-2003, 2009 David Olofson
+ * Copyright 2015 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -33,7 +34,6 @@ gamestate_t::gamestate_t()
 {
 	next = 0;
 	manager = 0;
-	unicode = 0;
 }
 
 gamestate_t::~gamestate_t()			{}
@@ -52,17 +52,17 @@ void gamestate_t::pop()
 				"WARNING: Tried to pop state more than once!\n");
 }
 
-void gamestate_t::enter()		{}
-void gamestate_t::leave()		{}
-void gamestate_t::yield()		{}
-void gamestate_t::reenter()		{}
-void gamestate_t::press(int button)	{}
-void gamestate_t::release(int button)	{}
-void gamestate_t::pos(int x, int y)	{}
-void gamestate_t::delta(int dx, int dy)	{}
-void gamestate_t::frame()		{}
-void gamestate_t::pre_render()		{}
-void gamestate_t::post_render()		{}
+void gamestate_t::enter()			{}
+void gamestate_t::leave()			{}
+void gamestate_t::yield()			{}
+void gamestate_t::reenter()			{}
+void gamestate_t::press(buttons_t button)	{}
+void gamestate_t::release(buttons_t button)	{}
+void gamestate_t::pos(int x, int y)		{}
+void gamestate_t::delta(int dx, int dy)		{}
+void gamestate_t::frame()			{}
+void gamestate_t::pre_render()			{}
+void gamestate_t::post_render()			{}
 
 
 
@@ -151,23 +151,31 @@ gamestate_t *gamestatemanager_t::previous()
 }
 
 
-void gamestatemanager_t::press(int button, int unicode)
+void gamestatemanager_t::press(SDL_Keysym sym)
 {
 	if(top)
-	{
-		top->unicode = unicode;
-		top->press(button);
-	}
+		top->press(gamecontrol.map(sym));
 }
 
 
-void gamestatemanager_t::release(int button, int unicode)
+void gamestatemanager_t::release(SDL_Keysym sym)
 {
 	if(top)
-	{
-		top->unicode = unicode;
+		top->release(gamecontrol.map(sym));
+}
+
+
+void gamestatemanager_t::pressbtn(buttons_t button)
+{
+	if(top)
+		top->press(button);
+}
+
+
+void gamestatemanager_t::releasebtn(buttons_t button)
+{
+	if(top)
 		top->release(button);
-	}
 }
 
 

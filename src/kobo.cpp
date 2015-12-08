@@ -1464,7 +1464,7 @@ void KOBO_main::brutal_quit(bool force)
 void KOBO_main::pause_game()
 {
 	if(gsm.current() != &st_pause_game)
-		gsm.press(BTN_PAUSE);
+		gsm.pressbtn(BTN_PAUSE);
 }
 
 
@@ -1804,7 +1804,7 @@ void kobo_gfxengine_t::frame()
 	SDL_Event ev;
 	while(SDL_PollEvent(&ev))
 	{
-		int k, ms;
+		int ms;
 		switch (ev.type)
 		{
 		  case SDL_KEYDOWN:
@@ -1829,8 +1829,11 @@ void kobo_gfxengine_t::frame()
 				return;
 			  case SDLK_PRINTSCREEN:
 			  case SDLK_SYSREQ:
+#if 0
 // FIXME: Doesn't this trigger when entering names and stuff...?
+// FIXME: Well, now it conflicts with WSAD controls, so... Disabled.
 			  case SDLK_s:
+#endif
 				gengine->screenshot();
 				break;
 			  case SDLK_r:
@@ -1847,10 +1850,8 @@ void kobo_gfxengine_t::frame()
 			  default:
 				break;
 			}
-			k = gamecontrol.map(ev.key.keysym.sym);
-			gamecontrol.press(k);
-//FIXME:		gsm.press(k, ev.key.keysym.unicode);
-			gsm.press(k, ev.key.keysym.sym);
+			gamecontrol.press(ev.key.keysym);
+			gsm.press(ev.key.keysym);
 			break;
 		  case SDL_KEYUP:
 			if((ev.key.keysym.sym == SDLK_ESCAPE) &&
@@ -1872,6 +1873,9 @@ void kobo_gfxengine_t::frame()
 				gsm.push(&st_error);
 				return;
 			}
+			gamecontrol.release(ev.key.keysym);
+			gsm.release(ev.key.keysym);
+#if 0
 			k = gamecontrol.map(ev.key.keysym.sym);
 			if(k == SDLK_PAUSE)
 			{
@@ -1883,6 +1887,7 @@ void kobo_gfxengine_t::frame()
 				gamecontrol.release(k);
 				gsm.release(k);
 			}
+#endif
 			break;
 		  case SDL_WINDOWEVENT:
 			switch(ev.window.event)
@@ -1907,26 +1912,25 @@ void kobo_gfxengine_t::frame()
 			}
 			break;
 		  case SDL_QUIT:
-			/*gsm.press(BTN_CLOSE);*/
 			km.brutal_quit();
 			break;
 		  case SDL_JOYBUTTONDOWN:
 			if(ev.jbutton.button == km.js_fire)
 			{
-				gamecontrol.press(BTN_FIRE);
-				gsm.press(BTN_FIRE);
+				gamecontrol.pressbtn(BTN_FIRE);
+				gsm.pressbtn(BTN_FIRE);
 			}
 			else if(ev.jbutton.button == km.js_start)
 			{
-				gamecontrol.press(BTN_START);
-				gsm.press(BTN_START);
+				gamecontrol.pressbtn(BTN_START);
+				gsm.pressbtn(BTN_START);
 			}
 			break;
 		  case SDL_JOYBUTTONUP:
 			if(ev.jbutton.button == km.js_fire)
 			{
-				gamecontrol.release(BTN_FIRE);
-				gsm.release(BTN_FIRE);
+				gamecontrol.releasebtn(BTN_FIRE);
+				gsm.releasebtn(BTN_FIRE);
 			}
 			break;
 		  case SDL_JOYAXISMOTION:
@@ -1936,40 +1940,40 @@ void kobo_gfxengine_t::frame()
 			{
 				if(ev.jaxis.value < -3200)
 				{
-					gamecontrol.press(BTN_LEFT);
-					gsm.press(BTN_LEFT);
+					gamecontrol.pressbtn(BTN_LEFT);
+					gsm.pressbtn(BTN_LEFT);
 				}
 				else if(ev.jaxis.value > 3200)
 				{
-					gamecontrol.press(BTN_RIGHT);
-					gsm.press(BTN_RIGHT);
+					gamecontrol.pressbtn(BTN_RIGHT);
+					gsm.pressbtn(BTN_RIGHT);
 				}
 				else
 				{
-					gamecontrol.release(BTN_LEFT);
-					gamecontrol.release(BTN_RIGHT);
-					gsm.release(BTN_LEFT);
-					gsm.release(BTN_RIGHT);
+					gamecontrol.releasebtn(BTN_LEFT);
+					gamecontrol.releasebtn(BTN_RIGHT);
+					gsm.releasebtn(BTN_LEFT);
+					gsm.releasebtn(BTN_RIGHT);
 				}
 			}
 			else if(ev.jaxis.axis == km.js_ud)
 			{
 				if(ev.jaxis.value < -3200)
 				{
-					gamecontrol.press(BTN_UP);
-					gsm.press(BTN_UP);
+					gamecontrol.pressbtn(BTN_UP);
+					gsm.pressbtn(BTN_UP);
 				}
 				else if(ev.jaxis.value > 3200)
 				{
-					gamecontrol.press(BTN_DOWN);
-					gsm.press(BTN_DOWN);
+					gamecontrol.pressbtn(BTN_DOWN);
+					gsm.pressbtn(BTN_DOWN);
 				}
 				else
 				{
-					gamecontrol.release(BTN_UP);
-					gamecontrol.release(BTN_DOWN);
-					gsm.release(BTN_UP);
-					gsm.release(BTN_DOWN);
+					gamecontrol.releasebtn(BTN_UP);
+					gamecontrol.releasebtn(BTN_DOWN);
+					gsm.releasebtn(BTN_UP);
+					gsm.releasebtn(BTN_DOWN);
 				}
 			}
 			break;
@@ -1988,13 +1992,13 @@ void kobo_gfxengine_t::frame()
 					km.xoffs;
 			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
 					km.yoffs;
-			gsm.press(BTN_FIRE);
+			gsm.pressbtn(BTN_FIRE);
 			if(prefs->use_mouse)
 			{
 #ifdef ENABLE_TOUCHSCREEN
 				if(ev.motion.x <= pointer_margin_width_min)
 				{
-					gsm.press(BTN_LEFT);
+					gsm.pressbtn(BTN_LEFT);
 					pointer_margin_used = true;
 				}
 				else if(ev.motion.x >= pointer_margin_width_max)
@@ -2004,11 +2008,12 @@ void kobo_gfxengine_t::frame()
 					// Otherwise it is just 'right'. :)
 					if(ev.motion.y <= pointer_margin_height_min)
 					{
-						gsm.press(BTN_PAUSE);
-						gamecontrol.press(BTN_PAUSE);
+						gsm.pressbtn(BTN_PAUSE);
+						gamecontrol.pressbtn(
+								BTN_PAUSE);
 					}
 					else
-						gsm.press((ev.motion.y >= pointer_margin_height_max
+						gsm.pressbtn((ev.motion.y >= pointer_margin_height_max
 							? BTN_EXIT
 							: BTN_RIGHT));
 					pointer_margin_used = true;
@@ -2019,7 +2024,7 @@ void kobo_gfxengine_t::frame()
 					// the 'pause' area. Still handle as
 					// clicked, so 'fire' will not kick in.
 					if(ev.motion.x < pointer_margin_width_max)
-						gsm.press(BTN_UP);
+						gsm.pressbtn(BTN_UP);
 					pointer_margin_used = true;
 				}
 				else if(ev.motion.y >= pointer_margin_height_max)
@@ -2028,13 +2033,13 @@ void kobo_gfxengine_t::frame()
 					// in the 'exit' area. Still handle as
 					// clicked, so 'fire' will not kick in.
 					if(ev.motion.x < pointer_margin_width_max)
-						gsm.press(BTN_DOWN);
+						gsm.pressbtn(BTN_DOWN);
 					pointer_margin_used = true;
 				}
 				if(!pointer_margin_used)
-					gsm.press(BTN_FIRE);
+					gsm.pressbtn(BTN_FIRE);
 #else
-				gsm.press(BTN_FIRE);
+				gsm.pressbtn(BTN_FIRE);
 #endif
 				gamecontrol.mouse_position(
 						mouse_x - WMAIN_X - WMAIN_W/2,
@@ -2051,7 +2056,7 @@ void kobo_gfxengine_t::frame()
 					mouse_right = 1;
 					break;
 				}
-				gamecontrol.press(BTN_FIRE);
+				gamecontrol.pressbtn(BTN_FIRE);
 			}
 			break;
 		  case SDL_MOUSEBUTTONUP:
@@ -2092,8 +2097,8 @@ void kobo_gfxengine_t::frame()
 			if(!mouse_left && !mouse_middle && !mouse_right)
 			{
 				if(prefs->use_mouse)
-					gamecontrol.release(BTN_FIRE);
-				gsm.release(BTN_FIRE);
+					gamecontrol.releasebtn(BTN_FIRE);
+				gsm.releasebtn(BTN_FIRE);
 			}
 			break;
 		}

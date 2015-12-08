@@ -27,19 +27,12 @@
 #include "SDL.h"
 #include "config.h"
 
-#define KEY_KP_DOWN		SDLK_KP_2
-#define KEY_KP_LEFT		SDLK_KP_4
-#define KEY_KP_UP		SDLK_KP_8
-#define KEY_KP_RIGHT		SDLK_KP_6
-#define KEY_KP_DL		SDLK_KP_1
-#define KEY_KP_DR		SDLK_KP_3
-#define KEY_KP_UL		SDLK_KP_7
-#define KEY_KP_UR		SDLK_KP_9
-
 
 enum buttons_t
 {
-	BTN_UP,		//Joystick, arrows, numpad etc
+	BTN_NONE = -1,
+
+	BTN_UP = 0,		//Joystick, arrows, numpad etc
 	BTN_DOWN,
 	BTN_LEFT,
 	BTN_RIGHT,
@@ -106,10 +99,12 @@ class gamecontrol_t
 	static void init(int always_fire);
 	static void repeat(int delay, int interval);
 	static void clear();
-	static int map(SDL_Keycode sym);
+	static buttons_t map(SDL_Keysym sym);
+	static void pressbtn(buttons_t b);
+	static void releasebtn(buttons_t b);
 	static void process();	// Call every frame!
-	static void press(int k);
-	static void release(int k);
+	static void press(SDL_Keysym sym);
+	static void release(SDL_Keysym sym);
 	static void mouse_press(int n);
 	static void mouse_release(int n);
 	static void mouse_position(int h, int v);
