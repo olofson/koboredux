@@ -10,6 +10,14 @@ TODO:
 	* Volumes need to be applied when canceling the options menu!
 		* sound.prefschange() called before cfg_form->undo()?
 
+* Configurable input mappings:
+	struct gc_mapentry_t
+	{
+		gc_mapentry_t	*next;
+		gc_targets_t	target;
+		SDL_Keycode	sources[];
+	};
+  However, we should cover joystick buttons and whatnot as well...
 
 * The teal fighter ships are REALLY dangerous currently... Maybe have them fire
   weaker ammo again?

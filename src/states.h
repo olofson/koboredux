@@ -60,7 +60,7 @@ class st_introbase_t : public kobo_basestate_t
 	st_introbase_t();
 	void enter();
 	void reenter();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void frame();
 	void pre_render();
 	void post_render();
@@ -116,7 +116,7 @@ class st_game_t : public kobo_basestate_t
 	void leave();
 	void yield();
 	void reenter();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void frame();
 	void post_render();
 };
@@ -127,7 +127,7 @@ class st_pause_game_t : public kobo_basestate_t
   public:
 	st_pause_game_t();
 	void enter();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void frame();
 	void post_render();
 };
@@ -140,7 +140,7 @@ class st_get_ready_t : public kobo_basestate_t
   public:
 	st_get_ready_t();
 	void enter();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void frame();
 	void post_render();
 };
@@ -152,7 +152,7 @@ class st_game_over_t : public kobo_basestate_t
   public:
 	st_game_over_t();
 	void enter();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void frame();
 	void post_render();
 };
@@ -258,7 +258,7 @@ class st_menu_base_t : public kobo_basestate_t
 	void enter();
 	void reenter();
 	void leave();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void frame();
 	void post_render();
 
@@ -319,7 +319,7 @@ class st_skill_menu_t : public st_menu_base_t
   public:
 	st_skill_menu_t()	{	name = "skill_menu"; }
 	kobo_form_t *open();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void select(int tag);
 };
 
@@ -350,7 +350,7 @@ class st_new_player_t : public kobo_basestate_t
 	kobo_form_t *open();
 	void enter();
 	void leave();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void frame();
 	void post_render();
 };
@@ -392,7 +392,7 @@ class st_options_base_t : public st_menu_base_t
 	void enter();
 	void close();
 	void select(int tag);
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void escape();
 };
 
@@ -462,7 +462,7 @@ class st_yesno_base_t : public st_menu_base_t
   public:
 	kobo_form_t *open();
 	void reenter();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void frame();
 	void post_render();
 };
@@ -494,7 +494,7 @@ class st_error_t : public kobo_basestate_t
 	st_error_t();
 	void message(const char *error, const char *hint);
 	void enter();
-	void press(buttons_t button);
+	void press(gc_targets_t button);
 	void frame();
 	void post_render();
 };

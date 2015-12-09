@@ -1917,19 +1917,22 @@ void kobo_gfxengine_t::frame()
 		  case SDL_JOYBUTTONDOWN:
 			if(ev.jbutton.button == km.js_fire)
 			{
-				gamecontrol.pressbtn(BTN_FIRE);
+				gamecontrol.pressbtn(BTN_FIRE,
+						GC_SRC_JOYSTICK);
 				gsm.pressbtn(BTN_FIRE);
 			}
 			else if(ev.jbutton.button == km.js_start)
 			{
-				gamecontrol.pressbtn(BTN_START);
+				gamecontrol.pressbtn(BTN_START,
+						GC_SRC_JOYSTICK);
 				gsm.pressbtn(BTN_START);
 			}
 			break;
 		  case SDL_JOYBUTTONUP:
 			if(ev.jbutton.button == km.js_fire)
 			{
-				gamecontrol.releasebtn(BTN_FIRE);
+				gamecontrol.releasebtn(BTN_FIRE,
+						GC_SRC_JOYSTICK);
 				gsm.releasebtn(BTN_FIRE);
 			}
 			break;
@@ -1940,18 +1943,22 @@ void kobo_gfxengine_t::frame()
 			{
 				if(ev.jaxis.value < -3200)
 				{
-					gamecontrol.pressbtn(BTN_LEFT);
+					gamecontrol.pressbtn(BTN_LEFT,
+							GC_SRC_JOYSTICK);
 					gsm.pressbtn(BTN_LEFT);
 				}
 				else if(ev.jaxis.value > 3200)
 				{
-					gamecontrol.pressbtn(BTN_RIGHT);
+					gamecontrol.pressbtn(BTN_RIGHT,
+							GC_SRC_JOYSTICK);
 					gsm.pressbtn(BTN_RIGHT);
 				}
 				else
 				{
-					gamecontrol.releasebtn(BTN_LEFT);
-					gamecontrol.releasebtn(BTN_RIGHT);
+					gamecontrol.releasebtn(BTN_LEFT,
+							GC_SRC_JOYSTICK);
+					gamecontrol.releasebtn(BTN_RIGHT,
+							GC_SRC_JOYSTICK);
 					gsm.releasebtn(BTN_LEFT);
 					gsm.releasebtn(BTN_RIGHT);
 				}
@@ -1960,18 +1967,22 @@ void kobo_gfxengine_t::frame()
 			{
 				if(ev.jaxis.value < -3200)
 				{
-					gamecontrol.pressbtn(BTN_UP);
+					gamecontrol.pressbtn(BTN_UP,
+							GC_SRC_JOYSTICK);
 					gsm.pressbtn(BTN_UP);
 				}
 				else if(ev.jaxis.value > 3200)
 				{
-					gamecontrol.pressbtn(BTN_DOWN);
+					gamecontrol.pressbtn(BTN_DOWN,
+							GC_SRC_JOYSTICK);
 					gsm.pressbtn(BTN_DOWN);
 				}
 				else
 				{
-					gamecontrol.releasebtn(BTN_UP);
-					gamecontrol.releasebtn(BTN_DOWN);
+					gamecontrol.releasebtn(BTN_UP,
+							GC_SRC_JOYSTICK);
+					gamecontrol.releasebtn(BTN_DOWN,
+							GC_SRC_JOYSTICK);
 					gsm.releasebtn(BTN_UP);
 					gsm.releasebtn(BTN_DOWN);
 				}
@@ -2010,7 +2021,8 @@ void kobo_gfxengine_t::frame()
 					{
 						gsm.pressbtn(BTN_PAUSE);
 						gamecontrol.pressbtn(
-								BTN_PAUSE);
+								BTN_PAUSE,
+								GC_SRC_MOUSE);
 					}
 					else
 						gsm.pressbtn((ev.motion.y >= pointer_margin_height_max
@@ -2056,7 +2068,7 @@ void kobo_gfxengine_t::frame()
 					mouse_right = 1;
 					break;
 				}
-				gamecontrol.pressbtn(BTN_FIRE);
+				gamecontrol.pressbtn(BTN_FIRE, GC_SRC_MOUSE);
 			}
 			break;
 		  case SDL_MOUSEBUTTONUP:
@@ -2097,7 +2109,8 @@ void kobo_gfxengine_t::frame()
 			if(!mouse_left && !mouse_middle && !mouse_right)
 			{
 				if(prefs->use_mouse)
-					gamecontrol.releasebtn(BTN_FIRE);
+					gamecontrol.releasebtn(BTN_FIRE,
+							GC_SRC_MOUSE);
 				gsm.releasebtn(BTN_FIRE);
 			}
 			break;

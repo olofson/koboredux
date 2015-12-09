@@ -30,30 +30,17 @@
 int gamecontrol_t::afire;
 int gamecontrol_t::r_delay = 250;
 int gamecontrol_t::r_interval = 40;
-int gamecontrol_t::space;
-int gamecontrol_t::left;
-int gamecontrol_t::up;
-int gamecontrol_t::down;
-int gamecontrol_t::right;
-int gamecontrol_t::dl;
-int gamecontrol_t::dr;
-int gamecontrol_t::ul;
-int gamecontrol_t::ur;
-int gamecontrol_t::shot;
 int gamecontrol_t::direction = 1;
 int gamecontrol_t::new_direction = 0;
 int gamecontrol_t::latch_timer = 0;
 int gamecontrol_t::movekey_pressed;
+unsigned gamecontrol_t::state[BTN__COUNT];
 
 
 void gamecontrol_t::init(int always_fire)
 {
 	afire = always_fire;
-	left = 0;
-	right = 0;
-	up = 0;
-	down = 0;
-	shot = 0;
+	memset(state, 0, sizeof(state));
 	movekey_pressed = 0;
 #if 0
 	SDL_EnableKeyRepeat(r_delay, r_interval);
@@ -85,31 +72,47 @@ void gamecontrol_t::clear()
 }
 
 
-buttons_t gamecontrol_t::map(SDL_Keysym sym)
+gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 {
 //FIXME: This should be replaced by a configurable mapping system.
+	src = GC_SRC_KEY0;
 	switch(sym.sym)
 	{
+	  // Directions
 	  case SDLK_KP_4:
+		++src;
 	  case SDLK_LEFT:
+		++src;
 	  case SDLK_a:		// Qwerty + Dvorak
 		return BTN_LEFT;
 	  case SDLK_KP_6:
+		++src;
 	  case SDLK_RIGHT:
+		++src;
 	  case SDLK_d:		// Qwerty
+		++src;
 	  case SDLK_e:		// Dvorak
 		return BTN_RIGHT;
 	  case SDLK_KP_8:
+		++src;
 	  case SDLK_UP:
+		++src;
 	  case SDLK_w:		// Qwerty
+		++src;
 	  case SDLK_COMMA:	// Some Swedish Dvorak variants
+		++src;
 	  case SDLK_LESS:	// US Dvorak?
 		return BTN_UP;
 	  case SDLK_KP_2:
+		++src;
 	  case SDLK_DOWN:
+		++src;
 	  case SDLK_s:		// Qwerty
+		++src;
 	  case SDLK_o:		// Dvorak
 		return BTN_DOWN;
+
+	  // Keypad diagonals
 	  case SDLK_KP_1:
 		return BTN_DL;
 	  case SDLK_KP_3:
@@ -119,42 +122,63 @@ buttons_t gamecontrol_t::map(SDL_Keysym sym)
 	  case SDLK_KP_9:
 		return BTN_UR;
 
+	  // Keypad diagonals with some broken keymaps...
 	  case SDLK_PAGEUP:
+		++src;
 		if(prefs->broken_numdia)
 			return BTN_UR;
 		else
 			return BTN_NEXT;
 	  case SDLK_PAGEDOWN:
+		++src;
 		if(prefs->broken_numdia)
 			return BTN_DR;
 		else
 			return BTN_PREV;
 	  case SDLK_HOME:
+		++src;
 		if(prefs->broken_numdia)
 			return BTN_UL;
 		else
 			return BTN_NONE;
 	  case SDLK_END:
+		++src;
 		if(prefs->broken_numdia)
-			return BTN_UL;
+			return BTN_DL;
 		else
 			return BTN_NONE;
 
+	  // Fire
 	  case SDLK_LSHIFT:
+		++src;
 	  case SDLK_RSHIFT:
+		++src;
 	  case SDLK_LCTRL:
+		++src;
 	  case SDLK_RCTRL:
 		return BTN_FIRE;
+
+	  // Exit
 	  case SDLK_ESCAPE:
 		return BTN_EXIT;
+
+	  // Pause
 	  case SDLK_PAUSE:
+		++src;
 	  case SDLK_p:
 		return BTN_PAUSE;
+
+	  // Start
 	  case SDLK_SPACE:
 		return BTN_START;
+
+	  // Select
 	  case SDLK_KP_ENTER:
+		++src;
 	  case SDLK_RETURN:
 		return BTN_SELECT;
+
+	  // GUI navigation and editing
 	  case SDLK_KP_PLUS:
 		return BTN_INC;
 	  case SDLK_KP_MINUS:
@@ -165,30 +189,8 @@ buttons_t gamecontrol_t::map(SDL_Keysym sym)
 		return BTN_NO;
 	  case SDLK_BACKSPACE:
 		return BTN_BACK;
-	  case SDLK_F1:
-		return BTN_F1;
-	  case SDLK_F2:
-		return BTN_F2;
-	  case SDLK_F3:
-		return BTN_F3;
-	  case SDLK_F4:
-		return BTN_F4;
-	  case SDLK_F5:
-		return BTN_F5;
-	  case SDLK_F6:
-		return BTN_F6;
-	  case SDLK_F7:
-		return BTN_F7;
-	  case SDLK_F8:
-		return BTN_F8;
-	  case SDLK_F9:
-		return BTN_F9;
-	  case SDLK_F10:
-		return BTN_F10;
-	  case SDLK_F11:
-		return BTN_F11;
-	  case SDLK_F12:
-		return BTN_F12;
+
+	  // Unmapped!
 	  default:
 		return BTN_NONE;
 	}
@@ -197,88 +199,40 @@ buttons_t gamecontrol_t::map(SDL_Keysym sym)
 
 void gamecontrol_t::press(SDL_Keysym sym)
 {
-	pressbtn(map(sym));
+	int src;
+	gc_targets_t tgt = mapsrc(sym, src);
+	if(tgt != BTN_NONE)
+		pressbtn(tgt, (gc_sources_t)src);
 }
 
 
 void gamecontrol_t::release(SDL_Keysym sym)
 {
-	releasebtn(map(sym));
+	int src;
+	gc_targets_t tgt = mapsrc(sym, src);
+	if(tgt != BTN_NONE)
+		releasebtn(tgt, (gc_sources_t)src);
 }
 
 
-void gamecontrol_t::pressbtn(buttons_t b)
+void gamecontrol_t::pressbtn(gc_targets_t b, gc_sources_t s)
 {
-	switch(b)
-	{
-	  case BTN_LEFT:
-		left = 1;
-		break;
-	  case BTN_RIGHT:
-		right = 1;
-		break;
-	  case BTN_UP:
-		up = 1;
-		break;
-	  case BTN_DOWN:
-		down = 1;
-		break;
-	  case BTN_UL:
-		ul = 1;
-		break;
-	  case BTN_UR:
-		ur = 1;
-		break;
-	  case BTN_DL:
-		dl = 1;
-		break;
-	  case BTN_DR:
-		dr = 1;
-		break;
-	  case BTN_FIRE:
-		shot = 1;
-		break;
-	  default:
+	if(b < 0 || b >= BTN__COUNT)
 		return;
-	}
+	if(s < 0 || s > 31)
+		return;
+	state[b] |= 1 << s;
 	gamecontrol_t::change();
 }
 
 
-void gamecontrol_t::releasebtn(buttons_t b)
+void gamecontrol_t::releasebtn(gc_targets_t b, gc_sources_t s)
 {
-	switch(b)
-	{
-	  case BTN_LEFT:
-		left = 0;
-		break;
-	  case BTN_RIGHT:
-		right = 0;
-		break;
-	  case BTN_UP:
-		up = 0;
-		break;
-	  case BTN_DOWN:
-		down = 0;
-		break;
-	  case BTN_UL:
-		ul = 0;
-		break;
-	  case BTN_UR:
-		ur = 0;
-		break;
-	  case BTN_DL:
-		dl = 0;
-		break;
-	  case BTN_DR:
-		dr = 0;
-		break;
-	  case BTN_FIRE:
-		shot = 0;
-		break;
-	  default:
+	if(b < 0 || b >= BTN__COUNT)
 		return;
-	}
+	if(s < 0 || s > 31)
+		return;
+	state[b] &= ~(1 << s);
 	gamecontrol_t::change();
 }
 
@@ -286,18 +240,18 @@ void gamecontrol_t::releasebtn(buttons_t b)
 void gamecontrol_t::mouse_press(int n)
 {
 	if(n == 1)
-		shot = 1;
-//	else if(n == 3)
-//		manage.key_down(KEY_START);
-	gamecontrol_t::change();
+		pressbtn(BTN_FIRE, GC_SRC_MOUSE);
+#if 0
+	else if(n == 3)
+		manage.key_down(KEY_START);
+#endif
 }
 
 
 void gamecontrol_t::mouse_release(int n)
 {
 	if(n == 1)
-		shot = 0;
-	gamecontrol_t::change();
+		releasebtn(BTN_FIRE, GC_SRC_MOUSE);
 }
 
 
@@ -311,7 +265,7 @@ void gamecontrol_t::mouse_position(int h, int v)
 		myship.put_crosshair();
 		break;
 	  case MMD_RELATIVE:
-		/* Insert delta pos sensitivity filter here */
+		// Insert delta pos sensitivity filter here
 		break;
 	}
 	if(h > 0)
@@ -365,6 +319,14 @@ void gamecontrol_t::mouse_position(int h, int v)
 
 void gamecontrol_t::change()
 {
+	int left = state[BTN_LEFT] != 0;
+	int up = state[BTN_UP] != 0;
+	int down = state[BTN_DOWN] != 0;
+	int right = state[BTN_RIGHT] != 0;
+	int ul = state[BTN_UL] != 0;
+	int ur = state[BTN_UR] != 0;
+	int dl = state[BTN_DL] != 0;
+	int dr = state[BTN_DR] != 0;
 	int lr = left - right + ul - ur + dl - dr;
 	int ud = up - down + ul + ur - dl - dr;
 	if(lr > 0)

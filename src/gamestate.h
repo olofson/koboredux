@@ -37,8 +37,8 @@ class gamestate_t
 	const char		*name;
 	void pop();
 
-	virtual void press(buttons_t button);
-	virtual void release(buttons_t button);
+	virtual void press(gc_targets_t button);
+	virtual void release(gc_targets_t button);
 	virtual void pos(int x, int y);
 	virtual void delta(int dx, int dy);
 
@@ -67,8 +67,8 @@ class gamestatemanager_t
 	// Event router interface
 	void press(SDL_Keysym sym);
 	void release(SDL_Keysym sym);
-	void pressbtn(buttons_t button);
-	void releasebtn(buttons_t button);
+	void pressbtn(gc_targets_t button);
+	void releasebtn(gc_targets_t button);
 	void pos(int x, int y);
 	void delta(int dx, int dy);
 

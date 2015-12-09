@@ -118,7 +118,7 @@ void st_introbase_t::reenter()
 }
 
 
-void st_introbase_t::press(buttons_t button)
+void st_introbase_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
@@ -372,7 +372,7 @@ void st_game_t::reenter()
 }
 
 
-void st_game_t::press(buttons_t button)
+void st_game_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
@@ -436,7 +436,7 @@ void st_pause_game_t::enter()
 }
 
 
-void st_pause_game_t::press(buttons_t button)
+void st_pause_game_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
@@ -493,7 +493,7 @@ void st_get_ready_t::enter()
 }
 
 
-void st_get_ready_t::press(buttons_t button)
+void st_get_ready_t::press(gc_targets_t button)
 {
 	if(frame_time < 500)
 		return;
@@ -628,7 +628,7 @@ void st_game_over_t::enter()
 }
 
 
-void st_game_over_t::press(buttons_t button)
+void st_game_over_t::press(gc_targets_t button)
 {
 	if(frame_time < 500)
 		return;
@@ -786,7 +786,7 @@ int st_menu_base_t::translate(int tag, int button)
 	}
 }
 
-void st_menu_base_t::press(buttons_t button)
+void st_menu_base_t::press(gc_targets_t button)
 {
 	int selection;
 	if(!form)
@@ -971,7 +971,7 @@ void st_new_player_t::post_render()
 	menu->render();
 }
 
-void st_new_player_t::press(buttons_t button)
+void st_new_player_t::press(gc_targets_t button)
 {
 	if(menu->editing)
 	{
@@ -1185,7 +1185,7 @@ void st_error_t::enter()
 }
 
 
-void st_error_t::press(buttons_t button)
+void st_error_t::press(gc_targets_t button)
 {
 	if(frame_time < 500)
 		return;
@@ -1497,7 +1497,7 @@ kobo_form_t *st_skill_menu_t::open()
 }
 
 
-void st_skill_menu_t::press(buttons_t button)
+void st_skill_menu_t::press(gc_targets_t button)
 {
 	st_menu_base_t::press(button);
 	switch (button)
@@ -1643,7 +1643,7 @@ void st_options_base_t::select(int tag)
 		pop();
 }
 
-void st_options_base_t::press(buttons_t button)
+void st_options_base_t::press(gc_targets_t button)
 {
 	// NOTE:
 	//	This may result in select() above being called, and that in
@@ -1716,7 +1716,7 @@ void st_yesno_base_t::reenter()
 	st_menu_base_t::reenter();
 }
 
-void st_yesno_base_t::press(buttons_t button)
+void st_yesno_base_t::press(gc_targets_t button)
 {
 	switch (button)
 	{

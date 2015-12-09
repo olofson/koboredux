@@ -28,7 +28,7 @@
 #include "config.h"
 
 
-enum buttons_t
+enum gc_targets_t
 {
 	BTN_NONE = -1,
 
@@ -58,24 +58,11 @@ enum buttons_t
 	BTN_CLOSE,	//Window close button, ALT-F4,...
 	BTN_BACK,	//Backspace
 
-	BTN_F1,		//Function keys
-	BTN_F2,
-	BTN_F3,
-	BTN_F4,
-
-	BTN_F5,
-	BTN_F6,
-	BTN_F7,
-	BTN_F8,
-
-	BTN_F9,
-	BTN_F10,
-	BTN_F11,
-	BTN_F12
+	BTN__COUNT
 };
 
 
-enum mousemodes_t
+enum gc_mousemodes_t
 {
 	MMD_OFF = 0,
 	MMD_CROSSHAIR,
@@ -83,25 +70,40 @@ enum mousemodes_t
 };
 
 
+enum gc_sources_t
+{
+	GC_SRC_JOYSTICK = 0,
+	GC_SRC_MOUSE,
+	GC_SRC_KEY0,
+	GC_SRC_KEY1,
+	GC_SRC_KEY2,
+	GC_SRC_KEY3,
+	GC_SRC__COUNT
+};
+
+
 class gamecontrol_t
 {
 	static int r_delay, r_interval;
 	static int afire;
-	static int space;
-	static int left, up, down, right, ul, ur, dl, dr;
-	static int shot;
+	static unsigned state[BTN__COUNT];
 	static int direction, new_direction;
 	static int latch_timer;
 	static int movekey_pressed;
 	static void change();
+	static gc_targets_t mapsrc(SDL_Keysym sym, int &src);
   public:
 	gamecontrol_t();
 	static void init(int always_fire);
 	static void repeat(int delay, int interval);
 	static void clear();
-	static buttons_t map(SDL_Keysym sym);
-	static void pressbtn(buttons_t b);
-	static void releasebtn(buttons_t b);
+	static inline gc_targets_t map(SDL_Keysym sym)
+	{
+		int src;
+		return mapsrc(sym, src);
+	}
+	static void pressbtn(gc_targets_t b, gc_sources_t s);
+	static void releasebtn(gc_targets_t b, gc_sources_t s);
 	static void process();	// Call every frame!
 	static void press(SDL_Keysym sym);
 	static void release(SDL_Keysym sym);
@@ -109,7 +111,7 @@ class gamecontrol_t
 	static void mouse_release(int n);
 	static void mouse_position(int h, int v);
 	static inline int dir()		{ return direction; }
-	static inline int get_shot()	{ return shot || afire; }
+	static inline int get_shot()	{ return state[BTN_FIRE] || afire; }
 	static inline int dir_push()	{ return movekey_pressed; }
 };
 

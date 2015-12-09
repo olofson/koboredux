@@ -56,8 +56,8 @@ void gamestate_t::enter()			{}
 void gamestate_t::leave()			{}
 void gamestate_t::yield()			{}
 void gamestate_t::reenter()			{}
-void gamestate_t::press(buttons_t button)	{}
-void gamestate_t::release(buttons_t button)	{}
+void gamestate_t::press(gc_targets_t button)	{}
+void gamestate_t::release(gc_targets_t button)	{}
 void gamestate_t::pos(int x, int y)		{}
 void gamestate_t::delta(int dx, int dy)		{}
 void gamestate_t::frame()			{}
@@ -165,14 +165,14 @@ void gamestatemanager_t::release(SDL_Keysym sym)
 }
 
 
-void gamestatemanager_t::pressbtn(buttons_t button)
+void gamestatemanager_t::pressbtn(gc_targets_t button)
 {
 	if(top)
 		top->press(button);
 }
 
 
-void gamestatemanager_t::releasebtn(buttons_t button)
+void gamestatemanager_t::releasebtn(gc_targets_t button)
 {
 	if(top)
 		top->release(button);
