@@ -74,36 +74,47 @@ static inline void __move_point(cs_point_t *p, int wx, int wy)
 
 
 /*
- * Update the motion filtered output of a point.
+ * Update point by interpolating between the previous and current state, or by
+ * extrapolating from the current state.
  */
-static inline void __update_point_f(cs_point_t *p, int ff, int wx, int wy)
+static inline void update_point_ix(cs_point_t *p, int ff, int wx, int wy,
+		int extrapolate)
 {
+	int dx, dy;
 	int ogx = p->gx;
 	int ogy = p->gy;
-	int ox = p->ox;
-	int oy = p->oy;
 
-	/* Unwrap filter for correct interpolation */
-	if(wx | wy)
+	/* Unwrap for correct interpolation/extrapolation */
+	if(wx)
 	{
-		if((ox - p->v.x) > (wx >> 1))
-			ox -= wx;
-		else if((p->v.x - ox) > (wx >> 1))
-			ox += wx;
-		if((oy - p->v.y) > (wy >> 1))
-			oy -= wy;
-		else if((p->v.y - oy) > (wy >> 1))
-			oy += wy;
+		if((p->ox - p->v.x) > (wx >> 1))
+			p->ox -= wx;
+		else if((p->v.x - p->ox) > (wx >> 1))
+			p->ox += wx;
+	}
+	if(wy)
+	{
+		if((p->oy - p->v.y) > (wy >> 1))
+			p->oy -= wy;
+		else if((p->v.y - p->oy) > (wy >> 1))
+			p->oy += wy;
+	}
+
+	dx = (p->v.x - p->ox) * ff >> 8;
+	dy = (p->v.y - p->oy) * ff >> 8;
+	if(extrapolate)
+	{
+		p->gx = p->v.x + dx;
+		p->gy = p->v.y + dy;
+	}
+	else
+	{
+		p->gx = p->ox + dx;
+		p->gy = p->oy + dy;
 	}
 
 	/* 
-	 * Interpolate output graphics coordinate
-	 */
-	p->gx = (ff * p->v.x + (256 - ff) * ox) >> 8;
-	p->gy = (ff * p->v.y + (256 - ff) * oy) >> 8;
-
-	/* 
-	 * Wrap interpolated output
+	 * Wrap filtered interpolation/extrapolation
 	 */
 	if(wx)
 	{
@@ -125,7 +136,10 @@ static inline void __update_point_f(cs_point_t *p, int ff, int wx, int wy)
 }
 
 
-static inline void __update_point(cs_point_t *p, int ff)
+/*
+ * Update point using the current state.
+ */
+static inline void update_point(cs_point_t *p, int ff)
 {
 	int ogx = p->gx;
 	int ogy = p->gy;
@@ -606,28 +620,57 @@ static void __update_points(cs_engine_t *e, float frac_frame)
 	else if(ff > 256)
 		ff = 256;
 
-	if(e->filter)
+	switch(e->filter)
+	{
+	  default:
+	  case CS_FM_NONE:
 		for(i = 0; i < CS_USER_POINTS; ++i)
-			__update_point_f(&e->points[i], ff, e->wx, e->wy);
-	else
+			update_point(&e->points[i], ff);
+		break;
+	  case CS_FM_INTERPOLATE:
 		for(i = 0; i < CS_USER_POINTS; ++i)
-			__update_point(&e->points[i], ff);
+			update_point_ix(&e->points[i], ff, e->wx, e->wy, 0);
+		break;
+	  case CS_FM_EXTRAPOLATE:
+		for(i = 0; i < CS_USER_POINTS; ++i)
+			update_point_ix(&e->points[i], ff, e->wx, e->wy, 1);
+		break;
+	}
 
 	for(i = 0; i < CS_LAYERS; ++i)
 	{
-		if(e->filter)
-			__update_point_f(&e->offsets[i], ff, e->wx, e->wy);
-		else
-			__update_point(&e->offsets[i], ff);
+		switch(e->filter)
+		{
+		  default:
+		  case CS_FM_NONE:
+			update_point(&e->offsets[i], ff);
+			break;
+		  case CS_FM_INTERPOLATE:
+			update_point_ix(&e->offsets[i], ff, e->wx, e->wy, 0);
+			break;
+		  case CS_FM_EXTRAPOLATE:
+			update_point_ix(&e->offsets[i], ff, e->wx, e->wy, 1);
+			break;
+		}
 		e->changed[i] = 0;
 		o = e->objects[i];
 		while(o)
 		{
-			if(e->filter)
-				__update_point_f(&o->point, ff, e->wx,
-						e->wy);
-			else
-				__update_point(&o->point, ff);
+			switch(e->filter)
+			{
+			  default:
+			  case CS_FM_NONE:
+				update_point(&o->point, ff);
+				break;
+			  case CS_FM_INTERPOLATE:
+				update_point_ix(&o->point, ff, e->wx, e->wy,
+						0);
+				break;
+			  case CS_FM_EXTRAPOLATE:
+				update_point_ix(&o->point, ff, e->wx, e->wy,
+						1);
+				break;
+			}
 			o->point.gx -= e->offsets[i].gx;
 			o->point.gy -= e->offsets[i].gy;
 			e->changed[i] |= o->point.changed;

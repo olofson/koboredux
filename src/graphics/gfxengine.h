@@ -234,7 +234,7 @@ class gfxengine_t
 	int		_pages;
 	int		_vsync;
 	int		_centered;
-	int		use_interpolation;
+	cs_filtermode_t	motion_filter_mode;
 	int		_width, _height;
 	const char	*_title;
 	const char	*_icontitle;

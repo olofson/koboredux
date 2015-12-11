@@ -158,6 +158,12 @@ typedef struct
 	int		xa, ya;
 } cs_vector_t;
 
+typedef enum
+{
+	CS_FM_NONE = 0,
+	CS_FM_INTERPOLATE,
+	CS_FM_EXTRAPOLATE
+} cs_filtermode_t;
 
 /*
  * Some handy vector construction macros...
@@ -429,9 +435,7 @@ typedef struct cs_engine_t
 	int		wx, wy;
 
 	/* Motion filtering */
-	int		filter;	/* 0: newest,
-				 * 1: linear interpolation
-				 */
+	cs_filtermode_t	filter;
 
 	/* Current time in frames */
 	double		time;

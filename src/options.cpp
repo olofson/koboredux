@@ -71,7 +71,10 @@ void system_options_t::build()
 		item("Normal", 50);
 		item("Slow", 10);
 		item("Logic/Video Lock", 0);
-	onoff("Motion Interpolation", &prf->filter, OS_UPDATE_ENGINE);
+	list("Motion Filter", &prf->filter, OS_UPDATE_ENGINE);
+		item("None", 0);
+		item("Interpolation", 1);
+		item("Extrapolation", 2);
 
 	space();
 	xoffs = 0.6;

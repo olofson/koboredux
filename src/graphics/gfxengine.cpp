@@ -62,7 +62,7 @@ gfxengine_t::gfxengine_t()
 	_vsync = 1;
 	_fullscreen = 0;
 	_centered = 0;
-	use_interpolation = 1;
+	motion_filter_mode = CS_FM_EXTRAPOLATE;
 	_title = "GfxEngine v0.5";
 	_icontitle = "GfxEngine";
 	_cursor = 1;
@@ -850,7 +850,7 @@ int gfxengine_t::show()
 	SDL_ShowCursor(_cursor);
 
 	cs_engine_set_size(csengine, _width, _height);
-	csengine->filter = use_interpolation;
+	csengine->filter = motion_filter_mode;
 
 	noalpha(alpha_threshold);
 	is_showing = 1;
@@ -980,11 +980,11 @@ void gfxengine_t::cursor(int csr)
 
 void gfxengine_t::interpolation(int inter)
 {
-	use_interpolation = inter;
+	motion_filter_mode = (cs_filtermode_t)inter;
 	if(!csengine)
 		return;
 
-	csengine->filter = use_interpolation;
+	csengine->filter = motion_filter_mode;
 }
 
 
