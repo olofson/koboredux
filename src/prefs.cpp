@@ -87,7 +87,7 @@ void prefs_t::init()
 	yesno("alpha", alpha, 1); desc("Use Alpha Blending");
 	key("brightness", brightness, 100); desc("Brightness");
 	key("contrast", contrast, 100); desc("Contrast");
-	key("planetdither", planetdither, 4); desc("Planet Dither Style");
+	key("planetdither", planetdither, 5); desc("Planet Dither Style");
 
 	comment("--- File paths -----------------------------");
 	key("files", dir, ""); desc("Game Root Path");
