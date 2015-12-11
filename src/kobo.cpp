@@ -1109,8 +1109,10 @@ static KOBO_GfxDesc gfxdesc[] = {
 
 	{ "GFX>>bullet.png", B_BLT_GREEN,	8, 8,	0.0f,	KOBO_CENTER },
 	{ "GFX>>red-bullet.png", B_BLT_RED,	8, 8,	0.0f,	KOBO_CENTER },
+	{ "GFX>>blue-bullet.png", B_BLT_BLUE,	8, 8,	0.0f,	KOBO_CENTER },
 	{ "GFX>>bulletexpl2.png", B_BLTX_GREEN,	32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>bulletexpl2.png", B_BLTX_RED,	32, 32,	2.0f,	KOBO_CENTER },
+	{ "GFX>>bulletexpl2.png", B_BLTX_BLUE,	32, 32,	2.0f,	KOBO_CENTER },
 
 	{ "GFX>>ring.png", B_RING,		32, 32,	2.0f,	KOBO_CENTER },
 	{ "GFX>>ringexpl2b.png", B_RINGEXPL,	40, 40,	2.0f,	KOBO_CENTER },

@@ -49,6 +49,7 @@ struct enemy_kind
 
 extern const enemy_kind greenbullet;
 extern const enemy_kind redbullet;
+extern const enemy_kind bluebullet;
 extern const enemy_kind explosion;
 extern const enemy_kind explosion3;
 extern const enemy_kind explosion4;
@@ -56,6 +57,7 @@ extern const enemy_kind explosion5;
 extern const enemy_kind ringexpl;
 extern const enemy_kind greenbltexpl;
 extern const enemy_kind redbltexpl;
+extern const enemy_kind bluebltexpl;
 extern const enemy_kind boltexpl;
 extern const enemy_kind rockexpl;
 extern const enemy_kind enemy1;
@@ -136,9 +138,11 @@ class _enemy
 
 	void make_bullet_green();
 	void make_bullet_red();
+	void make_bullet_blue();
 	void move_bullet();
 	void kill_bullet_green();
 	void kill_bullet_red();
+	void kill_bullet_blue();
 
 	void make_rock();
 	void move_rock();

@@ -234,7 +234,7 @@ inline void _enemy::launch(const enemy_kind *ekp)
 	enemies.make(ekp, x + vx, y + vy, vx, vy);
 	if(&ring == ekp)
 		sound.g_launch_ring(x, y);
-	else if(&greenbullet == ekp || &redbullet == ekp)
+	else if(&greenbullet == ekp || &redbullet == ekp || &bluebullet == ekp)
 		sound.g_launch_bullet(x, y);
 	else if(&bomb1 == ekp || &bomb2 == ekp)
 		sound.g_launch_bomb(x, y);
@@ -251,7 +251,7 @@ void _enemy::shot_template_8_dir(const enemy_kind *ekp)
 		enemies.make(ekp, x, y, vx[i], vy[i]);
 	if(&ring == ekp)
 		sound.g_m_launch_ring(x, y);
-	else if(&greenbullet == ekp || &redbullet == ekp)
+	else if(&greenbullet == ekp || &redbullet == ekp || &bluebullet == ekp)
 		sound.g_m_launch_bullet(x, y);
 	else if(&bomb1 == ekp || &bomb2 == ekp)
 		sound.g_m_launch_bomb(x, y);
@@ -288,6 +288,12 @@ void _enemy::make_bullet_red()
 	damage = 40;
 }
 
+void _enemy::make_bullet_blue()
+{
+	make_bullet_green();
+	damage = 10;
+}
+
 void _enemy::move_bullet()
 {
 	if(mindiff >= ((VIEWLIMIT >> 1) + 32))
@@ -306,6 +312,12 @@ void _enemy::kill_bullet_green()
 void _enemy::kill_bullet_red()
 {
 	enemies.make(&redbltexpl, x, y);
+	release();
+}
+
+void _enemy::kill_bullet_blue()
+{
+	enemies.make(&bluebltexpl, x, y);
 	release();
 }
 
@@ -329,6 +341,17 @@ const enemy_kind redbullet = {
 	B_BLT_RED, 0,
 	LAYER_BULLETS,
 	2
+};
+
+const enemy_kind bluebullet = {
+	0,
+	&_enemy::make_bullet_blue,
+	&_enemy::move_bullet,
+	&_enemy::kill_bullet_blue,
+	2,
+	B_BLT_BLUE, 0,
+	LAYER_BULLETS,
+	5
 };
 
 
@@ -689,6 +712,17 @@ const enemy_kind redbltexpl = {
 	&_enemy::kill_default,
 	-1,
 	B_BLTX_RED, 0,
+	LAYER_FX,
+	0
+};
+
+const enemy_kind bluebltexpl = {
+	0,
+	&_enemy::make_expl,
+	&_enemy::move_expl,
+	&_enemy::kill_default,
+	-1,
+	B_BLTX_BLUE, 0,
 	LAYER_FX,
 	0
 };
@@ -1331,7 +1365,7 @@ void _enemy::move_enemy7()
 	{
 		count = 4;
 		if(mindiff > ((VIEWLIMIT >> 1) - 32))
-			this->launch(&redbullet);
+			this->launch(&bluebullet);
 	}
 }
 
