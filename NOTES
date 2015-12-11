@@ -2,6 +2,12 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* Sound fixes:
+	* No pause sound when already paused! (Happens when getting back from
+	  menus to a paused game.)
+	* Pause effect when pausing game to enter menu!
+	* sound::run()?
+
 * Original speeds:
 				shift	rnd	max
 	cannon:
@@ -28,16 +34,7 @@ TODO:
 	enemy_m2:
 		enemy2		4	128	192
 
-* Change the default planet dither to noise!
-
 * Not sure about enemy_m* launching bombs... Instadeath!
-
-* Sound fixes:
-	* No pause sound when already paused! (Happens when getting back from
-	  menus to a paused game.)
-	* Pause effect when pausing game to enter menu!
-	* sound::run()?
-	* Jingle should probably bypass (most of) the master section...
 
 * Configurable input mappings:
 	struct gc_mapentry_t

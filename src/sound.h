@@ -145,6 +145,9 @@ class KOBO_sound
 	// Play anything through one of the music groups
 	static void music(int sng, bool ingame = false);
 
+	// Play sound/jingle directly through the master group
+	static void jingle(int sng);
+
 	// Play a user interface sound
 	static void ui_play(unsigned wid, int vol = 65536, int pitch = 60<<16,
 			int pan = 0);

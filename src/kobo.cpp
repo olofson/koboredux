@@ -1490,7 +1490,7 @@ int KOBO_main::open()
 	load_palette();
 	noiseburst();
 
-	sound.music(SOUND_OAJINGLE);
+	sound.jingle(SOUND_OAJINGLE);
 	int jtime = SDL_GetTicks() + 5000;
 
 #ifdef TIME_PROGRESS

@@ -336,6 +336,15 @@ void KOBO_sound::music(int sng, bool ingame)
 }
 
 
+void KOBO_sound::jingle(int sng)
+{
+	if(!state)
+		return;
+	if(sounds[sng])
+		a2_Play(state, master_g, sounds[sng], 0.0f, 0.5f);
+}
+
+
 /*--------------------------------------------------
 	In-game sound
 --------------------------------------------------*/
