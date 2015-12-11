@@ -26,10 +26,9 @@ const _scene scenes[] = {
 	/* Test map */
 	{
 		0, 32, 0,
-		&enemy_m1, 128, &greenbullet, 16,
+		&greenbullet, 128, &greenbullet, 16,
 		1,{
-			{&enemy_m4, 1, 5},
-//			{&enemy4,  10, 5},
+			{&enemy_m4,  5, 5},
 		},
 		1,{
 //			{32,  64, 31, 62},

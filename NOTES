@@ -2,13 +2,42 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* Original speeds:
+				shift	rnd	max
+	cannon:
+		greenbullet	6	32	0
+		redbullet	6	32	0
+		bluebullet	4	32	0
+		others		5	32	0
+	core:
+		greenbullet	6	0	0
+		redbullet	6	0	0
+		bluebullet	4	0	0
+		others		5	0	0
+	enemy2:
+		bluebullet	4	0	0
+		was: redbullet	5	0	0
+	enemy5:
+		greenbullet	6	0	0
+	enemy6:
+		redbullet	6	0	0
+	enemy7:
+		bluebullet	6	0	0
+	enemy_m1:
+		enemy1		4	0	0
+	enemy_m2:
+		enemy2		4	128	192
+
+* Change the default planet dither to noise!
+
+* Not sure about enemy_m* launching bombs... Instadeath!
+
 * Sound fixes:
 	* No pause sound when already paused! (Happens when getting back from
 	  menus to a paused game.)
 	* Pause effect when pausing game to enter menu!
 	* sound::run()?
-	* Volumes need to be applied when canceling the options menu!
-		* sound.prefschange() called before cfg_form->undo()?
+	* Jingle should probably bypass (most of) the master section...
 
 * Configurable input mappings:
 	struct gc_mapentry_t
@@ -18,9 +47,6 @@ TODO:
 		SDL_Keycode	sources[];
 	};
   However, we should cover joystick buttons and whatnot as well...
-
-* The teal fighter ships are REALLY dangerous currently... Maybe have them fire
-  weaker ammo again?
 
 * Rock explosion looks bland. There should also be pieces of rock flying!
 

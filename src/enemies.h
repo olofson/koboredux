@@ -43,6 +43,7 @@ struct enemy_kind
 	int	hitsize;
 	int	bank, frame;
 	int	layer;
+	int	launchspeed;
 };
 
 
@@ -103,7 +104,7 @@ class _enemy
 	bool		takes_splash_damage;
 	int		shootable;
 	int		diffx, diffy;
-	int		norm;
+	int		mindiff;
 	int		hitsize;
 	int		mapcollide;
 	int		bank, frame;
@@ -111,8 +112,7 @@ class _enemy
 	void move_enemy_template(int quick, int maxspeed);
 	void move_enemy_template_2(int quick, int maxspeed);
 	void move_enemy_template_3(int quick, int maxspeed);
-	void shot_template(const enemy_kind * ekp,
-			int shift, int rand_num, int maxspeed);
+	void launch(const enemy_kind * ekp);
 	void shot_template_8_dir(const enemy_kind * ekp);
       public:
 	 _enemy();
@@ -366,7 +366,7 @@ inline void _enemy::move()
 	y &= PIXEL2CS(WORLD_SIZEY) - 1;
 	diffx = wrapdist(CS2PIXEL(x), myship.get_x(), WORLD_SIZEX);
 	diffy = wrapdist(CS2PIXEL(y), myship.get_y(), WORLD_SIZEY);
-	norm = MAX(labs(diffx), labs(diffy));
+	mindiff = MAX(labs(diffx), labs(diffy));
 	(this->*(ek->move)) ();
 
 	// Handle collisions with the player ship
@@ -374,7 +374,7 @@ inline void _enemy::move()
 	// NOTE: Cores and cannons have mapcollide == 1, and are handled via
 	//       the new ship/base "physics" instead.
 	//
-	if(!mapcollide && (hitsize >= 0) && (norm < (hitsize + HIT_MYSHIP)))
+	if(!mapcollide && (hitsize >= 0) && (mindiff < (hitsize + HIT_MYSHIP)))
 	{
 		if(prefs->cmd_indicator)
 			sound.g_player_damage();
@@ -387,7 +387,7 @@ inline void _enemy::move()
 
 	// Handle collisions with player bolts (Player bolts kill themselves
 	// when they hit something, so we don't need to hit them from here.)
-	if(!shootable || (norm >= ((VIEWLIMIT >> 1) + 8)))
+	if(!shootable || (mindiff >= ((VIEWLIMIT >> 1) + 8)))
 		return;
 
 	int dmg = myship.hit_bolt(CS2PIXEL(x), CS2PIXEL(y),
@@ -411,7 +411,7 @@ inline void _enemy::move_intro()
 	y &= PIXEL2CS(WORLD_SIZEY) - 1;
 	diffx = wrapdist(CS2PIXEL(x), myship.get_x(), WORLD_SIZEX);
 	diffy = wrapdist(CS2PIXEL(y), myship.get_y(), WORLD_SIZEY);
-	norm = MAX(labs(diffx), labs(diffy));
+	mindiff = MAX(labs(diffx), labs(diffy));
 	(this->*(ek->move)) ();
 }
 

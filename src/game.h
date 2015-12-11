@@ -60,6 +60,9 @@
 // Define to have the player ship bounce off bases, rather than cling to them
 #define	BASE_BOUNCE
 
+// Launch speed for enemies with launchspeed == 0
+#define	DEFAULT_LAUNCH_SPEED	4
+
 // Gameplay debug tools
 #undef	INVULNERABLE	// Player ship cannot take damage
 #undef	NOSPEEDLIMIT	// Player ship controlled via acceleration; no drag

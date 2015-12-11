@@ -160,8 +160,8 @@ inline void _enemy::move_enemy_template(int quick, int maxspeed)
 
 inline void _enemy::move_enemy_template_2(int quick, int maxspeed)
 {
-	h = -PIXEL2CS(diffy) / (1<<quick);
-	v = PIXEL2CS(diffx) / (1<<quick);
+	h = -PIXEL2CS(diffy) >> quick;
+	v = PIXEL2CS(diffx) >> quick;
 
 	if(diffx > 0)
 	{
@@ -190,8 +190,8 @@ inline void _enemy::move_enemy_template_2(int quick, int maxspeed)
 
 inline void _enemy::move_enemy_template_3(int quick, int maxspeed)
 {
-	h = PIXEL2CS(diffy) / (1<<quick);
-	v = -PIXEL2CS(diffx) / (1<<quick);
+	h = PIXEL2CS(diffy) >> quick;
+	v = -PIXEL2CS(diffx) >> quick;
 
 	if(diffx > 0)
 	{
@@ -218,33 +218,19 @@ inline void _enemy::move_enemy_template_3(int quick, int maxspeed)
 		di = ndi;
 }
 
-inline void _enemy::shot_template(const enemy_kind * ekp,
-		int shift, int rnd, int maxspeed)
+inline void _enemy::launch(const enemy_kind *ekp)
 {
 #ifndef NOENEMYFIRE
 	if(enemies.is_intro)
 #endif
 		return;
-	int vx = -diffx;
-	int vy = -diffy;
-	if(rnd)
-	{
-		vx += (gamerand.get() & (rnd - 1)) - (rnd >> 1);
-		vy += (gamerand.get() & (rnd - 1)) - (rnd >> 1);
-	}
-	vx = PIXEL2CS(vx) / (1<<shift);
-	vy = PIXEL2CS(vy) / (1<<shift);
-	if(maxspeed > 0)
-	{
-		if(vx > maxspeed)
-			vx = maxspeed;
-		else if(vx < -maxspeed)
-			vx = -maxspeed;
-		if(vy > maxspeed)
-			vy = maxspeed;
-		else if(vy < -maxspeed)
-			vy = -maxspeed;
-	}
+	int v0 = PIXEL2CS(ekp->launchspeed ? ekp->launchspeed :
+			DEFAULT_LAUNCH_SPEED);
+	int norm = (int)sqrt(diffx * diffx + diffy * diffy);
+	if(!norm)
+		return;
+	int vx = v0 * -diffx / norm;
+	int vy = v0 * -diffy / norm;
 	enemies.make(ekp, x + vx, y + vy, vx, vy);
 	if(&ring == ekp)
 		sound.g_launch_ring(x, y);
@@ -256,7 +242,7 @@ inline void _enemy::shot_template(const enemy_kind * ekp,
 		sound.g_launch(x, y);
 }
 
-void _enemy::shot_template_8_dir(const enemy_kind * ekp)
+void _enemy::shot_template_8_dir(const enemy_kind *ekp)
 {
 	static int vx[] = { 0, 200, 300, 200, 0, -200, -300, -200 };
 	static int vy[] = { -300, -200, 0, 200, 300, 200, 0, -200 };
@@ -304,7 +290,7 @@ void _enemy::make_bullet_red()
 
 void _enemy::move_bullet()
 {
-	if(norm >= ((VIEWLIMIT >> 1) + 32))
+	if(mindiff >= ((VIEWLIMIT >> 1) + 32))
 		release();
 	di += pubrand.get(1) + 1;
 	if(di > 8)
@@ -330,7 +316,8 @@ const enemy_kind greenbullet = {
 	&_enemy::kill_bullet_green,
 	2,
 	B_BLT_GREEN, 0,
-	LAYER_BULLETS
+	LAYER_BULLETS,
+	3
 };
 
 const enemy_kind redbullet = {
@@ -340,7 +327,8 @@ const enemy_kind redbullet = {
 	&_enemy::kill_bullet_red,
 	2,
 	B_BLT_RED, 0,
-	LAYER_BULLETS
+	LAYER_BULLETS,
+	2
 };
 
 
@@ -401,7 +389,8 @@ const enemy_kind rock = {
 	&_enemy::kill_rock,
 	12,
 	B_ROCK1, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -440,7 +429,8 @@ const enemy_kind ring = {
 	&_enemy::kill_ring,
 	4,
 	B_RING, 0,
-	LAYER_BULLETS
+	LAYER_BULLETS,
+	0
 };
 
 
@@ -495,7 +485,8 @@ const enemy_kind bomb1 = {
 	&_enemy::kill_default,
 	5,
 	B_BOMB, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -556,7 +547,8 @@ const enemy_kind bomb2 = {
 	&_enemy::kill_default,
 	5,
 	B_BOMB, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -615,7 +607,8 @@ const enemy_kind explosion = {
 	&_enemy::kill_default,
 	-1,
 	B_EXPLO1, 0,
-	LAYER_FX
+	LAYER_FX,
+	0
 };
 
 const enemy_kind explosion3 = {
@@ -625,7 +618,8 @@ const enemy_kind explosion3 = {
 	&_enemy::kill_default,
 	-1,
 	B_EXPLO3, 0,
-	LAYER_FX
+	LAYER_FX,
+	0
 };
 
 const enemy_kind explosion4 = {
@@ -635,7 +629,8 @@ const enemy_kind explosion4 = {
 	&_enemy::kill_default,
 	-1,
 	B_EXPLO4, 0,
-	LAYER_FX
+	LAYER_FX,
+	0
 };
 
 const enemy_kind explosion5 = {
@@ -645,7 +640,8 @@ const enemy_kind explosion5 = {
 	&_enemy::kill_default,
 	-1,
 	B_EXPLO5, 0,
-	LAYER_FX
+	LAYER_FX,
+	0
 };
 
 
@@ -663,7 +659,8 @@ const enemy_kind ringexpl = {
 	&_enemy::kill_default,
 	-1,
 	B_RINGEXPL, 0,
-	LAYER_FX
+	LAYER_FX,
+	0
 };
 
 
@@ -681,7 +678,8 @@ const enemy_kind greenbltexpl = {
 	&_enemy::kill_default,
 	-1,
 	B_BLTX_GREEN, 0,
-	LAYER_FX
+	LAYER_FX,
+	0
 };
 
 const enemy_kind redbltexpl = {
@@ -691,7 +689,8 @@ const enemy_kind redbltexpl = {
 	&_enemy::kill_default,
 	-1,
 	B_BLTX_RED, 0,
-	LAYER_FX
+	LAYER_FX,
+	0
 };
 
 
@@ -709,7 +708,8 @@ const enemy_kind boltexpl = {
 	&_enemy::kill_default,
 	-1,
 	B_BOLT, 0,
-	LAYER_FX
+	LAYER_FX,
+	0
 };
 
 
@@ -727,7 +727,8 @@ const enemy_kind rockexpl = {
 	&_enemy::kill_default,
 	-1,
 	B_ROCKEXPL, 0,
-	LAYER_FX
+	LAYER_FX,
+	0
 };
 
 
@@ -745,7 +746,8 @@ const enemy_kind bombdeto = {
 	&_enemy::kill_default,
 	-1,
 	B_BOMBDETO, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -770,12 +772,8 @@ void _enemy::move_cannon()
 {
 	count++;
 	count &= b;
-	if(count == a && norm < ((VIEWLIMIT >> 1) + 8))
-	{
-		int shift = (enemies.ek1() == &greenbullet ||
-				enemies.ek1() == &redbullet) ? 6 : 5;
-		this->shot_template(enemies.ek1(), shift, 32, 0);
-	}
+	if(count == a && mindiff < ((VIEWLIMIT >> 1) + 8))
+		this->launch(enemies.ek1());
 }
 
 // For destruction via core chain reaction
@@ -800,7 +798,8 @@ const enemy_kind cannon = {
 	&_enemy::kill_cannon,
 	4,
 	-1, 0,
-	LAYER_BASES
+	LAYER_BASES,
+	0
 };
 
 
@@ -825,12 +824,8 @@ void _enemy::move_core()
 {
 	count++;
 	count &= b;
-	if(count == a && norm < ((VIEWLIMIT >> 1) + 8))
-	{
-		int shift = (enemies.ek2() == &greenbullet ||
-				enemies.ek2() == &redbullet) ? 6 : 5;
-		this->shot_template(enemies.ek2(), shift, 0, 0);
-	}
+	if(count == a && mindiff < ((VIEWLIMIT >> 1) + 8))
+		this->launch(enemies.ek2());
 }
 
 void _enemy::kill_core()
@@ -852,7 +847,8 @@ const enemy_kind core = {
 	&_enemy::kill_core,
 	4,
 	-1, 0,
-	LAYER_BASES
+	LAYER_BASES,
+	0
 };
 
 
@@ -922,7 +918,7 @@ void _enemy::move_pipein()
 		release();
 		return;
 	}
-	if(norm < ((VIEWLIMIT >> 1) + 32))
+	if(mindiff < ((VIEWLIMIT >> 1) + 32))
 	{
 		sound.g_pipe_rumble(x, y);
 		enemies.make(enemies.randexp(),
@@ -943,7 +939,8 @@ const enemy_kind pipein = {
 	&_enemy::kill_default,
 	-1,
 	-1, 0,
-	LAYER_BASES
+	LAYER_BASES,
+	0
 };
 
 
@@ -1021,7 +1018,7 @@ void _enemy::move_pipeout()
 		release();
 		screen.set_map(x1, y1, SPACE);
 		sound.g_pipe_rumble(x, y);
-		if(norm < ((VIEWLIMIT >> 1) + 32))
+		if(mindiff < ((VIEWLIMIT >> 1) + 32))
 			enemies.make(enemies.randexp(), x, y, 0, 0, 1);
 		return;
 	}
@@ -1064,7 +1061,7 @@ void _enemy::move_pipeout()
 	}
 	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
 	sound.g_pipe_rumble(x, y);
-	if(norm < ((VIEWLIMIT >> 1) + 32))
+	if(mindiff < ((VIEWLIMIT >> 1) + 32))
 		enemies.make(&explosion,
 				x + PIXEL2CS(pubrand.get(4) - 8),
 				y + PIXEL2CS(pubrand.get(4) - 8),
@@ -1081,7 +1078,8 @@ const enemy_kind pipeout = {
 	&_enemy::kill_default,
 	-1,
 	-1, 0,
-	LAYER_BASES
+	LAYER_BASES,
+	0
 };
 
 
@@ -1110,7 +1108,8 @@ const enemy_kind enemy1 = {
 	&_enemy::kill_default,
 	6,
 	B_MISSILE1, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1133,10 +1132,8 @@ void _enemy::move_enemy2()
 	this->move_enemy_template(4, 192);
 	if(--(count) <= 0)
 	{
-		if(norm < ((VIEWLIMIT >> 1) + 8))
-		{
-			this->shot_template(&redbullet, 5, 0, 0);
-		}
+		if(mindiff < ((VIEWLIMIT >> 1) + 8))
+			this->launch(&redbullet);
 		count = 32;
 	}
 }
@@ -1148,7 +1145,8 @@ const enemy_kind enemy2 = {
 	&_enemy::kill_default,
 	6,
 	B_FIGHTER, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1177,7 +1175,8 @@ const enemy_kind enemy3 = {
 	&_enemy::kill_default,
 	6,
 	B_MISSILE2, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1206,7 +1205,8 @@ const enemy_kind enemy4 = {
 	&_enemy::kill_default,
 	6,
 	B_MISSILE3, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1229,14 +1229,14 @@ void _enemy::move_enemy5()
 {
 	if(a == 0)
 	{
-		if(norm > ((VIEWLIMIT >> 1) - 32))
+		if(mindiff > ((VIEWLIMIT >> 1) - 32))
 			this->move_enemy_template(6, 192);
 		else
 			a = 1;
 	}
 	else
 	{
-		if(norm < VIEWLIMIT)
+		if(mindiff < VIEWLIMIT)
 			this->move_enemy_template_2(4, 192);
 		else
 			a = 0;
@@ -1244,8 +1244,8 @@ void _enemy::move_enemy5()
 	if((--count) <= 0)
 	{
 		count = 8;
-		if(norm > ((VIEWLIMIT >> 1) - 32))
-			this->shot_template(&redbullet, 6, 0, 0);
+		if(mindiff > ((VIEWLIMIT >> 1) - 32))
+			this->launch(&greenbullet);
 	}
 }
 
@@ -1256,7 +1256,8 @@ const enemy_kind enemy5 = {
 	&_enemy::kill_default,
 	6,
 	B_BMR_GREEN, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1271,14 +1272,14 @@ void _enemy::move_enemy6()
 {
 	if(a == 0)
 	{
-		if(norm > ((VIEWLIMIT >> 1) - 0))
+		if(mindiff > ((VIEWLIMIT >> 1) - 0))
 			this->move_enemy_template(6, 192);
 		else
 			a = 1;
 	}
 	else
 	{
-		if(norm < VIEWLIMIT)
+		if(mindiff < VIEWLIMIT)
 			this->move_enemy_template_2(5, 192);
 		else
 			a = 0;
@@ -1286,8 +1287,8 @@ void _enemy::move_enemy6()
 	if((--count) <= 0)
 	{
 		count = 128;
-		if(norm > ((VIEWLIMIT >> 1) - 32))
-			this->shot_template(&redbullet, 6, 0, 0);
+		if(mindiff > ((VIEWLIMIT >> 1) - 32))
+			this->launch(&redbullet);
 	}
 }
 
@@ -1298,7 +1299,8 @@ const enemy_kind enemy6 = {
 	&_enemy::kill_default,
 	6,
 	B_BMR_PURPLE, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1313,23 +1315,23 @@ void _enemy::move_enemy7()
 {
 	if(a == 0)
 	{
-		if(norm > ((VIEWLIMIT >> 1) - 32))
+		if(mindiff > ((VIEWLIMIT >> 1) - 32))
 			this->move_enemy_template(6, 192);
 		else
 			a = 1;
 	}
 	else
 	{
-		if(norm < VIEWLIMIT)
+		if(mindiff < VIEWLIMIT)
 			this->move_enemy_template_3(4, 192);
 		else
 			a = 0;
 	}
 	if((--count) <= 0)
 	{
-		count = 8;
-		if(norm > ((VIEWLIMIT >> 1) - 32))
-			this->shot_template(&redbullet, 6, 0, 0);
+		count = 4;
+		if(mindiff > ((VIEWLIMIT >> 1) - 32))
+			this->launch(&redbullet);
 	}
 }
 
@@ -1340,7 +1342,8 @@ const enemy_kind enemy7 = {
 	&_enemy::kill_default,
 	6,
 	B_BMR_PINK, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1365,9 +1368,9 @@ void _enemy::move_enemy_m1()
 	if((count--) <= 0)
 	{
 		count = 4;
-		if(norm < ((VIEWLIMIT >> 1) - 16))
+		if(mindiff < ((VIEWLIMIT >> 1) - 16))
 		{
-			this->shot_template(&enemy1, 4, 0, 0);
+			this->launch(&enemy1);
 		}
 	}
 	if(health < 200)
@@ -1384,7 +1387,8 @@ const enemy_kind enemy_m1 = {
 	&_enemy::kill_default,
 	12,
 	B_BIGSHIP, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1409,10 +1413,8 @@ void _enemy::move_enemy_m2()
 	if((count--) <= 0)
 	{
 		count = 8;
-		if(norm < ((VIEWLIMIT >> 1) + 8))
-		{
-			this->shot_template(&enemy2, 4, 128, 192);
-		}
+		if(mindiff < ((VIEWLIMIT >> 1) + 8))
+			this->launch(&enemy2);
 	}
 	if(health < 200)
 	{
@@ -1428,7 +1430,8 @@ const enemy_kind enemy_m2 = {
 	&_enemy::kill_default,
 	12,
 	B_BIGSHIP, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1453,10 +1456,8 @@ void _enemy::move_enemy_m3()
 	if((count--) <= 0)
 	{
 		count = 64;
-		if(norm < ((VIEWLIMIT >> 1) + 8))
-		{
+		if(mindiff < ((VIEWLIMIT >> 1) + 8))
 			this->shot_template_8_dir(&bomb2);
-		}
 	}
 	if(health < 200)
 	{
@@ -1472,7 +1473,8 @@ const enemy_kind enemy_m3 = {
 	&_enemy::kill_default,
 	12,
 	B_BIGSHIP, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
@@ -1501,10 +1503,8 @@ void _enemy::move_enemy_m4()
 	if((count--) <= 0)
 	{
 		count = 64;
-		if(norm < ((VIEWLIMIT >> 1) + 8))
-		{
+		if(mindiff < ((VIEWLIMIT >> 1) + 8))
 			this->shot_template_8_dir(shot[gamerand.get() & 7]);
-		}
 	}
 	if(health < 200)
 	{
@@ -1520,7 +1520,8 @@ const enemy_kind enemy_m4 = {
 	&_enemy::kill_default,
 	12,
 	B_BIGSHIP, 0,
-	LAYER_ENEMIES
+	LAYER_ENEMIES,
+	0
 };
 
 
