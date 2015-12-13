@@ -57,7 +57,6 @@ class prefs_t : public config_parser_t
 	//Sound: System
 	int	use_sound;	//Enable sound
 	int	use_music;	//Enable music
-	int	cached_sounds;	//Use prerendered waveforms
 	int	samplerate;
 	int	latency;	//Audio latency in ms
 

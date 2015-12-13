@@ -592,11 +592,11 @@ void _manage::select_next(int redraw_map)
 {
 	if((scene_num < scorefile.last_scene()) || prefs->cmd_cheat)
 	{
-		sound.ui_tick();
+		sound.ui_play(SOUND_UI_TICK);
 		scene_num++;
 	}
 	else
-		sound.ui_error();
+		sound.ui_play(SOUND_UI_ERROR);
 	select_scene(scene_num);
 }
 
@@ -606,18 +606,18 @@ void _manage::select_prev(int redraw_map)
 	scene_num--;
 	if(scene_num < 0)
 	{
-		sound.ui_error();
+		sound.ui_play(SOUND_UI_ERROR);
 		scene_num = 0;
 	}
 	else
-		sound.ui_tick();
+		sound.ui_play(SOUND_UI_TICK);
 	select_scene(scene_num);
 }
 
 
 void _manage::regenerate()
 {
-	sound.ui_tick();
+	sound.ui_play(SOUND_UI_TICK);
 	select_scene(scene_num, 1);
 }
 

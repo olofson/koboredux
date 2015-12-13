@@ -81,7 +81,7 @@ void _enemies::off()
 {
 	_enemy *enemyp;
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		enemyp->release();
+		enemyp->state(notuse);
 }
 
 int _enemies::init()

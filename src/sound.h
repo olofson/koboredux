@@ -28,6 +28,7 @@
 
 // Sound effects, songs and other program handles
 #define KOBO_ALLSOUNDS						\
+	KOBO_DEFS(NONE,		"")				\
 	KOBO_DEFS(G_MASTER,	"MasterGroup")			\
 	KOBO_DEFS(G_UI,		"UIGroup")			\
 	KOBO_DEFS(G_SFX,	"SFXGroup")			\
@@ -38,25 +39,34 @@
 	KOBO_DEFS(INGAMESONG,	"IngameSong")			\
 	KOBO_DEFS(ONEUP,	"GiveEnergyMega")		\
 	KOBO_DEFS(FINE,		"")				\
-	KOBO_DEFS(BULLET,	"FireElectro")			\
-	KOBO_DEFS(RING,		"")				\
-	KOBO_DEFS(BOMB_DETO,	"Bomb")				\
+	KOBO_DEFS(LAUNCH,	"Launch")			\
+	KOBO_DEFS(LAUNCH_BULLET,"FireElectro")			\
+	KOBO_DEFS(LAUNCH_RING,	"")				\
+	KOBO_DEFS(LAUNCH_BOMB,	"Launch")			\
+	KOBO_DEFS(DAMAGE,	"Impact")			\
+	KOBO_DEFS(DAMAGE_CORE,	"DamageCore")			\
+	KOBO_DEFS(DAMAGE_M1,	"Impact")			\
+	KOBO_DEFS(DAMAGE_M2,	"Impact")			\
+	KOBO_DEFS(DAMAGE_M3,	"Impact")			\
+	KOBO_DEFS(DAMAGE_M4,	"Impact")			\
+	KOBO_DEFS(HIT_ROCK,	"ImpactGround")			\
 	KOBO_DEFS(EXPLO_NODE,	"SegmentDeath")			\
 	KOBO_DEFS(EXPLO_CORE,	"MegaDeath")			\
 	KOBO_DEFS(EXPLO_ENEMY,	"BoomerangDeath")		\
 	KOBO_DEFS(EXPLO_PLAYER,	"KoboDeath")			\
 	KOBO_DEFS(EXPLO_RING,	"LavaImpact")			\
 	KOBO_DEFS(EXPLO_ROCK,	"")				\
+	KOBO_DEFS(EXPLO_M1,	"MegaDeath")			\
+	KOBO_DEFS(EXPLO_M2,	"MegaDeath")			\
+	KOBO_DEFS(EXPLO_M3,	"MegaDeath")			\
+	KOBO_DEFS(EXPLO_M4,	"MegaDeath")			\
 	KOBO_DEFS(BZZZT,	"")				\
-	KOBO_DEFS(LAUNCH2,	"Launch")			\
-	KOBO_DEFS(LAUNCH,	"Launch")			\
 	KOBO_DEFS(RUMBLE,	"BaseRumble")			\
 	KOBO_DEFS(SHOT_START,	"")				\
 	KOBO_DEFS(SHOT,		"FirePlasma")			\
 	KOBO_DEFS(SHOT_END,	"")				\
 	KOBO_DEFS(METALLIC,	"Klank")			\
-	KOBO_DEFS(DAMAGE,	"Impact")			\
-	KOBO_DEFS(HIT_ROCK,	"ImpactGround")			\
+	KOBO_DEFS(BOMB_DETO,	"Bomb")				\
 	KOBO_DEFS(ENEMYM,	"Teleport")			\
 	KOBO_DEFS(UI_OPEN,	"UIOpen")			\
 	KOBO_DEFS(UI_OK,	"UIOK")				\
@@ -123,6 +133,8 @@ class KOBO_sound
 			return f;
 	}
 
+	static bool checksound(int wid, const char *where);
+
   public:
 	KOBO_sound();
 	~KOBO_sound();
@@ -153,8 +165,7 @@ class KOBO_sound
 			int pan = 0);
 
 	// Play a sound at a specific location on the map
-	static void g_play(unsigned wid, int x, int y,
-			int vol = 65536, int pitch = 60<<16);
+	static void g_play(unsigned wid, int x, int y);
 
 	// Play a sound right where the listener is
 	static void g_play0(unsigned wid, int vol = 65536, int pitch = 60<<16);
@@ -180,23 +191,6 @@ class KOBO_sound
 	static void g_player_fire_off();
 	static void g_player_damage(float level = 1.0f);
 	static void g_player_explo_start();
-	static void g_bolt_hit(int x, int y);
-	static void g_bolt_hit_rock(int x, int y);
-	static void g_base_node_explo(int x, int y);
-	static void g_base_core_explo(int x, int y);
-	static void g_pipe_rumble(int x, int y);
-	static void g_enemy_explo(int x, int y);
-	static void g_rock_explo(int x, int y);
-	static void g_ring_explo(int x, int y);
-	static void g_bomb_deto(int x, int y);
-	static void g_launch_ring(int x, int y);
-	static void g_launch_bullet(int x, int y);
-	static void g_launch_bomb(int x, int y);
-	static void g_launch(int x, int y);
-	static void g_m_launch_ring(int x, int y);
-	static void g_m_launch_bullet(int x, int y);
-	static void g_m_launch_bomb(int x, int y);
-	static void g_m_launch(int x, int y);
 
 	/*--------------------------------------------------
 		UI sound effects
@@ -206,17 +200,7 @@ class KOBO_sound
 
 	// Various UI effects
 	static void ui_noise(int n);
-	static void ui_open();
-	static void ui_ok();
-	static void ui_cancel();
-	static void ui_move();
-	static void ui_tick();
-	static void ui_error();
-	static void ui_play();
-	static void ui_pause();
-	static void ui_ready();
 	static void ui_countdown(int remain);
-	static void ui_gameover();
 };
 
 #endif /* KOBO_SOUND_H */

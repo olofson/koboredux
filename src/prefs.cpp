@@ -62,7 +62,6 @@ void prefs_t::init()
 	comment("--- Sound settings -------------------------");
 	yesno("sound", use_sound, 1); desc("Enable Sound");
 	yesno("music", use_music, 1); desc("Enable Music");
-	yesno("cached_sounds", cached_sounds, 0); desc("Use Cached Sounds");
 	key("samplerate", samplerate, 44100); desc("Sample Rate");
 	key("latency", latency, 50); desc("Sound Latency");
 	key("volume", volume, 100); desc("Master Volume");

@@ -96,7 +96,7 @@ void config_form_t::setstatus(int mask)
 	{
 		if(delta == 0)
 		{
-			sound.ui_ok();
+			sound.ui_play(SOUND_UI_OK);
 			setstatus(OS_CLOSE);
 		}
 	}
@@ -104,13 +104,13 @@ void config_form_t::setstatus(int mask)
 	{
 		if(delta == 0)
 		{
-			sound.ui_cancel();
+			sound.ui_play(SOUND_UI_CANCEL);
 			undo();
 			setstatus(OS_CLOSE);
 		}
 	}
 	else
-		sound.ui_tick();
+		sound.ui_play(SOUND_UI_TICK);
 
 	if(selected()->user)
 		prf->changed = 1;

@@ -3,6 +3,9 @@ TODO:
 -------------------------------------------------------------------------------
 
 * Sound fixes:
+	* Proper sound control for the player guns!
+	* Continuous sound control for enemies, for pipe rumble, engines,
+	  reactors etc?
 	* No pause sound when already paused! (Happens when getting back from
 	  menus to a paused game.)
 	* Pause effect when pausing game to enter menu!

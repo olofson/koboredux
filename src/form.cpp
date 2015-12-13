@@ -45,14 +45,14 @@ kobo_form_t::~kobo_form_t()
 
 void kobo_form_t::next()
 {
-	sound.ui_move();
+	sound.ui_play(SOUND_UI_MOVE);
 	ct_form_t::next();
 }
 
 
 void kobo_form_t::prev()
 {
-	sound.ui_move();
+	sound.ui_play(SOUND_UI_MOVE);
 	ct_form_t::prev();
 }
 

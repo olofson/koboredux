@@ -350,7 +350,7 @@ void _myship::check_base_bolts()
 		int y1 = WORLD2MAPY(bolty[i]);
 		if(IS_BASE(screen.get_map(x1, y1)))
 		{
-			sound.g_bolt_hit(x1 << 12, y1 << 12);
+			sound.g_play(SOUND_METALLIC, x1 << 4, y1 << 4);
 			enemies.make(&boltexpl, PIXEL2CS(boltx[i]),
 					PIXEL2CS(bolty[i]));
 			boltst[i] = 0;

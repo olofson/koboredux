@@ -69,6 +69,13 @@ static const char *kobo_soundnames[] =
 };
 #undef	KOBO_DEFS
 
+#define	KOBO_DEFS(x, y)	"SOUND_" #x,
+static const char *kobo_soundsymnames[] =
+{
+	KOBO_ALLSOUNDS
+};
+#undef	KOBO_DEFS
+
 
 KOBO_sound::KOBO_sound()
 {
@@ -115,11 +122,11 @@ int KOBO_sound::load(int (*prog)(const char *msg), int force)
 
 	for(int i = 0; i < SOUND__COUNT; ++i)
 	{
-		A2_handle h = -1;
+		A2_handle h = 0;
 		for(int j = 0; j < A2SFILE__COUNT; ++j)
 		{
 			int hh = a2_Get(state, modules[j], kobo_soundnames[i]);
-			if(hh >= 0)
+			if(hh > 0)
 			{
 				h = hh;
 				break;
@@ -128,16 +135,18 @@ int KOBO_sound::load(int (*prog)(const char *msg), int force)
 		if(h > 0)
 		{
 			sounds[i] = h;
-#if 0
-			printf("%s: %d\n", kobo_soundnames[i], sounds[i]);
-#endif
+			log_printf(ULOG, "%s (%d) \"%s\" %d\n",
+					kobo_soundsymnames[i], i,
+					kobo_soundnames[i], h);
 		}
 		else
 		{
-			log_printf(WLOG, "Couldn't find sound effect \"%s\"!"
-					" (%s)\n", kobo_soundnames[i],
-					a2_ErrorString((A2_errors)-h));
-			sounds[i] = -1;
+			log_printf(ULOG, "%s (%d) \"%s\" (%s)\n",
+					kobo_soundsymnames[i], i,
+					kobo_soundnames[i],
+					h ? a2_ErrorString((A2_errors)-h) :
+					"Not found!");
+			sounds[i] = 0;
 		}
 	}
 
@@ -267,7 +276,7 @@ void KOBO_sound::close()
 	title_g = 0;
 	noisehandle = 0;
 	musichandle = 0;
-	memset(modules, 0, sizeof(modules));
+	memset(modules, 0, A2SFILE__COUNT * sizeof(A2_handle));
 	memset(sounds, 0, sizeof(sounds));
 }
 
@@ -293,9 +302,11 @@ void KOBO_sound::frame()
 	if(++aaa > 20)
 		aaa = 0;
 	if(aaa == 10)
-		g_play(SOUND_OVERHEAT, listener_x + 128, listener_y, 32768, 55<<16);
+		g_play(SOUND_OVERHEAT, PIXEL2CS(listener_x + 128),
+				PIXEL2CS(listener_y), 0.5f, -0.5f);
 	else if (aaa == 20)
-		g_play(SOUND_OVERHEAT, listener_x - 128, listener_y, 32768, 67<<16);
+		g_play(SOUND_OVERHEAT, PIXEL2CS(listener_x - 128),
+				PIXEL2CS(listener_y), 0.5f, 0.5f);
 #endif
 	// Advance to next game logic frame
 	if(state)
@@ -330,7 +341,9 @@ void KOBO_sound::music(int sng, bool ingame)
 		a2_Release(state, musichandle);
 		musichandle = 0;
 	}
-	if((sng >= 0) && sounds[sng])
+	if(sng < 0)
+		return;
+	if(checksound(sng, "KOBO_sound::music()"))
 		musichandle = a2_Start(state, ingame ? music_g : title_g,
 				sounds[sng]);
 }
@@ -340,7 +353,7 @@ void KOBO_sound::jingle(int sng)
 {
 	if(!state)
 		return;
-	if(sounds[sng])
+	if(checksound(sng, "KOBO_sound::jingle()"))
 		a2_Play(state, master_g, sounds[sng], 0.0f, 0.5f);
 }
 
@@ -348,6 +361,28 @@ void KOBO_sound::jingle(int sng)
 /*--------------------------------------------------
 	In-game sound
 --------------------------------------------------*/
+
+bool KOBO_sound::checksound(int wid, const char *where)
+{
+	if(wid < 0 || wid >= SOUND__COUNT)
+	{
+		log_printf(ELOG, "%s: Sound index %d is out of range!\n",
+				where, wid);
+		return false;
+	}
+	if(wid == SOUND_NONE)
+		return false;	// This is not an error...
+	if(!sounds[wid])
+	{
+		if(prefs->cmd_debug)
+			log_printf(ELOG, "%s: Sound \"%s\" (%s/%d) not"
+				" loaded!\n", where, kobo_soundnames[wid],
+				kobo_soundsymnames[wid], wid);
+		return false;
+	}
+	return true;
+}
+
 
 void KOBO_sound::g_music(unsigned scene)
 {
@@ -359,7 +394,15 @@ void KOBO_sound::g_music(unsigned scene)
 
 void KOBO_sound::ui_play(unsigned wid, int vol, int pitch, int pan)
 {
-	if(!state || !sounds[wid])
+	if(!state)
+		return;
+	if(wid < 0 || wid >= SOUND__COUNT)
+	{
+		log_printf(ELOG, "KOBO_sound::up_play(): Sound index %d is "
+				"out of range!\n", wid);
+		return;
+	}
+	if(!sounds[wid])
 		return;
 	a2_Play(state, ui_g, sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
 			vol / 65536.0f, pan / 65536.0f);
@@ -386,12 +429,11 @@ void KOBO_sound::g_scale(int maxrange, int pan_maxrange)
 	panscale = 65536 / pan_maxrange;
 }
 
-
-void KOBO_sound::g_play(unsigned wid, int x, int y, int vol, int pitch)
+void KOBO_sound::g_play(unsigned wid, int x, int y)
 {
-	int volume, vx, vy, pan;
-
-	if(!state || !sounds[wid])
+	if(!state)
+		return;
+	if(!checksound(wid, "KOBO_sound::g_play()"))
 		return;
 
 	// Calculate volume
@@ -415,30 +457,31 @@ void KOBO_sound::g_play(unsigned wid, int x, int y, int vol, int pitch)
 	}
 
 	// Approximation of distance attenuation
-	vx = abs(x * scale);
-	vy = abs(y * scale);
+	int vx = abs(x * scale);
+	int vy = abs(y * scale);
 	if((vx | vy) & 0xffff0000)
 		return;
-
 	vx = (65536 - vx) >> 1;
 	vy = (65536 - vy) >> 1;
-	volume = vx * vy >> 14;
+	int volume = vx * vy >> 14;
 	volume = (volume>>1) * (volume>>1) >> 14;
 
-	pan = x * panscale;
+	int pan = x * panscale;
 	if(pan < -65536)
 		pan = -65536;
 	else if(pan > 65536)
 		pan = 65536;
 
-	a2_Play(state, sfx_g, sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
-			volume / 65536.0f, pan / 65536.0f);
+	a2_Play(state, sfx_g, sounds[wid], 0.0f, volume / 65536.0f,
+			pan / 65536.0f);
 }
 
 
 void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
 {
-	if(!state || !sounds[wid])
+	if(!state)
+		return;
+	if(!checksound(wid, "KOBO_sound::g_play0()"))
 		return;
 	a2_Play(state, sfx_g, sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
 			vol / 65536.0f);
@@ -469,24 +512,24 @@ void KOBO_sound::g_player_fire_off()
 
 void KOBO_sound::g_player_damage(float level)
 {
-	int p0 = (60<<16) + (pubrand.get(9) << 8);
-	g_play(SOUND_DAMAGE, listener_x - 100, listener_y,
-			65536 * level, p0 + 3000);
-	g_play(SOUND_DAMAGE, listener_x + 100, listener_y,
-			65536 * level, p0 - 3000);
+	if(!state)
+		return;
+	if(checksound(SOUND_DAMAGE, "KOBO_sound::g_player_damage()"))
+		a2_Play(state, sfx_g, sounds[SOUND_DAMAGE], 0.0f, level);
 }
 
 
 void KOBO_sound::g_player_explo_start()
 {
 	g_player_damage();
-	g_play(SOUND_EXPLO_PLAYER, listener_x - 100, listener_y,
-			65536, (55<<16) + 4000);
-	g_play(SOUND_EXPLO_PLAYER, listener_x + 100, listener_y,
-			65536, (55<<16) - 4000);
+	if(!state)
+		return;
+	if(checksound(SOUND_EXPLO_PLAYER,
+			"KOBO_sound::g_player_explo_start()"))
+		a2_Play(state, sfx_g, sounds[SOUND_EXPLO_PLAYER]);
 }
 
-
+#if 0
 void KOBO_sound::g_bolt_hit(int x, int y)
 {
 	g_play(SOUND_METALLIC, CS2PIXEL(x), CS2PIXEL(y), 8000);
@@ -598,7 +641,7 @@ void KOBO_sound::g_m_launch(int x, int y)
 	g_play(SOUND_LAUNCH, CS2PIXEL(x), CS2PIXEL(y));
 	g_play(SOUND_ENEMYM, CS2PIXEL(x), CS2PIXEL(y));
 }
-
+#endif
 
 /*--------------------------------------------------
 	UI sound effects
@@ -612,7 +655,11 @@ void KOBO_sound::ui_music_title()
 
 void KOBO_sound::ui_noise(int n)
 {
-	if(!state || !sounds[SOUND_UI_NOISE])
+	if(!state)
+		return;
+	if(!checksound(SOUND_UI_NOISE, "KOBO_sound::ui_noise()"))
+		return;
+	if(!checksound(SOUND_UI_LOADER, "KOBO_sound::ui_noise()"))
 		return;
 	if(noisehandle)
 	{
@@ -626,67 +673,7 @@ void KOBO_sound::ui_noise(int n)
 }
 
 
-void KOBO_sound::ui_open()
-{
-	ui_play(SOUND_UI_OPEN);
-}
-
-
-void KOBO_sound::ui_ok()
-{
-	ui_play(SOUND_UI_OK);
-}
-
-
-void KOBO_sound::ui_cancel()
-{
-	ui_play(SOUND_UI_CANCEL);
-}
-
-
-void KOBO_sound::ui_move()
-{
-	ui_play(SOUND_UI_MOVE);
-}
-
-
-void KOBO_sound::ui_tick()
-{
-	ui_play(SOUND_UI_TICK);
-}
-
-
-void KOBO_sound::ui_error()
-{
-	ui_play(SOUND_UI_ERROR);
-}
-
-
-void KOBO_sound::ui_play()
-{
-	ui_play(SOUND_UI_PLAY);
-}
-
-
-void KOBO_sound::ui_pause()
-{
-	ui_play(SOUND_UI_PAUSE);
-}
-
-
-void KOBO_sound::ui_ready()
-{
-	ui_play(SOUND_UI_READY);
-}
-
-
 void KOBO_sound::ui_countdown(int remain)
 {
 	ui_play(SOUND_UI_CDTICK, 32768, (60 - remain)<<16);
-}
-
-
-void KOBO_sound::ui_gameover()
-{
-	ui_play(SOUND_UI_GAMEOVER);
 }

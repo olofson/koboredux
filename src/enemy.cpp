@@ -232,14 +232,7 @@ inline void _enemy::launch(const enemy_kind *ekp)
 	int vx = v0 * -diffx / norm;
 	int vy = v0 * -diffy / norm;
 	enemies.make(ekp, x + vx, y + vy, vx, vy);
-	if(&ring == ekp)
-		sound.g_launch_ring(x, y);
-	else if(&greenbullet == ekp || &redbullet == ekp || &bluebullet == ekp)
-		sound.g_launch_bullet(x, y);
-	else if(&bomb1 == ekp || &bomb2 == ekp)
-		sound.g_launch_bomb(x, y);
-	else
-		sound.g_launch(x, y);
+	playsound(ekp->launchsound);
 }
 
 void _enemy::shot_template_8_dir(const enemy_kind *ekp)
@@ -249,20 +242,13 @@ void _enemy::shot_template_8_dir(const enemy_kind *ekp)
 	int i;
 	for(i = 0; i < 8; i++)
 		enemies.make(ekp, x, y, vx[i], vy[i]);
-	if(&ring == ekp)
-		sound.g_m_launch_ring(x, y);
-	else if(&greenbullet == ekp || &redbullet == ekp || &bluebullet == ekp)
-		sound.g_m_launch_bullet(x, y);
-	else if(&bomb1 == ekp || &bomb2 == ekp)
-		sound.g_m_launch_bomb(x, y);
-	else
-		sound.g_m_launch(x, y);
+	playsound(SOUND_ENEMYM);
+	playsound(ekp->launchsound);
 }
 
 void _enemy::kill_default()
 {
 	enemies.make(enemies.randexp(), x, y, h >> 1, v >> 1);
-	sound.g_enemy_explo(x, y);
 	release();
 }
 
@@ -329,7 +315,10 @@ const enemy_kind greenbullet = {
 	2,
 	B_BLT_GREEN, 0,
 	LAYER_BULLETS,
-	3
+	3,
+	SOUND_LAUNCH_BULLET,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 const enemy_kind redbullet = {
@@ -340,7 +329,10 @@ const enemy_kind redbullet = {
 	2,
 	B_BLT_RED, 0,
 	LAYER_BULLETS,
-	2
+	2,
+	SOUND_LAUNCH_BULLET,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 const enemy_kind bluebullet = {
@@ -351,7 +343,10 @@ const enemy_kind bluebullet = {
 	2,
 	B_BLT_BLUE, 0,
 	LAYER_BULLETS,
-	5
+	5,
+	SOUND_LAUNCH_BULLET,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 
@@ -401,7 +396,6 @@ void _enemy::move_rock()
 void _enemy::kill_rock()
 {
 	enemies.make(&rockexpl, x, y, h >> 1, v >> 1);
-	sound.g_rock_explo(x, y);
 	release();
 }
 
@@ -413,7 +407,10 @@ const enemy_kind rock = {
 	12,
 	B_ROCK1, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH,
+	SOUND_HIT_ROCK,
+	SOUND_EXPLO_ROCK
 };
 
 
@@ -441,7 +438,6 @@ void _enemy::move_ring()
 void _enemy::kill_ring()
 {
 	enemies.make(&ringexpl, x, y, h >> 1, v >> 1);
-	sound.g_ring_explo(x, y);
 	release();
 }
 
@@ -453,7 +449,10 @@ const enemy_kind ring = {
 	4,
 	B_RING, 0,
 	LAYER_BULLETS,
-	0
+	0,
+	SOUND_LAUNCH_RING,
+	SOUND_NONE,
+	SOUND_EXPLO_RING
 };
 
 
@@ -494,7 +493,7 @@ void _enemy::move_bomb1()
 		enemies.make(&redbullet, x, y, vx2, vy2);
 		enemies.make(&redbullet, x, y, vx3, vy3);
 		enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
-		sound.g_bomb_deto(x, y);
+		playsound(SOUND_BOMB_DETO);
 		release();
 	}
 	if(++di > 16)
@@ -509,7 +508,10 @@ const enemy_kind bomb1 = {
 	5,
 	B_BOMB, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH_BOMB,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_ENEMY
 };
 
 
@@ -556,7 +558,7 @@ void _enemy::move_bomb2()
 		enemies.make(&redbullet, x, y, vx4, vy4);
 		enemies.make(&redbullet, x, y, vx5, vy5);
 		enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
-		sound.g_bomb_deto(x, y);
+		playsound(SOUND_BOMB_DETO);
 		release();
 	}
 	if(--di < 1)
@@ -571,7 +573,10 @@ const enemy_kind bomb2 = {
 	5,
 	B_BOMB, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH_BOMB,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_ENEMY
 };
 
 
@@ -631,7 +636,10 @@ const enemy_kind explosion = {
 	-1,
 	B_EXPLO1, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 const enemy_kind explosion3 = {
@@ -642,7 +650,10 @@ const enemy_kind explosion3 = {
 	-1,
 	B_EXPLO3, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 const enemy_kind explosion4 = {
@@ -653,7 +664,10 @@ const enemy_kind explosion4 = {
 	-1,
 	B_EXPLO4, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 const enemy_kind explosion5 = {
@@ -664,7 +678,10 @@ const enemy_kind explosion5 = {
 	-1,
 	B_EXPLO5, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 
@@ -683,7 +700,10 @@ const enemy_kind ringexpl = {
 	-1,
 	B_RINGEXPL, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 
@@ -702,7 +722,10 @@ const enemy_kind greenbltexpl = {
 	-1,
 	B_BLTX_GREEN, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 const enemy_kind redbltexpl = {
@@ -713,7 +736,10 @@ const enemy_kind redbltexpl = {
 	-1,
 	B_BLTX_RED, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 const enemy_kind bluebltexpl = {
@@ -724,7 +750,10 @@ const enemy_kind bluebltexpl = {
 	-1,
 	B_BLTX_BLUE, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 
@@ -743,7 +772,10 @@ const enemy_kind boltexpl = {
 	-1,
 	B_BOLT, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 
@@ -762,7 +794,10 @@ const enemy_kind rockexpl = {
 	-1,
 	B_ROCKEXPL, 0,
 	LAYER_FX,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 
@@ -781,7 +816,10 @@ const enemy_kind bombdeto = {
 	-1,
 	B_BOMBDETO, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 
@@ -813,7 +851,6 @@ void _enemy::move_cannon()
 // For destruction via core chain reaction
 void _enemy::destroy_cannon()
 {
-	sound.g_base_node_explo(x, y);
 	enemies.make(enemies.randexp(), x, y);
 	release();
 }
@@ -833,7 +870,10 @@ const enemy_kind cannon = {
 	4,
 	-1, 0,
 	LAYER_BASES,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_NODE
 };
 
 
@@ -869,7 +909,6 @@ void _enemy::kill_core()
 	enemies.make(&pipeout, x, y, 0, 0, 1);
 	enemies.make(&pipeout, x, y, 0, 0, 5);
 	enemies.make(&explosion4, x, y);
-	sound.g_base_core_explo(x, y);
 	release();
 	manage.destroyed_a_core();
 }
@@ -882,7 +921,10 @@ const enemy_kind core = {
 	4,
 	-1, 0,
 	LAYER_BASES,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_DAMAGE_CORE,
+	SOUND_EXPLO_CORE
 };
 
 
@@ -954,7 +996,7 @@ void _enemy::move_pipein()
 	}
 	if(mindiff < ((VIEWLIMIT >> 1) + 32))
 	{
-		sound.g_pipe_rumble(x, y);
+		playsound(SOUND_RUMBLE);
 		enemies.make(enemies.randexp(),
 				x + PIXEL2CS(pubrand.get(4) - 8),
 				y + PIXEL2CS(pubrand.get(4) - 8), 0, 0, 1);
@@ -974,7 +1016,10 @@ const enemy_kind pipein = {
 	-1,
 	-1, 0,
 	LAYER_BASES,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 
@@ -1051,7 +1096,7 @@ void _enemy::move_pipeout()
 	{
 		release();
 		screen.set_map(x1, y1, SPACE);
-		sound.g_pipe_rumble(x, y);
+		playsound(SOUND_RUMBLE);
 		if(mindiff < ((VIEWLIMIT >> 1) + 32))
 			enemies.make(enemies.randexp(), x, y, 0, 0, 1);
 		return;
@@ -1094,7 +1139,7 @@ void _enemy::move_pipeout()
 		return;
 	}
 	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
-	sound.g_pipe_rumble(x, y);
+	playsound(SOUND_RUMBLE);
 	if(mindiff < ((VIEWLIMIT >> 1) + 32))
 		enemies.make(&explosion,
 				x + PIXEL2CS(pubrand.get(4) - 8),
@@ -1113,7 +1158,10 @@ const enemy_kind pipeout = {
 	-1,
 	-1, 0,
 	LAYER_BASES,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 
@@ -1143,7 +1191,10 @@ const enemy_kind enemy1 = {
 	6,
 	B_MISSILE1, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_ENEMY
 };
 
 
@@ -1180,7 +1231,10 @@ const enemy_kind enemy2 = {
 	6,
 	B_FIGHTER, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_ENEMY
 };
 
 
@@ -1210,7 +1264,10 @@ const enemy_kind enemy3 = {
 	6,
 	B_MISSILE2, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_ENEMY
 };
 
 
@@ -1240,7 +1297,10 @@ const enemy_kind enemy4 = {
 	6,
 	B_MISSILE3, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_ENEMY
 };
 
 
@@ -1291,7 +1351,10 @@ const enemy_kind enemy5 = {
 	6,
 	B_BMR_GREEN, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_ENEMY
 };
 
 
@@ -1334,7 +1397,10 @@ const enemy_kind enemy6 = {
 	6,
 	B_BMR_PURPLE, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_ENEMY
 };
 
 
@@ -1377,7 +1443,10 @@ const enemy_kind enemy7 = {
 	6,
 	B_BMR_PINK, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_LAUNCH,
+	SOUND_DAMAGE,
+	SOUND_EXPLO_ENEMY
 };
 
 
@@ -1422,7 +1491,10 @@ const enemy_kind enemy_m1 = {
 	12,
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_DAMAGE_M1,
+	SOUND_EXPLO_M1
 };
 
 
@@ -1465,7 +1537,10 @@ const enemy_kind enemy_m2 = {
 	12,
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_DAMAGE_M2,
+	SOUND_EXPLO_M2
 };
 
 
@@ -1508,7 +1583,10 @@ const enemy_kind enemy_m3 = {
 	12,
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_DAMAGE_M3,
+	SOUND_EXPLO_M3
 };
 
 
@@ -1555,18 +1633,8 @@ const enemy_kind enemy_m4 = {
 	12,
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
-	0
+	0,
+	SOUND_NONE,
+	SOUND_DAMAGE_M4,
+	SOUND_EXPLO_M4
 };
-
-
-/*---------------------------------------------------------------------------*/
-/*  void _enemy::make_xxxx(){}
- *  void _enemy::move_xxxx(){}
- *  void _enemy::die_xxxx(){}
- *  enemy_kind xxxxx = {
- *	score,
- *	make_xxxx, move_xxxx, die_xxx,
- *	hitsize,
- *	bank, frame, tilesize
- *  };
- */

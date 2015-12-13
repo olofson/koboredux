@@ -1376,3 +1376,29 @@ GiveEnergyMega(P V=1 PanX)
 		*a .9
 	}
 }
+
+DamageCore(P V=1 PanX)
+{
+	struct {
+		wtosc o1
+		wtosc o2
+		wtosc o3
+		panmix
+	}
+debug 42
+	vol V; pan PanX
+	tr P
+	o1.w triangle; o1.p 0n; o1.a 1
+	o2.w triangle; o2.p 2n; o2.a 1
+	o3.w triangle; o3.p 4n; o3.a 1
+	100 {
+		-o1.p .01; -o2.p .01; -o3.p .01
+		d 2
+	}
+	100 {
+		-o1.p .01;	-o2.p .01;	-o3.p .01
+		*o1.a .9;	*o2.a .9;	*o3.a .9
+		d 10
+	}
+	o1.a 0;	o2.a 0;	o3.a 0; d 10
+}

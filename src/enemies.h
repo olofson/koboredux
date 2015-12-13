@@ -31,21 +31,24 @@
 #include "manage.h"
 #include "sound.h"
 
+
 class _enemy;
 class _enemies;
 //---------------------------------------------------------------------------//
 struct enemy_kind
 {
-	int	score;
+	int		score;
 	void (_enemy::*make) ();
 	void (_enemy::*move) ();
 	void (_enemy::*kill) ();
-	int	hitsize;
-	int	bank, frame;
-	int	layer;
-	int	launchspeed;
+	int		hitsize;
+	int		bank, frame;
+	int		layer;
+	int		launchspeed;
+	KOBO_sounds	launchsound;
+	KOBO_sounds	impactsound;
+	KOBO_sounds	deathsound;
 };
-
 
 extern const enemy_kind greenbullet;
 extern const enemy_kind redbullet;
@@ -133,6 +136,11 @@ class _enemy
 	inline bool can_splash_damage()	{ return takes_splash_damage; }
 	inline bool in_range(int px, int py, int range, int &dist);
 	inline int erase_cannon(int px, int py);
+
+	inline void playsound(KOBO_sounds si)
+	{
+		sound.g_play(si, CS2PIXEL(x), CS2PIXEL(y));
+	}
 
 	void kill_default();
 
@@ -253,15 +261,16 @@ extern _enemies enemies;
 
 inline void _enemy::init()
 {
-	release();
+	state(notuse);
 }
 
 inline void _enemy::release()
 {
+	playsound(ek->deathsound);
 	state(notuse);
 }
 
-inline int _enemy::make(const enemy_kind * k, int px, int py,
+inline int _enemy::make(const enemy_kind *k, int px, int py,
 		int h1, int v1, int dir)
 {
 	if(_state != notuse)
@@ -306,10 +315,7 @@ inline void _enemy::hit(int dmg)
 	else if(health > 0)
 	{
 		// Damaged but not destroyed!
-		if(ek == &rock)
-			sound.g_bolt_hit_rock(x, y);
-		else
-			sound.g_bolt_hit(x, y);
+		playsound(ek->impactsound);
 		return;
 	}
 
