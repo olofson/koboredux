@@ -41,7 +41,6 @@
 
 
 gamestatemanager_t gsm;
-int run_intro = 0;
 int last_level = -1;
 
 
@@ -93,12 +92,11 @@ st_introbase_t::st_introbase_t()
 
 void st_introbase_t::enter()
 {
-	if(!run_intro)
+	if(manage.state() != GS_INTRO)
 	{
-		manage.init_resources_title();
+		manage.start_intro();
 		if(prefs->use_music)
 			sound.ui_music_title();
-		run_intro = 1;
 	}
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
 	timer = 0;
@@ -107,12 +105,11 @@ void st_introbase_t::enter()
 
 void st_introbase_t::reenter()
 {
-	if(!run_intro)
+	if(manage.state() != GS_INTRO)
 	{
-		manage.init_resources_title();
+		manage.start_intro();
 		if(prefs->use_music)
 			sound.ui_music_title();
-		run_intro = 1;
 	}
 	gsm.change(&st_intro_title);
 }
@@ -131,7 +128,6 @@ void st_introbase_t::press(gc_targets_t button)
 	  case BTN_START:
 	  case BTN_FIRE:
 	  case BTN_SELECT:
-		run_intro = 0;
 		gsm.push(&st_main_menu);
 #if 0
 		if(scorefile.numProfiles <= 0)
@@ -156,7 +152,6 @@ void st_introbase_t::press(gc_targets_t button)
 
 void st_introbase_t::frame()
 {
-	manage.run_intro();
 	if((timer > duration) && inext)
 		gsm.change(inext);
 }
@@ -330,16 +325,13 @@ st_game_t::st_game_t()
 
 void st_game_t::enter()
 {
-#if 0
-	audio_channel_stop(0, -1);	//Stop any music
-#endif
-	run_intro = 0;
-	manage.game_start();
-	if(exit_game || manage.game_stopped())
+	manage.start_game();
+	if(!manage.game_in_progress())
 	{
 		st_error.message("Could not start game!",
 				"Please, check your installation.");
 		gsm.change(&st_error);
+		return;
 	}
 	if(prefs->mousecapture)
 		if(!SDL_GetRelativeMouseMode())
@@ -359,6 +351,7 @@ void st_game_t::leave()
 
 void st_game_t::yield()
 {
+	manage.pause(true);
 	if(SDL_GetRelativeMouseMode())
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 }
@@ -369,6 +362,7 @@ void st_game_t::reenter()
 	if(prefs->mousecapture)
 		if(!SDL_GetRelativeMouseMode())
 			SDL_SetRelativeMouseMode(SDL_TRUE);
+	manage.pause(false);
 }
 
 
@@ -395,16 +389,22 @@ void st_game_t::press(gc_targets_t button)
 
 void st_game_t::frame()
 {
-	if(manage.get_ready())
+	switch(manage.state())
 	{
+	  case GS_GETREADY:
 		gsm.push(&st_get_ready);
 		return;
-	}
-	manage.run_game();
-	last_level = manage.current_scene();
-	if(manage.game_over())
+	  case GS_GAMEOVER:
 		gsm.change(&st_game_over);
-	else if(exit_game || manage.game_stopped())
+		return;
+	  case GS_NONE:
+		pop();
+		return;
+	  default:
+		last_level = manage.current_scene();
+		break;
+	}
+	if(exit_game)
 		pop();
 }
 
@@ -432,7 +432,13 @@ st_pause_game_t::st_pause_game_t()
 
 void st_pause_game_t::enter()
 {
-	sound.ui_play(SOUND_UI_PAUSE);
+	manage.pause(true);
+}
+
+
+void st_pause_game_t::leave()
+{
+	manage.pause(false);
 }
 
 
@@ -444,7 +450,6 @@ void st_pause_game_t::press(gc_targets_t button)
 		gsm.change(&st_main_menu);
 		break;
 	  default:
-		sound.ui_play(SOUND_UI_PLAY);
 		pop();
 		break;
 	}
@@ -453,7 +458,6 @@ void st_pause_game_t::press(gc_targets_t button)
 
 void st_pause_game_t::frame()
 {
-	manage.run_pause();
 }
 
 
@@ -485,7 +489,6 @@ st_get_ready_t::st_get_ready_t()
 
 void st_get_ready_t::enter()
 {
-	manage.update();
 	sound.ui_play(SOUND_UI_READY);
 	start_time = (int)SDL_GetTicks();
 	frame_time = 0;
@@ -515,11 +518,13 @@ void st_get_ready_t::press(gc_targets_t button)
 	  case BTN_FIRE:
 	  case BTN_YES:
 		sound.ui_play(SOUND_UI_PLAY);
+		manage.player_ready();
 		pop();
 		break;
 	  case BTN_SELECT:
 	  case BTN_START:
 	  case BTN_PAUSE:
+		manage.player_ready();
 		gsm.change(&st_pause_game);
 		break;
 	  default:
@@ -530,9 +535,7 @@ void st_get_ready_t::press(gc_targets_t button)
 
 void st_get_ready_t::frame()
 {
-	manage.run_pause();
-
-	if(exit_game || manage.game_stopped())
+	if(exit_game || !manage.game_in_progress())
 	{
 		pop();
 		return;
@@ -544,6 +547,7 @@ void st_get_ready_t::frame()
 		if(frame_time > 700)
 		{
 			sound.ui_play(SOUND_UI_PLAY);
+			manage.player_ready();
 			pop();
 		}
 	}
@@ -557,6 +561,7 @@ void st_get_ready_t::frame()
 		if(countdown < 1)
 		{
 			sound.ui_play(SOUND_UI_PLAY);
+			manage.player_ready();
 			pop();
 		}
 	}
@@ -623,14 +628,13 @@ st_game_over_t::st_game_over_t()
 void st_game_over_t::enter()
 {
 	sound.ui_play(SOUND_UI_GAMEOVER);
-	manage.update();
 	start_time = (int)SDL_GetTicks();
 }
 
 
 void st_game_over_t::press(gc_targets_t button)
 {
-	if(frame_time < 500)
+	if(frame_time < 3000)
 		return;
 
 	switch (button)
@@ -650,6 +654,7 @@ void st_game_over_t::press(gc_targets_t button)
 	  case BTN_SELECT:
 	  case BTN_YES:
 		sound.ui_play(SOUND_UI_OK);
+		manage.abort_game();
 		pop();
 		break;
 	  default:
@@ -660,11 +665,12 @@ void st_game_over_t::press(gc_targets_t button)
 
 void st_game_over_t::frame()
 {
-	manage.run_game();
-
 	frame_time = (int)SDL_GetTicks() - start_time;
-	if(frame_time > 5000)
+	if(frame_time > 10000)
+	{
+		manage.abort_game();
 		pop();
+	}
 }
 
 
@@ -728,8 +734,6 @@ st_menu_base_t::~st_menu_base_t()
 void st_menu_base_t::enter()
 {
 	form = open();
-	if(manage.game_stopped())
-		run_intro = 1;
 	if(sounds)
 		sound.ui_play(SOUND_UI_OPEN);
 }
@@ -747,6 +751,7 @@ void st_menu_base_t::leave()
 	close();
 	delete form;
 	form = NULL;
+#if 0
 	if(manage.game_stopped())
 	{
 		manage.init_resources_title();
@@ -754,13 +759,11 @@ void st_menu_base_t::leave()
 		st_intro_title.duration = INTRO_TITLE_TIME + 2000;
 		st_intro_title.mode = 0;
 	}
+#endif
 }
 
 void st_menu_base_t::frame()
 {
-	if(manage.game_stopped())
-		manage.run_intro();
-	//(Game is paused when a menu is active.)
 }
 
 void st_menu_base_t::post_render()
@@ -768,7 +771,7 @@ void st_menu_base_t::post_render()
 	kobo_basestate_t::post_render();
 	if(form)
 		form->render();
-	if(!manage.game_stopped())
+	if(manage.game_in_progress())
 		wradar->frame();
 }
 
@@ -950,13 +953,11 @@ kobo_form_t *st_new_player_t::open()
 
 void st_new_player_t::frame()
 {
-	manage.run_intro();
 }
 
 void st_new_player_t::enter()
 {
 	menu->open();
-	run_intro = 0;
 	sound.ui_play(SOUND_UI_OPEN);
 }
 
@@ -1180,7 +1181,6 @@ st_error_t::st_error_t()
 void st_error_t::enter()
 {
 	sound.ui_play(SOUND_UI_ERROR);
-	manage.update();
 	start_time = (int)SDL_GetTicks();
 }
 
@@ -1217,8 +1217,6 @@ void st_error_t::press(gc_targets_t button)
 
 void st_error_t::frame()
 {
-	manage.run_intro();
-
 	frame_time = (int)SDL_GetTicks() - start_time;
 #if 0
 	if(frame_time % 1000 < 500)
@@ -1273,7 +1271,7 @@ void main_menu_t::buildStartLevel(int profNum)
 
 void main_menu_t::build()
 {
-	if(manage.game_stopped())
+	if(!manage.game_in_progress())
 	{
 		prefs->last_profile = scorefile.current_profile();
 		if(last_level < 0)
@@ -1285,7 +1283,12 @@ void main_menu_t::build()
 	halign = ALIGN_CENTER;
 	xoffs = 0.5;
 	big();
-	if(manage.game_stopped())
+	if(manage.game_in_progress())
+	{
+		space(2);
+		button("Return to Game", 0);
+	}
+	else
 	{
 		space();
 #if 0
@@ -1311,18 +1314,13 @@ void main_menu_t::build()
 		big();
 #endif
 	}
-	else
-	{
-		space(2);
-		button("Return to Game", 0);
-	}
 	space();
 	button("Options", 2);
 	space();
-	if(manage.game_stopped())
-		button("Return to Intro", 0);
-	else
+	if(manage.game_in_progress())
 		button("Abort Current Game", 101);
+	else
+		button("Return to Intro", 0);
 	button("Quit Kobo Redux", MENU_TAG_CANCEL);
 }
 
@@ -1336,10 +1334,10 @@ void main_menu_t::rebuild()
 
 kobo_form_t *st_main_menu_t::open()
 {
-	if(manage.game_stopped())
+	if(!manage.game_in_progress())
 	{
-		// Moved here, as we want to do it as late as
-		// possible, but *not* as a result of rebuild().
+		// Moved here, as we want to do it as late as possible, but
+		// *not* as a result of rebuild().
 		if(prefs->last_profile >= scorefile.numProfiles)
 		{
 			prefs->last_profile = 0;
@@ -1358,8 +1356,8 @@ void st_main_menu_t::reenter()
 {
 	menu->rebuild();
 	st_menu_base_t::reenter();
-	if(manage.game_stopped())
-	    manage.select_scene(menu->start_level);
+	if(!manage.game_in_progress())
+		manage.select_scene(menu->start_level);
 }
 
 
@@ -1423,7 +1421,7 @@ void st_main_menu_t::select(int tag)
 		gsm.change(&st_ask_abort_game);
 		break;
 	  case 0:
-		if(!manage.game_stopped())
+		if(manage.game_in_progress())
 			gsm.change(&st_pause_game);
 		break;
 	}
@@ -1550,8 +1548,8 @@ kobo_form_t *st_options_main_t::open()
 {
 	options_main_t *m = new options_main_t(gengine);
 	m->open();
-	if(manage.game_stopped())
-	    manage.select_scene(KOBO_OPTIONS_BACKGROUND_LEVEL);
+	if(!manage.game_in_progress())
+		manage.select_scene(KOBO_OPTIONS_BACKGROUND_LEVEL);
 	return m;
 }
 
@@ -1636,7 +1634,10 @@ void st_options_base_t::select(int tag)
 		if(cfg_form->status() & (OS_RESTART | OS_RELOAD))
 		{
 			exit_game = 0;
+#if 0
+			// Wut...?
 			manage.freeze_abort();
+#endif
 		}
 	}
 	if(cfg_form->status() & (OS_CANCEL | OS_CLOSE))
@@ -1733,10 +1734,6 @@ void st_yesno_base_t::press(gc_targets_t button)
 
 void st_yesno_base_t::frame()
 {
-	if(manage.game_stopped())
-		manage.run_intro();
-	else
-		manage.run_pause();
 }
 
 void st_yesno_base_t::post_render()
@@ -1774,10 +1771,10 @@ void st_ask_exit_t::select(int tag)
 		break;
 	  case MENU_TAG_CANCEL:
 		sound.ui_play(SOUND_UI_CANCEL);
-		if(manage.game_stopped())
-			pop();
-		else
+		if(manage.game_in_progress())
 			gsm.change(&st_pause_game);
+		else
+			pop();
 		break;
 	}
 }
@@ -1802,7 +1799,7 @@ void st_ask_abort_game_t::select(int tag)
 	{
 	  case MENU_TAG_OK:
 		sound.ui_play(SOUND_UI_OK);
-		manage.abort();
+		manage.abort_game();
 		pop();
 		break;
 	  case MENU_TAG_CANCEL:

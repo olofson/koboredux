@@ -46,12 +46,10 @@
 
 #define GIGA             1000000000
 
-int _manage::blank = 0;
-int _manage::next_state_out;
-int _manage::next_state_next;
+KOBO_gamestates _manage::gamestate = GS_NONE;
+bool _manage::paused = false;
 int _manage::game_seed;
 int _manage::scene_num;
-int _manage::ships;
 int _manage::score;
 float _manage::disp_health;
 int _manage::score_changed = 1;
@@ -59,10 +57,6 @@ int _manage::flash_score_count = 0;
 int _manage::scroll_jump = 0;
 int _manage::delay_count;
 int _manage::rest_cores;
-int _manage::exit_manage = 0;
-int _manage::playing = 0;
-int _manage::_get_ready = 0;
-int _manage::_game_over = 0;
 s_hiscore_t _manage::hi;
 int _manage::noise_duration = 0;
 int _manage::noise_timer = 0;
@@ -117,9 +111,6 @@ void _manage::run_noise()
 		screen.set_noise(B_NOISE, 1.0f - t,
 				sin(a * 0.5f) * 0.3f,
 				0.3f + t * 0.5f);
-#if 0
-		sound.sfx_volume(t);
-#endif
 		return;
 	}
 
@@ -132,16 +123,6 @@ void _manage::run_noise()
 		noise_timer -= game.speed;
 		noise = 1;
 	}
-#if 0
-	else if(noise_timer > 0)
-	{
-		unsigned prob = noise_flash - noise_timer;
-		prob <<= 8;
-		prob /= noise_flash;
-		noise_timer -= game.speed;
-		noise = pubrand.get(8) > prob;
-	}
-#endif
 	else
 	{
 		noise_timer = 0;
@@ -190,9 +171,26 @@ void _manage::run_leds()
 }
 
 
-void _manage::game_start()
+void _manage::start_intro()
 {
-	_game_over = 0;
+	init_resources_title();
+	gamestate = GS_INTRO;
+}
+
+
+void _manage::select_scene(int scene)
+{
+	scene_num = scene;
+	put_info();
+//	if(redraw_map)
+		screen.init_scene(-scene_num - 1);
+	noise(150, 0);
+	gamestate = GS_SELECT;
+}
+
+
+void _manage::start_game()
+{
 	hi.clear();
 
 	game.set(GAME_SINGLE, (skill_levels_t)scorefile.profile()->skill);
@@ -203,13 +201,10 @@ void _manage::game_start()
 	gengine->period(game.speed);
 	sound.period(game.speed);
 	screen.init_scene(scene_num);
-	init_resources_to_play(1);
+	init_resources_to_play(true);
 
 	gamecontrol.clear();
 	gamecontrol.repeat(0, 0);
-
-	playing = 1;
-	_get_ready = 1;
 
 	hi.skill = game.skill;
 	hi.playtime = 0;
@@ -225,26 +220,17 @@ void _manage::game_start()
 	hi.start_scene = scene_num;
 	hi.end_lives = 0;
 	sound.g_music(scene_num);
+
+	gamestate = GS_GETREADY;
 }
 
 
-void _manage::game_stop()
+void _manage::player_ready()
 {
-	if(!prefs->cmd_cheat && !prefs->cmd_pushmove)
-	{
-		hi.score = score;
-		hi.end_scene = scene_num;
-		hi.end_health = myship.health();
-
-		scorefile.record(&hi);
-	}
-#if 0
-	audio_channel_stop(0, -1);
-#endif
-	playing = 0;
-	wdash->fade(1.0f);
-	wdash->mode(DASHBOARD_TITLE);
+	if(gamestate == GS_GETREADY)
+		gamestate = GS_PLAYING;
 }
+
 
 void _manage::next_scene()
 {
@@ -253,18 +239,7 @@ void _manage::next_scene()
 		scene_num = GIGA - 2;
 	screen.init_scene(scene_num);
 	scroll_jump = 1;
-	_get_ready = 1;
-}
-
-
-void _manage::retry()
-{
-	if(!_game_over)
-	{
-		game_stop();
-		_game_over = 1;
-	}
-	gamecontrol.clear();
+	gamestate = GS_GETREADY;
 }
 
 
@@ -298,14 +273,12 @@ void _manage::init_resources_title()
 }
 
 
-void _manage::init_resources_to_play(int newship)
+void _manage::init_resources_to_play(bool newship)
 {
 	noise(400, 300);
 	delay_count = 0;
 	flash_score_count = (flash_score_count) ? -1 : 0;
 	score_changed = 0;
-	next_state_out = 0;
-	next_state_next = 0;
 
 	gamerand.init();
 	game_seed = gamerand.get_seed();
@@ -332,6 +305,8 @@ void _manage::init_resources_to_play(int newship)
 	pxright->fx(PFX_OFF);
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_GAME);
+
+	gamecontrol.clear();
 }
 
 
@@ -420,12 +395,11 @@ void _manage::flash_score()
 void _manage::init()
 {
 	scorefile.init();
-	exit_manage = 0;
 	scene_num = -1;
 	flash_score_count = 0;
 	delay_count = 0;
 	screen.init_maps();
-	init_resources_title();
+	gamestate = GS_NONE;
 }
 
 
@@ -503,69 +477,104 @@ void _manage::update()
 }
 
 
-void _manage::run_pause()
-{
-	put_health();
-	update();
-}
-
-
 void _manage::run_game()
 {
 	put_health();
-
-	if(delay_count)
-		delay_count--;
-
-	if(delay_count == 1)
-	{
-		if(enemies.exist_pipe())
-			delay_count = 2;
-		else
-		{
-			int newship = next_state_out;
-			put_info();
-			if(next_state_out)
-			{
-				retry();
-				if(ships <= 0)
-					return;
-			}
-			if(next_state_next)
-				next_scene();
-			init_resources_to_play(newship);
-			return;
-		}
-	}
-
 	myship.move();
 	enemies.move();
 	myship.check_base_bolts();
-
 	update();
 	++hi.playtime;
 }
 
 
+void _manage::run()
+{
+	if(paused)
+	{
+		put_health();
+		update();
+		return;
+	}
+	switch(gamestate)
+	{
+	  case GS_NONE:
+		break;
+	  case GS_INTRO:
+	  case GS_SELECT:
+		run_intro();
+		break;
+	  case GS_GETREADY:
+		put_health();
+		update();
+		break;
+	  case GS_PLAYING:
+	  case GS_GAMEOVER:
+		run_game();
+		break;
+	  case GS_LEVELDONE:
+		if(delay_count && !enemies.exist_pipe())
+			delay_count--;
+		if(delay_count == 1)
+		{
+			put_info();
+			next_scene();
+			init_resources_to_play(true);
+		}
+		else
+			run_game();
+		break;
+	}
+}
+
+
+void _manage::abort_game()
+{
+	gamestate = GS_NONE;
+	wdash->fade(1.0f);
+	wdash->mode(DASHBOARD_TITLE);
+}
+
+
+void _manage::pause(bool p)
+{
+	if(p == paused)
+		return;
+	paused = p;
+	if(paused)
+		sound.ui_play(SOUND_UI_PAUSE);
+	else
+		sound.ui_play(SOUND_UI_PLAY);
+}
+
+
 void _manage::lost_myship()
 {
-	if(delay_count == 0)
-		delay_count = 100;
-	next_state_out = 1;
+	if(!prefs->cmd_cheat && !prefs->cmd_pushmove)
+	{
+		hi.score = score;
+		hi.end_scene = scene_num;
+		hi.end_health = myship.health();
+		scorefile.record(&hi);
+	}
+	gamestate = GS_GAMEOVER;
 }
 
 
 void _manage::destroyed_a_core()
 {
+	if(gamestate != GS_PLAYING)
+		return;	// Can't win after death...
+
 	// Award health bonus for destroyed core!
 	myship.health_bonus(game.core_destroyed_health_bonus);
 	rest_cores--;
 	if(rest_cores == 0)
 	{
-		next_state_next = 1;
 		delay_count = 50;
 		// Award extra health bonus for stage cleared!
 		myship.health_bonus(game.stage_cleared_health_bonus);
+		gamestate = GS_LEVELDONE;
 	}
 	screen.generate_fixed_enemies();
 }
@@ -588,88 +597,11 @@ void _manage::add_score(int sc)
 }
 
 
-void _manage::select_next(int redraw_map)
-{
-	if((scene_num < scorefile.last_scene()) || prefs->cmd_cheat)
-	{
-		sound.ui_play(SOUND_UI_TICK);
-		scene_num++;
-	}
-	else
-		sound.ui_play(SOUND_UI_ERROR);
-	select_scene(scene_num);
-}
-
-
-void _manage::select_prev(int redraw_map)
-{
-	scene_num--;
-	if(scene_num < 0)
-	{
-		sound.ui_play(SOUND_UI_ERROR);
-		scene_num = 0;
-	}
-	else
-		sound.ui_play(SOUND_UI_TICK);
-	select_scene(scene_num);
-}
-
-
-void _manage::regenerate()
-{
-	sound.ui_play(SOUND_UI_TICK);
-	select_scene(scene_num, 1);
-}
-
-
-void _manage::select_scene(int scene, int redraw_map)
-{
-	scene_num = scene;
-	put_info();
-	if(redraw_map)
-		screen.init_scene(-scene_num - 1);
-	noise(150, 0);
-}
-
-
-void _manage::abort()
-{
-	if(!exit_manage)
-	{
-		game_stop();
-		exit_manage = 1;
-	}
-}
-
-
-void _manage::freeze_abort()
-{
-	exit_manage = 1;
-}
-
-
 void _manage::reenter()
 {
-	exit_manage = 0;
 	screen.init_background();
 	put_health(1);
 	put_info();
 	put_score();
-}
-
-
-int _manage::get_ready()
-{
-	if(_get_ready)
-	{
-		_get_ready = 0;
-		return 1;
-	}
-	return 0;
-}
-
-
-int _manage::game_over()
-{
-	return _game_over;
+	set_bars();
 }

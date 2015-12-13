@@ -1571,11 +1571,9 @@ int KOBO_main::restart_audio()
 	wdash->mode(DASHBOARD_BLACK);
 	log_printf(ULOG, "--- Audio restarted.\n");
 	wdash->fade(1.0f);
-	wdash->mode(manage.game_stopped() ?
-			DASHBOARD_TITLE :
-			DASHBOARD_GAME);
+	wdash->mode(manage.game_in_progress() ?
+			DASHBOARD_GAME : DASHBOARD_TITLE);
 	wradar->mode(screen.radar_mode);
-	manage.set_bars();
 	return 0;
 }
 
@@ -1629,11 +1627,9 @@ int KOBO_main::reload_graphics()
 	wdash->progress_done();
 	screen.init_graphics();
 	wdash->fade(1.0f);
-	wdash->mode(manage.game_stopped() ?
-			DASHBOARD_TITLE :
-			DASHBOARD_GAME);
+	wdash->mode(manage.game_in_progress() ?
+			DASHBOARD_GAME : DASHBOARD_TITLE);
 	wradar->mode(screen.radar_mode);
-	manage.set_bars();
 	log_printf(ULOG, "--- Graphics reloaded.\n");
 	return 0;
 }
@@ -1785,7 +1781,7 @@ void kobo_gfxengine_t::frame()
 		stop();
 		return;
 	}
-	if(exit_game || manage.aborted())
+	if(exit_game)
 	{
 		stop();
 		return;
@@ -1803,13 +1799,6 @@ void kobo_gfxengine_t::frame()
 		  case SDL_KEYDOWN:
 			switch(ev.key.keysym.sym)
 			{
-			  case SDLK_DELETE:
-				if(prefs->cmd_debug)
-				{
-					manage.ships = 1;
-					myship.hit(1000);
-				}
-				break;
 			  case SDLK_RETURN:
 				ms = SDL_GetModState();
 				if(ms & (KMOD_CTRL | KMOD_SHIFT | KMOD_GUI))
@@ -2112,11 +2101,17 @@ void kobo_gfxengine_t::frame()
 	gamecontrol.process();
 
 	/*
-	 * Run the current gamestate for one frame
+	 * Run the game engine for one frame
+	 */
+	manage.run();
+
+	/*
+	 * Run the current gamestate (or rather, application/UI state) for one
+	 * frame
 	 */
 	gsm.frame();
 
-	if(prefs->cmd_autoshot && !manage.game_stopped())
+	if(prefs->cmd_autoshot && manage.game_in_progress())
 	{
 		static int c = 0;
 		++c;

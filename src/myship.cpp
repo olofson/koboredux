@@ -128,9 +128,7 @@ int _myship::init()
 
 void _myship::explode()
 {
-	if(explo_time == 56)
-		manage.noise_out(1000);
-	else if(explo_time > 64)
+	if(explo_time > 64)
 		return;
 
 	int d = 4096 - (64 - explo_time)*(64 - explo_time);

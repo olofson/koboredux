@@ -3,13 +3,15 @@ TODO:
 -------------------------------------------------------------------------------
 
 * Sound fixes:
+	* Music needs to not restart when song is already playing!!!
 	* Proper sound control for the player guns!
 	* Continuous sound control for enemies, for pipe rumble, engines,
 	  reactors etc?
-	* No pause sound when already paused! (Happens when getting back from
-	  menus to a paused game.)
-	* Pause effect when pausing game to enter menu!
 	* sound::run()?
+
+* Higher firing rate? Only for higher skill levels...?
+
+* Do we have enough "bolts"!?
 
 * Original speeds:
 				shift	rnd	max
@@ -66,24 +68,10 @@ TODO:
   and damage... It just makes the harder skill levels slow and boring, as you
   have to play defensive and attack over and over!
 
-* Visual shock wave effect for splash damage?
-
-* Push/shockwaves to go with splash damage?
-
-* Higher firing rate? Only for higher skill levels...?
-
-* Do we have enough "bolts"!?
-
-* Specifying -width or -height via the command line should automatically set
-  videomode to -1 (custom)!
-
 * Don't lock the entire spinplanet buffer unless we need to!
 	* Resize the window? Calls for clearing the border around it.
 
 * Audiality 2 is using SDL 1.2...!?
-
-* Make some less annoying GUI sound effects..
-	* "Small radio style" group! (See the a2jingle demo.)
 
 * Bosses with complex collision zones, so they need to be shot from particular
   directions to take damage - a bit like mobile bases.

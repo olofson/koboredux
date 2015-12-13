@@ -127,6 +127,7 @@ class st_pause_game_t : public kobo_basestate_t
   public:
 	st_pause_game_t();
 	void enter();
+	void leave();
 	void press(gc_targets_t button);
 	void frame();
 	void post_render();

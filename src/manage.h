@@ -28,18 +28,26 @@
 #include "SDL.h"
 #include "score.h"
 
+enum KOBO_gamestates
+{
+	GS_NONE,
+	GS_INTRO,
+	GS_SELECT,
+	GS_GETREADY,
+	GS_PLAYING,
+	GS_LEVELDONE,
+	GS_GAMEOVER
+};
+
 class _manage
 {
+	static KOBO_gamestates gamestate;
+	static bool paused;
 	static int blank;
-	static int next_state_out;
-	static int next_state_next;
 	static int game_seed;
 	static int scroll_jump;
 	static int rest_cores;
 	static int exit_manage;
-	static int playing;
-	static int _get_ready;
-	static int _game_over;
 	static s_hiscore_t hi;
 	static int noise_flash;
 	static int noise_duration;
@@ -69,42 +77,65 @@ class _manage
 	static void put_info();
 	static void put_score();
 	static void flash_score();
-	static void game_stop();
 	static void run_noise();
 	static void run_leds();
-  public:
-	static int ships;
-	static void init();
 	static void set_bars();
 	static void init_resources_title();
-	static void init_resources_to_play(int newship);
-	static void noise(int duration, int flash);
-	static void noise_out(int duration);
-	static void noise_damage(float amt);
+	static void init_resources_to_play(bool newship);
 	static void update();
 	static void run_intro();
 	static void run_pause();
 	static void run_game();
+  public:
+
+	static void init();
+	static void reenter();
+
+	// Map management
+	static int current_scene()	{ return scene_num; }
+
+	// State management
+	static void start_intro();
+	static void select_scene(int scene);
+	static void start_game();
+	static void player_ready();
+	static void abort_game();
+	static void pause(bool p);
+	static bool game_paused()	{ return paused; }
+	static KOBO_gamestates state()	{ return gamestate; }
+
+	// Running the game
+	static void run();
+
+	// State info
+	static bool game_in_progress()
+	{
+		switch(state())
+		{
+		  case GS_GETREADY:
+		  case GS_PLAYING:
+		  case GS_LEVELDONE:
+		  case GS_GAMEOVER:
+			return true;
+		  default:
+			return false;
+		}
+	}
+	static int game_time()		{ return hi.playtime; }
+
+	// Player input
+	static void key_down(SDL_Keycode sym);
+	static void key_up(SDL_Keycode sym);
+
+	// Effects
+	static void noise(int duration, int flash);
+	static void noise_out(int duration);
+	static void noise_damage(float amt);
+
+	// Game logic interface
 	static void lost_myship();
 	static void destroyed_a_core();
 	static void add_score(int sc);
-	static void key_down(SDL_Keycode sym);
-	static void key_up(SDL_Keycode sym);
-	static int title_blank()	{ return blank; }
-	static void select_next(int redraw_map = 1);
-	static void select_prev(int redraw_map = 1);
-	static void regenerate();
-	static void select_scene(int scene, int redraw_map = 1);
-	static int current_scene()	{ return scene_num; }
-	static void abort();
-	static void freeze_abort();
-	static int aborted()		{ return exit_manage; }
-	static void reenter();
-	static int game_stopped()	{ return !playing; }
-	static int get_ready();
-	static void game_start();
-	static int game_over();
-	static int game_time()		{ return hi.playtime; }
 };
 
 extern _manage manage;
