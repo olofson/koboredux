@@ -242,6 +242,10 @@ class KOBO_main
 	// Backup in case we screw up we can't get back up
 	static prefs_t		safe_prefs;
 
+	static int restart_audio();
+	static int restart_video();
+	static int reload_graphics();
+
 	static int open();
 	static void close();
 	static int run();
@@ -1542,142 +1546,129 @@ void KOBO_main::close()
 }
 
 
+int KOBO_main::restart_audio()
+{
+	if(!prefs->use_sound)
+	{
+		log_printf(ULOG, "--- Stopping audio...\n");
+		sound.close();
+		log_printf(ULOG, "--- Audio stopped.\n");
+		return 0;
+	}
+
+	log_printf(ULOG, "--- Restarting audio...\n");
+	sound.close();
+#ifdef TIME_PROGRESS
+	wdash->progress_init(NULL);
+#else
+	wdash->progress_init(progtab_sounds);
+#endif
+	if(sound.open() < 0)
+		return 4;
+	if(load_sounds(prefs) < 0)
+		return 5;
+	wdash->progress_done();
+	wdash->mode(DASHBOARD_BLACK);
+	log_printf(ULOG, "--- Audio restarted.\n");
+	wdash->fade(1.0f);
+	wdash->mode(manage.game_stopped() ?
+			DASHBOARD_TITLE :
+			DASHBOARD_GAME);
+	wradar->mode(screen.radar_mode);
+	manage.set_bars();
+	return 0;
+}
+
+
+int KOBO_main::restart_video()
+{
+	log_printf(ULOG, "--- Restarting video...\n");
+	wdash->mode(DASHBOARD_BLACK);
+	gengine->hide();
+	close_display();
+	gengine->unload();
+	safe_prefs = *prefs;
+	if(init_display(prefs) < 0)
+	{
+		log_printf(ELOG, "--- Video init failed!\n");
+		*prefs = safe_prefs;
+		if(init_display(prefs) < 0)
+		{
+			log_printf(ELOG, "--- Video restore failed! "
+					"Giving up.\n");
+			return 6;
+		}
+		st_error.message("Video initialization failed!",
+				"Try different settings.");
+		gsm.push(&st_error);
+	}
+	screen.init_graphics();
+	gamecontrol.init(prefs->always_fire);
+	log_printf(ULOG, "--- Video restarted.\n");
+
+	// FIXME: We may not always need to reload graphics, but that's a bit
+	// tricky to tell for sure, so we just take the easy, safe path here.
+	global_status |= OS_RELOAD_GRAPHICS;
+	return 0;
+}
+
+
+int KOBO_main::reload_graphics()
+{
+	if(!(global_status & OS_RESTART_VIDEO))
+		wdash->mode(DASHBOARD_BLACK);
+	gengine->unload();
+	log_printf(ULOG, "--- Reloading graphics...\n");
+#ifdef TIME_PROGRESS
+	wdash->progress_init(NULL);
+#else
+	wdash->progress_init(progtab_graphics);
+#endif
+	if(load_graphics(prefs) < 0)
+		return 7;
+	wdash->progress_done();
+	screen.init_graphics();
+	wdash->fade(1.0f);
+	wdash->mode(manage.game_stopped() ?
+			DASHBOARD_TITLE :
+			DASHBOARD_GAME);
+	wradar->mode(screen.radar_mode);
+	manage.set_bars();
+	log_printf(ULOG, "--- Graphics reloaded.\n");
+	return 0;
+}
+
+
 int KOBO_main::run()
 {
-	int retry_status = 0;
-	int dont_retry = 0;
 	while(1)
 	{
-		if(!retry_status)
+		global_status = 0;
+
+		// Run the main loop!
+		gengine->run();
+
+		// Exit game?
+		if(exit_game_fast)
+			break;
+		if(exit_game)
 		{
-			safe_prefs = *prefs;
-			gengine->run();
-
-			if(!manage.game_stopped())
-				manage.abort();
-
-			if(exit_game_fast)
-				break;
-
-			if(exit_game)
-			{
-				if(wdash)
-					wdash->mode(DASHBOARD_BLACK);
-				break;
-			}
-			dont_retry = 0;
+			if(wdash)
+				wdash->mode(DASHBOARD_BLACK);
+			break;
 		}
 
-		retry_status = 0;
+		// Restart and reload stuff as needed
+		int res;
 		if(global_status & OS_RESTART_AUDIO)
-		{
-			if(prefs->use_sound)
-			{
-				log_printf(ULOG, "--- Restarting audio...\n");
-				sound.close();
-#ifdef TIME_PROGRESS
-				wdash->progress_init(NULL);
-#else
-				wdash->progress_init(progtab_sounds);
-#endif
-				if(sound.open() < 0)
-					return 4;
-				if(load_sounds(prefs) < 0)
-					return 5;
-				wdash->progress_done();
-				wdash->mode(DASHBOARD_BLACK);
-				log_printf(ULOG, "--- Audio restarted.\n");
-				wdash->fade(1.0f);
-				wdash->mode(manage.game_stopped() ?
-						DASHBOARD_TITLE :
-						DASHBOARD_GAME);
-				wradar->mode(screen.radar_mode);
-				manage.set_bars();
-			}
-			else
-			{
-				log_printf(ULOG, "--- Stopping audio...\n");
-				sound.close();
-				log_printf(ULOG, "--- Audio stopped.\n");
-			}
-		}
-		if((global_status & OS_RELOAD_AUDIO_CACHE) && prefs->cached_sounds)
-		{
-			log_printf(ULOG, "--- Rendering sounds to disk...\n");
-#ifdef TIME_PROGRESS
-			wdash->progress_init(NULL);
-#else
-			wdash->progress_init(progtab_sounds);
-#endif
-			if(load_sounds(prefs) < 0)
-			{
-				log_printf(ELOG, "--- Could not render sounds to disk!\n");
-				st_error.message("Could not render to disk!",
-						"Please, check your installation.");
-				gsm.push(&st_error);
-			}
-			wdash->progress_done();
-			wdash->fade(1.0f);
-			wdash->mode(manage.game_stopped() ?
-					DASHBOARD_TITLE : DASHBOARD_GAME);
-			wradar->mode(screen.radar_mode);
-			manage.set_bars();
-		}
+			if((res = restart_audio()))
+				return res;
 		if(global_status & OS_RESTART_VIDEO)
-		{
-			log_printf(ULOG, "--- Restarting video...\n");
-			wdash->mode(DASHBOARD_BLACK);
-			gengine->hide();
-			close_display();
-			gengine->unload();
-			if(init_display(prefs) < 0)
-			{
-				log_printf(ELOG, "--- Video init failed!\n");
-				st_error.message("Video initialization failed!",
-						"Try different settings.");
-				gsm.push(&st_error);
-				if(dont_retry)
-					return 6;
-				*prefs = safe_prefs;
-				dont_retry = 1;
-				retry_status |= OS_RESTART_VIDEO;
-			}
-			else
-			{
-				screen.init_graphics();
-				gamecontrol.init(prefs->always_fire);
-				log_printf(ULOG, "--- Video restarted.\n");
-			}
-		}
-		if(global_status & (OS_RELOAD_GRAPHICS |
-					OS_RESTART_VIDEO))
-		{
-			if(!(global_status & OS_RESTART_VIDEO))
-				wdash->mode(DASHBOARD_BLACK);
-			gengine->unload();
-			if(!retry_status)
-			{
-				log_printf(ULOG, "--- Reloading graphics...\n");
-#ifdef TIME_PROGRESS
-				wdash->progress_init(NULL);
-#else
-				wdash->progress_init(progtab_graphics);
-#endif
-				if(load_graphics(prefs) < 0)
-					return 7;
-				wdash->progress_done();
-				screen.init_graphics();
-				wdash->fade(1.0f);
-				wdash->mode(manage.game_stopped() ?
-						DASHBOARD_TITLE :
-						DASHBOARD_GAME);
-				wradar->mode(screen.radar_mode);
-				manage.set_bars();
-				log_printf(ULOG, "--- Graphics reloaded.\n");
-			}
-		}
-		if(global_status & OS_RESTART_ENGINE)
-			log_printf(ELOG, "OS_RESTART_ENGINE not implemented!\n");
+			if((res = restart_video()))
+				return res;
+		if(global_status & OS_RELOAD_GRAPHICS)
+			if((res = reload_graphics()))
+				return res;
 		if(global_status & OS_RESTART_INPUT)
 		{
 			close_js();
@@ -1687,7 +1678,7 @@ int KOBO_main::run()
 		if(global_status & OS_RESTART_LOGGER)
 			open_logging(prefs);
 
-		global_status = retry_status;
+		// Prepare to reenter the main loop
 		km.pause_game();
 		manage.reenter();
 	}
