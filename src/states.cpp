@@ -611,6 +611,7 @@ void st_game_over_t::enter()
 {
 	sound.ui_play(SOUND_UI_GAMEOVER);
 	start_time = (int)SDL_GetTicks();
+	frame_time = 0;
 }
 
 
