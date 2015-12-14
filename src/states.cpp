@@ -424,18 +424,6 @@ st_pause_game_t::st_pause_game_t()
 }
 
 
-void st_pause_game_t::enter()
-{
-	manage.pause(true);
-}
-
-
-void st_pause_game_t::leave()
-{
-	manage.pause(false);
-}
-
-
 void st_pause_game_t::press(gc_targets_t button)
 {
 	switch (button)
