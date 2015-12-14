@@ -53,6 +53,9 @@ A2_handle KOBO_sound::gunhandle = 0;
 A2_handle *KOBO_sound::modules = NULL;
 A2_handle KOBO_sound::sounds[SOUND__COUNT];
 
+int KOBO_sound::current_song = 0;
+bool KOBO_sound::music_is_ingame = false;
+
 static const char *kobo_a2sfiles[] =
 {
 	"SFX>>master.a2s",
@@ -212,6 +215,7 @@ void KOBO_sound::prefschange()
 	a2_Send(state, ui_g, 2, pref2vol(prefs->ui_vol));
 	a2_Send(state, music_g, 2, pref2vol(prefs->music_vol));
 	a2_Send(state, title_g, 2, pref2vol(prefs->title_vol));
+	update_music(false);
 }
 
 
@@ -339,22 +343,34 @@ void KOBO_sound::run()
 }
 
 
-void KOBO_sound::music(int sng, bool ingame)
+void KOBO_sound::update_music(bool newsong)
 {
 	if(!state)
 		return;
-	if(musichandle)
+
+	// Stop any playing song, if ne wsong, or music is disabled in prefs
+	if(musichandle && (newsong || !prefs->use_music))
 	{
 		a2_Send(state, musichandle, 1);
 		a2_Release(state, musichandle);
 		musichandle = 0;
 	}
-	if(sng < 0)
+
+	// If we're not supposed to play anything, we're done here!
+	if(!prefs->use_music || (current_song <= 0) || musichandle)
 		return;
-	if(checksound(sng, "KOBO_sound::music()"))
+
+	// Don't start music if the group is muted...
+	if((music_is_ingame && !prefs->music_vol) ||
+			(!music_is_ingame && !prefs->title_vol))
+		return;
+
+	// Start the song that's supposed to be playing
+	if(checksound(current_song, "KOBO_sound::music()"))
 	{
-		musichandle = a2_Start(state, ingame ? music_g : title_g,
-				sounds[sng]);
+		musichandle = a2_Start(state,
+				music_is_ingame ? music_g : title_g,
+				sounds[current_song]);
 		if(musichandle < 0)
 		{
 			log_printf(WLOG, "Couldn't start song! (%s)\n",
@@ -363,6 +379,15 @@ void KOBO_sound::music(int sng, bool ingame)
 			musichandle = 0;
 		}
 	}
+}
+
+void KOBO_sound::music(int sng, bool ingame)
+{
+	if((sng == current_song) && (ingame == music_is_ingame))
+		return;	// No change!
+	current_song = sng;
+	music_is_ingame = ingame;
+	update_music(true);
 }
 
 
@@ -403,9 +428,7 @@ bool KOBO_sound::checksound(int wid, const char *where)
 
 void KOBO_sound::g_music(unsigned scene)
 {
-//FIXME
-	music(SOUND_INGAMESONG, true);
-//FIXME
+	music(SOUND_INGAMESONG1 + scene / 10 % 5, true);
 }
 
 

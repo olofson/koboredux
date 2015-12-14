@@ -249,11 +249,7 @@ void audio_options_t::build()
 	if(prf->use_sound)
 	{
 		yesno("Enable Music", &prf->use_music,
-				OS_RESTART_AUDIO | OS_REBUILD);
-#if 0
-		yesno("Cached Sounds", &prf->cached_sounds,
-				OS_RELOAD_AUDIO_CACHE);
-#endif
+				OS_UPDATE_AUDIO | OS_REBUILD);
 
 		//System
 		space();
@@ -263,15 +259,6 @@ void audio_options_t::build()
 			item("48 kHz", 48000);
 			item("96 kHz", 96000);
 			item("192 kHz", 192000);
-#if 0
-		// Audiality 2 only has 3 quality levels, set at build time!
-		list("Mixing Quality", &prf->mixquality, OS_UPDATE_AUDIO);
-			item("Very Low", AQ_VERY_LOW);
-			item("Low", AQ_LOW);
-			item("Normal", AQ_NORMAL);
-			item("High", AQ_HIGH);
-			item("Very High", AQ_VERY_HIGH);
-#endif
 		list("Sound Latency", &prf->latency, OS_RESTART_AUDIO);
 		{
 			char buf[10];

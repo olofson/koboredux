@@ -93,11 +93,8 @@ st_introbase_t::st_introbase_t()
 void st_introbase_t::enter()
 {
 	if(manage.state() != GS_INTRO)
-	{
 		manage.start_intro();
-		if(prefs->use_music)
-			sound.ui_music_title();
-	}
+	sound.ui_music_title();
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
 	timer = 0;
 }
@@ -106,11 +103,8 @@ void st_introbase_t::enter()
 void st_introbase_t::reenter()
 {
 	if(manage.state() != GS_INTRO)
-	{
 		manage.start_intro();
-		if(prefs->use_music)
-			sound.ui_music_title();
-	}
+	sound.ui_music_title();
 	gsm.change(&st_intro_title);
 }
 

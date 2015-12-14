@@ -36,7 +36,11 @@
 	KOBO_DEFS(G_TITLE,	"TitleMusicGroup")		\
 	KOBO_DEFS(OAJINGLE,	"OAJingle")			\
 	KOBO_DEFS(TITLESONG,	"TitleSong")			\
-	KOBO_DEFS(INGAMESONG,	"IngameSong")			\
+	KOBO_DEFS(INGAMESONG1,	"IngameSong")			\
+	KOBO_DEFS(INGAMESONG2,	"IngameSong")			\
+	KOBO_DEFS(INGAMESONG3,	"IngameSong")			\
+	KOBO_DEFS(INGAMESONG4,	"IngameSong")			\
+	KOBO_DEFS(INGAMESONG5,	"IngameSong")			\
 	KOBO_DEFS(ONEUP,	"GiveEnergyMega")		\
 	KOBO_DEFS(FINE,		"")				\
 	KOBO_DEFS(LAUNCH,	"Launch")			\
@@ -115,13 +119,19 @@ class KOBO_sound
 	static A2_handle music_g;	// Ingame music group
 	static A2_handle title_g;	// Title music group
 	static A2_handle noisehandle;	// Transition noise effect
-	static A2_handle musichandle;	// Currently playing song
 	static A2_handle gunhandle;	// Currently playing player gun sound
 	static A2_handle *modules;	// Loaded A2S modules
 	static A2_handle sounds[SOUND__COUNT];	// Sounds, songs etc
 
+	// Currently playing song
+	static int current_song;	// enum index
+	static A2_handle musichandle;	// A2 handle
+	static bool music_is_ingame;	// Title or ingame group?
+
 	static int load_a2s(const char *path);
 	static void init_mixdown();
+	static bool checksound(int wid, const char *where);
+	static void update_music(bool newsong);
 
 	static inline float pref2vol(int v)
 	{
@@ -131,8 +141,6 @@ class KOBO_sound
 		else
 			return f;
 	}
-
-	static bool checksound(int wid, const char *where);
 
   public:
 	KOBO_sound();

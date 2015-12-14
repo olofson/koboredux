@@ -2,9 +2,12 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* New focus effect using bullets...?
+
+* OS_RESTART_AUDIO broken...?
+
 * Sound fixes:
-	* Music needs to not restart when song is already playing!!!
-	* sound::run()?
+	* Optimization: Don't play songs if group volume == 0.
 
 * Higher firing rate? Only for higher skill levels...?
 
