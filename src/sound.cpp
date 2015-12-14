@@ -37,8 +37,8 @@ int KOBO_sound::wrap_x = 0;
 int KOBO_sound::wrap_y = 0;
 int KOBO_sound::scale = 65536 / 1000;
 int KOBO_sound::panscale = 65536 / 700;
-int KOBO_sound::firing = 0;
 unsigned KOBO_sound::rumble = 0;
+bool KOBO_sound::firing = false;
 
 A2_state *KOBO_sound::state = NULL;
 A2_handle KOBO_sound::rootvoice = 0;
@@ -49,6 +49,7 @@ A2_handle KOBO_sound::music_g = 0;
 A2_handle KOBO_sound::title_g = 0;
 A2_handle KOBO_sound::noisehandle = 0;
 A2_handle KOBO_sound::musichandle = 0;
+A2_handle KOBO_sound::gunhandle = 0;
 A2_handle *KOBO_sound::modules = NULL;
 A2_handle KOBO_sound::sounds[SOUND__COUNT];
 
@@ -162,35 +163,40 @@ void KOBO_sound::init_mixdown()
 	master_g = a2_Start(state, rootvoice, sounds[SOUND_G_MASTER]);
 	if(master_g < 0)
 	{
-		log_printf(WLOG, "Couldn't create master mixer group!\n");
+		log_printf(WLOG, "Couldn't create master mixer group! (%s)\n",
+				a2_ErrorString((A2_errors)-master_g));
 		master_g = a2_NewGroup(state, rootvoice);
 	}
 
 	ui_g = a2_Start(state, master_g, sounds[SOUND_G_UI]);
 	if(ui_g < 0)
 	{
-		log_printf(WLOG, "Couldn't create UI mixer group!\n");
+		log_printf(WLOG, "Couldn't create UI mixer group! (%s)\n",
+				a2_ErrorString((A2_errors)-ui_g));
 		ui_g = a2_NewGroup(state, master_g);
 	}
 
 	sfx_g = a2_Start(state, master_g, sounds[SOUND_G_SFX]);
 	if(sfx_g < 0)
 	{
-		log_printf(WLOG, "Couldn't create SFX mixer group!\n");
+		log_printf(WLOG, "Couldn't create SFX mixer group! (%s)\n",
+				a2_ErrorString((A2_errors)-sfx_g));
 		sfx_g = a2_NewGroup(state, master_g);
 	}
 
 	music_g = a2_Start(state, master_g, sounds[SOUND_G_MUSIC]);
 	if(music_g < 0)
 	{
-		log_printf(WLOG, "Couldn't create music mixer group!\n");
+		log_printf(WLOG, "Couldn't create music mixer group! (%s)\n",
+				a2_ErrorString((A2_errors)-music_g));
 		music_g = a2_NewGroup(state, master_g);
 	}
 
 	title_g = a2_Start(state, master_g, sounds[SOUND_G_TITLE]);
 	if(title_g < 0)
 	{
-		log_printf(WLOG, "Couldn't create music mixer group!\n");
+		log_printf(WLOG, "Couldn't create music mixer group! (%s)\n",
+				a2_ErrorString((A2_errors)-title_g));
 		title_g = a2_NewGroup(state, master_g);
 	}
 }
@@ -276,6 +282,8 @@ void KOBO_sound::close()
 	title_g = 0;
 	noisehandle = 0;
 	musichandle = 0;
+	gunhandle = 0;
+	firing = false;
 	memset(modules, 0, A2SFILE__COUNT * sizeof(A2_handle));
 	memset(sounds, 0, sizeof(sounds));
 }
@@ -344,8 +352,17 @@ void KOBO_sound::music(int sng, bool ingame)
 	if(sng < 0)
 		return;
 	if(checksound(sng, "KOBO_sound::music()"))
+	{
 		musichandle = a2_Start(state, ingame ? music_g : title_g,
 				sounds[sng]);
+		if(musichandle < 0)
+		{
+			log_printf(WLOG, "Couldn't start song! (%s)\n",
+					a2_ErrorString(
+					(A2_errors)-musichandle));
+			musichandle = 0;
+		}
+	}
 }
 
 
@@ -488,24 +505,28 @@ void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
 }
 
 
-void KOBO_sound::g_player_fire()
+void KOBO_sound::g_player_fire(bool on)
 {
-	if(firing)
-		g_play0(SOUND_SHOT, (prefs->cannonloud << 13) / 100);
+	if(on == firing)
+		return;
+	firing = on;
+	if(!state)
+		return;
+	if(gunhandle)
+		a2_Send(state, gunhandle, firing ? 2 : 1);
 	else
 	{
-		firing = 1;
-		g_play0(SOUND_SHOT_START, 20000);
-	}
-}
-
-
-void KOBO_sound::g_player_fire_off()
-{
-	if(firing)
-	{
-		firing = 0;
-		g_play0(SOUND_SHOT_END, 20000);
+		if(!checksound(SOUND_SHOT, "KOBO_sound::g_player_fire()"))
+			return;
+		gunhandle = a2_Start(state, sfx_g, sounds[SOUND_SHOT], 0.0f,
+				(prefs->cannonloud << 14) / 6553600.0f);
+		if(gunhandle < 0)
+		{
+			log_printf(WLOG, "Couldn't start player fire sound!"
+					" (%s)\n", a2_ErrorString(
+					(A2_errors)-gunhandle));
+			gunhandle = 0;
+		}
 	}
 }
 
@@ -529,119 +550,6 @@ void KOBO_sound::g_player_explo_start()
 		a2_Play(state, sfx_g, sounds[SOUND_EXPLO_PLAYER]);
 }
 
-#if 0
-void KOBO_sound::g_bolt_hit(int x, int y)
-{
-	g_play(SOUND_METALLIC, CS2PIXEL(x), CS2PIXEL(y), 8000);
-}
-
-
-void KOBO_sound::g_bolt_hit_rock(int x, int y)
-{
-	g_play(SOUND_HIT_ROCK, CS2PIXEL(x), CS2PIXEL(y), 20000);
-}
-
-
-void KOBO_sound::g_base_node_explo(int x, int y)
-{
-	g_play(SOUND_EXPLO_NODE, CS2PIXEL(x), CS2PIXEL(y));
-}
-
-
-void KOBO_sound::g_base_core_explo(int x, int y)
-{
-	x = CS2PIXEL(x);
-	y = CS2PIXEL(y);
-	g_play(SOUND_EXPLO_CORE, x, y, 100000, 60<<16);
-	g_play(SOUND_FINE, x + 30, y, 65536, (60<<16) + 4000);
-	g_play(SOUND_FINE, x - 30, y, 65536, (60<<16) - 4000);
-}
-
-
-void KOBO_sound::g_pipe_rumble(int x, int y)
-{
-	if(rumble)
-		return;
-	g_play(SOUND_RUMBLE, CS2PIXEL(x), CS2PIXEL(y));
-	rumble = 1;
-}
-
-
-void KOBO_sound::g_enemy_explo(int x, int y)
-{
-	g_play(SOUND_EXPLO_ENEMY, CS2PIXEL(x), CS2PIXEL(y), 40000);
-}
-
-
-void KOBO_sound::g_rock_explo(int x, int y)
-{
-	g_play(SOUND_EXPLO_ROCK, CS2PIXEL(x), CS2PIXEL(y), 40000);
-}
-
-
-void KOBO_sound::g_ring_explo(int x, int y)
-{
-	g_play(SOUND_EXPLO_RING, CS2PIXEL(x), CS2PIXEL(y), 32768);
-}
-
-
-void KOBO_sound::g_bomb_deto(int x, int y)
-{
-	g_play(SOUND_BOMB_DETO, CS2PIXEL(x), CS2PIXEL(y), 40000);
-}
-
-
-void KOBO_sound::g_launch_ring(int x, int y)
-{
-	g_play(SOUND_RING, CS2PIXEL(x), CS2PIXEL(y));
-}
-
-
-void KOBO_sound::g_launch_bullet(int x, int y)
-{
-	g_play(SOUND_BULLET, CS2PIXEL(x), CS2PIXEL(y));
-}
-
-
-void KOBO_sound::g_launch_bomb(int x, int y)
-{
-	g_play(SOUND_LAUNCH2, CS2PIXEL(x), CS2PIXEL(y));
-}
-
-
-void KOBO_sound::g_launch(int x, int y)
-{
-	g_play(SOUND_LAUNCH, CS2PIXEL(x), CS2PIXEL(y));
-}
-
-
-void KOBO_sound::g_m_launch_ring(int x, int y)
-{
-	g_play(SOUND_RING, CS2PIXEL(x), CS2PIXEL(y));
-	g_play(SOUND_ENEMYM, CS2PIXEL(x), CS2PIXEL(y));
-}
-
-
-void KOBO_sound::g_m_launch_bullet(int x, int y)
-{
-	g_play(SOUND_BULLET, CS2PIXEL(x), CS2PIXEL(y));
-	g_play(SOUND_ENEMYM, CS2PIXEL(x), CS2PIXEL(y));
-}
-
-
-void KOBO_sound::g_m_launch_bomb(int x, int y)
-{
-	g_play(SOUND_LAUNCH2, CS2PIXEL(x), CS2PIXEL(y));
-	g_play(SOUND_ENEMYM, CS2PIXEL(x), CS2PIXEL(y));
-}
-
-
-void KOBO_sound::g_m_launch(int x, int y)
-{
-	g_play(SOUND_LAUNCH, CS2PIXEL(x), CS2PIXEL(y));
-	g_play(SOUND_ENEMYM, CS2PIXEL(x), CS2PIXEL(y));
-}
-#endif
 
 /*--------------------------------------------------
 	UI sound effects

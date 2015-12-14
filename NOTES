@@ -4,9 +4,6 @@ TODO:
 
 * Sound fixes:
 	* Music needs to not restart when song is already playing!!!
-	* Proper sound control for the player guns!
-	* Continuous sound control for enemies, for pipe rumble, engines,
-	  reactors etc?
 	* sound::run()?
 
 * Higher firing rate? Only for higher skill levels...?

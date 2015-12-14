@@ -62,9 +62,7 @@
 	KOBO_DEFS(EXPLO_M4,	"MegaDeath")			\
 	KOBO_DEFS(BZZZT,	"")				\
 	KOBO_DEFS(RUMBLE,	"BaseRumble")			\
-	KOBO_DEFS(SHOT_START,	"")				\
 	KOBO_DEFS(SHOT,		"FirePlasma")			\
-	KOBO_DEFS(SHOT_END,	"")				\
 	KOBO_DEFS(METALLIC,	"Klank")			\
 	KOBO_DEFS(BOMB_DETO,	"Bomb")				\
 	KOBO_DEFS(ENEMYM,	"Teleport")			\
@@ -105,8 +103,8 @@ class KOBO_sound
 	static int	wrap_y;
 	static int	scale;
 	static int	panscale;
-	static int	firing;
 	static unsigned	rumble;
+	static bool	firing;
 
 	// Audiality 2 interface
 	static A2_state *state;
@@ -118,6 +116,7 @@ class KOBO_sound
 	static A2_handle title_g;	// Title music group
 	static A2_handle noisehandle;	// Transition noise effect
 	static A2_handle musichandle;	// Currently playing song
+	static A2_handle gunhandle;	// Currently playing player gun sound
 	static A2_handle *modules;	// Loaded A2S modules
 	static A2_handle sounds[SOUND__COUNT];	// Sounds, songs etc
 
@@ -187,8 +186,7 @@ class KOBO_sound
 	static void g_scale(int maxrange, int pan_maxrange);
 
 	// Various sound effects
-	static void g_player_fire();
-	static void g_player_fire_off();
+	static void g_player_fire(bool on);
 	static void g_player_damage(float level = 1.0f);
 	static void g_player_explo_start();
 

@@ -66,6 +66,7 @@ void _myship::state(_myship_state s)
 	switch (s)
 	{
 	  case dead:
+		sound.g_player_fire(false);
 		if(object)
 			gengine->free_obj(object);
 		object = NULL;
@@ -244,12 +245,12 @@ void _myship::move()
 		else
 			fired = 2;	// Overheat!
 		if(fired)
-			sound.g_player_fire();
+			sound.g_player_fire(true);
 	}
 	else
 	{
 		if(!gamecontrol.get_shot())
-			sound.g_player_fire_off();
+			sound.g_player_fire(false);
 		if(nose_reload_timer > 0)
 			--nose_reload_timer;
 		if(tail_reload_timer > 0)

@@ -211,12 +211,25 @@ FirePlasma(P V=1 PanX)
 	struct { wtosc; panmix }
 	pan PanX
 	+tr P
-	a (V * .1); set a; w noise; p 5; d 10
-	a (V * .5); set a; w triangle; p 1.5
-	10 {	d 5; -p .5; +p (rand .1); -a .025 }
-	w saw; p (2 + rand .2); a 0; set a
-	10 {
-		+a (V * .006)
+
+.retrig	!firing 1
+
+	// Firing loop
+	while firing {
+		a (V * .1); set a; w noise; p 5; d 10
+		a (V * .5); set a; w triangle; p 1.5
+		6 {	d 5; -p .5; +p (rand .1); -a .025 }
+		w saw; p (2 + rand .2); a .005; set a
+		1 {
+			+a (V * .005)
+			+p .9; d 10
+			-p .85; d 10
+		}
+	}
+
+	// Full recharge
+	9 {
+		+a (V * .005)
 		+p .9; d 10
 		-p .85; d 10
 	}
@@ -225,8 +238,17 @@ FirePlasma(P V=1 PanX)
 		+p .7; d 10
 		-p .65; d 10
 	}
-.stop	a 0; d 10
-	1() { force stop }
+	a 0; d 10
+
+	1() {
+		firing 0
+	}
+
+	2() {
+		ifz firing {
+			force retrig
+		}
+	}
 }
 
 .Fwoomp(P V=1)
@@ -1385,7 +1407,6 @@ DamageCore(P V=1 PanX)
 		wtosc o3
 		panmix
 	}
-debug 42
 	vol V; pan PanX
 	tr P
 	o1.w triangle; o1.p 0n; o1.a 1
