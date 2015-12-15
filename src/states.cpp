@@ -1611,20 +1611,14 @@ void st_options_base_t::select(int tag)
 	{
 		cfg_form->undo();
 		check_update();
+		pop();
 	}
 	else if(cfg_form->status() & OS_CLOSE)
 	{
 		if(cfg_form->status() & (OS_RESTART | OS_RELOAD))
-		{
-			exit_game = 0;
-#if 0
-			// Wut...?
-			manage.freeze_abort();
-#endif
-		}
-	}
-	if(cfg_form->status() & (OS_CANCEL | OS_CLOSE))
+			gengine->stop();
 		pop();
+	}
 }
 
 void st_options_base_t::press(gc_targets_t button)

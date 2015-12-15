@@ -34,13 +34,13 @@ enum
 	OS_ACTION =		0x000f,
 
 	OS_RELOAD_GRAPHICS =	0x0010,
-	OS_RELOAD =		0x0070,
+	OS_RELOAD =		0x00f0,
 
 	OS_RESTART_VIDEO =	0x0100,
 	OS_RESTART_AUDIO =	0x0200,
-	OS_RESTART_INPUT =	0x0800,
-	OS_RESTART_LOGGER =	0x0080,
-	OS_RESTART =		0x0f80,
+	OS_RESTART_INPUT =	0x0400,
+	OS_RESTART_LOGGER =	0x0800,
+	OS_RESTART =		0x0f00,
 
 	OS_UPDATE_AUDIO =	0x1000,
 	OS_UPDATE_ENGINE =	0x2000,
@@ -59,9 +59,8 @@ class config_form_t : public kobo_form_t
   public:
 	config_form_t(gfxengine_t *e);
 	void open(prefs_t *p);
-	virtual void build();		// <-- Override this!
-	//...and this, if you need. Normally,
-	//it just sets the status to 0.
+	virtual void build();	// <-- Override this!
+	//...and this, if you need to. Normally, it just sets the status to 0.
 	void close();
 	int status();
 	void setstatus(int mask);
