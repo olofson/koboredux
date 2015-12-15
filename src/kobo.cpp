@@ -2329,7 +2329,6 @@ static void put_versions()
 static void put_copyright()
 {
 	printf("\n"
-#if 1
 	"     ,--.   ,--.,--------. ,-------.  ,--------.\n"
 	"     |  |  /  / |  ,--.  | |  ,--.  \\ |  ,--.  |\n"
 	"     |  '-´  /  |__|  |__| |__`--´__/ |  |  |  |\n"
@@ -2337,30 +2336,14 @@ static void put_copyright()
 	"     |  |  \\  \\ |  `--'  | |  `--´  / |  `--´  |\n"
 	"     `--´   `--'`--------´ `-------´  `--------´\n"
 	"      R    -    E    -    D    -    U    -    X\n"
-#elif 0
-	"     ----   ---- --------  --------    --------\n"
-	"     ----  ---- ----  ---- ----  ---- ----  ----\n"
-	"     ---------  ----  ---- ---------  ----  ----\n"
-	"     ----  ---- ----  ---- ----  ---- ----  ----\n"
-	"     ----   ---- --------  --------    --------\n"
-	"      R    -    E    -    D    -    U    -    X\n"
-#else
-	"   ====   ====   =======    ========      =======\n"
-	"   ====  ====  ====   ====  ===   ====  ====   ====\n"
-	"   =========   ===     ===  =========   ===     ===\n"
-	"   ====  ====  ====   ====  ===   ====  ====   ====\n"
-	"   ====   ====   =======    ========      =======\n"
-	"\n"
-	"    R          E          D          U          X\n"
-#endif
 	"\n"
 	"  Copyright 2015 Olofson Arcade. All rights reserved.\n"
 	"\n"
 	".----------------------------------------------------.\n"
-	"| The  source code  of this game  is  Free.  See the |\n"
-	"| respective  source files  for  copying conditions. |\n"
+	"|    The source code of this game is Free. See the   |\n"
+	"|   respective source files for copying conditions.  |\n"
 	"| There is NO warranty; not even for MERCHANTABILITY |\n"
-	"| or    FITNESS    FOR   A    PARTICULAR    PURPOSE. |\n"
+	"|        or FITNESS FOR A PARTICULAR PURPOSE.        |\n"
 	"'----------------------------------------------------'\n"
 	"  Copyright 1995, 1996 Akira Higuchi\n"
 	"  Copyright 1997 Masanao Izumo\n"
