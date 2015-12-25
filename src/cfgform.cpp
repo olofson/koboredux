@@ -25,7 +25,6 @@
 #include "cfgform.h"
 #include "kobo.h"
 #include "sound.h"
-#include "vidmodes.h"
 
 int global_status = 0;
 
@@ -53,7 +52,6 @@ void config_form_t::open(prefs_t *p)
 
 void config_form_t::close()
 {
-	vmm_Close();
 	clean();
 }
 
@@ -116,18 +114,6 @@ void config_form_t::setstatus(int mask)
 		prf->changed = 1;
 
 	setstatus(selected()->tag & (OS_RELOAD | OS_RESTART | OS_UPDATE));
-
-	// If a video mode from the table is selected, get the parameters
-	// from the video mode manager!
-	if(prf->videomode)
-	{
-		VMM_Mode *m = vmm_GetMode(prf->videomode);
-		if(m)
-		{
-			prf->width = m->width;
-			prf->height = m->height;
-		}
-	}
 
 	if(selected()->tag & OS_REBUILD)
 	{

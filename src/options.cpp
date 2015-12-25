@@ -179,6 +179,10 @@ void video_options_t::build()
 		item("Custom", -1);
 	if(prf->videomode < 0)
 	{
+		if(prf->width <= 32)
+			prf->width = SCREEN_WIDTH * 2;
+		if(prf->height <= 32)
+			prf->height = SCREEN_HEIGHT * 2;
 		spin("Width", &prf->width, 32, 4096, "pixels",
 				OS_RESTART_VIDEO | OS_REBUILD);
 		spin("Height", &prf->height, 32, 4096, "pixels",
@@ -200,6 +204,13 @@ void video_options_t::build()
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL);
 }
+
+void video_options_t::close()
+{
+	vmm_Close();
+	config_form_t::close();
+}
+
 
 
 void graphics_options_t::build()

@@ -1709,8 +1709,6 @@ void kobo_gfxengine_t::safe_video_mode()
 {
 	prefs->fullscreen = 0;
 	prefs->videomode = 0x10920;
-	prefs->width = 640;
-	prefs->height = 360;
 	prefs->changed = 1;
 	global_status |= OS_RELOAD_GRAPHICS | OS_RESTART_VIDEO;
 }
@@ -1756,8 +1754,6 @@ void kobo_gfxengine_t::fullscreen_toggle()
 
 		prefs->fullscreen = 0;
 		prefs->videomode = bestm->id;
-		prefs->width = bestm->width;
-		prefs->height = bestm->height;
 	}
 	else
 	{

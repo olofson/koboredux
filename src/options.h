@@ -46,6 +46,7 @@ class video_options_t : public config_form_t
 		firstbuild = 1;
 	}
 	void build();
+	void close();
 };
 
 class graphics_options_t : public config_form_t
