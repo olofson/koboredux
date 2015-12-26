@@ -212,7 +212,6 @@ void video_options_t::close()
 }
 
 
-
 void graphics_options_t::build()
 {
 	medium();
@@ -263,7 +262,29 @@ void audio_options_t::build()
 				OS_UPDATE_AUDIO | OS_REBUILD);
 
 		//System
+
 		space();
+		driver = -1;
+		memset(drivers, 0, sizeof(drivers));
+		const char *comma;
+		int len;
+		if((comma = strchr(prf->audiodriver, ',')))
+			len = comma - prf->audiodriver;
+		else
+			len = strlen(prf->audiodriver);
+		list("Driver", &driver, OS_RESTART_AUDIO);
+		A2_regdriver *rd = NULL;
+		for(int i = 0; i < MAX_AUDIO_DRIVERS; ++i)
+		{
+			rd = a2_FindDriver(A2_AUDIODRIVER, rd);
+			if(!rd)
+				break;
+			drivers[i] = a2_DriverName(rd);
+			if(strncmp(drivers[i], prf->audiodriver, len) == 0)
+				driver = i;
+			item(drivers[i], i);
+		}
+
 		list("Sample Rate", &prf->samplerate, OS_RESTART_AUDIO);
 			item("22050 Hz", 22050);
 			item("44.1 kHz", 44100);
@@ -343,6 +364,12 @@ void audio_options_t::build()
 	xoffs = 0.5;
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL | OS_UPDATE_AUDIO);
+}
+
+void audio_options_t::prepare_to_apply()
+{
+	if(driver >= 0)
+		strcpy(prf->audiodriver, drivers[driver]);
 }
 
 

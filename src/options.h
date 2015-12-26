@@ -26,6 +26,8 @@
 #include "cfgform.h"
 #include "vidmodes.h"
 
+#define	MAX_AUDIO_DRIVERS	20
+
 class system_options_t : public config_form_t
 {
   public:
@@ -58,9 +60,12 @@ class graphics_options_t : public config_form_t
 
 class audio_options_t : public config_form_t
 {
+	int driver;
+	const char *drivers[MAX_AUDIO_DRIVERS];
   public:
 	audio_options_t(gfxengine_t *e) : config_form_t(e) { }
 	void build();
+	void prepare_to_apply();
 };
 
 class control_options_t : public config_form_t

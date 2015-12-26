@@ -59,14 +59,23 @@ class config_form_t : public kobo_form_t
   public:
 	config_form_t(gfxengine_t *e);
 	void open(prefs_t *p);
-	virtual void build();	// <-- Override this!
-	//...and this, if you need to. Normally, it just sets the status to 0.
+
+	// Override this to construct the menu. Note that this is called both
+	// for open() and for OS_REBUILD.
+	virtual void build();
+
+	// ...and this, if you need to. Normally, it just sets the status to 0.
 	void close();
+
 	int status();
 	void setstatus(int mask);
 	void clearstatus(int mask);
 	void undo();
 	void change(int delta);
+
+	// Override this to do stuff when leaving the menu, in preparation for
+	// passing any OS_RESTART_* or OS_UPDATE_* flags to the main loop.
+	virtual void prepare_to_apply();
 };
 
 extern int global_status;

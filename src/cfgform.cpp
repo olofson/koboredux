@@ -50,6 +50,11 @@ void config_form_t::open(prefs_t *p)
 }
 
 
+/* virtual */void config_form_t::build()
+{
+}
+
+
 void config_form_t::close()
 {
 	clean();
@@ -113,6 +118,9 @@ void config_form_t::setstatus(int mask)
 	if(selected()->user)
 		prf->changed = 1;
 
+	if(selected()->tag & OS_CLOSE)
+		prepare_to_apply();
+
 	setstatus(selected()->tag & (OS_RELOAD | OS_RESTART | OS_UPDATE));
 
 	if(selected()->tag & OS_REBUILD)
@@ -123,6 +131,6 @@ void config_form_t::setstatus(int mask)
 	}
 }
 
-/* virtual */void config_form_t::build()
+/* virtual */void config_form_t::prepare_to_apply()
 {
 }

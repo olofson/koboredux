@@ -55,6 +55,7 @@ class prefs_t : public config_parser_t
 	int	cannonloud;	//Cannon loudness
 
 	//Sound: System
+	cfg_string_t	audiodriver;	//Name/options for a2_NewDriver()
 	int	use_sound;	//Enable sound
 	int	use_music;	//Enable music
 	int	samplerate;

@@ -228,8 +228,9 @@ int KOBO_sound::open()
 	}
 
 	log_printf(ULOG, "Initializing audio...\n");
-	log_printf(ULOG, "   Sample rate: %d Hz\n", prefs->samplerate);
-	log_printf(ULOG, "       Latency: %d ms\n", prefs->latency);
+	log_printf(ULOG, "              Driver: %s\n", prefs->audiodriver);
+	log_printf(ULOG, "         Sample rate: %d Hz\n", prefs->samplerate);
+	log_printf(ULOG, "             Latency: %d ms\n", prefs->latency);
 
 	A2_config *cfg = a2_OpenConfig(
 			prefs->samplerate,
@@ -242,20 +243,20 @@ int KOBO_sound::open()
 				" disabling sound effects.\n");
 		return -1;
 	}
-#if 0
-	//TODO
-	if(audiodriver)
-		if(a2_AddDriver(cfg, a2_NewDriver(A2_AUDIODRIVER,
-				audiodriver)))
-			...
-#endif
+
+	if(prefs->audiodriver[0] && a2_AddDriver(cfg,
+			a2_NewDriver(A2_AUDIODRIVER, prefs->audiodriver)))
+		log_printf(WLOG, "Couldn't add audio driver \"%s\";"
+				"trying default.\n");
 
 	if(!(state = a2_Open(cfg)))
 	{
 		log_printf(ELOG, "Couldn't create audio engine state;"
 				" disabling sound effects.\n");
-		return -2;
+		return -3;
 	}
+
+	log_printf(ULOG, "  Actual sample rate: %d Hz\n", cfg->samplerate);
 
 	rootvoice = a2_RootVoice(state);
 	if(rootvoice < 0)
