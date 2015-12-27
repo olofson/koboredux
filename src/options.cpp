@@ -37,6 +37,10 @@ void system_options_t::build()
 	space();
 	small();
 	xoffs = 0.6;
+	yesno("Quick Startup", &prf->quickstart, 0);
+
+	space();
+	xoffs = 0.6;
 	list("Maximum Frame Rate", &prf->max_fps, OS_REBUILD);
 	{
 		char buf[10];

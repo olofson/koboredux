@@ -40,6 +40,7 @@ void prefs_t::init()
 	yesno("logfile", logfile, 0); desc("Log To File");
 	key("logformat", logformat, 0); desc("Log File Format");
 	key("logverbosity", logverbosity, 2); desc("Log Verbosity Level");
+	yesno("quickstart", quickstart, 0); desc("Quick Startup");
 
 	comment("--- Input options --------------------------");
 	yesno("joystick", use_joystick, 0); desc("Use Joystick");

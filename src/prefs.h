@@ -35,6 +35,7 @@ class prefs_t : public config_parser_t
 	int	logfile;	//Log messages to log.txt/html
 	int	logformat;	//0: text, 1: ANSI, 2: HTML
 	int	logverbosity;
+	int	quickstart;	//Skip jingle, loader noise effects etc
 
 	//Input options
 	int	use_joystick;

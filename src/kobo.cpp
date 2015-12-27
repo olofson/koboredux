@@ -850,6 +850,9 @@ void KOBO_main::close_display()
 
 void KOBO_main::noiseburst()
 {
+	if(prefs->quickstart)
+		return;
+
 	sound.ui_noise(2);
 	wdash->fade(0.0f);
 	wdash->mode(DASHBOARD_NOISE);
@@ -1494,7 +1497,8 @@ int KOBO_main::open()
 	load_palette();
 	noiseburst();
 
-	sound.jingle(SOUND_OAJINGLE);
+	if(!prefs->quickstart)
+		sound.jingle(SOUND_OAJINGLE);
 	int jtime = SDL_GetTicks() + 5000;
 
 #ifdef TIME_PROGRESS
@@ -1515,10 +1519,14 @@ int KOBO_main::open()
 	wdash->progress_done();
 	wdash->mode(DASHBOARD_JINGLE);
 
-	while(!SDL_TICKS_PASSED(SDL_GetTicks(), jtime) && !skip_requested())
-		gengine->present();
+	if(!prefs->quickstart)
+	{
+		while(!SDL_TICKS_PASSED(SDL_GetTicks(), jtime) &&
+				!skip_requested())
+			gengine->present();
 
-	noiseburst();
+		noiseburst();
+	}
 
 	ct_engine.render_highlight = kobo_render_highlight;
 	wradar->mode(RM_NOISE);
