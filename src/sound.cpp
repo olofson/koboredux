@@ -230,12 +230,21 @@ int KOBO_sound::open()
 	log_printf(ULOG, "Initializing audio...\n");
 	log_printf(ULOG, "              Driver: %s\n", prefs->audiodriver);
 	log_printf(ULOG, "         Sample rate: %d Hz\n", prefs->samplerate);
-	log_printf(ULOG, "             Latency: %d ms\n", prefs->latency);
 
-	A2_config *cfg = a2_OpenConfig(
-			prefs->samplerate,
-			prefs->samplerate * prefs->latency / 1000,
-			2,
+	int bufsize = prefs->audiobuffer;
+	if(bufsize)
+		log_printf(ULOG, "         Buffer size: %d ms\n", bufsize);
+	else
+	{
+		log_printf(ULOG, "             Latency: %d ms\n",
+				prefs->latency);
+		int tbs = prefs->samplerate * prefs->latency / 1000;
+		for(bufsize = 16; bufsize < tbs; bufsize <<= 1)
+			;
+		log_printf(ULOG, "   Calc. buffer size: %d ms\n", bufsize);
+	}
+
+	A2_config *cfg = a2_OpenConfig(prefs->samplerate, bufsize, 2,
 			A2_REALTIME | A2_TIMESTAMP | A2_STATECLOSE);
 	if(!cfg)
 	{
@@ -257,6 +266,7 @@ int KOBO_sound::open()
 	}
 
 	log_printf(ULOG, "  Actual sample rate: %d Hz\n", cfg->samplerate);
+	log_printf(ULOG, "         Buffer size: %d frames\n", cfg->buffer);
 
 	rootvoice = a2_RootVoice(state);
 	if(rootvoice < 0)

@@ -65,6 +65,7 @@ void prefs_t::init()
 	key("audiodriver", audiodriver, ""); desc("Audio Driver");
 	key("samplerate", samplerate, 44100); desc("Sample Rate");
 	key("latency", latency, 50); desc("Sound Latency");
+	key("audiobuffer", audiobuffer, 0); desc("Custom Audio Buffer Size");
 	key("volume", volume, 100); desc("Master Volume");
 	key("vol_boost", vol_boost, 2); desc("Volume Boost");
 	key("ui_vol", ui_vol, 50); desc("User Interface Volume");

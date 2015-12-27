@@ -60,6 +60,7 @@ class prefs_t : public config_parser_t
 	int	use_music;	//Enable music
 	int	samplerate;
 	int	latency;	//Audio latency in ms
+	int	audiobuffer;	//Custom audio buffer size (sample frames)
 
 	//Sound: Mixer
 	int	volume;		//Digital master volume
