@@ -64,9 +64,11 @@ void prefs_t::init()
 	yesno("sound", use_sound, 1); desc("Enable Sound");
 	yesno("music", use_music, 1); desc("Enable Music");
 	key("audiodriver", audiodriver, ""); desc("Audio Driver");
-	key("samplerate", samplerate, 44100); desc("Sample Rate");
-	key("latency", latency, 50); desc("Sound Latency");
+	key("samplerate", samplerate, 48000); desc("Sample Rate");
+	key("latency", latency, 20); desc("Sound Latency");
 	key("audiobuffer", audiobuffer, 0); desc("Custom Audio Buffer Size");
+	key("tsdelay", tsdelay, 5); desc("Timestamp Delay");
+	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
 	key("volume", volume, 100); desc("Master Volume");
 	key("vol_boost", vol_boost, 2); desc("Volume Boost");
 	key("ui_vol", ui_vol, 50); desc("User Interface Volume");

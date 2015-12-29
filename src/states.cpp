@@ -94,7 +94,8 @@ void st_introbase_t::enter()
 {
 	if(manage.state() != GS_INTRO)
 		manage.start_intro();
-	sound.ui_music_title();
+	if(!exit_game)
+		sound.ui_music_title();
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
 	timer = 0;
 }
@@ -104,7 +105,8 @@ void st_introbase_t::reenter()
 {
 	if(manage.state() != GS_INTRO)
 		manage.start_intro();
-	sound.ui_music_title();
+	if(!exit_game)
+		sound.ui_music_title();
 	gsm.change(&st_intro_title);
 }
 
@@ -500,6 +502,7 @@ void st_get_ready_t::press(gc_targets_t button)
 	  case BTN_FIRE:
 	  case BTN_YES:
 		sound.ui_play(SOUND_UI_PLAY);
+		manage.pause(false);
 		manage.player_ready();
 		pop();
 		break;
@@ -529,6 +532,7 @@ void st_get_ready_t::frame()
 		if(frame_time > 700)
 		{
 			sound.ui_play(SOUND_UI_PLAY);
+			manage.pause(false);
 			manage.player_ready();
 			pop();
 		}
@@ -543,6 +547,7 @@ void st_get_ready_t::frame()
 		if(countdown < 1)
 		{
 			sound.ui_play(SOUND_UI_PLAY);
+			manage.pause(false);
 			manage.player_ready();
 			pop();
 		}
@@ -1739,9 +1744,8 @@ void st_ask_exit_t::select(int tag)
 	switch(tag)
 	{
 	  case MENU_TAG_OK:
-#if 0
-		audio_channel_stop(0, -1);	//Stop any music
-#endif
+		sound.music(-1);
+		manage.abort_game();
 		sound.ui_play(SOUND_UI_OK);
 		exit_game = 1;
 		pop();

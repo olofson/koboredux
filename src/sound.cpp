@@ -28,9 +28,8 @@
 
 int KOBO_sound::sounds_loaded = 0;
 int KOBO_sound::music_loaded = 0;
+int KOBO_sound::tsdcounter = 0;
 
-int KOBO_sound::time = 0;
-int KOBO_sound::_period = 30;
 int KOBO_sound::listener_x = 0;
 int KOBO_sound::listener_y = 0;
 int KOBO_sound::wrap_x = 0;
@@ -52,6 +51,7 @@ A2_handle KOBO_sound::musichandle = 0;
 A2_handle KOBO_sound::gunhandle = 0;
 A2_handle *KOBO_sound::modules = NULL;
 A2_handle KOBO_sound::sounds[SOUND__COUNT];
+float KOBO_sound::buffer_latency = 0.0f;
 
 int KOBO_sound::current_song = 0;
 bool KOBO_sound::music_is_ingame = false;
@@ -268,14 +268,18 @@ int KOBO_sound::open()
 	log_printf(ULOG, "  Actual sample rate: %d Hz\n", cfg->samplerate);
 	log_printf(ULOG, "         Buffer size: %d frames\n", cfg->buffer);
 
+	buffer_latency = cfg->buffer * 1000.0f / cfg->samplerate;
+	log_printf(ULOG, "  Calculated latency: %f ms\n", buffer_latency);
+
+	// We don't use this! We calculate our own margin.
+	a2_SetStateProperty(state, A2_PTIMESTAMPMARGIN, 0);
+
 	rootvoice = a2_RootVoice(state);
 	if(rootvoice < 0)
 		log_printf(ELOG, "Couldn't find root voice!\n");
 
 	g_wrap(WORLD_SIZEX, WORLD_SIZEY);
 	g_scale(VIEWLIMIT * 3 / 2, VIEWLIMIT);
-
-	time = SDL_GetTicks();
 	return 0;
 }
 
@@ -299,6 +303,7 @@ void KOBO_sound::close()
 	musichandle = 0;
 	gunhandle = 0;
 	firing = false;
+	buffer_latency = 0.0f;
 	memset(modules, 0, A2SFILE__COUNT * sizeof(A2_handle));
 	memset(sounds, 0, sizeof(sounds));
 }
@@ -309,11 +314,50 @@ void KOBO_sound::close()
 	Main controls
 --------------------------------------------------*/
 
-void KOBO_sound::period(int ms)
+void KOBO_sound::timestamp_reset()
 {
-	if(ms > 0)
-		_period = ms;
-	time = 0;
+	if(state)
+		a2_TimestampReset(state);
+}
+
+
+void KOBO_sound::timestamp_nudge(float ms)
+{
+	if(!state)
+		return;
+	a2_TimestampNudge(state, a2_ms2Timestamp(state, ms), 0.001f);
+}
+
+
+void KOBO_sound::timestamp_bump(float ms)
+{
+	if(!state)
+		return;
+	int min = 0;
+	if(prefs->tsdebug && (++tsdcounter >= 10))
+	{
+		int avg, max;
+		tsdcounter = 0;
+		a2_GetStateProperty(state, A2_PTSMARGINMIN, &min);
+		a2_GetStateProperty(state, A2_PTSMARGINAVG, &avg);
+		a2_GetStateProperty(state, A2_PTSMARGINMAX, &max);
+		printf("%d\t%d\t%d/%d/%d\n",
+				(int)(buffer_latency + 0.5f), prefs->max_fps,
+				(int)(a2_Timestamp2ms(state, min) + 0.5f),
+				(int)(a2_Timestamp2ms(state, avg) + 0.5f),
+				(int)(a2_Timestamp2ms(state, max) + 0.5f));
+	}
+	else
+		a2_GetStateProperty(state, A2_PTSMARGINMIN, &min);
+	a2_SetStateProperty(state, A2_PTSMARGINAVG, 0);
+	if(min < 0)
+	{
+		log_printf(WLOG, "Late audio API messages. (Up to %f ms.) "
+				"Timestamp bumped 1 ms.\n",
+				-a2_Timestamp2ms(state, min));
+		ms += 1.0f;
+	}
+	a2_TimestampBump(state, a2_ms2Timestamp(state, ms));
 }
 
 
@@ -331,26 +375,10 @@ void KOBO_sound::frame()
 		g_play(SOUND_OVERHEAT, PIXEL2CS(listener_x - 128),
 				PIXEL2CS(listener_y), 0.5f, 0.5f);
 #endif
-	// Advance to next game logic frame
-	if(state)
-		a2_Now(state);
-#if 0
-	int nc = audio_next_callback();
-	if(time < nc)
-		time = nc;
-	else
-		time -= 1 + (labs(time - nc) >> 5);
-	audio_bump(time);
-#endif
-	time += _period;
-
 	// Various sound control logic
 	rumble = 0;	// Only one per logic frame!
-}
-
-
-void KOBO_sound::run()
-{
+	if(state)
+		a2_PumpMessages(state);
 }
 
 
@@ -541,6 +569,7 @@ void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
 
 void KOBO_sound::g_player_fire(bool on)
 {
+#if 1
 	if(on == firing)
 		return;
 	firing = on;
@@ -562,6 +591,14 @@ void KOBO_sound::g_player_fire(bool on)
 			gunhandle = 0;
 		}
 	}
+#else
+	if(!on)
+		return;
+	if(!checksound(SOUND_SHOT, "KOBO_sound::g_player_fire()"))
+		return;
+	a2_Play(state, sfx_g, sounds[SOUND_SHOT], 0.0f,
+			(prefs->cannonloud << 14) / 6553600.0f);
+#endif
 }
 
 

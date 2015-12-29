@@ -2,16 +2,30 @@
 TODO:
 -------------------------------------------------------------------------------
 
-* New focus effect using bullets...?
+* Player ship never reaches 0 velocity!!!
 
-* OS_RESTART_AUDIO broken...?
+./kobord -audiodriver sdl -maxfps 0 -audiobuffer 8192
+./kobord -audiodriver sdl -maxfps 0 -audiobuffer 1024
+./kobord -audiodriver sdl -maxfps 0 -audiobuffer 128
+./kobord -audiodriver sdl -maxfps 60 -audiobuffer 8192
+./kobord -audiodriver sdl -maxfps 60 -audiobuffer 1024
+./kobord -audiodriver sdl -maxfps 60 -audiobuffer 128
+./kobord -audiodriver sdl -maxfps 30 -audiobuffer 8192
+./kobord -audiodriver sdl -maxfps 30 -audiobuffer 1024
+./kobord -audiodriver sdl -maxfps 30 -audiobuffer 128
+./kobord -audiodriver sdl -maxfps 20 -audiobuffer 8192
+./kobord -audiodriver sdl -maxfps 20 -audiobuffer 1024
+./kobord -audiodriver sdl -maxfps 20 -audiobuffer 128
 
-* Sound fixes:
-	* Optimization: Don't play songs if group volume == 0.
+* Maybe we should have a fixed target delay for sound effects anyway, so we
+  don't have sounds playing before animations when running on lowlatency JACK
+  setups and the like? 'tsdelay' would be the minimum allowed delay.
 
-* Higher firing rate? Only for higher skill levels...?
+* We need to deal with timestamps when the game engine isn't running too!
+	* Maybe UI sound effects and the like shouldn't be timestamped anyway?
+		* Can we create a thin API state for that...?
 
-* Do we have enough "bolts"!?
+* What's the deal with the logic in st_options_base_t::select()?
 
 * Original speeds:
 				shift	rnd	max
@@ -49,8 +63,6 @@ TODO:
 		SDL_Keycode	sources[];
 	};
   However, we should cover joystick buttons and whatnot as well...
-
-* Rock explosion looks bland. There should also be pieces of rock flying!
 
 * Maybe a bit of blur as well, when downscaling spinplanet textures...? (The
   original texture is scaled up at load time specifically to serve as a very

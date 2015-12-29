@@ -755,7 +755,6 @@ int KOBO_main::init_display(prefs_t *p)
 	log_printf(WLOG, "Display offsets: %d, %d\n", xoffs, yoffs);
 
 	gengine->period(game.speed);
-	sound.period(game.speed);
 	gengine->timefilter(p->timefilter * 0.01f);
 	gengine->interpolation(p->filter);
 
@@ -1774,6 +1773,36 @@ void kobo_gfxengine_t::fullscreen_toggle()
 }
 
 
+float kobo_gfxengine_t::timestamp_delay()
+{
+	return gengine->period() + prefs->tsdelay;
+}
+
+
+void kobo_gfxengine_t::pre_loop()
+{
+	sound.timestamp_reset();
+	sound.timestamp_bump(timestamp_delay() +
+			1000.0f / (prefs->max_fps > 60 ? 60 : prefs->max_fps));
+}
+
+
+void kobo_gfxengine_t::post_loop()
+{
+	sound.timestamp_reset();
+}
+
+
+void kobo_gfxengine_t::pre_advance()
+{
+	// We need to adjust for the logic time elapsed since the last logic
+	// frame (because logic time is decoupled from rendering frame rate),
+	// and for the desired "buffer" timestamp delay.
+	float ft = fmod(csengine->time, 1.0f) * gengine->period();
+	sound.timestamp_nudge(ft - timestamp_delay());
+}
+
+
 void kobo_gfxengine_t::frame()
 {
 	sound.frame();
@@ -2104,16 +2133,14 @@ void kobo_gfxengine_t::frame()
 	}
 	gamecontrol.process();
 
-	/*
-	 * Run the game engine for one frame
-	 */
+	// Run the game engine for one frame
 	manage.run();
 
-	/*
-	 * Run the current gamestate (or rather, application/UI state) for one
-	 * frame
-	 */
+	// Run the current gamestate (application/UI state) for one frame
 	gsm.frame();
+
+	// Bump audio API timestamp time to match game logic time
+	sound.timestamp_bump(gengine->period());
 
 	if(prefs->cmd_autoshot && manage.game_in_progress())
 	{
@@ -2130,7 +2157,6 @@ void kobo_gfxengine_t::frame()
 
 void kobo_gfxengine_t::pre_render()
 {
-	sound.run();
 	gsm.pre_render();
 }
 
@@ -2383,7 +2409,6 @@ extern "C" {
 int main(int argc, char *argv[])
 {
 	int cmd_exit = 0;
-
 	put_copyright();
 	put_versions();
 

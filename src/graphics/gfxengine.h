@@ -82,6 +82,7 @@ class gfxengine_t
 
 	// 0 to reset internal timer
 	void period(float frameduration);
+	float period()	{	return ticks_per_frame; }
 
 	// 0 to disable timing, running one logic frame per rendered frame.
 	// 1 to disable filtering, using raw delta times for timing.
@@ -134,19 +135,32 @@ class gfxengine_t
 
 	//
 	// Override these;
-	//	frame() is called once per control system frame,
-	//		after the control system has executed.
-	//	pre_render() is called after the engine has advanced
-	//		to the state for the current video frame
-	//		(interpolated state is calculated), before
-	//		the engine renders all graphics.
-	//	post_render() is called after the engine have
-	//		rendered all sprites, but before video the
-	//		sync/flip/update operation.
 	//
+	//	pre_loop() is called right before entering the engine main
+	//		loop.
+	//
+	//	pre_advance() is called right before advancing the game logic
+	//		to the time of the upcoming video frame.
+	//
+	//	frame() is called once per control system frame, after the
+	//		control system has executed.
+	//
+	//	pre_render() is called after the engine has advanced to the
+	//		state for the current video frame (interpolated state
+	//		is calculated), before the engine renders all graphics.
+	//
+	//	post_render() is called after the engine has rendered all
+	//		sprites, but before video the sync/flip/update
+	//		operation.
+	//
+	//	post_loop() is called when the engine leaves the main loop.
+	//
+	virtual void pre_loop();
+	virtual void pre_advance();
 	virtual void frame();
 	virtual void pre_render();
 	virtual void post_render();
+	virtual void post_loop();
 
 	////////////////////////////////////////////
 	// The members below can safely be called

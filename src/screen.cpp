@@ -607,7 +607,6 @@ void _screen::init_scene(int sc)
 			bg_map[i].init(&scenes[scene_num + 1 + i]);
 	init_background();
 	gengine->period(game.speed);
-	sound.period(game.speed);
 	generate_count = 0;
 	wradar->mode(radar_mode);
 }

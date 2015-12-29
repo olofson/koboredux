@@ -62,6 +62,8 @@ class prefs_t : public config_parser_t
 	int	samplerate;
 	int	latency;	//Audio latency in ms
 	int	audiobuffer;	//Custom audio buffer size (sample frames)
+	int	tsdelay;	//Timestamp delay in ms
+	int	tsdebug;	//Timestamp debugging
 
 	//Sound: Mixer
 	int	volume;		//Digital master volume

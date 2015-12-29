@@ -56,11 +56,15 @@ class kobo_gfxengine_t : public gfxengine_t
 	int pointer_margin_height_min;
 	int pointer_margin_height_max;
 #endif
+	void pre_loop();
+	void pre_advance();
 	void frame();
 	void pre_render();
 	void post_render();
+	void post_loop();
 	void safe_video_mode();
 	void fullscreen_toggle();
+	float timestamp_delay();
   public:
 #ifdef ENABLE_TOUCHSCREEN
 	void setup_pointer_margin(int, int);

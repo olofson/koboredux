@@ -97,10 +97,9 @@ class KOBO_sound
 {
 	static int	sounds_loaded;
 	static int	music_loaded;
+	static int	tsdcounter;
 
 	// In-game sfx stuff
-	static int	time;
-	static int	_period;
 	static int	listener_x;
 	static int	listener_y;
 	static int	wrap_x;
@@ -122,6 +121,7 @@ class KOBO_sound
 	static A2_handle gunhandle;	// Currently playing player gun sound
 	static A2_handle *modules;	// Loaded A2S modules
 	static A2_handle sounds[SOUND__COUNT];	// Sounds, songs etc
+	static float buffer_latency;
 
 	// Currently playing song
 	static int current_song;	// enum index
@@ -155,11 +155,17 @@ class KOBO_sound
 	static void close();
 
 	/*--------------------------------------------------
+		Info
+	--------------------------------------------------*/
+	static inline float latency()	{ return buffer_latency; }
+
+	/*--------------------------------------------------
 		Main controls
 	--------------------------------------------------*/
-	static void period(int ms);	// 0 to reset time
+	static void timestamp_reset();
+	static void timestamp_nudge(float ms);
+	static void timestamp_bump(float ms);
 	static void frame();
-	static void run();
 
 	// Play anything through one of the music groups
 	static void music(int sng, bool ingame = false);

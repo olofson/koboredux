@@ -182,8 +182,7 @@ void _manage::select_scene(int scene)
 {
 	scene_num = scene;
 	put_info();
-//	if(redraw_map)
-		screen.init_scene(-scene_num - 1);
+	screen.init_scene(-scene_num - 1);
 	noise(150, 0);
 	gamestate = GS_SELECT;
 }
@@ -199,7 +198,6 @@ void _manage::start_game()
 	score = 0;
 	flash_score_count = 0;
 	gengine->period(game.speed);
-	sound.period(game.speed);
 	screen.init_scene(scene_num);
 	init_resources_to_play(true);
 
@@ -248,7 +246,6 @@ void _manage::init_resources_title()
 	noise(1000, 800);
 	screen.init_scene(INTRO_SCENE);
 	gengine->period(30);
-	sound.period(30);
 	gamerand.init();
 	enemies.init();
 	myship.init();

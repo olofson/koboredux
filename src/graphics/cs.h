@@ -478,7 +478,7 @@ void cs_engine_set_wrap(cs_engine_t *e, int x, int y);
 void cs_engine_delete(cs_engine_t *e);
 
 void cs_engine_reset(cs_engine_t *e);
-void cs_engine_advance(cs_engine_t *e, double to_frame);	/* 0 == reset timer*/
+void cs_engine_advance(cs_engine_t *e, double to_frame); /* 0 == reset timer*/
 void cs_engine_render(cs_engine_t *e);
 
 cs_obj_t *cs_engine_get_obj(cs_engine_t *e);

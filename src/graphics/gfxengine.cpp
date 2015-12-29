@@ -939,6 +939,8 @@ void gfxengine_t::run()
 	double toframe = 0.0f;
 	_frame_delta_time = 1.0f;
 	cs_engine_advance(csengine, 0);
+	present();
+	pre_loop();
 	while(is_running)
 	{
 		int t = (int)SDL_GetTicks();
@@ -954,9 +956,11 @@ void gfxengine_t::run()
 		else
 			_frame_delta_time = ticks_per_frame;
 		toframe += _frame_delta_time / ticks_per_frame;
+		pre_advance();
 		cs_engine_advance(csengine, toframe);
 		present();
 	}
+	post_loop();
 	stop_engine();
 }
 
@@ -1149,8 +1153,18 @@ void gfxengine_t::screenshot()
 
 
 /*----------------------------------------------------------
-	Internal stuff
+	Default virtuals for the application hooks
 ----------------------------------------------------------*/
+
+void gfxengine_t::pre_loop()
+{
+}
+
+
+void gfxengine_t::pre_advance()
+{
+}
+
 
 // Default frame handler
 void gfxengine_t::frame()
@@ -1174,6 +1188,14 @@ void gfxengine_t::post_render()
 {
 }
 
+void gfxengine_t::post_loop()
+{
+}
+
+
+/*----------------------------------------------------------
+	Internal stuff
+----------------------------------------------------------*/
 
 void gfxengine_t::present()
 {
