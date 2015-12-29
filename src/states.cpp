@@ -622,7 +622,7 @@ void st_game_over_t::enter()
 
 void st_game_over_t::press(gc_targets_t button)
 {
-	if(frame_time < 3000)
+	if(frame_time < 1500)
 		return;
 
 	switch (button)
