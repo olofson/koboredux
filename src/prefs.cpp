@@ -43,12 +43,14 @@ void prefs_t::init()
 	yesno("quickstart", quickstart, 0); desc("Quick Startup");
 
 	comment("--- Input options --------------------------");
-	yesno("joystick", use_joystick, 0); desc("Use Joystick");
-	key("joystick_no", joystick_no, 0); desc("Joystick Number");
-	yesno("mouse", use_mouse, 0); desc("Use Mouse");
+	yesno("enable_joystick", enable_joystick, 0); desc("Enable Joystick");
+	key("joystick_index", joystick_index, 0); desc("Joystick Number");
+	yesno("enable_mouse", enable_mouse, 0); desc("Enable Mouse");
 	key("mousemode", mousemode, MMD_CROSSHAIR); desc("Mouse Control Mode");
-	yesno("broken_numdia", broken_numdia, 0); desc("Broken NumPad Diagonals");
-	key("dia_emphasis", dia_emphasis, 1); desc("Diagonals Emphasis Filter");
+	yesno("broken_numdia", broken_numdia, 0);
+			desc("Broken NumPad Diagonals");
+	key("dia_emphasis", dia_emphasis, 1);
+			desc("Diagonals Emphasis Filter");
 	yesno("always_fire", always_fire, 0); desc("Always Fire");
 	yesno("mousecapture", mousecapture, 1); desc("In-game Mouse Capture");
 
@@ -61,8 +63,8 @@ void prefs_t::init()
 	key("cannonloud", cannonloud, 100); desc("Player Cannons Loudness");
 
 	comment("--- Sound settings -------------------------");
-	yesno("sound", use_sound, 1); desc("Enable Sound");
-	yesno("music", use_music, 1); desc("Enable Music");
+	yesno("enable_sound", enable_sound, 1); desc("Enable Sound");
+	yesno("enable_music", enable_music, 1); desc("Enable Music");
 	key("audiodriver", audiodriver, ""); desc("Audio Driver");
 	key("samplerate", samplerate, 48000); desc("Sample Rate");
 	key("latency", latency, 20); desc("Sound Latency");
@@ -80,9 +82,10 @@ void prefs_t::init()
 	yesno("fullscreen", fullscreen, 1); desc("Fullscreen Display");
 	key("width", width, 0); desc("Horizontal Resolution");
 	key("height", height, 0); desc("Vertical Resolution");
-	yesno("autoswap", autoswap, 0); desc("Automatically swap display dimension");
-	key("maxfps", max_fps, 100); desc("Maximum fps");
-	key("maxfpsstrict", max_fps_strict, 0); desc("Strictly Regulated fps");
+	yesno("autoswap", autoswap, 0);
+			desc("Automatically swap display dimension");
+	key("maxfps", maxfps, 100); desc("Maximum fps");
+	key("maxfps_strict", maxfps_strict, 0); desc("Strictly Regulated fps");
 	key("videomode", videomode, 1); desc("Video Mode");
 	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
 

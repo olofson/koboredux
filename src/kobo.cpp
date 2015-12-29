@@ -232,8 +232,8 @@ class KOBO_main
 	static display_t	*dfps;
 
 	// Frame rate limiter
-	static float		max_fps_filter;
-	static int		max_fps_begin;
+	static float		maxfps_filter;
+	static int		maxfps_begin;
 
 	// Dashboard offset ("native" 640x360 pixels)
 	static int		xoffs;
@@ -301,8 +301,8 @@ int		KOBO_main::fps_lastresult = 0;
 float		*KOBO_main::fps_results = NULL;
 display_t	*KOBO_main::dfps = NULL;
 
-float		KOBO_main::max_fps_filter = 0.0f;
-int		KOBO_main::max_fps_begin = 0;
+float		KOBO_main::maxfps_filter = 0.0f;
+int		KOBO_main::maxfps_begin = 0;
 
 int		KOBO_main::xoffs = 0;
 int		KOBO_main::yoffs = 0;
@@ -1325,7 +1325,7 @@ static int progress_cb(const char *msg)
 
 int KOBO_main::load_sounds(prefs_t *p, int render_all)
 {
-	if(!p->use_sound)
+	if(!p->enable_sound)
 		return 0;
 	show_progress(p);
 	return sound.load(progress_cb, render_all);
@@ -1335,7 +1335,7 @@ int KOBO_main::load_sounds(prefs_t *p, int render_all)
 int KOBO_main::init_js(prefs_t *p)
 {
 	/* Activate Joystick sub-sys if we are using it */
-	if(p->use_joystick)
+	if(p->enable_joystick)
 	{
 		if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
 		{
@@ -1346,9 +1346,9 @@ int KOBO_main::init_js(prefs_t *p)
 		if(p->number_of_joysticks > 0)
 		{
 			SDL_JoystickEventState(SDL_ENABLE);
-			if(p->joystick_no >= p->number_of_joysticks)
-				p->joystick_no = 0;
-			joystick = SDL_JoystickOpen(p->joystick_no);
+			if(p->joystick_index >= p->number_of_joysticks)
+				p->joystick_index = 0;
+			joystick = SDL_JoystickOpen(p->joystick_index);
 			if(!joystick)
 			{
 				SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
@@ -1555,7 +1555,7 @@ void KOBO_main::close()
 
 int KOBO_main::restart_audio()
 {
-	if(!prefs->use_sound)
+	if(!prefs->enable_sound)
 	{
 		log_printf(ULOG, "--- Stopping audio...\n");
 		sound.close();
@@ -1783,7 +1783,7 @@ void kobo_gfxengine_t::pre_loop()
 {
 	sound.timestamp_reset();
 	sound.timestamp_bump(timestamp_delay() +
-			1000.0f / (prefs->max_fps > 60 ? 60 : prefs->max_fps));
+			1000.0f / (prefs->maxfps > 60 ? 60 : prefs->maxfps));
 }
 
 
@@ -2008,7 +2008,7 @@ void kobo_gfxengine_t::frame()
 					km.xoffs;
 			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
 					km.yoffs;
-			if(prefs->use_mouse)
+			if(prefs->enable_mouse)
 				gamecontrol.mouse_position(
 						mouse_x - WMAIN_X - WMAIN_W/2,
 						mouse_y - WMAIN_Y - WMAIN_H/2);
@@ -2019,7 +2019,7 @@ void kobo_gfxengine_t::frame()
 			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
 					km.yoffs;
 			gsm.pressbtn(BTN_FIRE);
-			if(prefs->use_mouse)
+			if(prefs->enable_mouse)
 			{
 #ifdef ENABLE_TOUCHSCREEN
 				if(ev.motion.x <= pointer_margin_width_min)
@@ -2089,7 +2089,7 @@ void kobo_gfxengine_t::frame()
 		  case SDL_MOUSEBUTTONUP:
 			mouse_x = (int)(ev.motion.x / gengine->xscale()) - km.xoffs;
 			mouse_y = (int)(ev.motion.y / gengine->yscale()) - km.yoffs;
-			if(prefs->use_mouse)
+			if(prefs->enable_mouse)
 			{
 #ifdef ENABLE_TOUCHSCREEN
 				// Resets all kinds of buttons that might have
@@ -2123,7 +2123,7 @@ void kobo_gfxengine_t::frame()
 			}
 			if(!mouse_left && !mouse_middle && !mouse_right)
 			{
-				if(prefs->use_mouse)
+				if(prefs->enable_mouse)
 					gamecontrol.releasebtn(BTN_FIRE,
 							GC_SRC_MOUSE);
 				gsm.releasebtn(BTN_FIRE);
@@ -2215,9 +2215,9 @@ void kobo_gfxengine_t::post_render()
 	++km.fps_count;
 
 	// Frame rate limiter
-	if(prefs->max_fps)
+	if(prefs->maxfps)
 	{
-		if(prefs->max_fps_strict)
+		if(prefs->maxfps_strict)
 		{
 			static double nextframe = -1000000.0f;
 			while(1)
@@ -2233,18 +2233,19 @@ void kobo_gfxengine_t::post_render()
 				else
 					break;
 			}
-			nextframe += 1000.0f / prefs->max_fps;
+			nextframe += 1000.0f / prefs->maxfps;
 		}
 		else
 		{
-			int rtime = nt - km.max_fps_begin;
-			km.max_fps_begin = nt;
-			km.max_fps_filter += (float)(rtime - km.max_fps_filter) * 0.3;
-			int delay = (int)(1000.0 / prefs->max_fps -
-					km.max_fps_filter + 0.5);
+			int rtime = nt - km.maxfps_begin;
+			km.maxfps_begin = nt;
+			km.maxfps_filter += (float)(rtime -
+					km.maxfps_filter) * 0.3;
+			int delay = (int)(1000.0 / prefs->maxfps -
+					km.maxfps_filter + 0.5);
 			if((delay > 0) && (delay < 1100))
 				SDL_Delay(delay);
-			km.max_fps_begin = (int)SDL_GetTicks();
+			km.maxfps_begin = (int)SDL_GetTicks();
 		}
 	}
 }

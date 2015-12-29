@@ -221,7 +221,7 @@ void KOBO_sound::prefschange()
 
 int KOBO_sound::open()
 {
-	if(!prefs->use_sound)
+	if(!prefs->enable_sound)
 	{
 		log_printf(WLOG, "Sound disabled!\n");
 		return 0;
@@ -342,7 +342,7 @@ void KOBO_sound::timestamp_bump(float ms)
 		a2_GetStateProperty(state, A2_PTSMARGINAVG, &avg);
 		a2_GetStateProperty(state, A2_PTSMARGINMAX, &max);
 		printf("%d\t%d\t%d/%d/%d\n",
-				(int)(buffer_latency + 0.5f), prefs->max_fps,
+				(int)(buffer_latency + 0.5f), prefs->maxfps,
 				(int)(a2_Timestamp2ms(state, min) + 0.5f),
 				(int)(a2_Timestamp2ms(state, avg) + 0.5f),
 				(int)(a2_Timestamp2ms(state, max) + 0.5f));
@@ -388,7 +388,7 @@ void KOBO_sound::update_music(bool newsong)
 		return;
 
 	// Stop any playing song, if ne wsong, or music is disabled in prefs
-	if(musichandle && (newsong || !prefs->use_music))
+	if(musichandle && (newsong || !prefs->enable_music))
 	{
 		a2_Send(state, musichandle, 1);
 		a2_Release(state, musichandle);
@@ -396,7 +396,7 @@ void KOBO_sound::update_music(bool newsong)
 	}
 
 	// If we're not supposed to play anything, we're done here!
-	if(!prefs->use_music || (current_song <= 0) || musichandle)
+	if(!prefs->enable_music || (current_song <= 0) || musichandle)
 		return;
 
 	// Don't start music if the group is muted...

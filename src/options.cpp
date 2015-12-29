@@ -41,7 +41,7 @@ void system_options_t::build()
 
 	space();
 	xoffs = 0.6;
-	list("Maximum Frame Rate", &prf->max_fps, OS_REBUILD);
+	list("Maximum Frame Rate", &prf->maxfps, OS_REBUILD);
 	{
 		char buf[10];
 		item("OFF", 0);
@@ -64,8 +64,8 @@ void system_options_t::build()
 			item(buf, i);
 		}
 	}
-	if(prf->max_fps)
-		yesno("Strictly Regulated", &prf->max_fps_strict, 0);
+	if(prf->maxfps)
+		yesno("Strictly Regulated", &prf->maxfps_strict, 0);
 
 	space();
 	xoffs = 0.6;
@@ -259,10 +259,11 @@ void audio_options_t::build()
 	small();
 	space();
 	xoffs = 0.57;
-	yesno("Enable Sound", &prf->use_sound, OS_RESTART_AUDIO | OS_REBUILD);
-	if(prf->use_sound)
+	yesno("Enable Sound", &prf->enable_sound,
+			OS_RESTART_AUDIO | OS_REBUILD);
+	if(prf->enable_sound)
 	{
-		yesno("Enable Music", &prf->use_music,
+		yesno("Enable Music", &prf->enable_music,
 				OS_UPDATE_AUDIO | OS_REBUILD);
 
 		//System
@@ -349,7 +350,7 @@ void audio_options_t::build()
 			item("OFF", 0);
 			perc_list(10, 90, 10);
 			perc_list(100, 200, 25);
-		if(prf->use_music)
+		if(prf->enable_music)
 		{
 			list("Title Music Volume", &prf->title_vol,
 					OS_UPDATE_AUDIO);
@@ -401,15 +402,16 @@ void control_options_t::build()
 	else
 	{
 		prf->number_of_joysticks = SDL_NumJoysticks();
-		yesno("Use Joystick", &prf->use_joystick,
+		yesno("Use Joystick", &prf->enable_joystick,
 				OS_RESTART_INPUT | OS_REBUILD);
-		if(prf->use_joystick)
+		if(prf->enable_joystick)
 		{
 			if(prf->number_of_joysticks)
 			{
-				list("Joystick Number", &prf->joystick_no,
+				list("Joystick Number", &prf->joystick_index,
 						OS_RESTART_INPUT);
-					enum_list(0, prf->number_of_joysticks - 1);
+					enum_list(0, prf->number_of_joysticks
+							- 1);
 			}
 			else
 				label("No Joysticks Found!");
@@ -417,8 +419,8 @@ void control_options_t::build()
 	}
 	space();
 
-	yesno("Use Mouse", &prf->use_mouse, OS_RESTART_INPUT | OS_REBUILD);
-	if(prf->use_mouse)
+	yesno("Use Mouse", &prf->enable_mouse, OS_RESTART_INPUT | OS_REBUILD);
+	if(prf->enable_mouse)
 	{
 		list("Mouse Control Mode", &prf->mousemode, OS_RESTART_INPUT);
 			item("Disabled", MMD_OFF);
