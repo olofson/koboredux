@@ -81,7 +81,7 @@ class cfg_switch_t : public cfg_key_t
 
 	cfg_switch_t(const char *_name, int &var, int def, bool _save);
 	int copy(cfg_key_t *from);
-	virtual int test(const char *arg);
+	int test(const char *arg);
 	int read(int argc, char *argv[]);
 	void write(FILE *f);
 	void set_default();

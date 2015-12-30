@@ -33,7 +33,7 @@ void prefs_t::init()
 	comment("--------------------------------------------");
 	comment(" Kobo Redux "KOBO_VERSION" Configuration File");
 	comment("--------------------------------------------");
-	comment(" Switches - [no]<switch>");
+	comment(" Switches - [no]<switch> or <switch> [<value>]");
 	comment(" Values - <key> [<value>|\"<string>\"]");
 	comment("--------------------------------------------");
 	comment("--- System options --------------------------");
@@ -43,9 +43,9 @@ void prefs_t::init()
 	yesno("quickstart", quickstart, 0); desc("Quick Startup");
 
 	comment("--- Input options --------------------------");
-	yesno("enable_joystick", enable_joystick, 0); desc("Enable Joystick");
+	yesno("joystick", joystick, 0); desc("Enable Joystick");
 	key("joystick_index", joystick_index, 0); desc("Joystick Number");
-	yesno("enable_mouse", enable_mouse, 0); desc("Enable Mouse");
+	yesno("mouse", mouse, 0); desc("Enable Mouse");
 	key("mousemode", mousemode, MMD_CROSSHAIR); desc("Mouse Control Mode");
 	yesno("broken_numdia", broken_numdia, 0);
 			desc("Broken NumPad Diagonals");
@@ -63,8 +63,8 @@ void prefs_t::init()
 	key("cannonloud", cannonloud, 100); desc("Player Cannons Loudness");
 
 	comment("--- Sound settings -------------------------");
-	yesno("enable_sound", enable_sound, 1); desc("Enable Sound");
-	yesno("enable_music", enable_music, 1); desc("Enable Music");
+	yesno("sound", sound, 1); desc("Enable Sound");
+	yesno("music", music, 1); desc("Enable Music");
 	key("audiodriver", audiodriver, ""); desc("Audio Driver");
 	key("samplerate", samplerate, 48000); desc("Sample Rate");
 	key("latency", latency, 20); desc("Sound Latency");

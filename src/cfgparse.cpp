@@ -91,6 +91,12 @@ int cfg_comment_t::copy(cfg_key_t *from)
 
 cfg_switch_t::cfg_switch_t(const char *_name, int &var, int def, bool _save)
 {
+	if(!strncmp("no", name, 2))
+	{
+		fprintf(stderr, "INTERNAL ERROR: Switch names starting with "
+				"'no' will not work properly!\n");
+		exit(1);
+	}
 	name = _name;
 	value = &var;
 	default_value = def;
@@ -112,9 +118,8 @@ int cfg_switch_t::test(const char *arg)
 {
 	if(arg[0] == '-' || arg[0] == '/')
 		++arg;
-	if(strncmp("no", name, 2))
-		if(!strncmp("no", arg, 2))
-			arg += 2;
+	if(!strncmp("no", arg, 2))
+		arg += 2;
 	return !strcmp(name, arg);
 }
 
@@ -122,20 +127,34 @@ int cfg_switch_t::test(const char *arg)
 int cfg_switch_t::read(int argc, char *argv[])
 {
 	char *arg = argv[0];
-	*value = 1;
 	if(arg[0] == '-' || arg[0] == '/')
 		++arg;
 	if(!strncmp("no", arg, 2))
+	{
 		*value = 0;
-	if(!strncmp("no", name, 2))
-		*value = !(*value);
-	return 1;
+		return 1;
+	}
+	if(argc < 2)
+	{
+		*value = 1;
+		return 1;
+	}
+	switch(argv[1][0])
+	{
+	  case '0':
+	  case '1':
+		*value = argv[1][0] - '0';
+		return 2;
+	  default:
+		*value = 1;
+		return 1;
+	}
 }
 
 
 void cfg_switch_t::write(FILE *f)
 {
-	fprintf(f, *value ? "%s\n" : "no%s\n", name);
+	fprintf(f, *value ? "%s\n" : "%s 0\n", name);
 }
 
 
@@ -1083,7 +1102,7 @@ const char *config_parser_t::get_default_s(int symbol)
 	  case CFG_BOOL:
 		{
 			cfg_switch_t *k = (cfg_switch_t *)table[symbol];
-			return k->default_value ? "On" : "Off";
+			return k->default_value ? "1" : "0";
 		}
 	  case CFG_INT:
 		{

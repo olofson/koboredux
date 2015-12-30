@@ -38,9 +38,9 @@ class prefs_t : public config_parser_t
 	int	quickstart;	//Skip jingle, loader noise effects etc
 
 	//Input options
-	int	enable_joystick;
+	int	joystick;
 	int	joystick_index;		//which joystick to use
-	int	enable_mouse;
+	int	mouse;
 	int	mousemode;
 	int	broken_numdia;
 	int	dia_emphasis;
@@ -57,8 +57,8 @@ class prefs_t : public config_parser_t
 
 	//Sound: System
 	cfg_string_t	audiodriver;	//Name/options for a2_NewDriver()
-	int	enable_sound;	//Enable sound
-	int	enable_music;	//Enable music
+	int	sound;		//Enable sound
+	int	music;		//Enable music
 	int	samplerate;
 	int	latency;	//Audio latency in ms
 	int	audiobuffer;	//Custom audio buffer size (sample frames)

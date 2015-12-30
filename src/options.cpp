@@ -259,11 +259,10 @@ void audio_options_t::build()
 	small();
 	space();
 	xoffs = 0.57;
-	yesno("Enable Sound", &prf->enable_sound,
-			OS_RESTART_AUDIO | OS_REBUILD);
-	if(prf->enable_sound)
+	yesno("Enable Sound", &prf->sound, OS_RESTART_AUDIO | OS_REBUILD);
+	if(prf->sound)
 	{
-		yesno("Enable Music", &prf->enable_music,
+		yesno("Enable Music", &prf->music,
 				OS_UPDATE_AUDIO | OS_REBUILD);
 
 		//System
@@ -350,7 +349,7 @@ void audio_options_t::build()
 			item("OFF", 0);
 			perc_list(10, 90, 10);
 			perc_list(100, 200, 25);
-		if(prf->enable_music)
+		if(prf->music)
 		{
 			list("Title Music Volume", &prf->title_vol,
 					OS_UPDATE_AUDIO);
@@ -402,9 +401,9 @@ void control_options_t::build()
 	else
 	{
 		prf->number_of_joysticks = SDL_NumJoysticks();
-		yesno("Use Joystick", &prf->enable_joystick,
+		yesno("Use Joystick", &prf->joystick,
 				OS_RESTART_INPUT | OS_REBUILD);
-		if(prf->enable_joystick)
+		if(prf->joystick)
 		{
 			if(prf->number_of_joysticks)
 			{
@@ -419,8 +418,8 @@ void control_options_t::build()
 	}
 	space();
 
-	yesno("Use Mouse", &prf->enable_mouse, OS_RESTART_INPUT | OS_REBUILD);
-	if(prf->enable_mouse)
+	yesno("Use Mouse", &prf->mouse, OS_RESTART_INPUT | OS_REBUILD);
+	if(prf->mouse)
 	{
 		list("Mouse Control Mode", &prf->mousemode, OS_RESTART_INPUT);
 			item("Disabled", MMD_OFF);

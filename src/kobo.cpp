@@ -1325,7 +1325,7 @@ static int progress_cb(const char *msg)
 
 int KOBO_main::load_sounds(prefs_t *p, int render_all)
 {
-	if(!p->enable_sound)
+	if(!p->sound)
 		return 0;
 	show_progress(p);
 	return sound.load(progress_cb, render_all);
@@ -1335,7 +1335,7 @@ int KOBO_main::load_sounds(prefs_t *p, int render_all)
 int KOBO_main::init_js(prefs_t *p)
 {
 	/* Activate Joystick sub-sys if we are using it */
-	if(p->enable_joystick)
+	if(p->joystick)
 	{
 		if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
 		{
@@ -1555,7 +1555,7 @@ void KOBO_main::close()
 
 int KOBO_main::restart_audio()
 {
-	if(!prefs->enable_sound)
+	if(!prefs->sound)
 	{
 		log_printf(ULOG, "--- Stopping audio...\n");
 		sound.close();
@@ -2008,7 +2008,7 @@ void kobo_gfxengine_t::frame()
 					km.xoffs;
 			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
 					km.yoffs;
-			if(prefs->enable_mouse)
+			if(prefs->mouse)
 				gamecontrol.mouse_position(
 						mouse_x - WMAIN_X - WMAIN_W/2,
 						mouse_y - WMAIN_Y - WMAIN_H/2);
@@ -2019,7 +2019,7 @@ void kobo_gfxengine_t::frame()
 			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
 					km.yoffs;
 			gsm.pressbtn(BTN_FIRE);
-			if(prefs->enable_mouse)
+			if(prefs->mouse)
 			{
 #ifdef ENABLE_TOUCHSCREEN
 				if(ev.motion.x <= pointer_margin_width_min)
@@ -2089,7 +2089,7 @@ void kobo_gfxengine_t::frame()
 		  case SDL_MOUSEBUTTONUP:
 			mouse_x = (int)(ev.motion.x / gengine->xscale()) - km.xoffs;
 			mouse_y = (int)(ev.motion.y / gengine->yscale()) - km.yoffs;
-			if(prefs->enable_mouse)
+			if(prefs->mouse)
 			{
 #ifdef ENABLE_TOUCHSCREEN
 				// Resets all kinds of buttons that might have
@@ -2123,7 +2123,7 @@ void kobo_gfxengine_t::frame()
 			}
 			if(!mouse_left && !mouse_middle && !mouse_right)
 			{
-				if(prefs->enable_mouse)
+				if(prefs->mouse)
 					gamecontrol.releasebtn(BTN_FIRE,
 							GC_SRC_MOUSE);
 				gsm.releasebtn(BTN_FIRE);

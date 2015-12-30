@@ -974,7 +974,7 @@ void st_new_player_t::press(gc_targets_t button)
 			break;
 
 		  case BTN_FIRE:
-			if(!prefs->enable_joystick)
+			if(!prefs->joystick)
 				break;
 		  case BTN_START:
 		  case BTN_SELECT:

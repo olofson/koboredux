@@ -221,7 +221,7 @@ void KOBO_sound::prefschange()
 
 int KOBO_sound::open()
 {
-	if(!prefs->enable_sound)
+	if(!prefs->sound)
 	{
 		log_printf(WLOG, "Sound disabled!\n");
 		return 0;
@@ -388,7 +388,7 @@ void KOBO_sound::update_music(bool newsong)
 		return;
 
 	// Stop any playing song, if ne wsong, or music is disabled in prefs
-	if(musichandle && (newsong || !prefs->enable_music))
+	if(musichandle && (newsong || !prefs->music))
 	{
 		a2_Send(state, musichandle, 1);
 		a2_Release(state, musichandle);
@@ -396,7 +396,7 @@ void KOBO_sound::update_music(bool newsong)
 	}
 
 	// If we're not supposed to play anything, we're done here!
-	if(!prefs->enable_music || (current_song <= 0) || musichandle)
+	if(!prefs->music || (current_song <= 0) || musichandle)
 		return;
 
 	// Don't start music if the group is muted...
