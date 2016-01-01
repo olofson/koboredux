@@ -4,7 +4,7 @@
 ----------------------------------------------------------------------
  * Copyright 2001-2003, 2006-2007, 2009 David Olofson
  * Copyright 2008 Robert Schuster
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -182,14 +182,7 @@ void gfxengine_t::vsync(int use)
 
 void gfxengine_t::period(float frameduration)
 {
-	if(frameduration > 0)
-	{
-		ticks_per_frame = frameduration;
-	}
-	else
-		log_printf(DLOG, "gfxengine: Time line reset.\n");
-	if(csengine)
-		cs_engine_advance(csengine, 0);
+	ticks_per_frame = frameduration;
 }
 
 void gfxengine_t::wrap(int x, int y)
@@ -936,9 +929,9 @@ void gfxengine_t::run()
 	show();
 	start_engine();
 	is_running = 1;
+	double lastframe = 0.0f;
 	double toframe = 0.0f;
 	_frame_delta_time = 1.0f;
-	cs_engine_advance(csengine, 0);
 	present();
 	pre_loop();
 	while(is_running)
@@ -956,9 +949,14 @@ void gfxengine_t::run()
 		else
 			_frame_delta_time = ticks_per_frame;
 		toframe += _frame_delta_time / ticks_per_frame;
-		pre_advance();
-		cs_engine_advance(csengine, toframe);
+		int intf = (int)toframe - (int)lastframe;
+		float fracf = fmod(toframe, 1.0f);
+		pre_advance(fracf);
+		for(int i = 0; i < intf; ++i)
+			cs_engine_advance(csengine);
+		cs_engine_tween(csengine, fracf);
 		present();
+		lastframe = toframe;
 	}
 	post_loop();
 	stop_engine();
@@ -1161,7 +1159,7 @@ void gfxengine_t::pre_loop()
 }
 
 
-void gfxengine_t::pre_advance()
+void gfxengine_t::pre_advance(float fractional_frame)
 {
 }
 

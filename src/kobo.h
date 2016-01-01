@@ -5,7 +5,7 @@
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2005, 2007, 2009 David Olofson
  * Copyright 2008 Robert Schuster
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -57,7 +57,7 @@ class kobo_gfxengine_t : public gfxengine_t
 	int pointer_margin_height_max;
 #endif
 	void pre_loop();
-	void pre_advance();
+	void pre_advance(float fractional_frame);
 	void frame();
 	void pre_render();
 	void post_render();

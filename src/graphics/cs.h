@@ -4,7 +4,7 @@
 	cs.h - Simplistic Control System
 ----------------------------------------------------------------------
  * Copyright 2001, 2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -437,9 +437,6 @@ typedef struct cs_engine_t
 	/* Motion filtering */
 	cs_filtermode_t	filter;
 
-	/* Current time in frames */
-	double		time;
-
 	/*
 	 * Callback that's called once per Control System
 	 * frame from within cs_engine_advance().
@@ -478,7 +475,8 @@ void cs_engine_set_wrap(cs_engine_t *e, int x, int y);
 void cs_engine_delete(cs_engine_t *e);
 
 void cs_engine_reset(cs_engine_t *e);
-void cs_engine_advance(cs_engine_t *e, double to_frame); /* 0 == reset timer*/
+void cs_engine_advance(cs_engine_t *e);
+void cs_engine_tween(cs_engine_t *e, float fractional_frame);
 void cs_engine_render(cs_engine_t *e);
 
 cs_obj_t *cs_engine_get_obj(cs_engine_t *e);

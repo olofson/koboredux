@@ -4,7 +4,7 @@
 ----------------------------------------------------------------------
  * Copyright 2001-2003, 2007, 2009 David Olofson
  * Copyright 2008 Robert Schuster
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -80,7 +80,6 @@ class gfxengine_t
 
 	void interpolation(int inter);
 
-	// 0 to reset internal timer
 	void period(float frameduration);
 	float period()	{	return ticks_per_frame; }
 
@@ -156,7 +155,7 @@ class gfxengine_t
 	//	post_loop() is called when the engine leaves the main loop.
 	//
 	virtual void pre_loop();
-	virtual void pre_advance();
+	virtual void pre_advance(float fractional_frame);
 	virtual void frame();
 	virtual void pre_render();
 	virtual void post_render();

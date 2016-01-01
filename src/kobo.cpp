@@ -1793,12 +1793,12 @@ void kobo_gfxengine_t::post_loop()
 }
 
 
-void kobo_gfxengine_t::pre_advance()
+void kobo_gfxengine_t::pre_advance(float fractional_frame)
 {
 	// We need to adjust for the logic time elapsed since the last logic
 	// frame (because logic time is decoupled from rendering frame rate),
 	// and for the desired "buffer" timestamp delay.
-	float ft = fmod(csengine->time, 1.0f) * gengine->period();
+	float ft = fractional_frame * gengine->period();
 	sound.timestamp_nudge(ft - timestamp_delay());
 }
 

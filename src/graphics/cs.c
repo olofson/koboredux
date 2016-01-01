@@ -4,7 +4,7 @@
 	cs.c - Simplistic Control System
 ----------------------------------------------------------------------
  * Copyright 2001, 2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -551,7 +551,6 @@ void cs_engine_reset(cs_engine_t *e)
 	for(i = 0; i < CS_LAYERS; ++i)
 		while(e->objects[i])
 			cs_obj_free(e->objects[i]);
-	e->time = 0.0;
 }
 
 
@@ -723,24 +722,18 @@ static void __wrap_all(cs_engine_t *e)
 }
 
 
-void cs_engine_advance(cs_engine_t *e, double to_frame)
+void cs_engine_advance(cs_engine_t *e)
 {
-	if(to_frame > 0)
-	{
-		int frames = floor(to_frame) - floor(e->time);
-		if(frames > 0)
-		{
-			while(frames--)
-			{
-				__run_all(e);
-				e->on_frame(e);
-			}
-		}
-	}
-	e->time = to_frame;
+	__run_all(e);
+	e->on_frame(e);
+}
+
+
+void cs_engine_tween(cs_engine_t *e, float fractional_frame)
+{
 	if(e->wx || e->wy)
 		__wrap_all(e);
-	__update_points(e, to_frame - floor(to_frame));
+	__update_points(e, fractional_frame);
 }
 
 
