@@ -2,15 +2,15 @@ def title	"KRSFX"
 def version	"0.7.0"
 def description	"Kobo Redux sound effects"
 def author	"David Olofson"
-def copyright	"Copyright 2015 David Olofson"
+def copyright	"Copyright 2016 David Olofson"
 def license	"CC BY-NC-ND 3.0"
 def a2sversion	"1.9.1"
 
-/*--------------------------------------------
+/*----------------------------------------------
  Based on the Kobo II Sound Effects
  Copyright 2011-2013 David Olofson
- Copyright 2015 David Olofson (Kobo Redux)
---------------------------------------------*/
+ Copyright 2015-2016 David Olofson (Kobo Redux)
+----------------------------------------------*/
 
 .Sweep(Vel Pitch Wave Start Dur Decay)
 {
@@ -212,22 +212,17 @@ FirePlasma(P V=1 PanX)
 	pan PanX
 	+tr P
 
-.retrig	!firing 1
+.retrig
+	// Fire!
+	a (V * .1); set a; w noise; p 5; d 10
+	a (V * .5); set a; w triangle; p 1.5
+	6 {	d 5; -p .5; +p (rand .1); -a .025 }
+	w saw; p (2 + rand .2); a .005; set a
+	+a (V * .005)
+	+p .9; d 10
+	-p .85; d 10
 
-	// Firing loop
-	while firing {
-		a (V * .1); set a; w noise; p 5; d 10
-		a (V * .5); set a; w triangle; p 1.5
-		6 {	d 5; -p .5; +p (rand .1); -a .025 }
-		w saw; p (2 + rand .2); a .005; set a
-		1 {
-			+a (V * .005)
-			+p .9; d 10
-			-p .85; d 10
-		}
-	}
-
-	// Full recharge
+	// Recharge (aborted if retrigged)
 	9 {
 		+a (V * .005)
 		+p .9; d 10
@@ -240,14 +235,8 @@ FirePlasma(P V=1 PanX)
 	}
 	a 0; d 10
 
-	1() {
-		firing 0
-	}
-
 	2() {
-		ifz firing {
-			force retrig
-		}
+		force retrig
 	}
 }
 

@@ -3,7 +3,7 @@
    Kobo Deluxe - Wrapper for Sound Control
 ------------------------------------------------------------
  * Copyright 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -37,7 +37,6 @@ int KOBO_sound::wrap_y = 0;
 int KOBO_sound::scale = 65536 / 1000;
 int KOBO_sound::panscale = 65536 / 700;
 unsigned KOBO_sound::rumble = 0;
-bool KOBO_sound::firing = false;
 
 A2_state *KOBO_sound::state = NULL;
 A2_handle KOBO_sound::rootvoice = 0;
@@ -302,7 +301,6 @@ void KOBO_sound::close()
 	noisehandle = 0;
 	musichandle = 0;
 	gunhandle = 0;
-	firing = false;
 	buffer_latency = 0.0f;
 	memset(modules, 0, A2SFILE__COUNT * sizeof(A2_handle));
 	memset(sounds, 0, sizeof(sounds));
@@ -569,15 +567,14 @@ void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
 
 void KOBO_sound::g_player_fire(bool on)
 {
-#if 1
-	if(on == firing)
-		return;
-	firing = on;
 	if(!state)
 		return;
 	if(gunhandle)
-		a2_Send(state, gunhandle, firing ? 2 : 1);
-	else
+	{
+		if(on)
+			a2_Send(state, gunhandle, 2);
+	}
+	else if(on)
 	{
 		if(!checksound(SOUND_SHOT, "KOBO_sound::g_player_fire()"))
 			return;
@@ -591,14 +588,6 @@ void KOBO_sound::g_player_fire(bool on)
 			gunhandle = 0;
 		}
 	}
-#else
-	if(!on)
-		return;
-	if(!checksound(SOUND_SHOT, "KOBO_sound::g_player_fire()"))
-		return;
-	a2_Play(state, sfx_g, sounds[SOUND_SHOT], 0.0f,
-			(prefs->cannonloud << 14) / 6553600.0f);
-#endif
 }
 
 
