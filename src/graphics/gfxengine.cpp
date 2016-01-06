@@ -929,13 +929,15 @@ void gfxengine_t::run()
 	show();
 	start_engine();
 	is_running = 1;
-	double lastframe = 0.0f;
 	double toframe = 0.0f;
 	_frame_delta_time = 1.0f;
 	present();
 	pre_loop();
 	while(is_running)
 	{
+		// Calculate how much time has elapsed since the last frame
+		// (_frame_delta_time), with some filtering and safety limits
+		// for glitches and extreme cases.
 		int t = (int)SDL_GetTicks();
 		int dt = t - last_tick;
 		last_tick = t;
@@ -948,15 +950,29 @@ void gfxengine_t::run()
 					_timefilter;
 		else
 			_frame_delta_time = ticks_per_frame;
-		toframe += _frame_delta_time / ticks_per_frame;
-		int intf = (int)toframe - (int)lastframe;
-		float fracf = fmod(toframe, 1.0f);
-		pre_advance(fracf);
-		for(int i = 0; i < intf; ++i)
+
+		pre_advance(fmod(toframe, 1.0f));
+
+		// Advance game logic to match the calculated real time - but
+		// do it one frame at a time, as special effects may vary the
+		// logic frame rate dynamically!
+		double fdt = _frame_delta_time;
+		while(1)
+		{
+			double tf = toframe + fdt / ticks_per_frame;
+			if(floor(toframe) >= floor(tf))
+			{
+				toframe = tf;
+				break;
+			}
+			toframe += 1.0f;
+			fdt -= ticks_per_frame;
 			cs_engine_advance(csengine);
-		cs_engine_tween(csengine, fracf);
+		}
+
+		// Update rendering coordinates (tweening) and render!
+		cs_engine_tween(csengine, fmod(toframe, 1.0f));
 		present();
-		lastframe = toframe;
 	}
 	post_loop();
 	stop_engine();
