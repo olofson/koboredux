@@ -181,12 +181,12 @@ void _myship::handle_controls()
 	if(!tvx)
 	{
 		// Kill remainder creep speed caused by truncation
-		if((vx > -4) && (vx < 4))
+		if((vx > -8) && (vx < 8))
 			ax = -vx;
 	}
 	if(!tvy)
 	{
-		if((vy > -4) && (vy < 4))
+		if((vy > -8) && (vy < 8))
 			ay = -vy;
 	}
 #endif
