@@ -48,7 +48,6 @@
 	KOBO_DEFS(LAUNCH_RING,	"")				\
 	KOBO_DEFS(LAUNCH_BOMB,	"Launch")			\
 	KOBO_DEFS(DAMAGE,	"Impact")			\
-	KOBO_DEFS(DAMAGE_CORE,	"DamageCore")			\
 	KOBO_DEFS(DAMAGE_M1,	"Impact")			\
 	KOBO_DEFS(DAMAGE_M2,	"Impact")			\
 	KOBO_DEFS(DAMAGE_M3,	"Impact")			\
@@ -70,6 +69,7 @@
 	KOBO_DEFS(METALLIC,	"Klank")			\
 	KOBO_DEFS(BOMB_DETO,	"Bomb")				\
 	KOBO_DEFS(ENEMYM,	"Teleport")			\
+	KOBO_DEFS(CORE,		"Reactor")			\
 	KOBO_DEFS(UI_OPEN,	"UIOpen")			\
 	KOBO_DEFS(UI_OK,	"UIOK")				\
 	KOBO_DEFS(UI_MOVE,	"UIMove")			\
@@ -141,6 +141,9 @@ class KOBO_sound
 			return f;
 	}
 
+	// Positional audio
+	static bool eval_pos(int x, int y, float *vol, float *pan);
+
   public:
 	KOBO_sound();
 	~KOBO_sound();
@@ -176,12 +179,6 @@ class KOBO_sound
 	static void ui_play(unsigned wid, int vol = 65536, int pitch = 60<<16,
 			int pan = 0);
 
-	// Play a sound at a specific location on the map
-	static void g_play(unsigned wid, int x, int y);
-
-	// Play a sound right where the listener is
-	static void g_play0(unsigned wid, int vol = 65536, int pitch = 60<<16);
-
 	/*--------------------------------------------------
 		In-game sound
 	--------------------------------------------------*/
@@ -198,10 +195,31 @@ class KOBO_sound
 	// the audible range.
 	static void g_scale(int maxrange, int pan_maxrange);
 
+	// Play a sound at a specific location on the map
+	static void g_play(unsigned wid, int x, int y);
+
+	// Start a sound at a specific location on the map. Returns handle.
+	static int g_start(unsigned wid, int x, int y);
+
+	// Update position of sound 'h', previously started with g_start().
+	static void g_move(int h, int x, int y);
+
+	// Change fx control 'c' of sound 'h' to 'v'.
+	static void g_control(int h, int c, float v);
+
+	// Stop sound 'h', previously started with g_start().
+	static void g_stop(int h);
+
+	// Play a sound right where the listener is
+	static void g_play0(unsigned wid, int vol = 65536, int pitch = 60<<16);
+
 	// Various sound effects
 	static void g_player_fire(bool on);
 	static void g_player_damage(float level = 1.0f);
 	static void g_player_explo_start();
+
+	// Quickly fade out and kill all in-game sound effects
+	static void g_kill_all();
 
 	/*--------------------------------------------------
 		UI sound effects

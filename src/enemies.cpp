@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001, 2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -34,6 +34,7 @@ int _enemies::e1_interval;
 int _enemies::e2_interval;
 int _enemies::explocount = 0;
 int _enemies::is_intro = 0;
+
 
 _enemy::_enemy()
 {
@@ -76,7 +77,6 @@ void _enemy::state(_state_t s)
 }
 
 
-
 void _enemies::off()
 {
 	_enemy *enemyp;
@@ -94,6 +94,7 @@ int _enemies::init()
 	ekind_to_generate_2 = NULL;
 	e1_interval = 1;
 	e2_interval = 1;
+	is_intro = 0;
 	return 0;
 }
 
@@ -113,7 +114,6 @@ void _enemies::move()
 void _enemies::move_intro()
 {
 	_enemy *enemyp;
-	is_intro = 1;
 	/* realize reserved enemies */
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 	{
@@ -122,7 +122,6 @@ void _enemies::move_intro()
 	}
 	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
 		enemyp->move_intro();
-	is_intro = 0;
 }
 
 void _enemies::put()

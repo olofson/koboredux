@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -95,13 +95,14 @@ enum _state_t
 
 class _enemy
 {
-	cs_obj_t	*object;	/* For the gfxengine connection */
+	cs_obj_t	*object;	// For the gfxengine connection
 	_state_t	_state;
 	const enemy_kind *ek;
 	int		x, y;
 	int		h, v;
 	int		di;
 	int		a, b;
+	int		soundhandle;	// Continuous positional sound fx
 	int		count;
 	int		health;
 	int		damage;
@@ -295,6 +296,7 @@ inline int _enemy::make(const enemy_kind *k, int px, int py,
 	hitsize = ek->hitsize;
 	bank = ek->bank;
 	frame = ek->frame;
+	soundhandle = 0;
 	(this->*(ek->make)) ();
 	return 0;
 }
@@ -316,6 +318,8 @@ inline void _enemy::hit(int dmg)
 	{
 		// Damaged but not destroyed!
 		playsound(ek->impactsound);
+		if(soundhandle)
+			sound.g_control(soundhandle, 2, dmg * 0.01f);
 		return;
 	}
 
@@ -368,8 +372,17 @@ inline int _enemy::erase_cannon(int px, int py)
 
 inline void _enemy::move()
 {
+	if(_state == notuse)
+		return;
+
+	// Need to update this for stationary objects as well, as the listener
+	// is (usually) moving around at all times!
+	if(soundhandle > 0)
+		sound.g_move(soundhandle, CS2PIXEL(x), CS2PIXEL(y));
+
 	if(_state != moving)
 		return;
+
 	x += h;
 	y += v;
 	x &= PIXEL2CS(WORLD_SIZEX) - 1;

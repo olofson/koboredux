@@ -1061,31 +1061,134 @@ Rocket(P V=1 PanX)
 	}
 }
 
-Reactor(P V=1 PanX)
+.RenderReactorTurbine()
+{
+	def Chorus 50
+	def Spread .03
+	!detune (4 - (Spread / 2))
+	Chorus {
+		0:r1 detune
+		+detune (Spread / Chorus)
+	}
+}
+
+wave ReactorTurbineWave
+{
+	wavetype MIPWAVE; samplerate 96000
+	duration .5; looped; normalize; xfade
+	RenderReactorTurbine
+}
+
+.h1(P V=1)
 {
 	struct { wtosc }
-	+P 40f; w sine; !per (p2d P * .5)
-	1:r1 (P + 1.35) (V * .1)
-	2:r1 (P + 2) (V * .07)
-	!amp V
-.restart
-	wg (amp - .001) {
-		a amp;	p (P + 1.5);	d per
-		p (P + rand .1 - 2.15);	d per
-		+amp (V - amp * .5)
+	w square; p P; a V; setall
+	sleep
+}
+
+.RenderReactorHum()
+{
+	def Chorus 10
+	def Spread .7
+	!detune (0 - (Spread / 2))
+	Chorus {
+		0:h1 detune
+		+detune (Spread / Chorus)
 	}
-	*<1
-	a 0; d 10
-	1(NV) {
-		V NV
-		if V {
-			ifle (amp - .002) {
-				amp .002
-			}
-			wake restart
+}
+
+wave ReactorHumWave
+{
+	wavetype MIPWAVE; samplerate 48000
+	duration .5; looped; normalize; xfade
+	RenderReactorHum
+}
+
+Reactor(P V=1 PanX)
+{
+	struct {
+		wtosc	o1
+		wtosc	o2
+		wtosc	o3
+		panmix	pm
+	}
+	pm.vol V; pm.pan PanX
+	+P 40f
+	!p1 (P + rand .5)
+	!p2 (P - .7 + rand .5)
+	!p3 (P + .5 + rand .5)
+	o1.p p1; o1.a .5; o1.w ReactorHumWave
+	o2.p p2; o2.a .3; o2.w ReactorTurbineWave
+	o3.p p3; o3.a .2; o3.w ReactorTurbineWave
+	!pp2 p2
+	!pp3 p3
+	!damage 0
+	!fp1 p1
+	!fp2 pp2
+	!fp3 pp3
+	for {
+		fp1 (p1 + .05)
+		if (rand 1 > .95) {
+			pp2 (p2 + rand .3)
 		}
-		1<1 (NV * .1)
-		2<1 (NV * .07)
+		if (rand 1 > .95) {
+			pp3 (p3 + rand .3)
+		}
+		20 {
+			-fp1 .01
+			+fp2 (pp2 - fp2 * .002)
+			+fp3 (pp3 - fp3 * .002)
+			o1.p (fp1 + (damage * 2))
+			o2.p (fp2 - (damage / 2))
+			o3.p (fp3 - (damage / 2))
+			!d22 (damage * damage * 2)
+			o1.a (.5 + d22)
+			o2.a (.3 + d22)
+			o3.a (.2 + d22)
+			*damage .97
+			d 10
+		}
+	}
+
+.stop	Grenade 0 pm.vol pm.pan
+	o1.p (fp1 + 2)
+	o1.a (.5 + 1)
+	o2.a (.3 + 1)
+	o3.a (.2 + 1)
+	200 {
+		-o1.p .02
+		-o2.p .007
+		-o3.p .005
+		-o1.a ((.5 + 1) / 300)
+		-o2.a ((.3 + 1) / 300)
+		-o3.a ((.2 + 1) / 300)
+		d 10
+	}
+	100 {
+		-o1.p .02
+		-o2.p .007
+		-o3.p .005
+		*pm.vol .95
+		d 10
+	}
+	pm.vol 0; d 10
+
+	// Stop
+	1() {
+		force stop
+	}
+
+	// Damage
+	2(Dmg) {
+		+damage Dmg
+		if (damage > 1) {
+			damage 1
+		}
+	}
+
+	// Positional update
+	3(pV pX) {
+		pm.vol pV; pm.pan pX
 	}
 }
 

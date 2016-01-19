@@ -2,7 +2,28 @@
 TODO:
 -------------------------------------------------------------------------------
 
-* Player ship never reaches 0 velocity!!!
+* Why are we using world pixels in the sound API, and not 24:8 coordinates?
+
+* cfg-all builds shared Win32 only, and won't work if MXE is installed without
+  that! Detect? Try both?
+
+* Variable logic rates seem to work now, but audio message delay is bumped up
+  hundreds of ms whenever the slow motion resume is activated!
+	* Order of bump/advance doesn't seem to matter.
+	* Bump and advance deltas always match.
+	* ???
+
+* The whole UI is affected by the game logic frame rate - even when the game is
+  paused! They should be completely unrelated.
+	* Split kobo_gfxengine_t::frame() non-game stuff out into pre_render() or a
+	  new function.
+	* Non-game sfx need to use a "channel" of their own, with "ASAP"
+	  timestamping. (Hack this using the new timestamping API, until we have
+	  a proper API for that.)
+
+* Maybe we should have a fixed target delay for sound effects anyway, so we
+  don't have sounds playing before animations when running on lowlatency JACK
+  setups and the like? 'tsdelay' would be the minimum allowed delay.
 
 ./kobord -audiodriver sdl -maxfps 0 -audiobuffer 8192
 ./kobord -audiodriver sdl -maxfps 0 -audiobuffer 1024

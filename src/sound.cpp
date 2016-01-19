@@ -278,7 +278,7 @@ int KOBO_sound::open()
 		log_printf(ELOG, "Couldn't find root voice!\n");
 
 	g_wrap(WORLD_SIZEX, WORLD_SIZEY);
-	g_scale(VIEWLIMIT * 3 / 2, VIEWLIMIT);
+	g_scale(VIEWLIMIT, VIEWLIMIT);
 	return 0;
 }
 
@@ -329,6 +329,7 @@ void KOBO_sound::timestamp_nudge(float ms)
 
 void KOBO_sound::timestamp_bump(float ms)
 {
+//printf("bump %f\n", ms);
 	if(!state)
 		return;
 	int min = 0;
@@ -506,13 +507,8 @@ void KOBO_sound::g_scale(int maxrange, int pan_maxrange)
 	panscale = 65536 / pan_maxrange;
 }
 
-void KOBO_sound::g_play(unsigned wid, int x, int y)
+bool KOBO_sound::eval_pos(int x, int y, float *vol, float *pan)
 {
-	if(!state)
-		return;
-	if(!checksound(wid, "KOBO_sound::g_play()"))
-		return;
-
 	// Calculate volume
 	x -= listener_x;
 	y -= listener_y;
@@ -537,20 +533,77 @@ void KOBO_sound::g_play(unsigned wid, int x, int y)
 	int vx = abs(x * scale);
 	int vy = abs(y * scale);
 	if((vx | vy) & 0xffff0000)
-		return;
+	{
+		*vol = *pan = 0.0f;
+		return false;
+	}
+
 	vx = (65536 - vx) >> 1;
 	vy = (65536 - vy) >> 1;
-	int volume = vx * vy >> 14;
-	volume = (volume>>1) * (volume>>1) >> 14;
+	int v = vx * vy >> 14;
+	v = (v >> 1) * (v >> 1) >> 14;
 
-	int pan = x * panscale;
-	if(pan < -65536)
-		pan = -65536;
-	else if(pan > 65536)
-		pan = 65536;
+	int p = x * panscale;
+	if(p < -65536)
+		p = -65536;
+	else if(p > 65536)
+		p = 65536;
 
-	a2_Play(state, sfx_g, sounds[wid], 0.0f, volume / 65536.0f,
-			pan / 65536.0f);
+	*vol = v / 65536.0f;
+	*pan = p / 65536.0f;
+	return true;
+}
+
+
+void KOBO_sound::g_play(unsigned wid, int x, int y)
+{
+	if(!state)
+		return;
+	if(!checksound(wid, "KOBO_sound::g_play()"))
+		return;
+
+	float vol, pan;
+	if(!eval_pos(x, y, &vol, &pan))
+		return;	// We don't start "short" sounds that are out of range!
+
+	a2_Play(state, sfx_g, sounds[wid], 0.0f, vol, pan);
+}
+
+
+int KOBO_sound::g_start(unsigned wid, int x, int y)
+{
+	if(!state)
+		return -1;
+	if(!checksound(wid, "KOBO_sound::g_start()"))
+		return -1;
+
+	float vol, pan;
+	eval_pos(x, y, &vol, &pan);
+	return a2_Start(state, sfx_g, sounds[wid], 0.0f, vol, pan);
+}
+
+void KOBO_sound::g_move(int h, int x, int y)
+{
+	if(!state || h <= 0)
+		return;
+	float vol, pan;
+	eval_pos(x, y, &vol, &pan);
+	a2_Send(state, h, 3, vol, pan);
+}
+
+void KOBO_sound::g_control(int h, int c, float v)
+{
+	if(!state || h <= 0)
+		return;
+	a2_Send(state, h, c, v);
+}
+
+void KOBO_sound::g_stop(int h)
+{
+	if(!state || h <= 0)
+		return;
+	a2_Send(state, h, 1);
+	a2_Release(state, h);
 }
 
 
@@ -608,6 +661,26 @@ void KOBO_sound::g_player_explo_start()
 	if(checksound(SOUND_EXPLO_PLAYER,
 			"KOBO_sound::g_player_explo_start()"))
 		a2_Play(state, sfx_g, sounds[SOUND_EXPLO_PLAYER]);
+}
+
+
+void KOBO_sound::g_kill_all()
+{
+	if(!state)
+		return;
+
+	// Fade out...
+	a2_Send(state, sfx_g, 2, 0);
+
+	A2_timestamp t = a2_TimestampBump(state, a2_ms2Timestamp(state, 150));
+
+	// Kill all sounds, and restore volume
+	a2_KillSub(state, sfx_g);
+	a2_Send(state, sfx_g, 2, pref2vol(prefs->sfx_vol));
+
+	a2_TimestampSet(state, t);
+
+	gunhandle = 0;	// This one gets killed too, so we'll need a new one!
 }
 
 

@@ -248,6 +248,7 @@ void _manage::init_resources_title()
 	gengine->period(30);
 	gamerand.init();
 	enemies.init();
+	enemies.is_intro = 1;
 	myship.init();
 	myship.off();
 	screen.prepare();
@@ -407,7 +408,6 @@ void _manage::run_intro()
 	intro_x &= WORLD_SIZEX - 1;
 	intro_y &= WORLD_SIZEY - 1;
 	float w = intro_y * M_PI * 2.0f * 3.0f / WORLD_SIZEX;
-	sound.g_position(intro_x + WMAIN_W / 2, intro_y + WMAIN_H / 2);
 	myship.set_position(intro_x + WMAIN_W / 2 +
 			(int)(WMAIN_W * 0.3f * sin(w)),
 			intro_y + WMAIN_H / 2 +
@@ -528,6 +528,7 @@ void _manage::run()
 void _manage::abort_game()
 {
 	gamestate = GS_NONE;
+	sound.g_kill_all();
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_TITLE);
 }

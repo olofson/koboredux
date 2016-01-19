@@ -2133,6 +2133,10 @@ void kobo_gfxengine_t::frame()
 	}
 	gamecontrol.process();
 
+	// Update positional audio listener position
+	sound.g_position(CS2PIXEL(gengine->xoffs(LAYER_BASES)) + WMAIN_W / 2,
+			CS2PIXEL(gengine->yoffs(LAYER_BASES)) + WMAIN_H / 2);
+
 	// Run the game engine for one frame
 	manage.run();
 

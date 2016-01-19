@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -892,6 +892,9 @@ void _enemy::make_core()
 	splash_damage = 50;
 	b = enemies.eint2() - 1;
 	a = gamerand.get() & b;
+	if(!enemies.is_intro)
+		soundhandle = sound.g_start(SOUND_CORE,
+				CS2PIXEL(x), CS2PIXEL(y));
 }
 
 void _enemy::move_core()
@@ -904,6 +907,7 @@ void _enemy::move_core()
 
 void _enemy::kill_core()
 {
+	sound.g_stop(soundhandle);
 	enemies.make(&pipeout, x, y, 0, 0, 3);
 	enemies.make(&pipeout, x, y, 0, 0, 7);
 	enemies.make(&pipeout, x, y, 0, 0, 1);
@@ -923,8 +927,8 @@ const enemy_kind core = {
 	LAYER_BASES,
 	0,
 	SOUND_NONE,
-	SOUND_DAMAGE_CORE,
-	SOUND_EXPLO_CORE
+	SOUND_NONE,
+	SOUND_NONE
 };
 
 

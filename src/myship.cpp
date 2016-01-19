@@ -669,7 +669,6 @@ void _myship::apply_position()
 		object->point.v.x = x;
 		object->point.v.y = y;
 	}
-	sound.g_position(CS2PIXEL(x), CS2PIXEL(y));
 }
 
 
