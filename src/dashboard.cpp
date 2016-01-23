@@ -80,8 +80,6 @@ dashboard_window_t::dashboard_window_t(gfxengine_t *e) : window_t(e)
 	_percent = 0.0f;
 	_mode = DASHBOARD_BLACK;
 	_fade = 1.0f;
-	progress_index = 0;
-	progress_table = NULL;
 }
 
 
@@ -167,61 +165,28 @@ void dashboard_window_t::doing(const char *msg)
 }
 
 
-void dashboard_window_t::progress_init(float *progtab)
+void dashboard_window_t::show_progress()
 {
-	if(!progtab)
-	{
-		progress_table = (float *)malloc(MAX_PROGRESS * sizeof(float));
-		progress_bench = (progress_table != NULL);
-	}
+	fade(1.0f);
+	if(s_get_bank(gfxengine->get_gfx(), B_OAPLANET))
+		mode(DASHBOARD_LOADING);
 	else
-	{
-		progress_table = progtab;
-		progress_bench = 0;
-	}
-	progress_index = 0;
+		mode(DASHBOARD_BLACK);
+	doing("");
 }
 
 
-void dashboard_window_t::progress()
+void dashboard_window_t::progress(float done)
 {
-	if(progress_table)
-	{
-		if(progress_bench)
-		{
-			progress_table[progress_index++] = (float)SDL_GetTicks();
-			_percent = 0.0f;
-		}
-		else
-			_percent = progress_table[progress_index++];
-	}
-	else
-		_percent = 0.0f;
+	_percent = done * 100.0f;
 	gengine->present();
 }
 
 
 void dashboard_window_t::progress_done()
 {
-	if(progress_bench)
-	{
-		int i;
-		int total = SDL_GetTicks() - (int)progress_table[0];
-		printf("Progress percentages:\n");
-		printf("---------------------\n");
-		for(i = 0; i < progress_index; ++i)
-			printf("\t%f,\n", (progress_table[i] -
-					progress_table[0]) * 100.0f / total);
-		printf("---------------------\n");
-		free(progress_table);
-		progress_bench = 0;
-	}
-	else
-	{
-		_percent = 100.0f;
-		gengine->present();
-	}
-	progress_table = NULL;
+	_percent = 100.0f;
+	gengine->present();
 }
 
 

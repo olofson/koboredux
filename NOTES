@@ -2,16 +2,6 @@
 TODO:
 -------------------------------------------------------------------------------
 
-* Graphics theme file parser!
-	* Load specified theme file.
-	* External file paths are relative to the location of the theme file!
-
-* Palette file should probably be specified by the theme files.
-
-* Add config option for specifying graphics theme.
-
-
-
 * Why are we using world pixels in the sound API, and not 24:8 coordinates?
 
 * cfg-all builds shared Win32 only, and won't work if MXE is installed without

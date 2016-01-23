@@ -85,6 +85,8 @@ class prefs_t : public config_parser_t
 	int	vsync;		//Vertical (retrace) sync
 
 	//Graphics settings
+	cfg_string_t	gfxtheme;	//Path to graphics theme file
+	int	force_fallback_gfxtheme;	// Force load fallback theme
 	int	scalemode;	//Scaling filter mode
 	int	alpha;		//Alpha blending
 	int	brightness;	//Graphics brightness

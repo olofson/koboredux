@@ -56,10 +56,6 @@ class dashboard_window_t : public window_t
 	float			_percent;
 	dashboard_modes_t	_mode;
 	float			_fade;
-	int			progress_index;
-	float			*progress_table;
-	Uint32			progress_time;
-	int			progress_bench;
 	KOBO_Starfield		jingelstars;
 	void render_progress();
   public:
@@ -76,8 +72,9 @@ class dashboard_window_t : public window_t
 			_fade = f;
 	}
 	void doing(const char *msg);
+	void show_progress();
 	void progress_init(float *progtab);
-	void progress();
+	void progress(float done);
 	void progress_done();
 	void refresh(SDL_Rect *r);
 };

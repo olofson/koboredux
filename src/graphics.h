@@ -152,6 +152,131 @@ enum KOBO_gfxbanks
 };
 #undef	KOBO_DEFS
 
-extern const char*kobo_gfxbanknames[];
+extern const char *kobo_gfxbanknames[];
+
+
+typedef enum
+{
+	// Clamping/wrapping options for filters
+	KOBO_CLAMP =		0x0001,	// Clamp to frame edge pixels
+	KOBO_CLAMP_OPAQUE =	0x0002,	// Clamp to black; not transparent
+	KOBO_WRAP =		0x0004,	// Wrap around frame edges
+
+	// Scaling filter options
+	KOBO_ABSSCALE =		0x0010,	// Scale factor is absolute
+	KOBO_NEAREST =		0x0020,	// Force NEAREST scale mode
+	KOBO_BILINEAR =		0x0040,	// Force BILINEAR scale mode
+	KOBO_SCALE2X =		0x0080,	// Force Scale2X scale mode
+
+	// Other options
+	KOBO_NOALPHA =		0x0100,	// Disable alpha channel
+	KOBO_CENTER =		0x0200,	// Center hotspot in frames
+	KOBO_NOBRIGHT =		0x0400	// Disable brightness/contrast filter
+} KOBO_GfxDescFlags;
+
+
+#define	KOBO_TP_MAXLEN	256
+
+enum KOBO_TP_Tokens
+{
+	KTK_ERROR = -1,
+	KTK_EOF = 0,
+	KTK_EOLN,
+
+	KTK_BANK,	// iv = bank
+	KTK_FLAG,	// iv = flag bit mask
+	KTK_STRING,	// sv = nul terminated string
+	KTK_NUMBER,	// rv = value
+
+	KTK_KW_MESSAGE,
+	KTK_KW_IMAGE,
+	KTK_KW_SPRITES,
+	KTK_KW_SFONT,
+	KTK_KW_PALETTE,
+	KTK_KW_FALLBACK
+};
+
+class KOBO_ThemeParser
+{
+	char *buffer;
+	int bufsize;
+	int pos;
+	int unlex_pos;
+	char sv[KOBO_TP_MAXLEN];
+	double rv;
+	int iv;
+	char basepath[KOBO_TP_MAXLEN];
+	char tmp[KOBO_TP_MAXLEN];
+	const char *fullpath(const char *fp);
+	int bufget()
+	{
+		if(pos < bufsize)
+			return buffer[pos++];
+		else
+		{
+			++pos;
+			return 0;
+		}
+	}
+	void bufunget()
+	{
+		--pos;
+	}
+	bool is_num(int c)
+	{
+		return (c >= '0') && (c <= '9');
+	}
+	bool is_alpha(int c)
+	{
+		return ((c >= 'a') && (c <= 'z')) ||
+				((c >= 'A') && (c <= 'Z'));
+	}
+	bool is_white(int c)
+	{
+		return (c == ' ') || (c == '\t') || (c == '\a');
+	}
+	const char *token_name(KOBO_TP_Tokens tk)
+	{
+		switch(tk)
+		{
+		  case KTK_ERROR:	return "ERROR";
+		  case KTK_EOF:		return "EOF";
+		  case KTK_EOLN:	return "EOLN";
+		  case KTK_BANK:	return "BANK";
+		  case KTK_FLAG:	return "FLAG";
+		  case KTK_STRING:	return "STRING";
+		  case KTK_NUMBER:	return "NUMBER";
+		  case KTK_KW_MESSAGE:	return "KW_MESSAGE";
+		  case KTK_KW_IMAGE:	return "KW_IMAGE";
+		  case KTK_KW_SPRITES:	return "KW_SPRITES";
+		  case KTK_KW_SFONT:	return "KW_SFONT";
+		  case KTK_KW_PALETTE:	return "KW_PALETTE";
+		  case KTK_KW_FALLBACK:	return "KW_FALLBACK";
+		}
+		return "<unknown>";
+	}
+	void dump_line();
+	void skip_white();
+	void skip_to_eoln();
+	KOBO_TP_Tokens lex_number();
+	KOBO_TP_Tokens lex_string();
+	KOBO_TP_Tokens lex_symbol();
+	KOBO_TP_Tokens lex();
+	void unlex();
+	bool expect(KOBO_TP_Tokens token);
+	bool read_flags(int *flags, int allowed);
+	void apply_flags(int flags, double scale);
+	void warn_bank_used(int bank);
+	KOBO_TP_Tokens handle_message();
+	KOBO_TP_Tokens handle_image();
+	KOBO_TP_Tokens handle_sprites();
+	KOBO_TP_Tokens handle_sfont();
+	KOBO_TP_Tokens handle_palette();
+	KOBO_TP_Tokens handle_fallback();
+	KOBO_TP_Tokens parse_line();
+  public:
+	KOBO_ThemeParser();
+	bool load_theme(const char *path);
+};
 
 #endif // _KOBO_GRAPHICS_H_

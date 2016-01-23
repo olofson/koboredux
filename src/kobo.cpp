@@ -6,7 +6,7 @@
  * Copyright 2001-2003, 2005-2007, 2009, 2011 David Olofson
  * Copyright 2005 Erik Auerswald
  * Copyright 2008 Robert Schuster
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -264,8 +264,8 @@ class KOBO_main
 	static void progress();
 	static void doing(const char *msg);
 	static int load_palette();
-	static int load_graphics(prefs_t *p);
-	static int load_sounds(prefs_t *p, int render_all = 0);
+	static int load_graphics();
+	static int load_sounds(int render_all = 0);
 
 	static int init_js(prefs_t *p);
 	static void close_js();
@@ -870,442 +870,52 @@ void KOBO_main::noiseburst()
 }
 
 
-void KOBO_main::show_progress(prefs_t *p)
-{
-	wdash->fade(1.0f);
-	if(s_get_bank(gfxengine->get_gfx(), B_OAPLANET))
-		wdash->mode(DASHBOARD_LOADING);
-	else
-		wdash->mode(DASHBOARD_BLACK);
-	wdash->doing("");
-}
-
-
-void KOBO_main::progress()
-{
-	wdash->progress();
-}
-
-
-void KOBO_main::doing(const char *msg)
-{
-	wdash->doing(msg);
-	log_printf(ULOG, "=== %s ===\n", msg);
-}
-
-
-#ifndef TIME_PROGRESS
-static float progtab_graphics[] = {
-	0.000000,
-	3.894737,
-	7.052631,
-	10.736842,
-	12.421053,
-	14.105263,
-	15.894737,
-	17.789474,
-	20.105263,
-	23.578947,
-	24.000000,
-	25.157894,
-	27.789474,
-	28.105263,
-	30.210526,
-	31.894737,
-	33.684212,
-	35.684212,
-	37.263157,
-	38.947369,
-	40.842106,
-	42.631580,
-	44.105263,
-	45.684212,
-	47.368420,
-	49.157894,
-	50.947369,
-	53.157894,
-	54.842106,
-	56.947369,
-	58.526318,
-	59.684212,
-	61.473682,
-	63.368420,
-	65.157898,
-	67.157898,
-	68.947365,
-	70.315788,
-	72.210526,
-	74.842102,
-	77.263161,
-	78.947365,
-	81.263161,
-	84.315788,
-	87.789474,
-	89.578949,
-	92.210526,
-	94.842102,
-	96.631577,
-	98.421051,
-	100.0,
-	0
-};
-
-static float progtab_sounds[] = {
-	0.000000,
-	100.0,
-	0
-};
-
-static float progtab_all[] = {
-	0.000000,
-	4.210526,
-	7.052631,
-	10.631579,
-	12.421053,
-	14.105263,
-	15.789474,
-	17.789474,
-	20.315790,
-	23.578947,
-	24.000000,
-	25.157894,
-	28.000000,
-	28.210526,
-	30.315790,
-	31.789474,
-	33.789474,
-	35.578949,
-	37.157894,
-	39.052631,
-	40.842106,
-	42.315788,
-	44.000000,
-	45.578949,
-	47.368420,
-	49.157894,
-	50.842106,
-	52.947369,
-	54.736843,
-	56.842106,
-	58.315788,
-	59.578949,
-	61.473682,
-	63.368420,
-	65.052635,
-	67.368423,
-	68.736839,
-	70.315788,
-	72.210526,
-	75.157898,
-	77.157898,
-	78.947365,
-	81.473686,
-	84.315788,
-	87.789474,
-	89.578949,
-	92.210526,
-	94.842102,
-	96.526314,
-	98.421051,
-	100.0,
-	0
-};
-#endif
-
-
-typedef enum
-{
-	// Clamping/wrapping options for filters
-	KOBO_CLAMP =		0x0001,	// Clamp to frame edge pixels
-	KOBO_CLAMP_OPAQUE =	0x0002,	// Clamp to black; not transparent
-	KOBO_WRAP =		0x0004,	// Wrap around frame edges
-
-	// Scaling filter options
-	KOBO_ABSSCALE =		0x0010,	// Scale factor is absolute
-	KOBO_NEAREST =		0x0020,	// Force NEAREST scale mode
-	KOBO_BILINEAR =		0x0040,	// Force BILINEAR scale mode
-	KOBO_SCALE2X =		0x0080,	// Force Scale2X scale mode
-
-	// Other options
-	KOBO_NOALPHA =		0x0100,	// Disable alpha channel
-	KOBO_CENTER =		0x0200,	// Center hotspot in frames
-	KOBO_NOBRIGHT =		0x0400,	// Disable brightness/contrast filter
-	KOBO_FONT =		0x0800,	// Load as "SFont" rather than tiles!
-
-	KOBO_MESSAGE =		0x1000	// Not a file! 'path' is a message.
-} KOBO_GfxDescFlags;
-
-typedef struct KOBO_GfxDesc
-{
-	const char	*path;		// Path + name (for filemapper)
-	int		bank;		// Sprite bank ID
-	int		w, h;		// Frame size (original image pixels)
-	float		scale;		// Scale of source data rel. 640x360
-	int		flags;		// KOBO_GfxDescFlags
-} KOBO_GfxDesc;
-
-static KOBO_GfxDesc gfxdesc[] = {
-	// Loading screen
-	{ "Loading loading screen graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>olofsonarcade-do64-ovl.png", B_OALOGO,	0, 0,	0.0f,
-			KOBO_CLAMP | KOBO_CENTER },
-	{ "GFX>>oaplanet-pcb.png", B_OAPLANET, 0, 0,
-			2.0f, KOBO_ABSSCALE | KOBO_SCALE2X },
-	{ "GFX>>arcadefont.png", B_NORMAL_FONT,	0, 0,	0.0f,	KOBO_FONT },
-
-	// In-game
-	{ "Loading in-game graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-
-	// NOTE: We only have map textures for every other mip level!
-
-	// Region 1 (maps 1-10)
-	{ "GFX>>tiles-green.png", B_R1_TILES,	16, 16,	0.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-green-small-space.png", B_R1_TILES_SMALL_SPACE,
-			12, 12,	0.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-green-tiny-space.png", B_R1_TILES_TINY_SPACE,
-			8, 8,	0.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-green-small-ground.png", B_R1_TILES_SMALL_GROUND,
-			12, 12,	0.0f,	KOBO_CLAMP },
-	{ "GFX>>tiles-green-tiny-ground.png", B_R1_TILES_TINY_GROUND,
-			8, 8,	0.0f,	KOBO_CLAMP },
-	{ "GFX>>planet-r1.png", B_R1_PLANET, 0, 0,
-			2.0f, KOBO_ABSSCALE | KOBO_BILINEAR },
-	{ "GFX>>ground-r1l8.png", B_R1L8_GROUND, 0, 0,	0.0f, 0 },
-	{ "GFX>>ground-r1l9.png", B_R1L9_GROUND, 0, 0,	0.0f, 0 },
-	{ "GFX>>ground-r1l10.png", B_R1L10_GROUND, 0, 0, 0.0f, 0 },
-
-	// Region 2 (maps 11-20)
-
-	// Region 3 (maps 21-30)
-
-	// Region 4 (maps 31-40)
-
-	// Region 5 (maps 41-50)
-
-	{ "GFX>>crosshair.png", B_CROSSHAIR,	32, 32,	1.0f,	KOBO_CENTER },
-	{ "GFX>>player.png", B_PLAYER,		40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bmr-green.png", B_BMR_GREEN,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bmr-purple.png", B_BMR_PURPLE,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bmr-pink.png", B_BMR_PINK,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>fighter.png", B_FIGHTER,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>missile.png", B_MISSILE1,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>missile2.png", B_MISSILE2,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>missile3.png", B_MISSILE3,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>orange-bolt.png", B_BOLT,	8, 8,	1.0f,	KOBO_CENTER },
-	{ "GFX>>explo1.png", B_EXPLO1,		24, 24,	0.0f,	KOBO_CENTER },
-#if 0
-	{ "GFX>>explo3e.png", B_EXPLO3,		64, 64,	2.0f,	KOBO_CENTER },
-	{ "GFX>>explo4e.png", B_EXPLO4,		64, 64,	2.0f,	KOBO_CENTER },
-	{ "GFX>>explo5e.png", B_EXPLO5,		64, 64,	2.0f,	KOBO_CENTER },
-#else
-	{ "GFX>>explo1.png", B_EXPLO3,		24, 24,	0.0f,	KOBO_CENTER },
-	{ "GFX>>explo1.png", B_EXPLO4,		24, 24,	0.0f,	KOBO_CENTER },
-	{ "GFX>>explo1.png", B_EXPLO5,		24, 24,	0.0f,	KOBO_CENTER },
-#endif
-#if 0
-	{ "GFX>>rock1c.png", B_ROCK1,		32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>rock2.png", B_ROCK2,		32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>shinyrock.png", B_ROCK3,	32, 32,	2.0f,	KOBO_CENTER },
-#else
-	{ "GFX>>rock2.png", B_ROCK1,		32, 32,	1.0f,	KOBO_CENTER },
-	{ "GFX>>rock2.png", B_ROCK2,		32, 32,	1.0f,	KOBO_CENTER },
-	{ "GFX>>rock2.png", B_ROCK3,		32, 32,	1.0f,	KOBO_CENTER },
-#endif
-	{ "GFX>>rockexpl.png", B_ROCKEXPL,	64, 64,	1.0f,	KOBO_CENTER },
-
-	{ "GFX>>bullet.png", B_BLT_GREEN,	8, 8,	0.0f,	KOBO_CENTER },
-	{ "GFX>>red-bullet.png", B_BLT_RED,	8, 8,	0.0f,	KOBO_CENTER },
-	{ "GFX>>blue-bullet.png", B_BLT_BLUE,	8, 8,	0.0f,	KOBO_CENTER },
-	{ "GFX>>bulletexpl2.png", B_BLTX_GREEN,	32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bulletexpl2.png", B_BLTX_RED,	32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bulletexpl2.png", B_BLTX_BLUE,	32, 32,	2.0f,	KOBO_CENTER },
-
-	{ "GFX>>ring.png", B_RING,		32, 32,	2.0f,	KOBO_CENTER },
-	{ "GFX>>ringexpl2b.png", B_RINGEXPL,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bomb.png", B_BOMB,		24, 24,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bombdeto.png", B_BOMBDETO,	40, 40,	2.0f,	KOBO_CENTER },
-	{ "GFX>>bigship.png", B_BIGSHIP,	72, 72,	2.0f,	KOBO_CENTER },
-
-	// Dashboard
-	{ "Loading dashboard graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>hleds.png", B_HLEDS,		8, 5,	0.0f,	KOBO_CLAMP },
-	{ "GFX>>vleds.png", B_VLEDS,		5, 8,	0.0f,	KOBO_CLAMP },
-#if 0
-	{ "GFX>>barleds.png", B_BLEDS,		12, 8,	0.0f,	KOBO_CLAMP },
-#else
-	{ "GFX>>barleds3.png", B_BLEDS,		12, 4,	0.0f,	KOBO_CLAMP },
-#endif
-	{ "GFX>>dashboard.png", B_SCREEN,	0, 0,	0.0f,
-			KOBO_CLAMP_OPAQUE },
-
-	// Logo
-	{ "Loading logo", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>logo2h.png", B_LOGO,		0, 0,	0.0f,	0 },
-
-	// Fonts
-	{ "Loading fonts", 0, 0,0, 0.0f, KOBO_MESSAGE },
-/* FIXME: Dedicated medium size font? */
-	{ "GFX>>arcadefont.png", B_MEDIUM_FONT,	0, 0,	0.0f,	KOBO_FONT },
-	{ "GFX>>bigfont.png", B_BIG_FONT,	0, 0,	0.0f,	KOBO_FONT },
-	{ "GFX>>counterfont.png", B_COUNTER_FONT, 0, 0,	2.0f,	KOBO_FONT },
-
-	// Special FX
-	{ "Loading special FX graphics", 0, 0,0, 0.0f, KOBO_MESSAGE },
-	{ "GFX>>noise.png", B_NOISE,		NOISE_SIZEX, 1,	0.0f,
-			KOBO_CLAMP },
-	{ "GFX>>hitnoise.png", B_HITNOISE,	NOISE_SIZEX, 1,	0.0f,
-			KOBO_CLAMP },
-	{ "GFX>>focusfx.png", B_FOCUSFX,	0, 0,	0.0f, KOBO_CLAMP },
-
-	{ NULL, 0,	0, 0,	0.0f,	0 }	// Terminator
-};
-
-
 int KOBO_main::load_palette()
 {
+	// Hardwired fallback palette, to use before a theme has been loaded
 	const char *fn;
-	if(!(fn = fmap->get("GFX>>DO64-0.24.gpl")))
+	if(!(fn = fmap->get("GFX>>redux/DO64-0.24.gpl")))
 	{
-		log_printf(ELOG, "Couldn't find palette!\n");
+		log_printf(ELOG, "Couldn't find fallback palette!\n");
 		return -1;
 	}
 	if(!gengine->load_palette(fn))
 	{
-		log_printf(ELOG, "Couldn't load palette!\n");
+		log_printf(ELOG, "Couldn't load fallback palette!\n");
 		return -2;
 	}
 	return 0;
 }
 
 
-int KOBO_main::load_graphics(prefs_t *p)
+int KOBO_main::load_graphics()
 {
 	const char *fn;
-	KOBO_GfxDesc *gd;
-	int loadergfx = 0;
-
-	load_palette();
+	KOBO_ThemeParser tp;
 
 	gengine->reset_filters();
-	show_progress(p);
+	wdash->show_progress();
 
-	for(gd = gfxdesc; gd->path; ++gd)
+	if(prefs->force_fallback_gfxtheme)
 	{
-		// Reinit loading screen once its assets are loaded!
-		if(!loadergfx && s_get_bank(gfxengine->get_gfx(), B_OAPLANET))
-		{
-			show_progress(p);
-			loadergfx = 1;
-		}
-
-		if(gd->flags & KOBO_MESSAGE)
-		{
-			doing(gd->path);
-			continue;
-		}
-
-		if(gd->bank <= B_NONE || gd->bank >= B__COUNT)
-		{
-			log_printf(WLOG, "WARNING: Illegal bank index %d!\n",
-					gd->bank);
-			continue;
-		}
-
-		log_printf(ULOG, "%s(%d) \"%s\"\n",
-				kobo_gfxbanknames[gd->bank], gd->bank,
-				gd->path);
-
-		if(s_get_bank(gfxengine->get_gfx(), gd->bank))
-			log_printf(WLOG, "WARNING: Bank %d already in use!\n",
-					gd->bank);
-
-		// Set scale (filter) mode and clamping
-		int clamping;
-		gfx_scalemodes_t sm;
-		if(gd->flags & KOBO_CLAMP)
-		{
-			gengine->clampcolor(0, 0, 0, 0);
-			clamping = 1;
-		}
-		else if(gd->flags & KOBO_CLAMP_OPAQUE)
-		{
-			gengine->clampcolor(0, 0, 0, 255);
-			clamping = 1;
-		}
-		else if(gd->flags & KOBO_WRAP)
-			clamping = 3;
-		else
-			clamping = 0;
-		if(gd->flags & KOBO_NEAREST)
-			sm = GFX_SCALE_NEAREST;
-		else if(gd->flags & KOBO_BILINEAR)
-			sm = GFX_SCALE_BILINEAR;
-		else if(gd->flags & KOBO_SCALE2X)
-			sm = GFX_SCALE_SCALE2X;
-		else
-			sm = (gfx_scalemodes_t) p->scalemode;
-		gengine->scalemode(sm, clamping);
-
-		// Disable brightness filter?
-		if(gd->flags & KOBO_NOBRIGHT)
-			gengine->brightness(1.0f, 1.0f);
-		else
-			gengine->brightness(0.01f * p->brightness,
-					0.01f * p->contrast);
-
-		// Alpha channels
-		if(gd->flags & KOBO_NOALPHA || !p->alpha)
-			gengine->noalpha(NOALPHA_THRESHOLD);
-		else
-			gengine->noalpha(0);
-
-		// Source image scale factor
-		if(gd->flags & KOBO_ABSSCALE)
-			gengine->absolute_scale(gd->scale, gd->scale);
-		else if(gd->scale == 0.0f)
-			gengine->absolute_scale(1.0f, 1.0f);
-		else
-			gengine->source_scale(gd->scale, gd->scale);
-
-		// Load!
-		fn = fmap->get(gd->path);
-		if(!fn)
-		{
-			log_printf(ELOG, "Couldn't get path to \"%s\"!\n",
-					gd->path);
-			continue;
-		}
-		int res;
-		if(gd->flags & KOBO_FONT)
-			res = gengine->loadfont(gd->bank, fn, gd->scale);
-		else if(!gd->w || !gd->h)
-			res = gengine->loadimage(gd->bank, fn);
-		else
-			res = gengine->loadtiles(gd->bank, gd->w, gd->h, fn);
-		if(res < 0)
-		{
-			log_printf(ELOG, "Couldn't load \"%s\"!\n", fn);
-			continue;
-		}
-
-		// Draw (real time) scale
-		if(!gd->scale)
-			gengine->draw_scale(gd->bank, gengine->xscale(),
-					gengine->yscale());
-
-		// Hotspot
-		if(gd->flags & KOBO_CENTER)
-		{
-			s_bank_t *b = s_get_bank(gfxengine->get_gfx(),
-					gd->bank);
-			if(b)
-				gengine->set_hotspot(gd->bank, -1,
-						b->w / 2, b->h / 2);
-		}
-
-		// Update progress bar
-		progress();
+		// Try to load fallback graphics theme
+		if(!(fn = fmap->get(KOBO_FALLBACK_GFX_THEME)))
+			log_printf(WLOG, "Couldn't find fallback graphics"
+					" theme!\n");
+		else if(!tp.load_theme(fn))
+			log_printf(WLOG, "Couldn't load fallback graphics"
+					" theme!\n");
 	}
+
+	// Try to load custom or default graphics theme
+	if(prefs->gfxtheme[0])
+		fn = fmap->get(prefs->gfxtheme);
+	else
+		fn = fmap->get(KOBO_DEFAULT_GFX_THEME);
+	if(!fn)
+		log_printf(WLOG, "Couldn't find graphics theme file!\n");
+	else if(!tp.load_theme(fn))
+		log_printf(WLOG, "Couldn't load graphics theme!\n");
 
 	screen.init_graphics();
 
@@ -1314,7 +924,7 @@ int KOBO_main::load_graphics(prefs_t *p)
 	if(!gengine->get_font(B_BIG_FONT))
 	{
 		gengine->messagebox("CRITICAL: Could not load menu font!");
-		return -1;
+		return -3;
 	}
 
 	return 0;
@@ -1324,19 +934,19 @@ int KOBO_main::load_graphics(prefs_t *p)
 static int progress_cb(const char *msg)
 {
 	if(msg)
-		km.doing(msg);
-	km.progress();
+		wdash->doing(msg);
+	wdash->progress(0.5f);	// FIXME
 	if(km.quit_requested())
 		return -999;
 	return 0;
 }
 
 
-int KOBO_main::load_sounds(prefs_t *p, int render_all)
+int KOBO_main::load_sounds(int render_all)
 {
-	if(!p->sound)
+	if(!prefs->sound)
 		return 0;
-	show_progress(p);
+	wdash->show_progress();
 	return sound.load(progress_cb, render_all);
 }
 
@@ -1499,7 +1109,7 @@ int KOBO_main::open()
 
 	sound.open();
 
-	if(load_sounds(prefs) < 0)
+	if(load_sounds() < 0)
 		return -3;
 
 	load_palette();
@@ -1509,20 +1119,8 @@ int KOBO_main::open()
 		sound.jingle(SOUND_OAJINGLE);
 	int jtime = SDL_GetTicks() + 5000;
 
-#ifdef TIME_PROGRESS
-	wdash->progress_init(NULL);
-#else
-	wdash->progress_init(progtab_all);
-#endif
-
-	if(load_graphics(prefs) < 0)
+	if(load_graphics() < 0)
 		return -2;
-
-#ifdef TIME_PROGRESS
-	// Use these two lines to time graphics and sounds separately!
-	wdash->progress_done();
-	wdash->progress_init(NULL);
-#endif
 
 	wdash->progress_done();
 	wdash->mode(DASHBOARD_JINGLE);
@@ -1574,14 +1172,9 @@ int KOBO_main::restart_audio()
 
 	log_printf(ULOG, "--- Restarting audio...\n");
 	sound.close();
-#ifdef TIME_PROGRESS
-	wdash->progress_init(NULL);
-#else
-	wdash->progress_init(progtab_sounds);
-#endif
 	if(sound.open() < 0)
 		return 4;
-	if(load_sounds(prefs) < 0)
+	if(load_sounds() < 0)
 		return 5;
 	wdash->progress_done();
 	wdash->mode(DASHBOARD_BLACK);
@@ -1633,12 +1226,7 @@ int KOBO_main::reload_graphics()
 		wdash->mode(DASHBOARD_BLACK);
 	gengine->unload();
 	log_printf(ULOG, "--- Reloading graphics...\n");
-#ifdef TIME_PROGRESS
-	wdash->progress_init(NULL);
-#else
-	wdash->progress_init(progtab_graphics);
-#endif
-	if(load_graphics(prefs) < 0)
+	if(load_graphics() < 0)
 		return 7;
 	wdash->progress_done();
 	screen.init_graphics();
