@@ -138,13 +138,13 @@ int KOBO_sound::load(int (*prog)(const char *msg), int force)
 		if(h > 0)
 		{
 			sounds[i] = h;
-			log_printf(ULOG, "%s (%d) \"%s\" %d\n",
+			log_printf(ULOG, "%s(%d) \"%s\" h:%d\n",
 					kobo_soundsymnames[i], i,
 					kobo_soundnames[i], h);
 		}
 		else
 		{
-			log_printf(ULOG, "%s (%d) \"%s\" (%s)\n",
+			log_printf(ULOG, "%s(%d) \"%s\" (%s)\n",
 					kobo_soundsymnames[i], i,
 					kobo_soundnames[i],
 					h ? a2_ErrorString((A2_errors)-h) :

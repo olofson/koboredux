@@ -1204,7 +1204,16 @@ int KOBO_main::load_graphics(prefs_t *p)
 			continue;
 		}
 
-		log_printf(ULOG, "Loading \"%s\"\n", gd->path);
+		if(gd->bank <= B_NONE || gd->bank >= B__COUNT)
+		{
+			log_printf(WLOG, "WARNING: Illegal bank index %d!\n",
+					gd->bank);
+			continue;
+		}
+
+		log_printf(ULOG, "%s(%d) \"%s\"\n",
+				kobo_gfxbanknames[gd->bank], gd->bank,
+				gd->path);
 
 		if(s_get_bank(gfxengine->get_gfx(), gd->bank))
 			log_printf(WLOG, "WARNING: Bank %d already in use!\n",

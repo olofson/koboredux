@@ -11,6 +11,7 @@ set(sources
 	random.cpp
 	score.cpp
 	sound.cpp
+	graphics.cpp
 	cfgparse.cpp
 	enemies.cpp
 	filemap.cpp

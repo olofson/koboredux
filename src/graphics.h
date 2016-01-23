@@ -1,0 +1,157 @@
+/*(GPLv2)
+------------------------------------------------------------
+   Kobo Deluxe - An enhanced SDL port of XKobo
+------------------------------------------------------------
+ * Copyright 2016 David Olofson (Kobo Redux)
+ * 
+ * This program  is free software; you can redistribute it and/or modify it
+ * under the terms  of  the GNU General Public License  as published by the
+ * Free Software Foundation;  either version 2 of the License,  or (at your
+ * option) any later version.
+ *
+ * This program is  distributed  in  the hope that  it will be useful,  but
+ * WITHOUT   ANY   WARRANTY;   without   even   the   implied  warranty  of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details.
+ *
+ * You should have received  a copy of the GNU General Public License along
+ * with this program; if not,  write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+#ifndef _KOBO_GRAPHICS_H_
+#define _KOBO_GRAPHICS_H_
+
+// Graphics banks
+#define KOBO_ALLGFXBANKS			\
+	KOBO_DEFS(NONE)				\
+	KOBO_DEFS(R1_TILES)			\
+	KOBO_DEFS(R2_TILES)			\
+	KOBO_DEFS(R3_TILES)			\
+	KOBO_DEFS(R4_TILES)			\
+	KOBO_DEFS(R5_TILES)			\
+\
+	KOBO_DEFS(R1_TILES_SMALL_SPACE)		\
+	KOBO_DEFS(R2_TILES_SMALL_SPACE)		\
+	KOBO_DEFS(R3_TILES_SMALL_SPACE)		\
+	KOBO_DEFS(R4_TILES_SMALL_SPACE)		\
+	KOBO_DEFS(R5_TILES_SMALL_SPACE)		\
+\
+	KOBO_DEFS(R1_TILES_TINY_SPACE)		\
+	KOBO_DEFS(R2_TILES_TINY_SPACE)		\
+	KOBO_DEFS(R3_TILES_TINY_SPACE)		\
+	KOBO_DEFS(R4_TILES_TINY_SPACE)		\
+	KOBO_DEFS(R5_TILES_TINY_SPACE)		\
+\
+	KOBO_DEFS(R1_TILES_SMALL_GROUND)	\
+	KOBO_DEFS(R2_TILES_SMALL_GROUND)	\
+	KOBO_DEFS(R3_TILES_SMALL_GROUND)	\
+	KOBO_DEFS(R4_TILES_SMALL_GROUND)	\
+	KOBO_DEFS(R5_TILES_SMALL_GROUND)	\
+\
+	KOBO_DEFS(R1_TILES_TINY_GROUND)		\
+	KOBO_DEFS(R2_TILES_TINY_GROUND)		\
+	KOBO_DEFS(R3_TILES_TINY_GROUND)		\
+	KOBO_DEFS(R4_TILES_TINY_GROUND)		\
+	KOBO_DEFS(R5_TILES_TINY_GROUND)		\
+\
+	KOBO_DEFS(R1_PLANET)			\
+	KOBO_DEFS(R2_PLANET)			\
+	KOBO_DEFS(R3_PLANET)			\
+	KOBO_DEFS(R4_PLANET)			\
+	KOBO_DEFS(R5_PLANET)			\
+\
+	KOBO_DEFS(R1_CLOUDS)			\
+	KOBO_DEFS(R2_CLOUDS)			\
+	KOBO_DEFS(R3_CLOUDS)			\
+	KOBO_DEFS(R4_CLOUDS)			\
+	KOBO_DEFS(R5_CLOUDS)			\
+\
+	KOBO_DEFS(R1L8_GROUND)			\
+	KOBO_DEFS(R2L8_GROUND)			\
+	KOBO_DEFS(R3L8_GROUND)			\
+	KOBO_DEFS(R4L8_GROUND)			\
+	KOBO_DEFS(R5L8_GROUND)			\
+\
+	KOBO_DEFS(R1L9_GROUND)			\
+	KOBO_DEFS(R2L9_GROUND)			\
+	KOBO_DEFS(R3L9_GROUND)			\
+	KOBO_DEFS(R4L9_GROUND)			\
+	KOBO_DEFS(R5L9_GROUND)			\
+\
+	KOBO_DEFS(R1L10_GROUND)			\
+	KOBO_DEFS(R2L10_GROUND)			\
+	KOBO_DEFS(R3L10_GROUND)			\
+	KOBO_DEFS(R4L10_GROUND)			\
+	KOBO_DEFS(R5L10_GROUND)			\
+\
+	KOBO_DEFS(CROSSHAIR)			\
+	KOBO_DEFS(PLAYER)			\
+	KOBO_DEFS(BLT_GREEN)			\
+	KOBO_DEFS(BLT_RED)			\
+	KOBO_DEFS(BLT_BLUE)			\
+	KOBO_DEFS(BLTX_GREEN)			\
+	KOBO_DEFS(BLTX_RED)			\
+	KOBO_DEFS(BLTX_BLUE)			\
+	KOBO_DEFS(RING)				\
+	KOBO_DEFS(RINGEXPL)			\
+	KOBO_DEFS(BOMB)				\
+	KOBO_DEFS(BOMBDETO)			\
+	KOBO_DEFS(BOLT)				\
+	KOBO_DEFS(EXPLO1)			\
+	KOBO_DEFS(EXPLO3)			\
+	KOBO_DEFS(EXPLO4)			\
+	KOBO_DEFS(EXPLO5)			\
+	KOBO_DEFS(ROCK1)			\
+	KOBO_DEFS(ROCK2)			\
+	KOBO_DEFS(ROCK3)			\
+	KOBO_DEFS(ROCKEXPL)			\
+	KOBO_DEFS(BMR_GREEN)			\
+	KOBO_DEFS(BMR_PURPLE)			\
+	KOBO_DEFS(BMR_PINK)			\
+	KOBO_DEFS(FIGHTER)			\
+	KOBO_DEFS(MISSILE1)			\
+	KOBO_DEFS(MISSILE2)			\
+	KOBO_DEFS(MISSILE3)			\
+	KOBO_DEFS(BIGSHIP)			\
+\
+	KOBO_DEFS(NOISE)			\
+	KOBO_DEFS(HITNOISE)			\
+	KOBO_DEFS(FOCUSFX)			\
+\
+	KOBO_DEFS(SCREEN)			\
+	KOBO_DEFS(HLEDS)			\
+	KOBO_DEFS(VLEDS)			\
+	KOBO_DEFS(BLEDS)			\
+\
+	KOBO_DEFS(LOGO)				\
+\
+	KOBO_DEFS(HIGH_BACK)			\
+	KOBO_DEFS(SCORE_BACK)			\
+	KOBO_DEFS(RADAR_BACK)			\
+	KOBO_DEFS(SHIPS_BACK)			\
+	KOBO_DEFS(STAGE_BACK)			\
+\
+	KOBO_DEFS(HEALTH_LID)			\
+	KOBO_DEFS(TEMP_LID)			\
+	KOBO_DEFS(TTEMP_LID)			\
+\
+	KOBO_DEFS(OALOGO)			\
+	KOBO_DEFS(OAPLANET)			\
+\
+	KOBO_DEFS(NORMAL_FONT)			\
+	KOBO_DEFS(MEDIUM_FONT)			\
+	KOBO_DEFS(BIG_FONT)			\
+	KOBO_DEFS(COUNTER_FONT)			\
+
+#define	KOBO_DEFS(x)	B_##x,
+enum KOBO_gfxbanks
+{
+	KOBO_ALLGFXBANKS
+	B__COUNT
+};
+#undef	KOBO_DEFS
+
+extern const char*kobo_gfxbanknames[];
+
+#endif // _KOBO_GRAPHICS_H_
