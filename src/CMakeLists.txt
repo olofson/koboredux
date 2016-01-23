@@ -26,15 +26,15 @@ set(sources
 	spinplanet.cpp
 	starfield.cpp
 	logger.c
-	graphics/gfxengine.cpp
-	graphics/sofont.cpp
-	graphics/toolkit.cpp
-	graphics/window.cpp
-	graphics/vidmodes.c
-	graphics/sprite.c
-	graphics/filters.c
-	graphics/cs.c
-	graphics/palette.c
+	gfxengine/gfxengine.cpp
+	gfxengine/sofont.cpp
+	gfxengine/toolkit.cpp
+	gfxengine/window.cpp
+	gfxengine/vidmodes.c
+	gfxengine/sprite.c
+	gfxengine/filters.c
+	gfxengine/cs.c
+	gfxengine/palette.c
 )
 
 include(FindPkgConfig)
@@ -44,7 +44,7 @@ include(CheckCSourceCompiles)
 
 include_directories(${KOBOREDUX_SOURCE_DIR})
 include_directories(${KOBOREDUX_SOURCE_DIR}/src)
-include_directories(${KOBOREDUX_SOURCE_DIR}/src/graphics)
+include_directories(${KOBOREDUX_SOURCE_DIR}/src/gfxengine)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
