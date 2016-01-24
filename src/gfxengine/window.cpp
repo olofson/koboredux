@@ -3,7 +3,7 @@
 	window.cpp - Generic Rendering Window
 ---------------------------------------------------------------------------
  * Copyright 2001-2003, 2006-2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -252,7 +252,7 @@ window_t::~window_t()
 {
 	if(renderer)
 	{
-		if(otexture && (renderer == engine->renderer()))
+		if(otexture && engine && (renderer == engine->renderer()))
 			SDL_DestroyTexture(otexture);
 	}
 	if(osurface)
