@@ -917,17 +917,17 @@ void _screen::init_background()
 	  case 8:
 		// Above clouds
 		bg_clouds = 1;
-		bg_backdrop = B_R1L8_GROUND/* + region*/;
+		bg_backdrop = B_R1L8_GROUND + region;
 		bg_altitude = 64;
 		break;
 	  case 9:
 		// Below clouds
-		bg_backdrop = B_R1L9_GROUND/* + region*/;
+		bg_backdrop = B_R1L9_GROUND + region;
 		bg_altitude = 32;
 		break;
 	  case 10:
 		// Ground level
-		bg_backdrop = B_R1L10_GROUND/* + region*/;
+		bg_backdrop = B_R1L10_GROUND + region;
 		bg_altitude = 0;
 		break;
 	}
@@ -939,7 +939,7 @@ void _screen::init_background()
 			8,	9
 		};
 		wplanet->set_size(psize);
-		wplanet->set_source(B_R1_PLANET/* + region*/, 0);
+		wplanet->set_source(B_R1_PLANET + region, 0);
 		wplanet->set_colors(entries, sizeof(entries));
 		wplanet->set_dither((spinplanet_dither_t)prefs->planetdither,
 				level * 15 - 160, level * 10 - 150);
@@ -1049,7 +1049,7 @@ void _screen::render_background()
 	{
 		if(level + m >= 10)
 			continue;
-		int tiles = 0/*region*/;
+		int tiles = region;
 		if(bg_altitude >= 96)
 			switch(m)
 			{
@@ -1070,7 +1070,7 @@ void _screen::render_background()
 		wmain->colormod(wmain->map_rgb(255, 255, 255));
 
 	// Render bases
-	render_bases(map, B_R1_TILES/* + region*/,
+	render_bases(map, B_R1_TILES + region,
 			gengine->xoffs(LAYER_BASES),
 			gengine->yoffs(LAYER_BASES));
 }

@@ -229,7 +229,7 @@ void dashboard_window_t::render_progress()
 	
 	if(_msg)
 	{
-		font(B_NORMAL_FONT);
+		font(B_LOADER_FONT);
 		center(height() - 40, _msg);
 	}
 }

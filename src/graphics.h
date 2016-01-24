@@ -139,10 +139,11 @@
 	KOBO_DEFS(OALOGO)			\
 	KOBO_DEFS(OAPLANET)			\
 \
+	KOBO_DEFS(LOADER_FONT)			\
 	KOBO_DEFS(NORMAL_FONT)			\
 	KOBO_DEFS(MEDIUM_FONT)			\
 	KOBO_DEFS(BIG_FONT)			\
-	KOBO_DEFS(COUNTER_FONT)			\
+	KOBO_DEFS(COUNTER_FONT)
 
 #define	KOBO_DEFS(x)	B_##x,
 enum KOBO_gfxbanks
@@ -171,7 +172,9 @@ typedef enum
 	// Other options
 	KOBO_NOALPHA =		0x0100,	// Disable alpha channel
 	KOBO_CENTER =		0x0200,	// Center hotspot in frames
-	KOBO_NOBRIGHT =		0x0400	// Disable brightness/contrast filter
+	KOBO_NOBRIGHT =		0x0400,	// Disable brightness/contrast filter
+	KOBO_FALLBACK =		0x1000,	// Disable "in use" overwrite warning
+	KOBO_FUTURE =		0x2000	// Allow alias to (still) empty banks
 } KOBO_GfxDescFlags;
 
 
@@ -193,7 +196,9 @@ enum KOBO_TP_Tokens
 	KTK_KW_SPRITES,
 	KTK_KW_SFONT,
 	KTK_KW_PALETTE,
-	KTK_KW_FALLBACK
+	KTK_KW_FALLBACK,
+	KTK_KW_PATH,
+	KTK_KW_ALIAS
 };
 
 class KOBO_ThemeParser
@@ -202,11 +207,12 @@ class KOBO_ThemeParser
 	int bufsize;
 	int pos;
 	int unlex_pos;
+	int default_flags;
 	char sv[KOBO_TP_MAXLEN];
 	double rv;
 	int iv;
 	char basepath[KOBO_TP_MAXLEN];
-	char tmp[KOBO_TP_MAXLEN];
+	char path[KOBO_TP_MAXLEN];
 	const char *fullpath(const char *fp);
 	int bufget()
 	{
@@ -252,6 +258,8 @@ class KOBO_ThemeParser
 		  case KTK_KW_SFONT:	return "KW_SFONT";
 		  case KTK_KW_PALETTE:	return "KW_PALETTE";
 		  case KTK_KW_FALLBACK:	return "KW_FALLBACK";
+		  case KTK_KW_PATH:	return "KW_PATH";
+		  case KTK_KW_ALIAS:	return "KW_ALIAS";
 		}
 		return "<unknown>";
 	}
@@ -273,10 +281,12 @@ class KOBO_ThemeParser
 	KOBO_TP_Tokens handle_sfont();
 	KOBO_TP_Tokens handle_palette();
 	KOBO_TP_Tokens handle_fallback();
+	KOBO_TP_Tokens handle_path();
+	KOBO_TP_Tokens handle_alias();
 	KOBO_TP_Tokens parse_line();
   public:
 	KOBO_ThemeParser();
-	bool load_theme(const char *path);
+	bool load_theme(const char *path, int flags = 0);
 };
 
 #endif // _KOBO_GRAPHICS_H_

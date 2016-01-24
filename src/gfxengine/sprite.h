@@ -3,7 +3,7 @@
 	sprite.h - Sprite engine for use with cs.h
 ----------------------------------------------------------------------
  * Copyright 2001, 2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -50,14 +50,19 @@ typedef struct
 } s_sprite_t;
 
 /* Bank of sprite images */
-typedef struct
+typedef struct s_bank_t s_bank_t;
+struct s_bank_t
 {
+	unsigned	alias;	/* > 0 ==> index of actual bank to use */
 	unsigned	w, h;	/* Same size for all sprites in bank! */
 	int		xs, ys;	/* Rendering scale factor (24:8) */
 	unsigned	last;
 	unsigned	max;
 	s_sprite_t	**sprites;
-} s_bank_t;
+	int		userflags;
+	void		*userdata;
+	void (*usercleanup)(s_bank_t *b);
+};
 
 /* Two dimensionally indexed sprite container */
 typedef struct s_container_t
@@ -75,6 +80,7 @@ void s_delete_container(s_container_t *c);
 
 s_bank_t *s_new_bank(s_container_t *c, unsigned bank, unsigned frames,
 				unsigned w, unsigned h);
+s_bank_t *s_alias_bank(s_container_t *c, unsigned bank, unsigned original);
 void s_delete_bank(s_container_t *c, unsigned bank);
 void s_delete_all_banks(s_container_t *c);
 
@@ -125,6 +131,11 @@ s_bank_t *s_get_bank(s_container_t *c, unsigned bank);
 s_sprite_t *s_get_sprite_b(s_bank_t *b, unsigned frame);
 s_sprite_t *s_new_sprite_b(s_bank_t *b, unsigned frame);
 void s_delete_sprite_b(s_bank_t *b, unsigned frame);
+
+/*
+ * Get actual bank, even if it's an alias.
+ */
+s_bank_t *s_get_bank_raw(s_container_t *c, unsigned bank);
 
 
 /*

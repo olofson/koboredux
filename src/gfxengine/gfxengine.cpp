@@ -84,8 +84,6 @@ gfxengine_t::gfxengine_t()
 	is_showing = 0;
 	is_open = 0;
 
-	memset(fonts, 0, sizeof(fonts));
-
 	_camfilter = 0;
 	xscroll = yscroll = 0;
 	for(int i = 0; i < CS_LAYERS ; ++i)
@@ -466,6 +464,14 @@ int gfxengine_t::loadtiles(int bank, int w, int h, const char *name)
 }
 
 
+extern "C" {
+	static void font_bank_cleanup(s_bank_t *b)
+	{
+		if(b->userdata)
+			delete (SoFont *)b->userdata;
+	}
+}
+
 int gfxengine_t::loadfont(int bank, const char *name, float srcscale)
 {
 	if(!csengine)
@@ -487,16 +493,24 @@ int gfxengine_t::loadfont(int bank, const char *name, float srcscale)
 		return -3;
 	}
 
-	if(!fonts[bank])
-		fonts[bank] = new SoFont(sdlrenderer);
-	if(!fonts[bank])
+	s_bank_t *b = s_get_bank(gfx, bank);
+	if(!b)
+	{
+		log_printf(ELOG, "  gfxengine: Internal error 2!\n");
+		return -16;
+	}
+
+	SoFont *sf = new SoFont(sdlrenderer);
+	if(!sf)
 	{
 		log_printf(ELOG, "  Failed to instantiate SoFont!\n");
 		return -4;
 	}
+	b->userdata = sf;
+	b->usercleanup = font_bank_cleanup;
 
-	fonts[bank]->ExtraSpace(srcscale ? (xs + 127) / 256 / srcscale : 1);
-	if(fonts[bank]->Load(s_get_sprite(gfx, bank, 0)->surface))
+	sf->ExtraSpace(srcscale ? (xs + 127) / 256 / srcscale : 1);
+	if(sf->Load(s_get_sprite(gfx, bank, 0)->surface))
 	{
 		s_detach_sprite(gfx, bank, 0);
 		log_printf(DLOG, "  Ok.\n");
@@ -537,15 +551,28 @@ int gfxengine_t::copyrect(int bank, int sbank, int sframe, SDL_Rect *r)
 }
 
 
+s_bank_t *gfxengine_t::alias_bank(int bank, int orig)
+{
+	s_bank_t *b = s_alias_bank(gfx, bank, orig);
+	if(!b)
+	{
+		log_printf(ELOG, "sprite: Failed to alias bank %d to %d!\n",
+				bank, orig);
+		return NULL;
+	}
+	return b;
+}
+
+
 void gfxengine_t::draw_scale(int bank, float _xs, float _ys)
 {
-	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
+	s_bank_t *b = s_get_bank(gfx, bank);
 	if(!b)
 		return;
 	b->xs = (int)(_xs * 256.f);
 	b->ys = (int)(_ys * 256.f);
-	if(fonts[bank])
-		fonts[bank]->SetScale(_xs, _ys);
+	if(SoFont *sf = get_font(bank))
+		sf->SetScale(_xs, _ys);
 }
 
 
@@ -568,27 +595,17 @@ void gfxengine_t::reload()
 
 void gfxengine_t::unload(int bank)
 {
+	if(!gfx)
+		return;
 	if(bank < 0)
 	{
 		log_printf(DLOG, "Unloading all banks.\n");
-		for(int i = 0; i < GFX_BANKS; ++i)
-		{
-			delete fonts[i];
-			fonts[i] = NULL;
-		}
-		if(gfx)
-			s_delete_all_banks(gfx);
+		s_delete_all_banks(gfx);
 	}
 	else
 	{
 		log_printf(DLOG, "Unloading bank %d.\n", bank);
-		if(bank < GFX_BANKS)
-		{
-			delete fonts[bank];
-			fonts[bank] = NULL;
-		}
-		if(gfx)
-			s_delete_bank(gfx, bank);
+		s_delete_bank(gfx, bank);
 	}
 }
 
@@ -1287,10 +1304,12 @@ int gfxengine_t::objects_in_use()
 }
 
 
-SoFont *gfxengine_t::get_font(unsigned int f)
+SoFont *gfxengine_t::get_font(unsigned bank)
 {
-	if(f < GFX_BANKS)
-		return fonts[f];
-	else
+	s_bank_t *b = s_get_bank(gfx, bank);
+	if(!b)
 		return NULL;
+	if(b->usercleanup != font_bank_cleanup)
+		return NULL;
+	return (SoFont *)b->userdata;
 }

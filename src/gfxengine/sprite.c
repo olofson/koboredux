@@ -3,7 +3,7 @@
 	sprite.c - Sprite engine for use with cs.h
 ----------------------------------------------------------------------
  * Copyright 2001, 2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -196,12 +196,11 @@ s_sprite_t *s_new_sprite_b(s_bank_t *b, unsigned frame)
  */
 s_sprite_t *s_new_sprite(s_container_t *c, unsigned bank, unsigned frame)
 {
-	if(bank > c->max)
-		return NULL;
-	if(!c->banks[bank])
+	s_bank_t *b = s_get_bank(c, bank);
+	if(!b)
 		return NULL;
 
-	return s_new_sprite_b(c->banks[bank], frame);
+	return s_new_sprite_b(b, frame);
 }
 
 
@@ -269,6 +268,26 @@ s_bank_t *s_new_bank(s_container_t *c, unsigned bank, unsigned frames,
 }
 
 
+s_bank_t *s_alias_bank(s_container_t *c, unsigned bank, unsigned original)
+{
+	DBG(log_printf(DLOG, "s_alias_bank(%p, %d, %d)\n", c, bank, original);)
+#if 0
+	if(!s_get_bank(c, original))
+		return NULL;
+#endif
+	if(bank > c->max)
+		return NULL;
+	if(c->banks[bank])
+		s_delete_bank(c, bank);
+
+	c->banks[bank] = (s_bank_t *)calloc(1, sizeof(s_bank_t));
+	if(!c->banks[bank])
+		return NULL;
+	c->banks[bank]->alias = original;
+	return c->banks[bank];
+}
+
+
 #ifdef	KOBO_SPRITESTATS
 static int surfs = 0;
 static int pixels = 0;
@@ -285,15 +304,18 @@ void s_delete_bank(s_container_t *c, unsigned bank)
 	b = c->banks[bank];
 	if(b)
 	{
-		for(i = 0; i <= b->max; ++i)
+		if(!b->alias)
 		{
+			for(i = 0; i <= b->max; ++i)
+			{
 #ifdef	KOBO_SPRITESTATS
-			++surfs;
-			pixels += b->w * b->h;
+				++surfs;
+				pixels += b->w * b->h;
 #endif
-			s_delete_sprite_b(b, i);
+				s_delete_sprite_b(b, i);
+			}
+			free(b->sprites);
 		}
-		free(b->sprites);
 		free(b);
 		c->banks[bank] = NULL;
 	}
@@ -325,11 +347,16 @@ void s_delete_all_banks(s_container_t *c)
 
 s_bank_t *s_get_bank(s_container_t *c, unsigned bank)
 {
-	if(bank > c->max)
-		return NULL;
-	if(!c->banks[bank])
-		return NULL;
-	return c->banks[bank];
+	while(1)
+	{
+		if(bank > c->max)
+			return NULL;
+		if(!c->banks[bank])
+			return NULL;
+		if(!c->banks[bank]->alias)
+			return c->banks[bank];
+		bank = c->banks[bank]->alias;
+	}
 }
 
 s_sprite_t *s_get_sprite(s_container_t *c, unsigned bank, unsigned frame)
@@ -357,6 +384,15 @@ void s_detach_sprite(s_container_t *c, unsigned bank, unsigned frame)
 	if(!s)
 		return;
 	s->texture = NULL;
+}
+
+s_bank_t *s_get_bank_raw(s_container_t *c, unsigned bank)
+{
+	if(bank > c->max)
+		return NULL;
+	if(!c->banks[bank])
+		return NULL;
+	return c->banks[bank];
 }
 
 

@@ -2,6 +2,8 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* Maybe we need multiple palettes? Or we just hardwire the loader...?
+
 * Why are we using world pixels in the sound API, and not 24:8 coordinates?
 
 * cfg-all builds shared Win32 only, and won't work if MXE is installed without

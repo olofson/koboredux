@@ -1,0 +1,154 @@
+# TODO: This theme is incomplete, and is also mostly Kobo Deluxe stuff!
+
+message "Kobo Redux Mono Theme"
+message "Copyright 2016 David Olofson"
+message "CC BY-SA 4.0 (http://creativecommons.org/licenses/by-sa/4.0/)"
+
+#------------------------------------------------------------------------------
+# Syntax:
+#	message "Quoted String"
+#	image BankID FilePath [Scale] [Flags...]
+#	sprites BankID FilePath FrameWidth FrameHeight [Scale] [Flags...]
+#	sfont BankID FilePath [Scale] [Flags...]
+#	palette FilePath
+#	fallback FilePath
+#	path FilePath
+#	alias BankID BankID [Flags...]
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+message "Loading in-game graphics"
+#------------------------------------------------------------------------------
+
+# Palette for realtime rendering and effects
+path ""
+palette "DO64-0.24.gpl"
+
+# Region 1 (maps 1-10)
+path "region-1"
+#sprites B_R1_TILES "tiles-green.png" 16 16 CLAMP
+#sprites B_R1_TILES_SMALL_SPACE "tiles-green-small-space.png" 12 12 CLAMP
+#sprites B_R1_TILES_TINY_SPACE "tiles-green-tiny-space.png" 8 8 CLAMP
+#sprites B_R1_TILES_SMALL_GROUND "tiles-green-small-ground.png" 12 12 CLAMP
+#sprites B_R1_TILES_TINY_GROUND "tiles-green-tiny-ground.png" 8 8 CLAMP
+#image B_R1_PLANET "planet-r1.png" 2 ABSSCALE BILINEAR
+#image B_R1L8_GROUND "ground-r1l8.png"
+#image B_R1L9_GROUND "ground-r1l9.png"
+#image B_R1L10_GROUND "ground-r1l10.png"
+
+# Region 2 (maps 11-20)
+path "region-2"
+### TODO ###
+alias B_R2_TILES B_R1_TILES FUTURE
+alias B_R2_TILES_SMALL_SPACE B_R1_TILES_SMALL_SPACE FUTURE
+alias B_R2_TILES_TINY_SPACE B_R1_TILES_TINY_SPACE FUTURE
+alias B_R2_TILES_SMALL_GROUND B_R1_TILES_SMALL_GROUND FUTURE
+alias B_R2_TILES_TINY_GROUND B_R1_TILES_TINY_GROUND FUTURE
+alias B_R2_PLANET B_R1_PLANET FUTURE
+alias B_R2L8_GROUND B_R1L8_GROUND FUTURE
+alias B_R2L9_GROUND B_R1L9_GROUND FUTURE
+alias B_R2L10_GROUND B_R1L10_GROUND FUTURE
+
+# Region 3 (maps 21-30)
+path "region-3"
+### TODO ###
+alias B_R3_TILES B_R1_TILES FUTURE
+alias B_R3_TILES_SMALL_SPACE B_R1_TILES_SMALL_SPACE FUTURE
+alias B_R3_TILES_TINY_SPACE B_R1_TILES_TINY_SPACE FUTURE
+alias B_R3_TILES_SMALL_GROUND B_R1_TILES_SMALL_GROUND FUTURE
+alias B_R3_TILES_TINY_GROUND B_R1_TILES_TINY_GROUND FUTURE
+alias B_R3_PLANET B_R1_PLANET FUTURE
+alias B_R3L8_GROUND B_R1L8_GROUND FUTURE
+alias B_R3L9_GROUND B_R1L9_GROUND FUTURE
+alias B_R3L10_GROUND B_R1L10_GROUND FUTURE
+
+# Region 4 (maps 31-40)
+path "region-4"
+### TODO ###
+alias B_R4_TILES B_R1_TILES FUTURE
+alias B_R4_TILES_SMALL_SPACE B_R1_TILES_SMALL_SPACE FUTURE
+alias B_R4_TILES_TINY_SPACE B_R1_TILES_TINY_SPACE FUTURE
+alias B_R4_TILES_SMALL_GROUND B_R1_TILES_SMALL_GROUND FUTURE
+alias B_R4_TILES_TINY_GROUND B_R1_TILES_TINY_GROUND FUTURE
+alias B_R4_PLANET B_R1_PLANET FUTURE
+alias B_R4L8_GROUND B_R1L8_GROUND FUTURE
+alias B_R4L9_GROUND B_R1L9_GROUND FUTURE
+alias B_R4L10_GROUND B_R1L10_GROUND FUTURE
+
+# Region 5 (maps 41-50)
+path "region-5"
+### TODO ###
+alias B_R5_TILES B_R1_TILES FUTURE
+alias B_R5_TILES_SMALL_SPACE B_R1_TILES_SMALL_SPACE FUTURE
+alias B_R5_TILES_TINY_SPACE B_R1_TILES_TINY_SPACE FUTURE
+alias B_R5_TILES_SMALL_GROUND B_R1_TILES_SMALL_GROUND FUTURE
+alias B_R5_TILES_TINY_GROUND B_R1_TILES_TINY_GROUND FUTURE
+alias B_R5_PLANET B_R1_PLANET FUTURE
+alias B_R5L8_GROUND B_R1L8_GROUND FUTURE
+alias B_R5L9_GROUND B_R1L9_GROUND FUTURE
+alias B_R5L10_GROUND B_R1L10_GROUND FUTURE
+
+path "sprites"
+sprites B_PLAYER "player.png" 40 40 2 CENTER
+sprites B_BMR_GREEN "bmr-green.png" 40 40 2 CENTER
+sprites B_BMR_PURPLE "bmr-purple.png" 40 40 2 CENTER
+sprites B_BMR_PINK "bmr-pink.png" 40 40 2 CENTER
+sprites B_FIGHTER "fighter.png" 40 40 2 CENTER
+sprites B_MISSILE1 "missile.png" 40 40 2 CENTER
+sprites B_MISSILE2 "missile2.png" 40 40 2 CENTER
+sprites B_MISSILE3 "missile3.png" 40 40 2 CENTER
+#sprites B_BOLT "orange-bolt.png" 8 8 1 CENTER
+#sprites B_EXPLO1 "explo1.png" 24 24 CENTER
+#alias B_EXPLO3 B_EXPLO1
+#alias B_EXPLO4 B_EXPLO1
+#alias B_EXPLO5 B_EXPLO1
+#sprites B_ROCK1 "rock2.png" 32 32 1 CENTER
+#alias B_ROCK2 B_ROCK1
+#alias B_ROCK3 B_ROCK1
+#sprites B_ROCKEXPL "rockexpl.png" 64 64 1 CENTER
+#sprites B_BLT_GREEN "bullet.png" 8 8 CENTER
+#sprites B_BLT_RED "red-bullet.png" 8 8 CENTER
+#sprites B_BLT_BLUE "blue-bullet.png" 8 8 CENTER
+sprites B_BLTX_GREEN "bulletexpl2.png" 32 32 2 CENTER
+sprites B_BLTX_RED "bulletexpl2.png" 32 32 2 CENTER
+sprites B_BLTX_BLUE "bulletexpl2.png" 32 32 2 CENTER
+sprites B_RING "ring.png" 32 32 2 CENTER
+sprites B_RINGEXPL "ringexpl2b.png" 40 40 2 CENTER
+sprites B_BOMB "bomb.png" 24 24 2 CENTER
+sprites B_BOMBDETO "bombdeto.png" 40 40 2 CENTER
+sprites B_BIGSHIP "bigship.png" 72 72 2 CENTER
+
+
+#------------------------------------------------------------------------------
+message "Loading dashboard graphics"
+#------------------------------------------------------------------------------
+
+path "dashboard"
+#image B_SCREEN "dashboard.png" CLAMP_OPAQUE
+sprites B_CROSSHAIR "crosshair.png" 32 32 1 CENTER
+#sprites B_HLEDS "hleds.png" 8 5 CLAMP
+#sprites B_VLEDS "vleds.png" 5 8 CLAMP
+#sprites B_BLEDS "barleds3.png" 12 4 CLAMP
+#image B_LOGO "logo2h.png"
+
+
+#------------------------------------------------------------------------------
+message "Loading fonts"
+#------------------------------------------------------------------------------
+
+path "fonts"
+#sfont B_NORMAL_FONT "smallfont.png"
+#sfont B_MEDIUM_FONT "mediumfont.png"
+#sfont B_BIG_FONT "bigfont.png"
+sfont B_COUNTER_FONT "counterfont.png" 2
+
+
+#------------------------------------------------------------------------------
+message "Loading special FX graphics"
+#------------------------------------------------------------------------------
+
+path "fx"
+sprites B_NOISE "noise.png" 256 1 CLAMP
+sprites B_HITNOISE "hitnoise.png" 256 1 CLAMP
+image B_FOCUSFX "focusfx.png" CLAMP

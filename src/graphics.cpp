@@ -43,12 +43,22 @@ KOBO_ThemeParser::KOBO_ThemeParser()
 
 const char *KOBO_ThemeParser::fullpath(const char *fp)
 {
+	char tmp[KOBO_TP_MAXLEN];
+
+	// Use absolute paths as is
 	if((fp[0] == '~') || (fp[0] == '/') || strstr(fp, FM_DEREF_TOKEN))
-	{
-		// Absolute or special path!
 		return fmap->get(fp);
+
+	// An absolute 'path' overrides basepath!
+	if((path[0] == '~') || (path[0] == '/') ||
+			strstr(path, FM_DEREF_TOKEN))
+	{
+		snprintf(tmp, sizeof(tmp), "%s/%s", path, fp);
+		return fmap->get(tmp);
 	}
-	snprintf(tmp, sizeof(tmp), "%s/%s", basepath, fp);
+
+	// Relative 'path' and fp; prepend "basepath/path/"
+	snprintf(tmp, sizeof(tmp), "%s/%s/%s", basepath, path, fp);
 	return fmap->get(tmp);
 }
 
@@ -200,6 +210,8 @@ static TP_keywords tp_keywords[] =
 	{ "sfont",	KTK_KW_SFONT,		0	},
 	{ "palette",	KTK_KW_PALETTE,		0	},
 	{ "fallback",	KTK_KW_FALLBACK,	0	},
+	{ "path",	KTK_KW_PATH,		0	},
+	{ "alias",	KTK_KW_ALIAS,		0	},
 
 	{ "CLAMP",		KTK_FLAG,	KOBO_CLAMP		},
 	{ "CLAMP_OPAQUE",	KTK_FLAG,	KOBO_CLAMP_OPAQUE	},
@@ -211,6 +223,8 @@ static TP_keywords tp_keywords[] =
 	{ "NOALPHA",		KTK_FLAG,	KOBO_NOALPHA		},
 	{ "CENTER",		KTK_FLAG,	KOBO_CENTER		},
 	{ "NOBRIGHT",		KTK_FLAG,	KOBO_NOBRIGHT		},
+	{ "FALLBACK",		KTK_FLAG,	KOBO_FALLBACK		},
+	{ "FUTURE",		KTK_FLAG,	KOBO_FUTURE		},
 
 	{ NULL, KTK_EOF, 0 }
 };
@@ -266,8 +280,10 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_symbol()
 			return KTK_BANK;
 		}
 
+	char *s = strdup(sv);
 	dump_line();
-	log_printf(ELOG, "[Theme Loader] Unknown symbol '%s'!\n", sv);
+	log_printf(ELOG, "[Theme Loader] Unknown symbol '%s'!\n", s);
+	free(s);
 	return KTK_ERROR;
 }
 
@@ -306,8 +322,11 @@ void KOBO_ThemeParser::unlex()
 	if(unlex_pos >= 0)
 		pos = unlex_pos;
 	else
+	{
+		dump_line();
 		log_printf(ELOG, "[Theme Loader] INTERNAL ERROR: unlex() with"
 				" no previous lex()!\n");
+	}
 }
 
 
@@ -418,8 +437,10 @@ void KOBO_ThemeParser::apply_flags(int flags, double scale)
 
 void KOBO_ThemeParser::warn_bank_used(int bank)
 {
-	if(s_get_bank(gfxengine->get_gfx(), bank))
+	if(s_bank_t *b = s_get_bank_raw(gfxengine->get_gfx(), bank))
 	{
+		if(b->userflags & KOBO_FALLBACK)
+			return;
 		dump_line();
 		log_printf(WLOG, "[Theme Loader] WARNING: Bank %s(%d) already"
 				" in use!\n", kobo_gfxbanknames[bank], bank);
@@ -439,8 +460,11 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_image()
 	const char *fn;
 	if(!(fn = fullpath(sv)))
 	{
+		char *s = strdup(sv);
+		dump_line();
 		log_printf(ELOG, "[Theme Loader] Couldn't find image "
-				"\"%s\"!\n", sv);
+				"\"%s\"!\n", s);
+		free(s);
 		return KTK_ERROR;
 	}
 
@@ -450,11 +474,11 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_image()
 	else
 		unlex();
 
-	int flags = 0;
+	int flags = default_flags;
 	if(!read_flags(&flags, KOBO_CLAMP | KOBO_CLAMP_OPAQUE | KOBO_WRAP |
 			KOBO_NEAREST | KOBO_BILINEAR | KOBO_SCALE2X |
 			KOBO_NOBRIGHT | KOBO_NOALPHA | KOBO_ABSSCALE |
-			KOBO_CENTER))
+			KOBO_CENTER | KOBO_FALLBACK))
 		return KTK_ERROR;
 
 	log_printf(ULOG, "[Theme Loader] image %s \"%s\" %f 0x%4.4x\n",
@@ -466,6 +490,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_image()
 	// Load!
 	if(gengine->loadimage(bank, fn) < 0)
 	{
+		dump_line();
 		log_printf(ELOG, "[Theme Loader] Couldn't load image "
 				"\"%s\"!\n", fn);
 		return KTK_ERROR;
@@ -476,13 +501,21 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_image()
 		gengine->draw_scale(bank, gengine->xscale(),
 				gengine->yscale());
 
+	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
+	if(!b)
+	{
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] INTERNAL ERROR: Could not get"
+				" bank \"%s\", which should exist!\n",
+				kobo_gfxbanknames[bank]);
+		return KTK_ERROR;
+	}
+
+	b->userflags = flags;
+
 	// Hotspot
 	if(flags & KOBO_CENTER)
-	{
-		s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
-		if(b)
-			gengine->set_hotspot(bank, -1, b->w / 2, b->h / 2);
-	}
+		gengine->set_hotspot(bank, -1, b->w / 2, b->h / 2);
 
 	wdash->progress((float)pos / bufsize);
 	return KTK_KW_IMAGE;
@@ -501,8 +534,11 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sprites()
 	const char *fn;
 	if(!(fn = fullpath(sv)))
 	{
-		log_printf(ELOG, "[Theme Loader] Couldn't find sprites "
-				"\"%s\"!\n", sv);
+		char *s = strdup(sv);
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] Couldn't find sprite sheet "
+				"\"%s\"!\n", s);
+		free(s);
 		return KTK_ERROR;
 	}
 
@@ -519,11 +555,11 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sprites()
 	else
 		unlex();
 
-	int flags = 0;
+	int flags = default_flags;
 	if(!read_flags(&flags, KOBO_CLAMP | KOBO_CLAMP_OPAQUE | KOBO_WRAP |
 			KOBO_NEAREST | KOBO_BILINEAR | KOBO_SCALE2X |
 			KOBO_NOBRIGHT | KOBO_NOALPHA | KOBO_ABSSCALE |
-			KOBO_CENTER))
+			KOBO_CENTER | KOBO_FALLBACK))
 		return KTK_ERROR;
 
 	log_printf(ULOG, "[Theme Loader] sprites %s \"%s\" %d %d %f 0x%4.4x\n",
@@ -535,7 +571,8 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sprites()
 	// Load!
 	if(gengine->loadtiles(bank, fw, fh, fn) < 0)
 	{
-		log_printf(ELOG, "[Theme Loader] Couldn't load sprites "
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] Couldn't load sprite sheet "
 				"\"%s\"!\n", fn);
 		return KTK_ERROR;
 	}
@@ -545,13 +582,21 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sprites()
 		gengine->draw_scale(bank, gengine->xscale(),
 				gengine->yscale());
 
+	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
+	if(!b)
+	{
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] INTERNAL ERROR: Could not get"
+				" bank \"%s\", which should exist!\n",
+				kobo_gfxbanknames[bank]);
+		return KTK_ERROR;
+	}
+
+	b->userflags = flags;
+
 	// Hotspot
 	if(flags & KOBO_CENTER)
-	{
-		s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
-		if(b)
-			gengine->set_hotspot(bank, -1, b->w / 2, b->h / 2);
-	}
+		gengine->set_hotspot(bank, -1, b->w / 2, b->h / 2);
 
 	wdash->progress((float)pos / bufsize);
 	return KTK_KW_SPRITES;
@@ -570,8 +615,11 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sfont()
 	const char *fn;
 	if(!(fn = fullpath(sv)))
 	{
+		char *s = strdup(sv);
+		dump_line();
 		log_printf(ELOG, "[Theme Loader] Couldn't find SFont "
-				"\"%s\"!\n", sv);
+				"\"%s\"!\n", s);
+		free(s);
 		return KTK_ERROR;
 	}
 
@@ -581,10 +629,11 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sfont()
 	else
 		unlex();
 
-	int flags = 0;
+	int flags = default_flags;
 	if(!read_flags(&flags, KOBO_CLAMP | KOBO_CLAMP_OPAQUE | KOBO_WRAP |
 			KOBO_NEAREST | KOBO_BILINEAR | KOBO_SCALE2X |
-			KOBO_NOBRIGHT | KOBO_NOALPHA | KOBO_ABSSCALE))
+			KOBO_NOBRIGHT | KOBO_NOALPHA | KOBO_ABSSCALE |
+			KOBO_FALLBACK))
 		return KTK_ERROR;
 
 	log_printf(ULOG, "[Theme Loader] sfont %s \"%s\" %f 0x%4.4x\n",
@@ -596,6 +645,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sfont()
 	// Load!
 	if(gengine->loadfont(bank, fn, scale) < 0)
 	{
+		dump_line();
 		log_printf(ELOG, "[Theme Loader] Couldn't load SFont "
 				"\"%s\"!\n", fn);
 		return KTK_ERROR;
@@ -605,6 +655,18 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sfont()
 	if(!scale)
 		gengine->draw_scale(bank, gengine->xscale(),
 				gengine->yscale());
+
+	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), bank);
+	if(!b)
+	{
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] INTERNAL ERROR: Could not get"
+				" bank \"%s\", which should exist!\n",
+				kobo_gfxbanknames[bank]);
+		return KTK_ERROR;
+	}
+
+	b->userflags = flags;
 
 	wdash->progress((float)pos / bufsize);
 	return KTK_KW_SFONT;
@@ -618,8 +680,11 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_palette()
 	const char *fn;
 	if(!(fn = fullpath(sv)))
 	{
+		char *s = strdup(sv);
+		dump_line();
 		log_printf(ELOG, "[Theme Loader] Couldn't find palette "
-				"\"%s\"!\n", sv);
+				"\"%s\"!\n", s);
+		free(s);
 		return KTK_ERROR;
 	}
 
@@ -627,8 +692,11 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_palette()
 
 	if(!gengine->load_palette(fn))
 	{
+		char *s = strdup(sv);
+		dump_line();
 		log_printf(ELOG, "[Theme Loader] Couldn't load palette "
-				"\"%s\"!\n", sv);
+				"\"%s\"!\n", s);
+		free(s);
 		return KTK_ERROR;
 	}
 
@@ -644,20 +712,82 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_fallback()
 	const char *fn;
 	if(!(fn = fullpath(sv)))
 	{
+		char *s = strdup(sv);
+		dump_line();
 		log_printf(WLOG, "[Theme Loader] Couldn't find fallback "
-				"graphics theme \"%s\"!\n", sv);
+				"graphics theme \"%s\"!\n", s);
+		free(s);
 		return KTK_EOLN;
 	}
 
 	log_printf(ULOG, "[Theme Loader] fallback \"%s\"\n", fn);
 
 	KOBO_ThemeParser tp;
-	if(!tp.load_theme(fn))
+	if(!tp.load_theme(fn, KOBO_FALLBACK))
+	{
+		char *s = strdup(sv);
+		dump_line();
 		log_printf(WLOG, "[Theme Loader] Couldn't load fallback "
-				"graphics theme \"%s\"!\n", sv);
+				"graphics theme \"%s\"!\n", s);
+		free(s);
+	}
 
 	wdash->progress((float)pos / bufsize);
 	return KTK_KW_FALLBACK;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::handle_path()
+{
+	if(!expect(KTK_STRING))
+		return KTK_ERROR;
+	strncpy(path, fmap->sys2unix(sv), sizeof(path));
+	log_printf(ULOG, "[Theme Loader] path \"%s\"\n", path);
+	wdash->progress((float)pos / bufsize);
+	return KTK_KW_PATH;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::handle_alias()
+{
+	if(!expect(KTK_BANK))
+		return KTK_ERROR;
+	int bank = iv;
+	warn_bank_used(bank);
+
+	if(!expect(KTK_BANK))
+		return KTK_ERROR;
+	int orig = iv;
+
+	int flags = default_flags;
+	if(!read_flags(&flags, KOBO_FALLBACK | KOBO_FUTURE))
+		return KTK_ERROR;
+
+	log_printf(ULOG, "[Theme Loader] alias %s %s 0x%x\n",
+			kobo_gfxbanknames[bank], kobo_gfxbanknames[orig],
+			flags);
+
+	if(!(flags & KOBO_FUTURE) && !s_get_bank(gengine->get_gfx(), orig))
+	{
+		dump_line();
+		log_printf(WLOG, "[Theme Loader] Failed to alias %s to "
+				"empty bank %s! (Intentional? Use FUTURE!)\n",
+				kobo_gfxbanknames[bank],
+				kobo_gfxbanknames[orig]);
+	}
+
+	s_bank_t *b = gengine->alias_bank(bank, orig);
+	if(!b)
+	{
+		dump_line();
+		log_printf(WLOG, "[Theme Loader] Couldn't create alias %s for "
+				"%s!\n", kobo_gfxbanknames[bank],
+				kobo_gfxbanknames[orig]);
+	}
+	b->userflags = flags;
+
+	wdash->progress((float)pos / bufsize);
+	return KTK_KW_PATH;
 }
 
 
@@ -681,6 +811,10 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 		return handle_palette();
 	  case KTK_KW_FALLBACK:
 		return handle_fallback();
+	  case KTK_KW_PATH:
+		return handle_path();
+	  case KTK_KW_ALIAS:
+		return handle_alias();
 	  default:
 		dump_line();
 		log_printf(ELOG, "[Theme Loader] Unexpected token '%s'!\n",
@@ -690,25 +824,27 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 }
 
 
-bool KOBO_ThemeParser::load_theme(const char *path)
+bool KOBO_ThemeParser::load_theme(const char *themepath, int flags)
 {
 	// Because 'path' is sometimes a temporary string may be clobbered by
 	// further extensive use of fmap->get()...
-	char *p = strdup(path);
+	char *p = strdup(themepath);
 
+	basepath[0] = 0;
+	path[0] = 0;
 	pos = 0;
 	sv[0] = 0;
 	rv = 0.0f;
 	unlex_pos = -1;
+	default_flags = flags;
 
-	log_printf(ULOG, "[Theme Loader] Loading \"%s\"...\n", path);
+	log_printf(ULOG, "[Theme Loader] Loading \"%s\"...\n", p);
 
 	// Load theme file
-	FILE *f = fopen(path, "r");
+	FILE *f = fopen(p, "r");
 	if(!f)
 	{
-		log_printf(ELOG, "[Theme Loader] Could not open \"%s\"!\n",
-				path);
+		log_printf(ELOG, "[Theme Loader] Could not open \"%s\"!\n", p);
 		return false;
 	}
 
@@ -717,8 +853,7 @@ bool KOBO_ThemeParser::load_theme(const char *path)
 	buffer = (char *)malloc(bufsize);
 	if(!buffer)
 	{
-		log_printf(ELOG, "[Theme Loader] OOM loading \"%s\"!\n",
-				path);
+		log_printf(ELOG, "[Theme Loader] OOM loading \"%s\"!\n", p);
 		fclose(f);
 		return false;
 	}
@@ -726,8 +861,7 @@ bool KOBO_ThemeParser::load_theme(const char *path)
 	size_t sz = fread(buffer, bufsize, 1, f);
 	if(sz < 0)
 	{
-		log_printf(ELOG, "[Theme Loader] Could not read \"%s\"!\n",
-				path);
+		log_printf(ELOG, "[Theme Loader] Could not read \"%s\"!\n", p);
 		fclose(f);
 		free(buffer);
 		return false;
@@ -735,7 +869,7 @@ bool KOBO_ThemeParser::load_theme(const char *path)
 	fclose(f);
 
 	// Grab base path for relative file paths
-	strncpy(basepath, path, sizeof(basepath));
+	strncpy(basepath, p, sizeof(basepath));
 	char *s = strrchr(basepath, '/');
 	if(!s)
 		s = strrchr(basepath, '\\');
@@ -746,16 +880,8 @@ bool KOBO_ThemeParser::load_theme(const char *path)
 
 	// Parse theme file
 	KOBO_TP_Tokens res;
-	int loadergfx = 0;
 	while((res = parse_line()) > KTK_EOF)
-	{
-		// Reinit loading screen once its assets are loaded!
-		if(!loadergfx && s_get_bank(gfxengine->get_gfx(), B_OAPLANET))
-		{
-			wdash->show_progress();
-			loadergfx = 1;
-		}
-	}
+		;
 
 	free(buffer);
 

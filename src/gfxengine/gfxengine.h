@@ -116,6 +116,7 @@ class gfxengine_t
 	int loadfont(int bank, const char *name, float srcscale);
 	int copyrect(int bank, int sbank, int sframe, SDL_Rect *r);
 	void draw_scale(int bank, float _xs, float _ys);
+	s_bank_t *alias_bank(int bank, int orig);
 
 	int is_loaded(int bank);
 	void reload();
@@ -186,7 +187,7 @@ class gfxengine_t
 	{
 		return s_get_sprite(gfx, bank, _frame);
 	}
-	SoFont *get_font(unsigned int f);
+	SoFont *get_font(unsigned bank);
 	int set_hotspot(unsigned bank, int _frame, int x, int y)
 	{
 		return s_set_hotspot(gfx, bank, _frame, x, y);
@@ -238,7 +239,6 @@ class gfxengine_t
 	float		yratio[CS_LAYERS];
 
 	s_container_t	*gfx;
-	SoFont		*fonts[GFX_BANKS];	// Kludge.
 	GFX_palette	*_palette;
 	cs_engine_t	*csengine;
 	VMM_ModeID	_modeid;

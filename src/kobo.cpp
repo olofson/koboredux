@@ -894,6 +894,13 @@ int KOBO_main::load_graphics()
 	KOBO_ThemeParser tp;
 
 	gengine->reset_filters();
+
+	// Load the Olofson Arcade Loader graphics theme
+	if(!(fn = fmap->get(KOBO_LOADER_GFX_THEME)))
+		log_printf(WLOG, "Couldn't find loader graphics theme!\n");
+	else if(!tp.load_theme(fn))
+		log_printf(WLOG, "Couldn't load loader graphics theme!\n");
+
 	wdash->show_progress();
 
 	if(prefs->force_fallback_gfxtheme)
