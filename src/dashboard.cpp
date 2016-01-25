@@ -3,7 +3,7 @@
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
  * Copyright 2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -86,6 +86,21 @@ dashboard_window_t::dashboard_window_t(gfxengine_t *e) : window_t(e)
 dashboard_window_t::~dashboard_window_t()
 {
 	free(_msg);
+}
+
+
+void dashboard_window_t::render_copyright()
+{
+#if 0
+	if(s_get_actual_bank(gengine->get_gfx(), B_SMALL_FONT) != B_SMALL_FONT)
+		return;
+	font(B_SMALL_FONT);
+#else
+	if(s_get_actual_bank(gengine->get_gfx(), B_DEBUG_FONT) != B_DEBUG_FONT)
+		return;
+	font(B_DEBUG_FONT);
+#endif
+	center(height() - 10, KOBO_COPYRIGHT);
 }
 
 
@@ -245,6 +260,7 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 	  case DASHBOARD_BLACK:
 		background(map_rgb(0x000000));
 		clear();
+		render_copyright();
 		break;
 	  case DASHBOARD_NOISE:
 	  {
@@ -263,6 +279,7 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 			foreground(map_rgb(get_engine()->palette(c)));
 			fillrect(0, y, width(), 1);
 		}
+		render_copyright();
 		break;
 	  }
 	  case DASHBOARD_TITLE:
@@ -283,6 +300,7 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 		sprite(width() / 2, height() / 2, B_OALOGO, 0);
 		if(_mode == DASHBOARD_LOADING)
 			render_progress();
+		render_copyright();
 		break;
 	}
 }

@@ -1969,7 +1969,7 @@ static void put_copyright()
 	"     `--´   `--'`--------´ `-------´  `--------´\n"
 	"      R    -    E    -    D    -    U    -    X\n"
 	"\n"
-	"  Copyright 2015 Olofson Arcade. All rights reserved.\n"
+	"  " KOBO_COPYRIGHT "\n"
 	"\n"
 	".----------------------------------------------------.\n"
 	"|    The source code of this game is Free. See the   |\n"
@@ -1984,7 +1984,7 @@ static void put_copyright()
 	"  Copyright 2002 Jeremy Sheeley\n"
 	"  Copyright 2005 Erik Auerswald\n"
 	"  Copyright 2008 Robert Schuster\n"
-	"  Copyright 1999-2009, 2015 David Olofson\n"
+	"  Copyright 1999-2009, 2015-2016 David Olofson\n"
 	"\n");
 }
 
