@@ -298,6 +298,7 @@ inline int _enemy::make(const enemy_kind *k, int px, int py,
 	frame = ek->frame;
 	soundhandle = 0;
 	(this->*(ek->make)) ();
+	bank = s_get_actual_bank(gengine->get_gfx(), bank);
 	return 0;
 }
 

@@ -395,6 +395,20 @@ s_bank_t *s_get_bank_raw(s_container_t *c, unsigned bank)
 	return c->banks[bank];
 }
 
+unsigned s_get_actual_bank(s_container_t *c, unsigned bank)
+{
+	while(1)
+	{
+		if(bank > c->max)
+			return bank;
+		if(!c->banks[bank])
+			return bank;
+		if(!c->banks[bank]->alias)
+			return bank;
+		bank = c->banks[bank]->alias;
+	}
+}
+
 
 /*
 ----------------------------------------------------------------------

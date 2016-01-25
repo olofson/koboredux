@@ -132,10 +132,11 @@ s_sprite_t *s_get_sprite_b(s_bank_t *b, unsigned frame);
 s_sprite_t *s_new_sprite_b(s_bank_t *b, unsigned frame);
 void s_delete_sprite_b(s_bank_t *b, unsigned frame);
 
-/*
- * Get actual bank, even if it's an alias.
- */
+/* Get actual bank, even if it's an alias. */
 s_bank_t *s_get_bank_raw(s_container_t *c, unsigned bank);
+
+/* Get actual bank index, if 'bank' is an alias. */
+unsigned s_get_actual_bank(s_container_t *c, unsigned bank);
 
 
 /*
