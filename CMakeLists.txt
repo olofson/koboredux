@@ -27,9 +27,12 @@ set(CMAKE_C_FLAGS_DEBUG ${f})
 
 add_subdirectory(src)
 
-install(DIRECTORY data/gfx DESTINATION usr/share/koboredux
-	FILES_MATCHING PATTERN "*.png")
-install(DIRECTORY data/sfx DESTINATION usr/share/koboredux
+install(DIRECTORY data/gfx DESTINATION share/koboredux
+	FILES_MATCHING
+	PATTERN "*.png"
+	PATTERN "*.gpl"
+	PATTERN "*.theme")
+install(DIRECTORY data/sfx DESTINATION share/koboredux
 	FILES_MATCHING PATTERN "*.a2s")
 
 #TODO: Score directory?
