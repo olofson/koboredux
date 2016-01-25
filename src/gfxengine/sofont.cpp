@@ -5,7 +5,7 @@
  * Copyright ???? Karl Bartel
  * Copyright ???? Luc-Olivier de Charriere
  * Copyright 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -344,6 +344,7 @@ void SoFont::PutString(int x, int y, const char *text, SDL_Rect *clip)
 {
 	if((!glyphs) || (!text))
 		return;
+	int x0 = x;
 	int ofs, i = 0;
 	SDL_Rect srcrect, dstrect;
 	int targetw;
@@ -354,6 +355,12 @@ void SoFont::PutString(int x, int y, const char *text, SDL_Rect *clip)
 		if(text[i] == ' ')
 		{
 			x += spacew * xscale >> 8;
+			i++;
+		}
+		else if(text[i] == '\n')
+		{
+			x = x0;
+			y += height * yscale >> 8;
 			i++;
 		}
 		else if((text[i] >= START_CHAR) && (text[i] <= max_i))
@@ -413,6 +420,12 @@ void SoFont::PutStringWithCursor(int xs, int y,
 				x += spacew * xscale >> 8;
 				i++;
 			}
+			else if(text[i] == '\n')
+			{
+				x = xs;
+				y += height * yscale >> 8;
+				i++;
+			}
 			else if((text[i] >= START_CHAR)
 					&& (text[i] <= max_i))
 			{
@@ -444,11 +457,19 @@ int SoFont::TextWidth(const char *text, int min, int max)
 	if(!text)
 		return 0;
 	int ofs, x = 0, i = min;
+	int maxx = 0;
 	while((text[i] != '\0') && (i < max))
 	{
 		if(text[i] == ' ')
 		{
 			x += spacew;
+			i++;
+		}
+		else if(text[i] == '\n')
+		{
+			if(x >  maxx)
+				maxx = x;
+			x = 0;
 			i++;
 		}
 		else if((text[i] >= START_CHAR) && (text[i] <= max_i))
@@ -460,7 +481,9 @@ int SoFont::TextWidth(const char *text, int min, int max)
 		else
 			i++;
 	}
-	return x * xscale >> 8;
+	if(x >  maxx)
+		maxx = x;
+	return maxx * xscale >> 8;
 }
 
 void SoFont::XCenteredString(int y, const char *text, SDL_Rect *clip)
