@@ -5,7 +5,7 @@
  * Copyright 2001-2003, 2007, 2009 David Olofson
  * Copyright 2005 Erik Auerswald
  * Copyright 2008 Robert Schuster
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -63,7 +63,6 @@ class prefs_t : public config_parser_t
 	int	latency;	//Audio latency in ms
 	int	audiobuffer;	//Custom audio buffer size (sample frames)
 	int	tsdelay;	//Timestamp delay in ms
-	int	tsdebug;	//Timestamp debugging
 
 	//Sound: Mixer
 	int	volume;		//Digital master volume
@@ -86,12 +85,22 @@ class prefs_t : public config_parser_t
 
 	//Graphics settings
 	cfg_string_t	gfxtheme;	//Path to graphics theme file
-	int	force_fallback_gfxtheme;	// Force load fallback theme
 	int	scalemode;	//Scaling filter mode
 	int	alpha;		//Alpha blending
 	int	brightness;	//Graphics brightness
 	int	contrast;	//Graphics contrast
 	int	planetdither;	//Spinning planet dither style
+
+	//Debug features
+	int	debug;
+	int	show_fps;
+	int	cheat;		//Unlimited lives; select any starting stage
+	int	indicator;	//Enable collision testing mode
+	int	pushmove;	//Stop when not holding any direction down
+	int	force_fallback_gfxtheme;	// Force load fallback theme
+	int	show_map_border;
+	int	show_coordinates;
+	int	tsdebug;	//Timestamp debugging
 
 	//File paths
 	cfg_string_t	dir;		//Path to kobo-deluxe/
@@ -107,17 +116,12 @@ class prefs_t : public config_parser_t
 	void postload();
 
 	/* "Commands" - never written to config files */
-	int cmd_showcfg;
-	int cmd_hiscores;
-	int cmd_override;
-	int cmd_debug;
-	int cmd_fps;
-	int cmd_cheat;		//Unlimited lives; select any starting stage
-	int cmd_indicator;	//Enable collision testing mode
-	int cmd_pushmove;	//Stop when not holding any direction down
-	int cmd_autoshot;	//Take ingame screenshots
-	int cmd_help;		//Show help and exit
-	int cmd_options_man;	//Output OPTIONS doc in Un*x man source format
+	int	cmd_showcfg;
+	int	cmd_hiscores;
+	int	cmd_override;
+	int	cmd_autoshot;	//Take ingame screenshots
+	int	cmd_help;	//Show help and exit
+	int	cmd_options_man;//Output OPTIONS doc in Un*x man source format
 };
 
 #endif	//_KOBO_PREFS_H_

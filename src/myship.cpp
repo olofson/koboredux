@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -155,7 +155,7 @@ void _myship::explode()
 void _myship::handle_controls()
 {
 	int v;
-	if(prefs->cmd_pushmove)
+	if(prefs->pushmove)
 		v = gamecontrol.dir_push() ? PIXEL2CS(1) : 0;
 	else if(gamecontrol.dir_push())
 		v = PIXEL2CS(game.top_speed);
@@ -376,7 +376,7 @@ static inline void calc_bounce(int p2, int *p3, int *v)
 // Check and handle base/ship collisions
 void _myship::update_position()
 {
-	if(prefs->cmd_indicator)
+	if(prefs->indicator)
 	{
 		// No collision response; just update and test.
 		x += vx;
@@ -479,7 +479,7 @@ int _myship::hit_bolt(int ex, int ey, int hitsize, int health)
 			continue;
 		if(labs(wrapdist(ey, bolty[i], WORLD_SIZEY)) >= hitsize)
 			continue;
-		if(!prefs->cmd_cheat)
+		if(!prefs->cheat)
 		{
 			boltst[i] = 0;
 			if(bolt_objects[i])

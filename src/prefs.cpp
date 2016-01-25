@@ -5,7 +5,7 @@
  * Copyright 2001-2003, 2007, 2009 David Olofson
  * Copyright 2005 Erik Auerswald
  * Copyright 2008 Robert Schuster
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -70,7 +70,7 @@ void prefs_t::init()
 	key("latency", latency, 20); desc("Sound Latency");
 	key("audiobuffer", audiobuffer, 0); desc("Custom Audio Buffer Size");
 	key("tsdelay", tsdelay, 5); desc("Timestamp Delay");
-	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
+
 	key("volume", volume, 100); desc("Master Volume");
 	key("vol_boost", vol_boost, 2); desc("Volume Boost");
 	key("ui_vol", ui_vol, 50); desc("User Interface Volume");
@@ -99,6 +99,17 @@ void prefs_t::init()
 	key("contrast", contrast, 100); desc("Contrast");
 	key("planetdither", planetdither, 5); desc("Planet Dither Style");
 
+	yesno("debug", debug, 0); desc("Enable Debug Features");
+	yesno("show_fps", show_fps, 0); desc("Show Frame Rate");
+	yesno("cheat", cheat, 0); desc("Enable Cheat Mode");
+	yesno("indicator", indicator, 0);
+			desc("Enable Collision Indicator Mode");
+	yesno("pushmove", pushmove, 0); desc("Enable Push Move Mode");
+	yesno("show_map_border", show_map_border, 0); desc("Show Map Border");
+	yesno("show_coordinates", show_coordinates, 0);
+			desc("Show Object Coordinates");
+	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
+
 	comment("--- File paths -----------------------------");
 	key("files", dir, ""); desc("Game Root Path");
 	key("gfx", gfxdir, ""); desc("Graphics Data Path");
@@ -116,12 +127,6 @@ void prefs_t::init()
 	command("hiscores", cmd_hiscores); desc("List High Scores");
 	command("highscores", cmd_hiscores); desc("List High Scores");
 	command("override", cmd_override); desc("Ignore Configuration File");
-	command("debug", cmd_debug); desc("Enable Debug Features");
-	command("fps", cmd_fps); desc("Show Frame Rate");
-	command("cheat", cmd_cheat); desc("Enable Cheat Mode");
-	command("indicator", cmd_indicator);
-			desc("Enable Collision Indicator Mode");
-	command("pushmove", cmd_pushmove); desc("Enable Push Move Mode");
 	command("autoshot", cmd_autoshot); desc("Ingame screenshots/movie");
 	command("help", cmd_help); desc("Print usage info and exit");
 	command("options_man", cmd_options_man);

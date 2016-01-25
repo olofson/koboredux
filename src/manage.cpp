@@ -551,7 +551,7 @@ void _manage::pause(bool p)
 
 void _manage::lost_myship()
 {
-	if(!prefs->cmd_cheat && !prefs->cmd_pushmove)
+	if(!prefs->cheat && !prefs->pushmove)
 	{
 		hi.score = score;
 		hi.end_scene = scene_num;
@@ -586,7 +586,7 @@ void _manage::add_score(int sc)
 	score += sc;
 	if(score >= GIGA)	//This *could* happen... Or maybe not. :-)
 		score = GIGA - 1;
-	else if(!prefs->cmd_cheat)
+	else if(!prefs->cheat)
 	{
 		if(score >= scorefile.highscore())
 		{

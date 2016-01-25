@@ -214,6 +214,9 @@ class gfxengine_t
 	float xscale()		{ return xs * (1.0f / 256.0f); }
 	float yscale()		{ return ys * (1.0f / 256.0f); }
 
+	// Debug features
+	void show_coordinates(bool on)	{ _show_coordinates = on; }
+
   protected:
 	gfx_scalemodes_t	_scalemode;
 	int			_clamping;
@@ -268,6 +271,8 @@ class gfxengine_t
 	int		is_open;
 
 	int		screenshot_count;
+
+	bool		_show_coordinates;
 
 	static void on_frame(cs_engine_t *e);
 

@@ -90,6 +90,8 @@ gfxengine_t::gfxengine_t()
 		xratio[i] = yratio[i] = 0.0;
 
 	screenshot_count = 0;
+
+	_show_coordinates = false;
 }
 
 
@@ -1249,30 +1251,16 @@ void gfxengine_t::render_sprite(cs_obj_t *o)
 {
 	gfxengine->target()->sprite_fxp(o->point.gx, o->point.gy,
 			o->anim.bank, o->anim.frame);
-#if 0
-	SDL_Rect dest_rect;
-	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), o->anim.bank);
-	if(!b)
-		return;
-	s_sprite_t *s = s_get_sprite_b(b, o->anim.frame);
-	if(!s || !s->texture)
-		return;
-
-	dest_rect.x = CS2PIXEL((o->point.gx * gfxengine->xs + 128) >> 8);
-	dest_rect.y = CS2PIXEL((o->point.gy * gfxengine->ys + 128) >> 8);
-	dest_rect.x += (gfxengine->wrapx * gfxengine->xs + 128) >> 8;
-	dest_rect.y += (gfxengine->wrapy * gfxengine->ys + 128) >> 8;
-	dest_rect.x -= s->x * b->xs >> 8;
-	dest_rect.y -= s->y * b->ys >> 8;
-	dest_rect.w = b->w * b->xs >> 8;
-	dest_rect.h = b->h * b->ys >> 8;
-	SDL_SetTextureAlphaMod(s->texture, win->_alphamod);
-	SDL_SetTextureColorMod(s->texture,
-			win->get_r(win->_colormod),
-			win->get_g(win->_colormod),
-			win->get_b(win->_colormod));
-	SDL_RenderCopy(gfxengine->renderer(), s->texture, NULL, &dest_rect);
-#endif
+	if(gfxengine->_show_coordinates)
+	{
+		char s[64];
+		snprintf(s, sizeof(s), "W(%.2f, %.2f)\nG(%.2f, %.2f)",
+				(float)o->point.v.x / 256.0f,
+				(float)o->point.v.y / 256.0f,
+				(float)o->point.gx / 256.0f,
+				(float)o->point.gy / 256.0f);
+		gfxengine->target()->string_fxp(o->point.gx, o->point.gy, s);
+	}
 }
 
 

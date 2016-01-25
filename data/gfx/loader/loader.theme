@@ -9,6 +9,7 @@ message "Loading loading screen graphics"
 image B_OALOGO "olofsonarcade-do64-ovl.png" CLAMP CENTER
 image B_OAPLANET "oaplanet-pcb.png" 2 ABSSCALE SCALE2X
 sfont B_LOADER_FONT "loaderfont.png"
+alias B_SMALL_FONT B_LOADER_FONT FALLBACK
 alias B_NORMAL_FONT B_LOADER_FONT FALLBACK
 alias B_MEDIUM_FONT B_LOADER_FONT FALLBACK
 alias B_BIG_FONT B_LOADER_FONT FALLBACK

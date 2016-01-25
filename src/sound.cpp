@@ -454,7 +454,7 @@ bool KOBO_sound::checksound(int wid, const char *where)
 		return false;	// This is not an error...
 	if(!sounds[wid])
 	{
-		if(prefs->cmd_debug)
+		if(prefs->debug)
 			log_printf(ELOG, "%s: Sound \"%s\" (%s/%d) not"
 				" loaded!\n", where, kobo_soundnames[wid],
 				kobo_soundsymnames[wid], wid);

@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2002, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -40,6 +40,15 @@ void _map::clear()
 	for(i = 0; i < MAP_SIZEX; i++)
 		for(j = 0; j < MAP_SIZEY; j++)
 			pos(i, j) = SPACE;
+}
+
+void _map::mark_edges()
+{
+	int i;
+	for(i = 0; i < MAP_SIZEX; i++)
+		pos(i, 0) = 0;
+	for(i = 0; i < MAP_SIZEY; i++)
+		pos(0, i) = 0;
 }
 
 void _map::make_maze(int x, int y, int difx, int dify)
@@ -220,6 +229,8 @@ void _map::convert(unsigned ratio)
 			}
 			pos(i, j) = (bits2tile(p) << 8) | p;
 		}
+	if(prefs->show_map_border)
+		mark_edges();
 }
 
 int _map::test_line(int x1, int y1, int x3, int y3,

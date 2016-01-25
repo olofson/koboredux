@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2002, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -80,6 +80,7 @@ class _map
 	void clear();
 	void make_maze(int x, int y, int difx, int dify);
 	void convert(unsigned ratio);	// ratio < 64
+	void mark_edges();
 };
 
 #endif	// XKOBO_H_MAP

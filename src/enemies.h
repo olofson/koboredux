@@ -399,7 +399,7 @@ inline void _enemy::move()
 	//
 	if(!mapcollide && (hitsize >= 0) && (mindiff < (hitsize + HIT_MYSHIP)))
 	{
-		if(prefs->cmd_indicator)
+		if(prefs->indicator)
 			sound.g_player_damage();
 		else if(myship.alive())
 		{
@@ -417,7 +417,7 @@ inline void _enemy::move()
 				hitsize + HIT_BOLT, health);
 	if(dmg)
 	{
-		if(prefs->cmd_indicator)
+		if(prefs->indicator)
 			sound.g_player_damage();
 		else if(shootable)
 			hit(dmg);	// Bolt damages object

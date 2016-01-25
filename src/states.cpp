@@ -64,7 +64,7 @@ void kobo_basestate_t::pre_render()
 void kobo_basestate_t::post_render()
 {
 	screen.render_fx();
-	if(prefs->cmd_debug)
+	if(prefs->debug)
 	{
 		char buf[32];
 		woverlay->font(B_NORMAL_FONT);

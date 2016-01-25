@@ -631,7 +631,7 @@ void KOBO_main::build_screen()
 	pxright->place(xoffs + RIGHTLEDS_X, yoffs + RIGHTLEDS_Y,
 			RIGHTLEDS_W, RIGHTLEDS_H);
 
-	if(prefs->cmd_fps)
+	if(prefs->show_fps)
 	{
 		dfps = new display_t(gengine);
 		dfps->place(0, -9, 48, 18);
@@ -1456,7 +1456,7 @@ void kobo_gfxengine_t::frame()
 				gengine->screenshot();
 				break;
 			  case SDLK_r:
-				if(!prefs->cmd_debug)
+				if(!prefs->debug)
 					break;
 				ms = SDL_GetModState();
 				if(ms & (KMOD_ALT | KMOD_SHIFT | KMOD_GUI))
@@ -1766,23 +1766,16 @@ void kobo_gfxengine_t::frame()
 void kobo_gfxengine_t::pre_render()
 {
 	gsm.pre_render();
+	gfxengine->target()->font(B_DEBUG_FONT);
+	gfxengine->show_coordinates(prefs->show_coordinates);
 }
 
 
 void kobo_gfxengine_t::post_render()
 {
 	gsm.post_render();
-#if 0
-	if(!prefs->cmd_noframe)
-	{
-		woverlay->sprite(0, 0, B_FRAME_TL, 0, 0);
-		woverlay->sprite(WSIZE - 16, 0, B_FRAME_TR, 0, 0);
-		woverlay->sprite(0, WSIZE - 16, B_FRAME_BL, 0, 0);
-		woverlay->sprite(WSIZE - 16, WSIZE - 16, B_FRAME_BR, 0, 0);
-	}
-#endif
 #ifdef DEBUG
-	if(prefs->cmd_debug)
+	if(prefs->debug)
 	{
 		char buf[20];
 		snprintf(buf, sizeof(buf), "Obj: %d",
@@ -1801,7 +1794,7 @@ void kobo_gfxengine_t::post_render()
 		::screen.fps(f);
 		km.fps_count = 0;
 		km.fps_starttime = nt;
-		if(prefs->cmd_fps)
+		if(prefs->show_fps)
 		{
 			char buf[20];
 			snprintf(buf, sizeof(buf), "%.1f", f);
@@ -2132,7 +2125,7 @@ int main(int argc, char *argv[])
 		prefs->changed = 0;
 	}
 
-	if(prefs->cmd_fps)
+	if(prefs->show_fps)
 		km.print_fps_results();
 
 	km.close_logging();
