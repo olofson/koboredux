@@ -2,6 +2,12 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* palette PaletteID FilePath
+
+* table TableID [Values...] [Flags...]
+	* Use for color LUTs, window rects etc etc...
+	* Register named flags with each TableID?
+
 * Maybe we need multiple palettes? Or we just hardwire the loader...?
 
 * Why are we using world pixels in the sound API, and not 24:8 coordinates?

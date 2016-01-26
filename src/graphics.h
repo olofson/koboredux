@@ -286,9 +286,10 @@ class KOBO_ThemeParser
 	KOBO_TP_Tokens handle_path();
 	KOBO_TP_Tokens handle_alias();
 	KOBO_TP_Tokens parse_line();
+	KOBO_TP_Tokens parse_theme(const char *scriptpath, int flags = 0);
   public:
 	KOBO_ThemeParser();
-	bool load_theme(const char *path, int flags = 0);
+	bool load_theme(const char *themepath, int flags = 0);
 };
 
 #endif // _KOBO_GRAPHICS_H_

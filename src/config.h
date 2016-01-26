@@ -54,9 +54,9 @@
 #define vsnprintf _vsnprintf
 #endif
 
-#define	KOBO_LOADER_GFX_THEME	"GFX>>loader/loader.theme"
-#define	KOBO_FALLBACK_GFX_THEME	"GFX>>mono/mono.theme"
-#define	KOBO_DEFAULT_GFX_THEME	"GFX>>redux/redux.theme"
+#define	KOBO_LOADER_GFX_THEME	"GFX>>loader"
+#define	KOBO_FALLBACK_GFX_THEME	"GFX>>mono"
+#define	KOBO_DEFAULT_GFX_THEME	"GFX>>redux"
 
 /*
  * SDL2 pixel format for surface and textures.

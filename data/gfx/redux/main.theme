@@ -1,5 +1,5 @@
 # This theme is incomplete, so we load the mono theme first, as fallback!
-fallback "GFX>>mono/mono.theme"
+fallback "GFX>>mono"
 
 
 message "Kobo Redux Default Theme"

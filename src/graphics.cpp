@@ -709,30 +709,20 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_fallback()
 {
 	if(!expect(KTK_STRING))
 		return KTK_ERROR;
-	const char *fn;
-	if(!(fn = fullpath(sv)))
-	{
-		char *s = strdup(sv);
-		dump_line();
-		log_printf(WLOG, "[Theme Loader] Couldn't find fallback "
-				"graphics theme \"%s\"!\n", s);
-		free(s);
-		return KTK_EOLN;
-	}
+	char *s = strdup(sv);
 
-	log_printf(ULOG, "[Theme Loader] fallback \"%s\"\n", fn);
+	log_printf(ULOG, "[Theme Loader] fallback \"%s\"\n", s);
 
 	KOBO_ThemeParser tp;
-	if(!tp.load_theme(fn, KOBO_FALLBACK))
+	if(!tp.load_theme(s, KOBO_FALLBACK))
 	{
-		char *s = strdup(sv);
 		dump_line();
 		log_printf(WLOG, "[Theme Loader] Couldn't load fallback "
 				"graphics theme \"%s\"!\n", s);
-		free(s);
 	}
 
 	wdash->progress((float)pos / bufsize);
+	free(s);
 	return KTK_KW_FALLBACK;
 }
 
@@ -824,11 +814,19 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 }
 
 
-bool KOBO_ThemeParser::load_theme(const char *themepath, int flags)
+KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 {
-	// Because 'path' is sometimes a temporary string may be clobbered by
+	char *sp = (char *)fmap->get(scriptpath);
+	if(!sp)
+	{
+		log_printf(ELOG, "[Theme Loader] Couldn't find \"%s\"!\n",
+				scriptpath);
+		return KTK_ERROR;
+	}
+
+	// Because this might be a temporary string that may be clobbered by
 	// further extensive use of fmap->get()...
-	char *p = strdup(themepath);
+	sp = strdup(sp);
 
 	basepath[0] = 0;
 	path[0] = 0;
@@ -838,14 +836,15 @@ bool KOBO_ThemeParser::load_theme(const char *themepath, int flags)
 	unlex_pos = -1;
 	default_flags = flags;
 
-	log_printf(ULOG, "[Theme Loader] Loading \"%s\"...\n", p);
+	log_printf(ULOG, "[Theme Loader] Loading \"%s\"...\n", sp);
 
 	// Load theme file
-	FILE *f = fopen(p, "r");
+	FILE *f = fopen(sp, "r");
 	if(!f)
 	{
-		log_printf(ELOG, "[Theme Loader] Could not open \"%s\"!\n", p);
-		return false;
+		log_printf(ELOG, "[Theme Loader] Couldn't open \"%s\"!\n", sp);
+		free(sp);
+		return KTK_ERROR;
 	}
 
 	fseek(f, 0, SEEK_END);
@@ -853,23 +852,25 @@ bool KOBO_ThemeParser::load_theme(const char *themepath, int flags)
 	buffer = (char *)malloc(bufsize);
 	if(!buffer)
 	{
-		log_printf(ELOG, "[Theme Loader] OOM loading \"%s\"!\n", p);
+		log_printf(ELOG, "[Theme Loader] OOM loading \"%s\"!\n", sp);
 		fclose(f);
-		return false;
+		free(sp);
+		return KTK_ERROR;
 	}
 	fseek(f, 0, SEEK_SET);
 	size_t sz = fread(buffer, bufsize, 1, f);
 	if(sz < 0)
 	{
-		log_printf(ELOG, "[Theme Loader] Could not read \"%s\"!\n", p);
+		log_printf(ELOG, "[Theme Loader] Couldn't read \"%s\"!\n", sp);
 		fclose(f);
 		free(buffer);
-		return false;
+		free(sp);
+		return KTK_ERROR;
 	}
 	fclose(f);
 
 	// Grab base path for relative file paths
-	strncpy(basepath, p, sizeof(basepath));
+	strncpy(basepath, sp, sizeof(basepath));
 	char *s = strrchr(basepath, '/');
 	if(!s)
 		s = strrchr(basepath, '\\');
@@ -884,17 +885,21 @@ bool KOBO_ThemeParser::load_theme(const char *themepath, int flags)
 		;
 
 	free(buffer);
+	free(sp);
+	return KTK_EOF;
+}
 
+
+bool KOBO_ThemeParser::load_theme(const char *themepath, int flags)
+{
+	char p[KOBO_TP_MAXLEN];
+	char *tp = strdup(themepath);
+	snprintf(p, sizeof(p), "%s/main.theme", tp);
+	KOBO_TP_Tokens res = parse_theme(p, flags);
 	if(res != KTK_ERROR)
-	{
 		log_printf(ULOG, "[Theme Loader] \"%s\" loaded!\n", p);
-		free(p);
-		return true;
-	}
 	else
-	{
 		log_printf(ULOG, "[Theme Loader] \"%s\" failed to load!\n", p);
-		free(p);
-		return false;
-	}
+	free(tp);
+	return (res != KTK_ERROR);
 }

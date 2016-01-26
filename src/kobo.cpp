@@ -890,38 +890,25 @@ int KOBO_main::load_palette()
 
 int KOBO_main::load_graphics()
 {
-	const char *fn;
 	KOBO_ThemeParser tp;
 
 	gengine->reset_filters();
 
 	// Load the Olofson Arcade Loader graphics theme
-	if(!(fn = fmap->get(KOBO_LOADER_GFX_THEME)))
-		log_printf(WLOG, "Couldn't find loader graphics theme!\n");
-	else if(!tp.load_theme(fn))
+	if(!tp.load_theme(KOBO_LOADER_GFX_THEME))
 		log_printf(WLOG, "Couldn't load loader graphics theme!\n");
 
 	wdash->show_progress();
 
-	if(prefs->force_fallback_gfxtheme)
-	{
-		// Try to load fallback graphics theme
-		if(!(fn = fmap->get(KOBO_FALLBACK_GFX_THEME)))
-			log_printf(WLOG, "Couldn't find fallback graphics"
-					" theme!\n");
-		else if(!tp.load_theme(fn))
-			log_printf(WLOG, "Couldn't load fallback graphics"
-					" theme!\n");
-	}
+	// Try to load fallback graphics theme, if forced. (Normally, an
+	// incomplete theme should do this itself using 'fallback'!)
+	if(prefs->force_fallback_gfxtheme &&
+			!tp.load_theme(KOBO_FALLBACK_GFX_THEME))
+		log_printf(WLOG, "Couldn't load fallback graphics theme!\n");
 
 	// Try to load custom or default graphics theme
-	if(prefs->gfxtheme[0])
-		fn = fmap->get(prefs->gfxtheme);
-	else
-		fn = fmap->get(KOBO_DEFAULT_GFX_THEME);
-	if(!fn)
-		log_printf(WLOG, "Couldn't find graphics theme file!\n");
-	else if(!tp.load_theme(fn))
+	if(!tp.load_theme(prefs->gfxtheme[0] ? prefs->gfxtheme :
+			KOBO_DEFAULT_GFX_THEME))
 		log_printf(WLOG, "Couldn't load graphics theme!\n");
 
 	screen.init_graphics();
