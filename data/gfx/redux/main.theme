@@ -92,7 +92,7 @@ message "Loading fonts"
 #------------------------------------------------------------------------------
 
 path "fonts"
-#sfont B_SMALL_FONT "microfont2.png"
+sfont B_SMALL_FONT "microfont4.png"
 sfont B_NORMAL_FONT "arcadefont.png"
 alias B_MEDIUM_FONT B_NORMAL_FONT
 sfont B_BIG_FONT "bigfont.png"
