@@ -100,7 +100,7 @@ void dashboard_window_t::render_copyright()
 		return;
 	font(B_DEBUG_FONT);
 #endif
-	center(height() - 10, KOBO_COPYRIGHT);
+	center(height() - 16, KOBO_COPYRIGHT);
 }
 
 
