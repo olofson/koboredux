@@ -38,7 +38,7 @@ SoFont::SoFont(SDL_Renderer *_target)
 	spacew = 0;
 	cursShift = 0;
 	background = 0;
-	xspace = 1;
+	xspace = 0;
 	xscale = yscale = 256;
 }
 
