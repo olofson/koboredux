@@ -474,7 +474,7 @@ extern "C" {
 	}
 }
 
-int gfxengine_t::loadfont(int bank, const char *name, float srcscale)
+int gfxengine_t::loadfont(int bank, const char *name)
 {
 	if(!csengine)
 	{
@@ -511,7 +511,6 @@ int gfxengine_t::loadfont(int bank, const char *name, float srcscale)
 	b->userdata = sf;
 	b->usercleanup = font_bank_cleanup;
 
-	sf->ExtraSpace(srcscale ? (xs + 127) / 256 / srcscale : 1);
 	if(sf->Load(s_get_sprite(gfx, bank, 0)->surface))
 	{
 		s_detach_sprite(gfx, bank, 0);

@@ -113,7 +113,7 @@ class gfxengine_t
 
 	int loadimage(int bank, const char *name);
 	int loadtiles(int bank, int w, int h, const char *name);
-	int loadfont(int bank, const char *name, float srcscale);
+	int loadfont(int bank, const char *name);
 	int copyrect(int bank, int sbank, int sframe, SDL_Rect *r);
 	void draw_scale(int bank, float _xs, float _ys);
 	s_bank_t *alias_bank(int bank, int orig);

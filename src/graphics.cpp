@@ -643,7 +643,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sfont()
 	apply_flags(flags, scale);
 
 	// Load!
-	if(gengine->loadfont(bank, fn, scale) < 0)
+	if(gengine->loadfont(bank, fn) < 0)
 	{
 		dump_line();
 		log_printf(ELOG, "[Theme Loader] Couldn't load SFont "
