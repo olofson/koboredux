@@ -58,7 +58,6 @@ class dashboard_window_t : public window_t
 	float			_fade;
 	KOBO_Starfield		jingelstars;
 	void render_progress();
-	void render_copyright();
   public:
 	dashboard_window_t(gfxengine_t *e);
 	~dashboard_window_t();

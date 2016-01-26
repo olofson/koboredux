@@ -180,26 +180,31 @@ void _screen::title(int t, float fade, int mode)
 			PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
 			B_LOGO, 0, 1.0f, fade);
 #endif
-	// Version
+
 	if(fade > 0.9)
 	{
+		// Version
 		woverlay->font(B_NORMAL_FONT);
 		woverlay->center(195, KOBO_VERSION);
+
+		// Copyright
+		woverlay->font(B_SMALL_FONT);
+		woverlay->center(210, KOBO_COPYRIGHT);
 	}
 
 	// Cheat mode warning
 	if((prefs->cheat || prefs->pushmove) && (t % 1000 < 500))
 	{
 		woverlay->font(B_MEDIUM_FONT);
-		woverlay->center(210, "CHEAT MODE");
+		woverlay->center(230, "CHEAT MODE");
 	}
 #if 1
 	// WIP notice
 	if(!flashin(t - 2000))
 	{
 		woverlay->font(B_MEDIUM_FONT);
-		woverlay->center(230, "This is a Work in Progress!");
-		woverlay->center(240, "Check http://koboredux.com");
+		woverlay->center(260, "This is a Work in Progress!");
+		woverlay->center(270, "Check http://koboredux.com");
 	}
 #endif
 }

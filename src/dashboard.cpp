@@ -89,21 +89,6 @@ dashboard_window_t::~dashboard_window_t()
 }
 
 
-void dashboard_window_t::render_copyright()
-{
-#if 0
-	if(s_get_actual_bank(gengine->get_gfx(), B_SMALL_FONT) != B_SMALL_FONT)
-		return;
-	font(B_SMALL_FONT);
-#else
-	if(s_get_actual_bank(gengine->get_gfx(), B_DEBUG_FONT) != B_DEBUG_FONT)
-		return;
-	font(B_DEBUG_FONT);
-#endif
-	center(height() - 16, KOBO_COPYRIGHT);
-}
-
-
 void dashboard_window_t::mode(dashboard_modes_t m)
 {
 	const int psize = 288;
@@ -245,7 +230,7 @@ void dashboard_window_t::render_progress()
 	if(_msg)
 	{
 		font(B_LOADER_FONT);
-		center(height() - 40, _msg);
+		center(height() - 30, _msg);
 	}
 }
 
@@ -260,7 +245,6 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 	  case DASHBOARD_BLACK:
 		background(map_rgb(0x000000));
 		clear();
-		render_copyright();
 		break;
 	  case DASHBOARD_NOISE:
 	  {
@@ -279,7 +263,6 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 			foreground(map_rgb(get_engine()->palette(c)));
 			fillrect(0, y, width(), 1);
 		}
-		render_copyright();
 		break;
 	  }
 	  case DASHBOARD_TITLE:
@@ -300,7 +283,6 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 		sprite(width() / 2, height() / 2, B_OALOGO, 0);
 		if(_mode == DASHBOARD_LOADING)
 			render_progress();
-		render_copyright();
 		break;
 	}
 }
