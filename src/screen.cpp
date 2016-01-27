@@ -768,6 +768,9 @@ void _screen::set_noise(int source, float fade, float bright, float depth)
 }
 
 
+#define	FOCUSGRID_REP_HORIZON	33
+#define	FOCUSGRID_REP_NEAR	103
+
 void _screen::render_highlight()
 {
 	if(!highlight_h)
@@ -802,19 +805,6 @@ void _screen::render_highlight()
 
 	// Render!
 	int y = (int)((ypos - hf / 2.0f) * 256.0f);
-	int h = (int)(hf * 256.0f);
-	if(h < 128)
-		return;
-	for(int ty = -256; ty <= h; ty += h + 256)
-	{
-		int xo = PIXEL2CS(pubrand.get(NOISE_SIZEX_LOG2));
-		int xmax = ((WMAIN_W + CS2PIXEL(xo)) >> NOISE_SIZEX_LOG2) + 1;
-		for(int x = 0; x < xmax; ++x)
-			woverlay->sprite_fxp(PIXEL2CS(x << NOISE_SIZEX_LOG2) - xo,
-					ty + y,
-					B_NOISE, 6);
-	}
-
 	int x0 = wmain->phys_rect.x;
 	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), B_FOCUSFX);
 	if(!b)
@@ -824,43 +814,48 @@ void _screen::render_highlight()
 		return;
 	SDL_Renderer *r = gengine->renderer();
 	y = (int)((y * gengine->yscale() + 128) / 256) + wmain->phys_rect.y;
-	h = (int)(hf * gengine->yscale());
+	int h = (int)(hf * gengine->yscale());
 	wmain->select();
-	for(int ty = 0; ty < h; ++ty)
+	int c = 240 - hf;
+	if(c < 128)
+		c = 128;
+	else if(c > 255)
+		c = 255;
+	SDL_SetTextureColorMod(s->texture, c, c, c);
+	int xc = (b->w - wmain->phys_rect.w / gengine->xscale()) / 2;
+	for(int ty = 0; ty < h; ty += gengine->yscale())
 	{
-		float sy = (float)ty / (h - 1);
-		float scy = sy * hf;
-		float shape = 1.0f - sin(M_PI * sy);
-		float edges = shape * shape * shape;
-		float plasma = 0.5f + 0.5f * sin(t * 0.004f +
-				sin(t * 0.00017f) * scy * 0.18f);
-		float plasma2 = 0.5f + 0.5f * sin(t * .003 +
-				sin(t * 0.0001f) * scy * 0.12f);
-		int i = (int)((b->h - 1) * ((.5f * plasma + .5f * plasma *
-				shape) * (1.0f - edges) + edges));
-		int xo = (int)((t * 10 + 8192 * plasma2) *
-				gengine->xscale() / 256);
-		xo -= (int)(xo / b->w) * b->w;
-		int xmax = (int)((WMAIN_W * gengine->xscale() + xo) / b->w);
-		for(int x = 0; x <= xmax; ++x)
+		int i = b->h * ty / h;
+		float xo = fmod(t * 0.001f, 1.0f);
+		SDL_SetTextureAlphaMod(s->texture, 255 * sin(M_PI * ty / h));
+		for(int x = 0; ; ++x)
 		{
 			SDL_Rect sr, dr;
+			int xop = xo * (FOCUSGRID_REP_HORIZON * (h - ty) / h +
+					FOCUSGRID_REP_NEAR * ty / h);
 			sr.x = 0;
 			sr.y = i;
-			dr.x = x0 + (int)(x * b->w) - xo;
+			sr.w = b->w;
+			sr.h = 1;
+			dr.x = x0 + (int)(x * b->w - xc + xop) *
+					gengine->xscale();
+			if(dr.x > x0 + wmain->phys_rect.w)
+				break;
 			dr.y = y + ty;
-			dr.w = sr.w = b->w;
-			dr.h = sr.h = 1;
+			dr.w = sr.w * gengine->xscale();
+			dr.h = sr.h * gengine->yscale();
 			SDL_RenderCopy(r, s->texture, &sr, &dr);
 		}
 	}
+	SDL_SetTextureAlphaMod(s->texture, 255);
+	SDL_SetTextureColorMod(s->texture, 255, 255, 255);
 }
 
 
 void _screen::set_highlight(int y, int h)
 {
 	highlight_y = y;
-	highlight_h = h;
+	highlight_h = h * 1.25f;
 }
 
 

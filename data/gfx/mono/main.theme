@@ -153,4 +153,4 @@ message "Loading special FX graphics"
 path "fx"
 sprites B_NOISE "noise.png" 256 1 CLAMP
 sprites B_HITNOISE "hitnoise.png" 256 1 CLAMP
-image B_FOCUSFX "focusfx.png" CLAMP
+#image B_FOCUSFX "focusfx.png" CLAMP
