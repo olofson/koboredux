@@ -65,7 +65,7 @@ void _myship::state(_myship_state s)
 {
 	switch (s)
 	{
-	  case dead:
+	  case SHIP_DEAD:
 		sound.g_player_fire(false);
 		if(object)
 			gengine->free_obj(object);
@@ -74,7 +74,8 @@ void _myship::state(_myship_state s)
 			gengine->free_obj(crosshair);
 		crosshair = NULL;
 		break;
-	  case normal:
+	  case SHIP_INVULNERABLE:
+	  case SHIP_NORMAL:
 		if(!object)
 			object = gengine->get_obj(LAYER_PLAYER);
 		if(object)
@@ -87,7 +88,7 @@ void _myship::state(_myship_state s)
 
 void _myship::off()
 {
-	state(dead);
+	state(SHIP_DEAD);
 	int i;
 	for(i = 0; i < MAX_BOLTS; i++)
 		if(bolt_objects[i])
@@ -107,7 +108,7 @@ int _myship::init()
 	vx = vy = 0;
 	ax = ay = 0;
 	di = 1;
-	state(normal);
+	state(SHIP_NORMAL);
 
 	apply_position();
 
@@ -215,21 +216,25 @@ void _myship::move()
 	}
 
 	// Movement and collisions
-	if(_state == normal)
+	switch(_state)
 	{
+	  case SHIP_NORMAL:
+	  case SHIP_INVULNERABLE:
 		handle_controls();
 		update_position();
 		explo_time = 0;
-	}
-	else if(_state == dead)
+		break;
+	  case SHIP_DEAD:
 		explode();
+		break;
+	}
 
 	// Wrapping
 	x &= PIXEL2CS(WORLD_SIZEX) - 1;
 	y &= PIXEL2CS(WORLD_SIZEY) - 1;
 
 	// Fire control
-	if((_state == normal) && gamecontrol.get_shot())
+	if((_state != SHIP_DEAD) && gamecontrol.get_shot())
 	{
 		int fired = 0;
 		if(tail_reload_timer > 0)
@@ -292,8 +297,12 @@ void _myship::hit(int dmg)
 	if(!dmg)
 		return;
 
-	if(_state != normal)
+	if(_state != SHIP_NORMAL)
+	{
+		if(_state == SHIP_INVULNERABLE)
+			sound.g_player_damage(0.5f);
 		return;
+	}
 
 #ifdef	INVULNERABLE
 	printf("INVULNERABLE: Ignored %d damage to player ship.\n", dmg);
@@ -319,7 +328,7 @@ void _myship::hit(int dmg)
 	{
 		_health = 0;
 		manage.lost_myship();
-		state(dead);
+		state(SHIP_DEAD);
 		sound.g_player_explo_start();
 	}
 }
@@ -327,7 +336,7 @@ void _myship::hit(int dmg)
 
 void _myship::health_bonus(int h)
 {
-	if(_state != normal)
+	if(_state == SHIP_DEAD)
 		return;
 
 	_health += game.health * h / 100;
@@ -498,8 +507,9 @@ int _myship::hit_bolt(int ex, int ey, int hitsize, int health)
 
 void _myship::put_crosshair()
 {
-	if(_state != normal)
+	if(_state == SHIP_DEAD)
 		return;
+
 	if(!crosshair)
 	{
 		crosshair = gengine->get_obj(LAYER_OVERLAY);
@@ -535,6 +545,16 @@ int _myship::put()
 		}
 	}
 	return 0;
+}
+
+
+void _myship::render_fx()
+{
+	if(!myship.object)
+		return;
+	if(_state == SHIP_INVULNERABLE)
+		wmain->sprite_fxp(object->point.gx, object->point.gy,
+				B_SHIELDFX, SDL_GetTicks() / 30 % 8);
 }
 
 

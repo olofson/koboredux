@@ -1760,6 +1760,8 @@ void kobo_gfxengine_t::pre_render()
 
 void kobo_gfxengine_t::post_render()
 {
+	myship.render_fx();
+
 	gsm.post_render();
 #ifdef DEBUG
 	if(prefs->debug)

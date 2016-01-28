@@ -575,6 +575,7 @@ void _manage::destroyed_a_core()
 		delay_count = 50;
 		// Award extra health bonus for stage cleared!
 		myship.health_bonus(game.stage_cleared_health_bonus);
+		myship.state(SHIP_INVULNERABLE);
 		gamestate = GS_LEVELDONE;
 	}
 	screen.generate_fixed_enemies();

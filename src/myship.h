@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright (C) 1995, 1996  Akira Higuchi
  * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -31,8 +31,9 @@
 //---------------------------------------------------------------------------//
 enum _myship_state
 {
-	normal,
-	dead
+	SHIP_NORMAL,
+	SHIP_INVULNERABLE,
+	SHIP_DEAD
 };
 
 class _myship
@@ -56,7 +57,6 @@ class _myship
 	static cs_obj_t *bolt_objects[MAX_BOLTS];
 	static cs_obj_t *crosshair;
 
-	static void state(_myship_state s);
 	static void shot_single(int i, int dir, int offset);
 	static void apply_position();
 	static void explode();
@@ -64,6 +64,7 @@ class _myship
 	static void update_position();
   public:
 	 _myship();
+	static void state(_myship_state s);
 	static int get_velx()		{ return vx; }
 	static int get_vely()		{ return vy; }
 	static int get_x()		{ return CS2PIXEL(x); }
@@ -74,6 +75,7 @@ class _myship
 	static void off();
 	static void move();
 	static int put();
+	static void render_fx();
 	static void put_crosshair();
 	static int nose_fire();
 	static int tail_fire();
@@ -89,7 +91,7 @@ class _myship
 				game.regen_step * game.regen_step;
 	}
 	static void set_position(int px, int py);
-	static int alive()		{ return _state == normal; }
+	static int alive()		{ return _state != SHIP_DEAD; }
 	static bool in_range(int px, int py, int range, int &dist);
 };
 

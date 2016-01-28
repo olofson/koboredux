@@ -107,3 +107,4 @@ path "fx"
 #sprites B_NOISE "noise.png" 256 1 CLAMP
 #sprites B_HITNOISE "hitnoise.png" 256 1 CLAMP
 image B_FOCUSFX "gridfx3.png" CLAMP
+sprites B_SHIELDFX "shieldfx3.png" 32 32 CENTER

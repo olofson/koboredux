@@ -112,8 +112,6 @@ TODO:
 * Don't lock the entire spinplanet buffer unless we need to!
 	* Resize the window? Calls for clearing the border around it.
 
-* Audiality 2 is using SDL 1.2...!?
-
 * Bosses with complex collision zones, so they need to be shot from particular
   directions to take damage - a bit like mobile bases.
 
