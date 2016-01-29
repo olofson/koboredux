@@ -57,7 +57,7 @@ struct s_bank_t
 	unsigned	w, h;	/* Same size for all sprites in bank! */
 	int		xs, ys;	/* Rendering scale factor (24:8) */
 	unsigned	last;
-	unsigned	max;
+	int		max;
 	s_sprite_t	**sprites;
 	int		userflags;
 	void		*userdata;
@@ -67,7 +67,7 @@ struct s_bank_t
 /* Two dimensionally indexed sprite container */
 typedef struct s_container_t
 {
-	unsigned	max;
+	int		max;
 	s_bank_t	**banks;
 } s_container_t;
 
