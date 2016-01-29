@@ -1760,7 +1760,8 @@ void kobo_gfxengine_t::pre_render()
 
 void kobo_gfxengine_t::post_render()
 {
-	myship.render_fx();
+	// HACK: Custom rendering "callback!" The engine should support this...
+	myship.render();
 
 	gsm.post_render();
 #ifdef DEBUG

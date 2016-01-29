@@ -63,7 +63,6 @@ class _manage
 
 	// Timing
 	static int delay_count;
-	static int last_tick;
 
 	static void next_scene();
 	static void retry();

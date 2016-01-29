@@ -32,6 +32,8 @@
 
 _myship_state _myship::_state;
 int _myship::di;
+int _myship::fdi;
+int _myship::dframes;
 int _myship::x;
 int _myship::y;
 int _myship::vx;
@@ -78,8 +80,15 @@ void _myship::state(_myship_state s)
 	  case SHIP_NORMAL:
 		if(!object)
 			object = gengine->get_obj(LAYER_PLAYER);
+		// HACK: We don't use this for rendering in the normal fashion,
+		// because we want to filter rotation at the rendering frame
+		// rate. The engine should provide custom rendering callbacks
+		// for stuff like this...
 		if(object)
+		{
 			cs_obj_show(object);
+			cs_obj_hide(object);
+		}
 		break;
 	}
 	_state = s;
@@ -109,6 +118,12 @@ int _myship::init()
 	ax = ay = 0;
 	di = 1;
 	state(SHIP_NORMAL);
+
+	if(s_bank_t *b = s_get_bank(gengine->get_gfx(), B_PLAYER))
+		dframes = b->max + 1;
+	else
+		dframes = 8;
+	fdi = ((di - 1) * dframes << 8) / 8;
 
 	apply_position();
 
@@ -529,8 +544,6 @@ int _myship::put()
 {
 	// Player
 	apply_position();
-	if(object)
-		cs_obj_image(object, B_PLAYER, (di - 1) * 2);
 
 	// Bullets
 	int i;
@@ -548,13 +561,28 @@ int _myship::put()
 }
 
 
-void _myship::render_fx()
+void _myship::render()
 {
 	if(!myship.object)
 		return;
+
+	int maxd = dframes << 8;
+	int tdi = ((di - 1) * dframes << 8) / 8 + 127;
+	int ddi = tdi - fdi;
+	if(ddi < 0)
+		ddi = maxd - (-ddi) % maxd;
+	else
+		ddi %= maxd;
+	if(ddi > maxd / 2)
+		ddi -= maxd;
+	fdi += ddi * gengine->frame_delta_time() * 0.02f;
+	fdi = (fdi + maxd) % maxd;
+	wmain->sprite_fxp(object->point.gx, object->point.gy,
+			B_PLAYER, fdi >> 8);
+
 	if(_state == SHIP_INVULNERABLE)
 		wmain->sprite_fxp(object->point.gx, object->point.gy,
-				B_SHIELDFX, SDL_GetTicks() / 30 % 8);
+				B_SHIELDFX, manage.game_time() % 8);
 }
 
 

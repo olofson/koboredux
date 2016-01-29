@@ -39,7 +39,9 @@ enum _myship_state
 class _myship
 {
 	static _myship_state _state;
-	static int di;		// Direction
+	static int di;		// Direction (1: N, 2: NE, 3: W etc)
+	static int fdi;		// Filtered direction (sprite frames, 24:8)
+	static int dframes;	// Number of sprite rotation frames
 	static int x, y;	// Position
 	static int vx, vy;	// Velocity
 	static int ax, ay;	// Acceleration
@@ -75,7 +77,7 @@ class _myship
 	static void off();
 	static void move();
 	static int put();
-	static void render_fx();
+	static void render();
 	static void put_crosshair();
 	static int nose_fire();
 	static int tail_fire();

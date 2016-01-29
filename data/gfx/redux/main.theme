@@ -44,7 +44,7 @@ path "region-5"
 # TODO
 
 path "sprites"
-#sprites B_PLAYER "player.png" 40 40 2 CENTER
+sprites B_PLAYER "kobo-mk1c.png" 24 24 CENTER
 #sprites B_BMR_GREEN "bmr-green.png" 40 40 2 CENTER
 #sprites B_BMR_PURPLE "bmr-purple.png" 40 40 2 CENTER
 #sprites B_BMR_PINK "bmr-pink.png" 40 40 2 CENTER
@@ -52,15 +52,15 @@ path "sprites"
 #sprites B_MISSILE1 "missile.png" 40 40 2 CENTER
 #sprites B_MISSILE2 "missile2.png" 40 40 2 CENTER
 #sprites B_MISSILE3 "missile3.png" 40 40 2 CENTER
-sprites B_BOLT "orange-bolt.png" 8 8 1 CENTER
+sprites B_BOLT "orange-bolt.png" 8 8 CENTER
 sprites B_EXPLO1 "explo1.png" 24 24 CENTER
 alias B_EXPLO3 B_EXPLO1
 alias B_EXPLO4 B_EXPLO1
 alias B_EXPLO5 B_EXPLO1
-sprites B_ROCK1 "rock2.png" 32 32 1 CENTER
+sprites B_ROCK1 "rock2.png" 32 32 CENTER
 alias B_ROCK2 B_ROCK1
 alias B_ROCK3 B_ROCK1
-sprites B_ROCKEXPL "rockexpl.png" 64 64 1 CENTER
+sprites B_ROCKEXPL "rockexpl.png" 64 64 CENTER
 sprites B_BLT_GREEN "bullet.png" 8 8 CENTER
 sprites B_BLT_RED "red-bullet.png" 8 8 CENTER
 sprites B_BLT_BLUE "blue-bullet.png" 8 8 CENTER
