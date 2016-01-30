@@ -99,6 +99,7 @@ class gfxengine_t
 
 	// Data management (use while engine is open)
 	void reset_filters();
+	void mark_tiles(bool on);
 	void filterflags(int fgs);
 	void scalemode(gfx_scalemodes_t sm, int clamping = 0);
 	void source_scale(float x, float y);	// 0.0f ==> no scaling!
@@ -231,6 +232,7 @@ class gfxengine_t
 	s_filter_t	*sf1, *sf2;	// Scaling filter plugins
 	s_filter_t	*acf;		// Alpha cleaning plugin
 	s_filter_t	*bcf;		// Brightness/contrast plugin
+	s_filter_t	*markf;		// Tile edge mark filter
 	s_filter_t	*dsf;		// Display format plugin
 
 	// Scrolling and wrapping

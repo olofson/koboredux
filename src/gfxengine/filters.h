@@ -3,7 +3,7 @@
 	filters.h - Filters for the sprite manager
 ----------------------------------------------------------------------
  * Copyright 2001, 2003, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -185,6 +185,14 @@ int s_filter_light(s_bank_t *b, unsigned first, unsigned frames,
  *	SF_CLAMP_SFONT		SFont mode; first row is ignored.
  */
 int s_filter_noise(s_bank_t *b, unsigned first, unsigned frames,
+		s_filter_args_t *args);
+
+/*
+ * Mark edges of frames with a 1 pixel outline in the specified color.
+ *
+ * args.[rgb] = marker color
+ */
+int s_filter_markedges(s_bank_t *b, unsigned first, unsigned frames,
 		s_filter_args_t *args);
 
 #ifdef __cplusplus

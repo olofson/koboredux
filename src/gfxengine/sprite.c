@@ -59,6 +59,7 @@ s_filter_t *s_insert_filter(s_filter_cb_t callback)
 		return NULL;
 
 	nf->callback = callback;
+	nf->args.enabled = 1;
 	nf->next = filters;
 	filters = nf;
 	return nf;
@@ -72,6 +73,7 @@ s_filter_t *s_add_filter(s_filter_cb_t callback)
 		return NULL;
 
 	nf->callback = callback;
+	nf->args.enabled = 1;
 	if(!filters)
 		filters = nf;
 	else
@@ -118,12 +120,15 @@ static void __run_plugins(s_bank_t *b, unsigned first, unsigned frames)
 	s_filter_t *f = filters;
 	while(f)
 	{
-		int oflags = f->args.flags;
-		f->args.flags |= s_filter_flags;
-		f->callback(b, first, frames, &f->args);
-		f->args.flags = oflags;
+		if(f->args.enabled)
+		{
+			int oflags = f->args.flags;
+			f->args.flags |= s_filter_flags;
+			f->callback(b, first, frames, &f->args);
+			f->args.flags = oflags;
+		}
 		f = f->next;
-	}	
+	}
 }
 
 

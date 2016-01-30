@@ -108,6 +108,7 @@ void prefs_t::init()
 	yesno("show_map_border", show_map_border, 0); desc("Show Map Border");
 	yesno("show_coordinates", show_coordinates, 0);
 			desc("Show Object Coordinates");
+	yesno("show_tiles", show_tiles, 0); desc("Show Tile/Sprite Edges");
 	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
 
 	comment("--- File paths -----------------------------");

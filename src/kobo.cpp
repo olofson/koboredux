@@ -893,6 +893,7 @@ int KOBO_main::load_graphics()
 	KOBO_ThemeParser tp;
 
 	gengine->reset_filters();
+	gengine->mark_tiles(prefs->show_tiles);
 
 	// Load the Olofson Arcade Loader graphics theme
 	if(!tp.load_theme(KOBO_LOADER_GFX_THEME))

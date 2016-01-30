@@ -3,7 +3,7 @@
 	filters.c - Filters for the sprite manager
 ----------------------------------------------------------------------
  * Copyright 2001, 2003, 2006, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -1226,3 +1226,47 @@ int s_filter_noise(s_bank_t *bank, unsigned first, unsigned frames,
 	}
 	return 0;
 }
+
+static inline void s_mark_blend(pix_t *p, int r, int g, int b, int a)
+{
+	p->r = ((int)p->r + r) >> 1;
+	p->g = ((int)p->g + g) >> 1;
+	p->b = ((int)p->b + b) >> 1;
+	if(a > p->a)
+		p->a = a;
+}
+
+int s_filter_markedges(s_bank_t *b, unsigned first, unsigned frames,
+		s_filter_args_t *args)
+{
+	/* TODO: Mark individual gryphs of SFonts! */
+	int x, y;
+	int y0 = args->flags & SF_CLAMP_SFONT ? 1 : 0;
+	unsigned i;
+	for(i = 0; i < frames; ++i)
+	{
+		pix_t *p1, *p2;
+		s_sprite_t *s = s_get_sprite_b(b, first + i);
+		if(!s)
+			continue;
+		for(y = y0; y < b->h; ++y)
+		{
+			p1 = (pix_t *)((char *)s->surface->pixels +
+					y * s->surface->pitch);
+			p2 = p1 + b->w - 1;
+			s_mark_blend(p1, args->r, args->g, args->b, 128);
+			s_mark_blend(p2, args->r, args->g, args->b, 128);
+		}
+		p1 = (pix_t *)((char *)s->surface->pixels +
+				y0 * s->surface->pitch);
+		p2 = (pix_t *)((char *)s->surface->pixels +
+					(b->h - 1) * s->surface->pitch);
+		for(x = 0; x < b->w; ++x)
+		{
+			s_mark_blend(p1 + x, args->r, args->g, args->b, 128);
+			s_mark_blend(p2 + x, args->r, args->g, args->b, 128);
+		}
+	}
+	return 0;
+}
+

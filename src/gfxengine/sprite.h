@@ -195,6 +195,7 @@ unsigned s_get_actual_bank(s_container_t *c, unsigned bank);
  */
 typedef struct s_filter_args_t
 {
+	int		enabled;
 	int		x, y, z;
 	float		fx, fy, fz;
 	int		min, max;

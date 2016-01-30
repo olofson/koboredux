@@ -55,7 +55,7 @@ gfxengine_t::gfxengine_t()
 	wrapx = wrapy = 0;
 	xs = ys = 256;		// 1.0
 	sxs = sys = 256;	// 1.0
-	sf1 = sf2 = acf = bcf = dsf = NULL;
+	sf1 = sf2 = acf = bcf = markf = dsf = NULL;
 	gfx = NULL;
 	_palette = NULL;
 	csengine = NULL;
@@ -208,9 +208,11 @@ void gfxengine_t::reset_filters()
 	sf2 = s_add_filter(s_filter_scale);
 	acf = s_add_filter(s_filter_cleanalpha);
 	bcf = s_add_filter(s_filter_brightness);
+	markf = s_add_filter(s_filter_markedges);
 	dsf = s_add_filter(s_filter_displayformat);
 
 	/* Set default parameters */
+	mark_tiles(false);
 	clampcolor(0, 0, 0, 0);
 	scalemode(GFX_SCALE_NEAREST);
 	noalpha(0);
@@ -354,6 +356,17 @@ void gfxengine_t::absolute_scale(float x, float y)
 	sxs = (int)(x * 256.f);
 	sys = (int)(y * 256.f);
 	scalemode(_scalemode, _clamping);
+}
+
+
+void gfxengine_t::mark_tiles(bool on)
+{
+	if(!markf)
+		return;
+	markf->args.enabled = on;
+	markf->args.r = 128;
+	markf->args.g = 0;
+	markf->args.b = 128;
 }
 
 
