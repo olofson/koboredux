@@ -2,8 +2,6 @@
 TODO:
 -------------------------------------------------------------------------------
 
-* Activate the shield for a moment when destroying each core...?
-
 * palette PaletteID FilePath
 
 * table TableID [Values...] [Flags...]

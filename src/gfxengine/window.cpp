@@ -23,11 +23,7 @@
 #include "config.h"
 #include "logger.h"
 #include "window.h"
-#include "gfxengine.h"
 #include "sofont.h"
-
-#define	SELECT	if(engine->selected != this) select();
-
 
 enum gfx_offscreen_mode_t
 {
@@ -51,8 +47,9 @@ windowbase_t::windowbase_t(gfxengine_t *e)
 	xs = engine->xs;
 	ys = engine->ys;
 	fgcolor = bgcolor = 0;
-	_alphamod = 255;
-	_colormod = 0xffffffff;
+	_blendmode = GFX_DEFAULT_BLENDMODE;
+	_alphamod = GFX_DEFAULT_ALPHAMOD;
+	_colormod = GFX_DEFAULT_COLORMOD;
 	memset(&phys_rect, 0, sizeof(phys_rect));
 }
 
@@ -216,12 +213,14 @@ void stream_window_t::invalidate(SDL_Rect *r)
 	refresh(r);
 }
 
-
 void stream_window_t::render(SDL_Rect *r)
 {
 	if(_autoinvalidate)
 		invalidate();
-	SELECT
+	check_select();
+	// The window owns this texture, and it's only once per frame and
+	// window, so we don't bother optimizing the blending setup here.
+	SDL_SetTextureBlendMode(texture, (SDL_BlendMode)_blendmode);
 	SDL_SetTextureAlphaMod(texture, _alphamod);
 	SDL_SetTextureColorMod(texture,
 			get_r(_colormod), get_g(_colormod), get_b(_colormod));
@@ -394,7 +393,7 @@ void window_t::invalidate(SDL_Rect *r)
 {
 	if(!engine || !renderer || !_offscreen)
 		return;
-	SELECT
+	check_select();
 	refresh(r);
 	offscreen_invalidate(r);
 }
@@ -444,12 +443,14 @@ void window_t::string_fxp(int _x, int _y, const char *txt)
 	_x = CS2PIXEL((_x * xs + 128) >> 8);
 	_y = CS2PIXEL((_y * ys + 128) >> 8);
 	SoFont *f = engine->get_font(_font);
-	if(!f)
+	if(!f || !f->GetGlyphs())
 		return;
-	SELECT
+	check_select();
 	_x += phys_rect.x;
 	_y += phys_rect.y;
+	set_texture_params(f->GetGlyphs());
 	f->PutString(_x, _y, txt);
+	restore_texture_params(f->GetGlyphs());
 }
 
 
@@ -461,13 +462,15 @@ void window_t::center_fxp(int _y, const char *txt)
 		return;
 
 	SoFont *f = engine->get_font(_font);
-	if(!f)
+	if(!f || !f->GetGlyphs())
 		return;
-	SELECT
+	check_select();
 	int _x = (phys_rect.w - f->TextWidth(txt) + 1) / 2;
 	_x += phys_rect.x;
 	_y += phys_rect.y;
+	set_texture_params(f->GetGlyphs());
 	f->PutString(_x, _y, txt);
+	restore_texture_params(f->GetGlyphs());
 }
 
 
@@ -481,34 +484,21 @@ void window_t::center_token_fxp(int _x, int _y, const char *txt,
 		return;
 
 	SoFont *f = engine->get_font(_font);
-	if(!f)
+	if(!f || !f->GetGlyphs())
 		return;
-	SELECT
+	check_select();
 	int _cx;
 	if(-1 == token)
 		_cx = _x - f->TextWidth(txt)/2;
+	else if(const char *tok = strchr(txt, token))
+		_cx = _x - f->TextWidth(txt, 0, tok - txt);
 	else
-	{
-		int tokpos;
-		/*
-		 * My docs won't say if strchr(???, 0) is legal
-		 * or even defined, so I'm not taking any chances...
-		 */
-		if(token)
-		{
-			const char *tok = strchr(txt, token);
-			if(tok)
-				tokpos = tok-txt;
-			else
-				tokpos = 255;
-		}
-		else
-			tokpos = 255;
-		_cx = _x - f->TextWidth(txt, 0, tokpos);
-	}
+		_cx = _x - f->TextWidth(txt, 0);
 	_cx += phys_rect.x;
 	_y += phys_rect.y;
+	set_texture_params(f->GetGlyphs());
 	f->PutString(_cx, _y, txt);
+	restore_texture_params(f->GetGlyphs());
 }
 
 
@@ -556,7 +546,7 @@ void window_t::clear(SDL_Rect *r)
 	SDL_Rect sr, dr;
 	if(!engine || !renderer)
 		return;
-	SELECT
+	check_select();
 	if(!r)
 	{
 		sr = phys_rect;
@@ -583,13 +573,14 @@ void window_t::clear(SDL_Rect *r)
 	}
 	if(s)
 	{
+		// Untested!
+		set_texture_params(s->texture);
 		SDL_RenderCopy(renderer, s->texture, &sr, &dr);
+		restore_texture_params(s->texture);
 	}
 	else
 	{
-		SDL_SetRenderDrawColor(renderer,
-				get_r(bgcolor), get_g(bgcolor),
-				get_b(bgcolor), get_a(bgcolor));
+		set_render_params(renderer, bgcolor);
 		SDL_RenderFillRect(renderer, &dr);
 	}
 }
@@ -601,6 +592,7 @@ void window_t::point(int _x, int _y)
 		return;
 	if((_offscreen == OFFSCREEN_SOFTWARE) && (xs == 256) && (ys == 256))
 	{
+		// TODO: Implement _colormod, _alphamod and _blendmode
 		Uint32 *p;
 		if((_x < 0) || (_x >= osurface->w) || (_y < 0) ||
 				(_y >= osurface->h))
@@ -611,7 +603,7 @@ void window_t::point(int _x, int _y)
 	}
 	else
 	{
-		SELECT
+		check_select();
 		SDL_Rect r;
 		int x2 = ((_x + 1) * xs + 128) >> 8;
 		int y2 = ((_y + 1) * ys + 128) >> 8;
@@ -621,9 +613,7 @@ void window_t::point(int _x, int _y)
 		r.y = phys_rect.y + _y;
 		r.w = x2 - _x;
 		r.h = y2 - _y;
-		SDL_SetRenderDrawColor(renderer, get_r(fgcolor),
-				get_g(fgcolor), get_b(fgcolor),
-				get_a(fgcolor));
+		set_render_params(renderer, fgcolor);
 		SDL_RenderFillRect(renderer, &r);
 	}
 }
@@ -637,14 +627,13 @@ void window_t::fillrect(int _x, int _y, int w, int h)
 	_y = (_y * ys + 128) >> 8;
 	if(!engine || !renderer)
 		return;
-	SELECT
+	check_select();
 	SDL_Rect r;
 	r.x = phys_rect.x + _x;
 	r.y = phys_rect.y + _y;
 	r.w = x2 - _x;
 	r.h = y2 - _y;
-	SDL_SetRenderDrawColor(renderer, get_r(fgcolor), get_g(fgcolor),
-			get_b(fgcolor), get_a(fgcolor));
+	set_render_params(renderer, fgcolor);
 	SDL_RenderFillRect(renderer, &r);
 }
 
@@ -666,14 +655,13 @@ void window_t::fillrect_fxp(int _x, int _y, int w, int h)
 	h = CS2PIXEL(((h + _y) * ys + 128) >> 8) - yy;
 	if(!engine || !renderer)
 		return;
-	SELECT
+	check_select();
 	SDL_Rect r;
 	r.x = phys_rect.x + xx;
 	r.y = phys_rect.y + yy;
 	r.w = w;
 	r.h = h;
-	SDL_SetRenderDrawColor(renderer, get_r(fgcolor), get_g(fgcolor),
-			get_b(fgcolor), get_a(fgcolor));
+	set_render_params(renderer, fgcolor);
 	SDL_RenderFillRect(renderer, &r);
 }
 
@@ -698,15 +686,14 @@ void window_t::sprite_fxp(int _x, int _y, int bank, int frame)
 	_y = CS2PIXEL((_y * ys + 128) >> 8);
 	SDL_Rect r;
 
-	SELECT
+	check_select();
 	r.x = phys_rect.x + _x - (s->x * b->xs >> 8);
 	r.y = phys_rect.y + _y - (s->y * b->ys >> 8);
 	r.w = b->w * b->xs >> 8;
 	r.h = b->h * b->ys >> 8;
-	SDL_SetTextureAlphaMod(s->texture, _alphamod);
-	SDL_SetTextureColorMod(s->texture,
-			get_r(_colormod), get_g(_colormod), get_b(_colormod));
+	set_texture_params(s->texture);
 	SDL_RenderCopy(renderer, s->texture, NULL, &r);
+	restore_texture_params(s->texture);
 }
 
 
@@ -725,15 +712,14 @@ void window_t::sprite_fxp_scale(int _x, int _y, int bank, int frame,
 	_y = CS2PIXEL((_y * ys + 128) >> 8);
 	SDL_Rect r;
 
-	SELECT
+	check_select();
 	r.x = phys_rect.x + _x - (s->x * b->xs >> 8);
 	r.y = phys_rect.y + _y - (s->y * b->ys >> 8);
 	r.w = (b->w * b->xs >> 8) * xscale;
 	r.h = (b->h * b->ys >> 8) * yscale;
-	SDL_SetTextureAlphaMod(s->texture, _alphamod);
-	SDL_SetTextureColorMod(s->texture,
-			get_r(_colormod), get_g(_colormod), get_b(_colormod));
+	set_texture_params(s->texture);
 	SDL_RenderCopy(renderer, s->texture, NULL, &r);
+	restore_texture_params(s->texture);
 }
 
 
@@ -743,7 +729,7 @@ void window_t::blit(int dx, int dy,
 	if(!engine || !src || !renderer || !src->otexture)
 		return;
 
-	SELECT
+	check_select();
 	SDL_Rect src_rect;
 	int sx2 = ((sx + sw) * src->xs + 128) >> 8;
 	int sy2 = ((sy + sh) * src->ys + 128) >> 8;
@@ -758,7 +744,9 @@ void window_t::blit(int dx, int dy,
 	dest_rect.w = src_rect.w * xs / src->xs;
 	dest_rect.h = src_rect.h * ys / src->ys;
 
+	set_texture_params(src->otexture);
 	SDL_RenderCopy(renderer, src->otexture, &src_rect, &dest_rect);
+	restore_texture_params(src->otexture);
 }
 
 
@@ -767,7 +755,7 @@ void window_t::blit(int dx, int dy, window_t *src)
 	if(!engine || !src || !renderer || !src->otexture)
 		return;
 
-	SELECT
+	check_select();
 	SDL_Rect src_rect;
 	src_rect.x = 0;
 	src_rect.y = 0;
@@ -780,7 +768,9 @@ void window_t::blit(int dx, int dy, window_t *src)
 	dest_rect.w = src_rect.w * xs / src->xs;
 	dest_rect.h = src_rect.h * ys / src->ys;
 
+	set_texture_params(src->otexture);
 	SDL_RenderCopy(renderer, src->otexture, &src_rect, &dest_rect);
+	restore_texture_params(src->otexture);
 }
 
 

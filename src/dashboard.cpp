@@ -130,7 +130,8 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		if(_mode == DASHBOARD_LOADING)
 			break;
 	  case DASHBOARD_LOADING:
-		wplanet->colormod(wplanet->map_rgb(128, 128, 128));
+		wplanet->resetmod();
+		wplanet->colormod(128, 128, 128);
 		wplanet->track_speed(1.0f, 1.0f);
 		wplanet->track_offset(0.0f, 0.0f);
 		wplanet->set_texture_repeat(2);
@@ -238,6 +239,7 @@ void dashboard_window_t::render_progress()
 void dashboard_window_t::refresh(SDL_Rect *r)
 {
 	double t = SDL_GetTicks() * 15;
+	resetmod();
 	switch(_mode)
 	{
 	  case DASHBOARD_OFF:
@@ -274,6 +276,7 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 	  case DASHBOARD_JINGLE:
 		background(map_rgb(0x000000));
 		clear();
+		wplanet->resetmod();
 		wplanet->colormod(wplanet->map_gray(_fade * 128.0f));
 		wplanet->track_offset(t * 0.0000015f + 0.2f,
 				t * 0.0000015f + 0.6f);

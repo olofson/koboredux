@@ -170,11 +170,11 @@ void _screen::title(int t, float fade, int mode)
 					256.0f),
 			B_LOGO, 0);
 #elif 1
-	woverlay->alphamod(fade * fade * fade);
+	woverlay->alphamod(fade * fade * fade * 255.0f);
 	woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
 			PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
 			B_LOGO, 0);
-	woverlay->alphamod(1.0f);
+	woverlay->alphamod(255);
 #else
 	woverlay->sprite_fxp_scale(PIXEL2CS(woverlay->width() - 320) / 2,
 			PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
@@ -570,6 +570,7 @@ void _screen::scroller()
 
 void _screen::init_scene(int sc)
 {
+	wplanet->resetmod();
 	if(sc < 0)
 	{
 		// Intro mode
@@ -590,8 +591,8 @@ void _screen::init_scene(int sc)
 			scene_num = -(sc + 1) % scene_max;
 			restarts = -(sc + 1) / scene_max;
 		}
-		wplanet->colormod(wplanet->map_rgb(128, 128, 128));
-		wmain->colormod(wmain->map_rgb(128, 128, 128));
+		wplanet->colormod(128, 128, 128);
+		wmain->colormod(128, 128, 128);
 	}
 	else
 	{
@@ -600,8 +601,8 @@ void _screen::init_scene(int sc)
 		scene_num = sc % scene_max;
 		restarts = sc / scene_max;
 		radar_mode = RM_RADAR;
-		wplanet->colormod(wplanet->map_rgb(128, 128, 128));
-		wmain->colormod(wmain->map_rgb(255, 255, 255));
+		wplanet->colormod(128, 128, 128);
+		wmain->colormod(255, 255, 255);
 	}
 	region = scene_num / 10 % 5;
 	level = scene_num % 10 + 1;
@@ -1022,29 +1023,34 @@ void _screen::render_background()
 		int yo = ((1.0f - ny) * 2.0f + 1.5f) * bh + (WMAIN_H << 7);
 		int x = xo % bw;
 		int y = yo % bh;
-		wmain->colormod(wmain->map_rgb(128, 128, 128));	// HalfBrite!
+		wmain->resetmod();
+		wmain->colormod(128, 128, 128);	// HalfBrite!
 		wmain->sprite_fxp(x - bw, y - bh, bg_backdrop, 0);
 		wmain->sprite_fxp(x, y - bh, bg_backdrop, 0);
 		wmain->sprite_fxp(x - bw, y, bg_backdrop, 0);
 		wmain->sprite_fxp(x, y, bg_backdrop, 0);
-		if(!show_title)
-			wmain->colormod(wmain->map_rgb(255, 255, 255));
 	}
 
 	// Render clouds
 	if(bg_clouds)
 	{
 //TODO:
+		wmain->resetmod();
+		wmain->alphamod(128);
 //		wmain->sprite_fxp(vx, vy, bg_clouds + region, 0);
 	}
 
 	// Render parallax starfield
 	if(bg_altitude >= 96)
+	{
+		wmain->resetmod();
 		stars.render(gengine->xoffs(LAYER_BASES),
 				gengine->yoffs(LAYER_BASES));
+	}
 
 	// Render parallax level bases
-	wmain->colormod(wmain->map_rgb(128, 128, 128));	// HalfBrite!
+	wmain->resetmod();
+	wmain->colormod(128, 128, 128);	// HalfBrite!
 	for(int m = KOBO_BG_MAP_LEVELS - 1; m >= 0; --m)
 	{
 		if(level + m >= 10)
@@ -1066,10 +1072,12 @@ void _screen::render_background()
 				gengine->xoffs(LAYER_BASES),
 				gengine->yoffs(LAYER_BASES));
 	}
-	if(!show_title)
-		wmain->colormod(wmain->map_rgb(255, 255, 255));
 
 	// Render bases
+	if(show_title)
+		wmain->colormod(128, 128, 128);
+	else
+		wmain->colormod(255, 255, 255);
 	render_bases(map, B_R1_TILES + region,
 			gengine->xoffs(LAYER_BASES),
 			gengine->yoffs(LAYER_BASES));

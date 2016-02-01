@@ -634,7 +634,6 @@ void spinplanet_t::refresh(SDL_Rect *r)
 	++ditherstate;
 }
 
-
 void spinplanet_t::render(SDL_Rect *r)
 {
 	switch(mode)
@@ -643,9 +642,7 @@ void spinplanet_t::render(SDL_Rect *r)
 		break;
 	  case SPINPLANET_BLACK:
 		select();
-		SDL_SetRenderDrawColor(renderer,
-				get_r(bgcolor), get_g(bgcolor),
-				get_b(bgcolor), get_a(bgcolor));
+		set_render_params(renderer, background());
 		SDL_RenderFillRect(renderer, r);
 		break;
 	  case SPINPLANET_SPIN:

@@ -5,7 +5,7 @@
  * Copyright ???? Karl Bartel
  * Copyright ???? Luc-Olivier de Charriere
  * Copyright 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -51,6 +51,13 @@
 		  glyphs have been extracted, completely disregarding contents.
 		* Added scaling support.
 		* Fixed some API naming inconsistencies.
+
+	David Olofson 2016:
+		* ExtraSpace() default changed to 0, to avoid ugly hacks when
+		  scaling the source textures. Fonts need to include full
+		  spacing in their encoding!
+		* Added GetGlyphs() to allow the application to access SDL2
+		  blending parameters.
 */
 
 #ifndef __SOFONT_H
@@ -104,6 +111,8 @@ public:
 	int GetMaxChar()	{ return max_i; }
 
 	void ExtraSpace(int xs)	{ xspace = xs; }
+
+	SDL_Texture *GetGlyphs()	{ return glyphs; }
 
 protected:
 	SDL_Renderer *target;

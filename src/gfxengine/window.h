@@ -3,7 +3,7 @@
 	window.h - Generic Rendering Window
 ---------------------------------------------------------------------------
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -185,9 +185,21 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
+#include "gfxengine.h"
 #include "SDL.h"
 
 class gfxengine_t;
+
+enum blendmodes_t {
+	GFX_BLENDMODE_COPY =	SDL_BLENDMODE_NONE,
+	GFX_BLENDMODE_ALPHA =	SDL_BLENDMODE_BLEND,
+	GFX_BLENDMODE_ADD =	SDL_BLENDMODE_ADD,
+	GFX_BLENDMODE_MOD =	SDL_BLENDMODE_MOD
+};
+
+#define	GFX_DEFAULT_BLENDMODE	GFX_BLENDMODE_COPY
+#define	GFX_DEFAULT_COLORMOD	0xffffffff
+#define	GFX_DEFAULT_ALPHAMOD	255
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -212,30 +224,95 @@ class windowbase_t
 	int autoinvalidate()		{ return _autoinvalidate; }
 
 	virtual void select();
+	inline void check_select()
+	{
+		if(engine->selected != this)
+			select();
+	}
+
 	virtual void invalidate(SDL_Rect *r = NULL)	{ ; }
 	virtual void refresh(SDL_Rect *r)		{ ; }
 
 	void foreground(Uint32 color)	{ fgcolor = color; }
-	void background(Uint32 color)	{ bgcolor = color; }
+	Uint32 foreground()	{ return fgcolor; }
 
-	void colormod(Uint32 color)
+	void background(Uint32 color)	{ bgcolor = color; }
+	Uint32 background()	{ return bgcolor; }
+
+	inline void colormod(Uint32 color = GFX_DEFAULT_COLORMOD)
 	{
 		_colormod = color;
 	}
-	void alphamod(float a)
+	inline void colormod(Uint8 r, Uint8 g, Uint8 b)
 	{
-		_alphamod = (int)(a * 255.0f);
+		_colormod = map_rgb(r, g, b);
+	}
+	inline void alphamod(Uint8 am = GFX_DEFAULT_ALPHAMOD)
+	{
+		_alphamod = am;
+	}
+	inline void blendmode(blendmodes_t bm = GFX_DEFAULT_BLENDMODE)
+	{
+		_blendmode = bm;
+	}
+
+	void resetmod()
+	{
+		colormod();
+		alphamod();
+		blendmode();
+	}
+
+	inline void set_texture_params(SDL_Texture *tx)
+	{
+		if(_blendmode != GFX_DEFAULT_BLENDMODE)
+			SDL_SetTextureBlendMode(tx,
+					(SDL_BlendMode)_blendmode);
+		if(_alphamod != GFX_DEFAULT_ALPHAMOD)
+			SDL_SetTextureAlphaMod(tx, _alphamod);
+		if(_colormod != GFX_DEFAULT_COLORMOD)
+			SDL_SetTextureColorMod(tx, get_r(_colormod),
+				get_g(_colormod), get_b(_colormod));
+	}
+	inline void restore_texture_params(SDL_Texture *tx)
+	{
+		if(_blendmode != GFX_DEFAULT_BLENDMODE)
+			SDL_SetTextureBlendMode(tx,
+					(SDL_BlendMode)GFX_DEFAULT_BLENDMODE);
+		if(_alphamod != GFX_DEFAULT_ALPHAMOD)
+			SDL_SetTextureAlphaMod(tx, GFX_DEFAULT_ALPHAMOD);
+		if(_colormod != GFX_DEFAULT_COLORMOD)
+			SDL_SetTextureColorMod(tx, get_r(GFX_DEFAULT_COLORMOD),
+					get_g(GFX_DEFAULT_COLORMOD),
+					get_b(GFX_DEFAULT_COLORMOD));
+	}
+
+	inline void set_render_params(SDL_Renderer *rn, Uint32 color)
+	{
+		SDL_SetRenderDrawBlendMode(rn, (SDL_BlendMode)_blendmode);
+		Uint32 bc = mulrgba(color,
+				(_colormod & 0xffffff) | (_alphamod << 24));
+		SDL_SetRenderDrawColor(rn, get_r(bc), get_g(bc), get_b(bc),
+				get_a(bc));
 	}
 
 	// Color tools
-	Uint32 mulrgb(Uint32 c1, Uint32 c2)
+	inline Uint32 mulrgb(Uint32 c1, Uint32 c2)
 	{
 		int r = ((c1 >> 16) & 0xff) * ((c2 >> 16) & 0xff) * 258 >> 16;
 		int g = ((c1 >> 8) & 0xff) * ((c2 >> 8) & 0xff) * 258 >> 16;
 		int b = (c1 & 0xff) * (c2 & 0xff) * 258 >> 16;
 		return r << 16 | g << 8 | b;
 	}
-	Uint32 fadergb(Uint32 rgb, Uint8 fade)
+	inline Uint32 mulrgba(Uint32 c1, Uint32 c2)
+	{
+		int a = ((c1 >> 24) & 0xff) * ((c2 >> 24) & 0xff) * 258 >> 16;
+		int r = ((c1 >> 16) & 0xff) * ((c2 >> 16) & 0xff) * 258 >> 16;
+		int g = ((c1 >> 8) & 0xff) * ((c2 >> 8) & 0xff) * 258 >> 16;
+		int b = (c1 & 0xff) * (c2 & 0xff) * 258 >> 16;
+		return a << 24 | r << 16 | g << 8 | b;
+	}
+	inline Uint32 fadergb(Uint32 rgb, Uint8 fade)
 	{
 		int r = ((rgb >> 16) & 0xff) * fade * 258 >> 16;
 		int g = ((rgb >> 8) & 0xff) * fade * 258 >> 16;
@@ -243,37 +320,37 @@ class windowbase_t
 		return r << 16 | g << 8 | b;
 	}
 
-	Uint32 map_rgb(Uint8 r, Uint8 g, Uint8 b)
+	inline Uint32 map_rgb(Uint8 r, Uint8 g, Uint8 b)
 	{
 		return 0xff000000 | (r << 16) | (g << 8) | b;
 	}
-	Uint32 map_rgb(Uint32 c)	{ return 0xff000000 | c; }
-	Uint32 map_gray(float i)
+	inline Uint32 map_rgb(Uint32 c)	{ return 0xff000000 | c; }
+	inline Uint32 map_gray(float i)
 	{
 		Uint8 ii = i * 255.0f;
 		return 0xff000000 | (ii << 16) | (ii << 8) | ii;
 	}
-	Uint32 map_rgba(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+	inline Uint32 map_rgba(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	{
 		return (a << 24) | (r << 16) | (g << 8) | b;
 	}
-	Uint8 get_r(Uint32 c)		{ return c >> 16; }
-	Uint8 get_g(Uint32 c)		{ return c >> 8; }
-	Uint8 get_b(Uint32 c)		{ return c; }
-	Uint8 get_a(Uint32 c)		{ return c >> 24; }
+	inline Uint8 get_r(Uint32 c)	{ return c >> 16; }
+	inline Uint8 get_g(Uint32 c)	{ return c >> 8; }
+	inline Uint8 get_b(Uint32 c)	{ return c; }
+	inline Uint8 get_a(Uint32 c)	{ return c >> 24; }
 
-	int px()	{ return (phys_rect.x * 256 + 128) / xs; }
-	int py()	{ return (phys_rect.y * 256 + 128) / ys; }
-	int px2()
+	inline int px()	{ return (phys_rect.x * 256 + 128) / xs; }
+	inline int py()	{ return (phys_rect.y * 256 + 128) / ys; }
+	inline int px2()
 	{
 		return ((phys_rect.x + phys_rect.w) * 256 + 128) / xs;
 	}
-	int py2()
+	inline int py2()
 	{
 		return ((phys_rect.y + phys_rect.h) * 256 + 128) / ys;
 	}
-	int width()	{ return px2() - px(); }
-	int height()	{ return py2() - py(); }
+	inline int width()	{ return px2() - px(); }
+	inline int height()	{ return py2() - py(); }
 
 	SDL_Rect	phys_rect;
 
@@ -284,6 +361,7 @@ class windowbase_t
 	int		_visible;
 	int		_autoinvalidate;// Always invalidate before rendering
 	int		xs, ys;		// fixp 24:8
+	blendmodes_t	_blendmode;
 	Uint32		_colormod, _alphamod;
 	Uint32		fgcolor, bgcolor;
 
