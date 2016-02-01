@@ -23,6 +23,7 @@
 #include "gfxengine.h"
 #include "sprite.h"
 #include "logger.h"
+#include "kobo.h"
 
 
 spinplanet_t::spinplanet_t(gfxengine_t *e) : stream_window_t(e)
@@ -646,6 +647,29 @@ void spinplanet_t::render(SDL_Rect *r)
 		SDL_RenderFillRect(renderer, r);
 		break;
 	  case SPINPLANET_SPIN:
+		// Render space backdrop
+		// FIXME: This doesn't really belong here!
+		if(s_bank_t *b = s_get_bank(gengine->get_gfx(), B_SPACE))
+		{
+			int bw = b->w << 8;
+			int bh = b->h << 8;
+			int nx = gengine->xoffs(LAYER_BASES) +
+					PIXEL2CS(WMAIN_W / 2);
+			int ny = gengine->yoffs(LAYER_BASES) +
+					PIXEL2CS(WMAIN_H / 2);
+			int xo = nx * b->w / WORLD_SIZEX +
+					PIXEL2CS(WMAIN_W / 2);
+			int yo = ny * b->h / WORLD_SIZEY +
+					PIXEL2CS(WMAIN_H / 2);
+			int x = xo % bw;
+			int y = yo % bh;
+			wmain->resetmod();
+			wmain->colormod(128, 128, 128);	// HalfBrite!
+			wmain->sprite_fxp(x - bw, y - bh, B_SPACE, 0);
+			wmain->sprite_fxp(x, y - bh, B_SPACE, 0);
+			wmain->sprite_fxp(x - bw, y, B_SPACE, 0);
+			wmain->sprite_fxp(x, y, B_SPACE, 0);
+		}
 		stream_window_t::render(r);
 		break;
 	}

@@ -25,6 +25,9 @@
 // Graphics banks
 #define KOBO_ALLGFXBANKS			\
 	KOBO_DEFS(NONE)				\
+						\
+	KOBO_DEFS(SPACE)			\
+						\
 	KOBO_DEFS(R1_TILES)			\
 	KOBO_DEFS(R2_TILES)			\
 	KOBO_DEFS(R3_TILES)			\

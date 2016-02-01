@@ -571,6 +571,7 @@ void _screen::scroller()
 void _screen::init_scene(int sc)
 {
 	wplanet->resetmod();
+	wplanet->blendmode(GFX_BLENDMODE_ALPHA);
 	if(sc < 0)
 	{
 		// Intro mode
