@@ -42,7 +42,6 @@ int _screen::scene_num;
 int _screen::region;
 int _screen::level;
 int _screen::bg_altitude;
-int _screen::bg_backdrop;
 int _screen::bg_clouds;
 int _screen::restarts;
 int _screen::generate_count;
@@ -865,7 +864,7 @@ void _screen::init_background()
 {
 	// Select layers, altitudes etc...
 	bg_altitude = 0;
-	bg_backdrop = 0;
+	int backdrop = 0;
 	bg_clouds = 0;
 	int psize = 0;
 	spinplanet_modes_t md = SPINPLANET_OFF;
@@ -919,20 +918,21 @@ void _screen::init_background()
 	  case 8:
 		// Above clouds
 		bg_clouds = 1;
-		bg_backdrop = B_R1L8_GROUND + region;
+		backdrop = B_R1L8_GROUND + region;
 		bg_altitude = 64;
 		break;
 	  case 9:
 		// Below clouds
-		bg_backdrop = B_R1L9_GROUND + region;
+		backdrop = B_R1L9_GROUND + region;
 		bg_altitude = 32;
 		break;
 	  case 10:
 		// Ground level
-		bg_backdrop = B_R1L10_GROUND + region;
+		backdrop = B_R1L10_GROUND + region;
 		bg_altitude = 0;
 		break;
 	}
+
 	if(md == SPINPLANET_SPIN)
 	{
 		const unsigned char entries[] = {
@@ -946,6 +946,20 @@ void _screen::init_background()
 		wplanet->set_dither((spinplanet_dither_t)prefs->planetdither,
 				level * 15 - 160, level * 10 - 150);
 	}
+
+	wbackdrop->resetmod();
+	wbackdrop->colormod(128, 128, 128);
+	if(backdrop)
+	{
+		wbackdrop->image(backdrop);
+		wbackdrop->reverse(false);
+	}
+	else
+	{
+		wbackdrop->image(B_SPACE);
+		wbackdrop->reverse(true);
+	}
+
 	wplanet->set_mode(md);
 	stars.init(prefs->stars, bg_altitude, psize);
 }
@@ -1005,32 +1019,14 @@ void _screen::render_bases(_map &map, int tileset, int vx, int vy)
 		}
 }
 
+
 void _screen::render_background()
 {
 	if(do_noise && (noise_fade >= 1.0f))
 		return;
 
-	// Render ground
-	s_bank_t *b = s_get_bank(gengine->get_gfx(), bg_backdrop);
-	if(bg_backdrop && b)
-	{
-		// Center background on map, and repeat the texture twice
-		// vertically, because the map aspect ratio is 1:2.
-		int bw = b->w << 8;
-		int bh = b->h << 8;
-		float nx = gengine->nxoffs(LAYER_BASES);
-		float ny = gengine->nyoffs(LAYER_BASES);
-		int xo = (1.0f - nx + 1.5f) * bw + (WMAIN_W << 7);
-		int yo = ((1.0f - ny) * 2.0f + 1.5f) * bh + (WMAIN_H << 7);
-		int x = xo % bw;
-		int y = yo % bh;
-		wmain->resetmod();
-		wmain->colormod(128, 128, 128);	// HalfBrite!
-		wmain->sprite_fxp(x - bw, y - bh, bg_backdrop, 0);
-		wmain->sprite_fxp(x, y - bh, bg_backdrop, 0);
-		wmain->sprite_fxp(x - bw, y, bg_backdrop, 0);
-		wmain->sprite_fxp(x, y, bg_backdrop, 0);
-	}
+	int vx = gengine->xoffs(LAYER_BASES);
+	int vy = gengine->yoffs(LAYER_BASES);
 
 	// Render clouds
 	if(bg_clouds)
@@ -1045,11 +1041,10 @@ void _screen::render_background()
 	if(bg_altitude >= 96)
 	{
 		wmain->resetmod();
-		stars.render(gengine->xoffs(LAYER_BASES),
-				gengine->yoffs(LAYER_BASES));
+		stars.render(vx, vy);
 	}
 
-	// Render parallax level bases
+	// Render parallax level (upcoming) bases
 	wmain->resetmod();
 	wmain->colormod(128, 128, 128);	// HalfBrite!
 	for(int m = KOBO_BG_MAP_LEVELS - 1; m >= 0; --m)
@@ -1069,19 +1064,15 @@ void _screen::render_background()
 			  case 0: tiles += B_R1_TILES_SMALL_GROUND; break;
 			  case 1: tiles += B_R1_TILES_TINY_GROUND; break;
 			}
-		render_bases(bg_map[m], tiles,
-				gengine->xoffs(LAYER_BASES),
-				gengine->yoffs(LAYER_BASES));
+		render_bases(bg_map[m], tiles, vx, vy);
 	}
 
-	// Render bases
+	// Render the bases of the current level
 	if(show_title)
 		wmain->colormod(128, 128, 128);
 	else
 		wmain->colormod(255, 255, 255);
-	render_bases(map, B_R1_TILES + region,
-			gengine->xoffs(LAYER_BASES),
-			gengine->yoffs(LAYER_BASES));
+	render_bases(map, B_R1_TILES + region, vx, vy);
 }
 
 

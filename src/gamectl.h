@@ -97,7 +97,7 @@ class gamecontrol_t
 	static void init(int always_fire);
 	static void repeat(int delay, int interval);
 	static void clear();
-	static inline gc_targets_t map(SDL_Keysym sym)
+	static gc_targets_t map(SDL_Keysym sym)
 	{
 		int src;
 		return mapsrc(sym, src);
@@ -110,9 +110,9 @@ class gamecontrol_t
 	static void mouse_press(int n);
 	static void mouse_release(int n);
 	static void mouse_position(int h, int v);
-	static inline int dir()		{ return direction; }
-	static inline int get_shot()	{ return state[BTN_FIRE] || afire; }
-	static inline int dir_push()	{ return movekey_pressed; }
+	static int dir()	{ return direction; }
+	static int get_shot()	{ return state[BTN_FIRE] || afire; }
+	static int dir_push()	{ return movekey_pressed; }
 };
 
 extern gamecontrol_t gamecontrol;

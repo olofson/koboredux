@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -68,10 +68,8 @@ class _screen
 	static void render_noise();
 	static void render_highlight();
 	static void render_title_plasma(int t, float fade, int y, int h);
-	static void render_title_noise(float fade, int y, int h, int bank, int frame);
-	static void init_starfield(int altitude, int psize);
-	static void init_starfield_colors();
-	static void render_starfield(int xo, int yo);
+	static void render_title_noise(float fade, int y, int h,
+			int bank, int frame);
 	static void render_bases(_map &map, int tileset, int vx, int vy);
 	static void clean_scrap_tile(int x, int y)
 	{
@@ -106,7 +104,8 @@ class _screen
 		clean_scrap_tile(x, y);
 	}
 	static void set_highlight(int y, int h);
-	static void set_noise(int source, float fade, float bright, float depth);
+	static void set_noise(int source, float fade, float bright,
+			float depth);
 	static void render_background();
 	static void render_fx();
 	static void title(int t, float fade, int mode);

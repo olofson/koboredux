@@ -72,6 +72,20 @@ class kobo_gfxengine_t : public gfxengine_t
 #endif
 };
 
+
+class backdrop_t : public window_t
+{
+  protected:
+	bool	_reverse;
+	int	_image;
+  public:
+	backdrop_t(gfxengine_t *e);
+	void reverse(bool rv)		{ _reverse = rv; }
+	void image(int bank)		{ _image = bank; }
+	void refresh(SDL_Rect *r);
+};
+
+
 extern kobo_gfxengine_t		*gengine;
 extern filemapper_t		*fmap;
 extern prefs_t			*prefs;
@@ -81,9 +95,12 @@ extern dashboard_window_t	*wdash;
 extern shieldbar_t		*wshield;
 extern radar_map_t		*wmap;
 extern radar_window_t		*wradar;
-extern engine_window_t		*wmain;
+
+extern backdrop_t		*wbackdrop;
 extern spinplanet_t		*wplanet;
+extern engine_window_t		*wmain;
 extern window_t			*woverlay;
+
 extern display_t		*dhigh;
 extern display_t		*dscore;
 extern display_t		*dstage;

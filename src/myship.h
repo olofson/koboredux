@@ -87,7 +87,7 @@ class _myship
 	static int health()		{ return _health; }
 	static void health(int h)	{ _health = h; }
 	static void health_bonus(int h);
-	static inline int regen_next()
+	static int regen_next()
 	{
 		return (_health + game.regen_step - 1) /
 				game.regen_step * game.regen_step;

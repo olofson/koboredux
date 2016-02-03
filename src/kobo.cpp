@@ -83,9 +83,12 @@ dashboard_window_t	*wdash = NULL;
 shieldbar_t		*wshield = NULL;
 radar_map_t		*wmap = NULL;
 radar_window_t		*wradar = NULL;
-engine_window_t		*wmain = NULL;
+
+backdrop_t		*wbackdrop = NULL;
 spinplanet_t		*wplanet = NULL;
+engine_window_t		*wmain = NULL;
 window_t		*woverlay = NULL;
+
 display_t		*dhigh = NULL;
 display_t		*dscore = NULL;
 display_t		*dstage = NULL;
@@ -104,6 +107,66 @@ int mouse_right = 0;
 
 int exit_game = 0;
 
+
+/*----------------------------------------------------------
+	Backdrop window
+----------------------------------------------------------*/
+
+backdrop_t::backdrop_t(gfxengine_t *e) : window_t(e)
+{
+	_reverse = false;
+	_image = 0;
+}
+
+
+void backdrop_t::refresh(SDL_Rect *r)
+{
+	s_bank_t *b = s_get_bank(gengine->get_gfx(), _image);
+	if(!b)
+		return;
+
+	// Remove centering, and handle reverse scrolling
+	int vx = gengine->xoffs(LAYER_BASES);
+	int vy = gengine->yoffs(LAYER_BASES);
+	if(_reverse)
+	{
+		vx += PIXEL2CS(WMAIN_W / 2);
+		vy += PIXEL2CS(WMAIN_H / 2);
+	}
+	else
+	{
+		vx = 2 * PIXEL2CS(WORLD_SIZEX) - vx - PIXEL2CS(WMAIN_W / 2);
+		vy = 2 * PIXEL2CS(WORLD_SIZEY) - vy - PIXEL2CS(WMAIN_H / 2);
+	}
+
+	// If the backdrop aspect ration differs from that of the may, assume
+	// that the backdrop is supposed to repeat in one direction, so that
+	// the vertical and horizontal scroll speed ratios are the same. Note
+	// that we assume integer ratios here; anything else will produce weird
+	// results...
+	float a = ((float)b->w / b->h) / ((float)WORLD_SIZEX / WORLD_SIZEY);
+	if(a > 1.5f)
+		vy *= floor(a);
+	else if(1.0f / a > 1.5f)
+		vx *= floor(1.0f / a);
+
+	// Scale and center so all layers align when the player is at (0, 0)
+	int xo = vx * b->w / WORLD_SIZEX + PIXEL2CS(WMAIN_W / 2);
+	int yo = vy * b->h / WORLD_SIZEY + PIXEL2CS(WMAIN_H / 2);
+	int bw = b->w << 8;
+	int bh = b->h << 8;
+	int x = xo % bw;
+	int y = yo % bh;
+	sprite_fxp(x - bw, y - bh, _image, 0);
+	sprite_fxp(x, y - bh, _image, 0);
+	sprite_fxp(x - bw, y, _image, 0);
+	sprite_fxp(x, y, _image, 0);
+}
+
+
+/*----------------------------------------------------------
+	Various functions
+----------------------------------------------------------*/
 
 static int main_init()
 {
@@ -124,10 +187,6 @@ static void main_cleanup()
 	prefs = NULL;
 }
 
-
-/*----------------------------------------------------------
-	Various functions
-----------------------------------------------------------*/
 
 static void setup_dirs(char *xpath)
 {
@@ -603,6 +662,9 @@ void KOBO_main::build_screen()
 			WSHIELD_W, WSHIELD_H);
 	wshield->set_leds(B_BLEDS);
 
+	// Scrolling backdrop
+	wbackdrop->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
+
 	// Spinning planet backdrop
 	wplanet->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
 	wplanet->track_layer(LAYER_PLANET);
@@ -783,6 +845,7 @@ int KOBO_main::init_display(prefs_t *p)
 
 	wdash = new dashboard_window_t(gengine);
 	wshield = new shieldbar_t(gengine);
+	wbackdrop = new backdrop_t(gengine);
 	wplanet = new spinplanet_t(gengine);
 	wmain = new engine_window_t(gengine);
 	woverlay = new window_t(gengine);
@@ -832,12 +895,14 @@ void KOBO_main::close_display()
 	dscore = NULL;
 	delete dhigh;
 	dhigh = NULL;
-	delete woverlay;
+	delete wmain;
 	woverlay = NULL;
+	delete wbackdrop;
+	wmain = NULL;
 	delete wplanet;
 	wplanet = NULL;
-	delete wmain;
-	wmain = NULL;
+	delete woverlay;
+	wbackdrop = NULL;
 	delete wshield;
 	wshield = NULL;
 	delete wdash;

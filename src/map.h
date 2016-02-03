@@ -54,7 +54,7 @@ class _map
 {
   public:
 	void init(const _scene *s);
-	inline unsigned short &pos(int x, int y)
+	unsigned short &pos(int x, int y)
 	{
 		x &= MAP_SIZEX - 1;
 		y &= MAP_SIZEY - 1;

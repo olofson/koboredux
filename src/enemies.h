@@ -138,7 +138,7 @@ class _enemy
 	inline bool in_range(int px, int py, int range, int &dist);
 	inline int erase_cannon(int px, int py);
 
-	inline void playsound(KOBO_sounds si)
+	void playsound(KOBO_sounds si)
 	{
 		sound.g_play(si, CS2PIXEL(x), CS2PIXEL(y));
 	}
@@ -239,19 +239,19 @@ class _enemies
 	static void set_ekind_to_generate(const enemy_kind * ek1, int i1,
 			const enemy_kind * ek2, int i2);
 	static void splash_damage(int x, int y, int damage);
-	static inline const enemy_kind *ek1()
+	static const enemy_kind *ek1()
 	{
 		return ekind_to_generate_1;
 	}
-	static inline const enemy_kind *ek2()
+	static const enemy_kind *ek2()
 	{
 		return ekind_to_generate_2;
 	}
-	static inline int eint1()
+	static int eint1()
 	{
 		return e1_interval;
 	}
-	static inline int eint2()
+	static int eint2()
 	{
 		return e2_interval;
 	}
