@@ -5,7 +5,7 @@
  * Copyright 2001-2003 David Olofson
  * Copyright 2002 Jeremy Sheeley
  * Copyright 2005-2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -1262,10 +1262,15 @@ void main_menu_t::build()
 	if(!manage.game_in_progress())
 	{
 		prefs->last_profile = scorefile.current_profile();
-		if(last_level < 0)
-			manage.select_scene(scorefile.last_scene());
+		if(prefs->cheat_startlevel)
+		{
+			if(last_level < 0)
+				manage.select_scene(scorefile.last_scene());
+			else
+				manage.select_scene(last_level);
+		}
 		else
-			manage.select_scene(last_level);
+			manage.select_scene(0);
 	}
 
 	halign = ALIGN_CENTER;
@@ -1275,6 +1280,8 @@ void main_menu_t::build()
 	{
 		space(2);
 		button("Return to Game", 0);
+		space();
+		button("Save Game", 50);
 	}
 	else
 	{
@@ -1296,10 +1303,15 @@ void main_menu_t::build()
 		button("New Player...", 3);
 #else
 		log_printf(WLOG, "Player profiles are disabled!\n");
-		button("Start Game!", 1);
-		small();
-		buildStartLevel(-1);
+		button("Start New Game!", 1);
+		if(prefs->cheat_startlevel)
+		{
+			small();
+			buildStartLevel(-1);
+		}
 		big();
+		space();
+		button("Load Game", 51);
 #endif
 	}
 	space();
@@ -1344,8 +1356,6 @@ void st_main_menu_t::reenter()
 {
 	menu->rebuild();
 	st_menu_base_t::reenter();
-	if(!manage.game_in_progress())
-		manage.select_scene(menu->start_level);
 }
 
 
@@ -1404,6 +1414,13 @@ void st_main_menu_t::select(int tag)
 		break;
 	  case MENU_TAG_CANCEL:
 		gsm.change(&st_ask_exit);
+		break;
+	  case 50:	// Save Game
+	  case 51:	// Load Game
+		sound.ui_play(SOUND_UI_ERROR);
+		st_error.message("Game saves not yet implemented!",
+				"Tell Dave that you want them.");
+		gsm.push(&st_error);
 		break;
 	  case 101:
 		gsm.change(&st_ask_abort_game);

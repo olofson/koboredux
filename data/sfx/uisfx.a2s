@@ -146,7 +146,7 @@ UICancel()
 UIError()
 {
 	struct { wtosc }
-	a .2; w saw
+	a .1; w saw
 	20 {
 		p 3; phase 0
 		12 {
