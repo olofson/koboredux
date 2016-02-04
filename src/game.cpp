@@ -3,7 +3,7 @@
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
  * Copyright 2002, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -20,7 +20,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "config.h"
+#include "kobo.h"
 #include "game.h"
 #include "cs.h"
 #include <math.h>
@@ -57,8 +57,10 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 
 	// Player guns
 	bolt_range = (VIEWLIMIT >> 1) + 16 + 32;
-	noseloadtime = 1;
-	tailloadtime = 1;
+	if(prefs && prefs->cheat_firepower)
+		noseloadtime = tailloadtime = 0;
+	else
+		noseloadtime = tailloadtime = 1;
 
 	switch(skill)
 	{

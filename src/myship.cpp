@@ -65,6 +65,8 @@ _myship::_myship()
 
 void _myship::state(_myship_state s)
 {
+	if(prefs->cheat_shield && (s == SHIP_NORMAL))
+		s = SHIP_INVULNERABLE;
 	switch (s)
 	{
 	  case SHIP_DEAD:
@@ -171,7 +173,7 @@ void _myship::explode()
 void _myship::handle_controls()
 {
 	int v;
-	if(prefs->pushmove)
+	if(prefs->cheat_pushmove)
 		v = gamecontrol.dir_push() ? PIXEL2CS(1) : 0;
 	else if(gamecontrol.dir_push())
 		v = PIXEL2CS(game.top_speed);
@@ -319,20 +321,21 @@ void _myship::hit(int dmg)
 		return;
 	}
 
-#ifdef	INVULNERABLE
-	printf("INVULNERABLE: Ignored %d damage to player ship.\n", dmg);
-#else
-	if(_health && (dmg < _health))
-		manage.noise_damage((float)dmg / _health);
+	if(!prefs->cheat_invulnerability)
+	{
+		if(_health && (dmg < _health))
+			manage.noise_damage((float)dmg / _health);
+		else
+			manage.noise_damage(1.0f);
+
+		_health -= dmg;
+
+		// Be nice if we land right on a regeneration threshold level.
+		if(_health == regen_next())
+			++_health;
+	}
 	else
-		manage.noise_damage(1.0f);
-
-	_health -= dmg;
-
-	// Be nice if we land right on a regeneration threshold level.
-	if(_health == regen_next())
-		++_health;
-#endif
+		printf("INVULNERABLE: Ignored %d damage to player.\n", dmg);
 
 	if(dmg < game.health / 2)
 		sound.g_player_damage((float)dmg / game.health * 2.0f);
@@ -503,13 +506,6 @@ int _myship::hit_bolt(int ex, int ey, int hitsize, int health)
 			continue;
 		if(labs(wrapdist(ey, bolty[i], WORLD_SIZEY)) >= hitsize)
 			continue;
-		if(!prefs->cheat)
-		{
-			boltst[i] = 0;
-			if(bolt_objects[i])
-				gengine->free_obj(bolt_objects[i]);
-			bolt_objects[i] = NULL;
-		}
 		enemies.make(&boltexpl,
 				PIXEL2CS(boltx[i]), PIXEL2CS(bolty[i]));
 		dmg += game.bolt_damage;

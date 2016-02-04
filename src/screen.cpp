@@ -192,7 +192,7 @@ void _screen::title(int t, float fade, int mode)
 	}
 
 	// Cheat mode warning
-	if((prefs->cheat || prefs->pushmove) && (t % 1000 < 500))
+	if((prefs->cheats()) && (t % 1000 < 500))
 	{
 		woverlay->font(B_MEDIUM_FONT);
 		woverlay->center(230, "CHEAT MODE");

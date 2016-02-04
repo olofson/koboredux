@@ -99,17 +99,28 @@ void prefs_t::init()
 	key("contrast", contrast, 100); desc("Contrast");
 	key("planetdither", planetdither, 5); desc("Planet Dither Style");
 
+	comment("--- Debug features -------------------------");
 	yesno("debug", debug, 0); desc("Enable Debug Features");
 	yesno("show_fps", show_fps, 0); desc("Show Frame Rate");
-	yesno("cheat", cheat, 0); desc("Enable Cheat Mode");
 	yesno("indicator", indicator, 0);
 			desc("Enable Collision Indicator Mode");
-	yesno("pushmove", pushmove, 0); desc("Enable Push Move Mode");
 	yesno("show_map_border", show_map_border, 0); desc("Show Map Border");
 	yesno("show_coordinates", show_coordinates, 0);
 			desc("Show Object Coordinates");
 	yesno("show_tiles", show_tiles, 0); desc("Show Tile/Sprite Edges");
 	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
+
+	comment("--- Cheat/test features --------------------");
+	yesno("cheat_pushmove", cheat_pushmove, 0);
+			desc("Cheat: Enable Push Move Mode");
+	yesno("cheat_shield", cheat_shield, 0);
+			desc("Cheat: Shield Always Up");
+	yesno("cheat_invulnerability", cheat_invulnerability, 0);
+			desc("Cheat: Player Invulnerable");
+	yesno("cheat_firepower", cheat_firepower, 0);
+			desc("Cheat: Extra Firepower");
+	yesno("cheat_startlevel", cheat_startlevel, 0);
+			desc("Cheat: Unlimited Start Level Selector");
 
 	comment("--- File paths -----------------------------");
 	key("files", dir, ""); desc("Game Root Path");

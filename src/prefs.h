@@ -31,13 +31,13 @@
 class prefs_t : public config_parser_t
 {
   public:
-	//System options
+	// System options
 	int	logfile;	//Log messages to log.txt/html
 	int	logformat;	//0: text, 1: ANSI, 2: HTML
 	int	logverbosity;
 	int	quickstart;	//Skip jingle, loader noise effects etc
 
-	//Input options
+	// Input options
 	int	joystick;
 	int	joystick_index;		//which joystick to use
 	int	mouse;
@@ -47,7 +47,7 @@ class prefs_t : public config_parser_t
 	int	always_fire;
 	int	mousecapture;
 
-	//Game options
+	// Game options
 	int	filter;		//Use motion filtering
 	int	timefilter;	//Delta time filter
 	int	scrollradar;	//Scrolling radar
@@ -55,7 +55,7 @@ class prefs_t : public config_parser_t
 	int	stars;		//Number of parallax stars
 	int	cannonloud;	//Cannon loudness
 
-	//Sound: System
+	// Sound: System
 	cfg_string_t	audiodriver;	//Name/options for a2_NewDriver()
 	int	sound;		//Enable sound
 	int	music;		//Enable music
@@ -64,7 +64,7 @@ class prefs_t : public config_parser_t
 	int	audiobuffer;	//Custom audio buffer size (sample frames)
 	int	tsdelay;	//Timestamp delay in ms
 
-	//Sound: Mixer
+	// Sound: Mixer
 	int	volume;		//Digital master volume
 	int	vol_boost;	//Master volume boost
 	int	ui_vol;		//User interface volume
@@ -72,7 +72,7 @@ class prefs_t : public config_parser_t
 	int	music_vol;	//Music volume
 	int	title_vol;	//Title music volume
 
-	//Video settings
+	// Video settings
 	int	fullscreen;	//Use fullscreen mode
 	int	width;		//Screen/window width
 	int	height;		//Screen/window height
@@ -83,7 +83,7 @@ class prefs_t : public config_parser_t
 	int	videomode;	//New video mode codes
 	int	vsync;		//Vertical (retrace) sync
 
-	//Graphics settings
+	// Graphics settings
 	cfg_string_t	gfxtheme;	//Path to graphics theme file
 	int	scalemode;	//Scaling filter mode
 	int	alpha;		//Alpha blending
@@ -91,32 +91,47 @@ class prefs_t : public config_parser_t
 	int	contrast;	//Graphics contrast
 	int	planetdither;	//Spinning planet dither style
 
-	//Debug features
+	// Debug features
 	int	debug;
 	int	show_fps;
-	int	cheat;		//Unlimited lives; select any starting stage
 	int	indicator;	//Enable collision testing mode
-	int	pushmove;	//Stop when not holding any direction down
 	int	force_fallback_gfxtheme;	// Force load fallback theme
 	int	show_map_border;
 	int	show_coordinates;
 	int	show_tiles;
 	int	tsdebug;	//Timestamp debugging
 
-	//File paths
-	cfg_string_t	dir;		//Path to kobo-deluxe/
+	// Cheat/test features
+	int	cheat_pushmove;
+	int	cheat_shield;
+	int	cheat_invulnerability;
+	int	cheat_firepower;
+	int	cheat_startlevel;
+
+	// Returns 'true' if any cheat/test features are enabled
+	bool cheats()
+	{
+		return cheat_pushmove ||
+				cheat_shield ||
+				cheat_invulnerability ||
+				cheat_firepower ||
+				cheat_startlevel;
+	}
+
+	// File paths
+	cfg_string_t	dir;		//Path to root of game directory
 	cfg_string_t	gfxdir;		//Path to gfx/
 	cfg_string_t	sfxdir;		//Path to sfx/
 	cfg_string_t	scoredir;	//Path to scores/
 
-	//"Hidden" stuff ("to remember until next startup")
+	// "Hidden" stuff ("to remember until next startup")
 	int	last_profile;		//Last used player profile
 	int	number_of_joysticks;	//no of connected joysticks
 
 	void init();
 	void postload();
 
-	/* "Commands" - never written to config files */
+	// "Commands" - never written to config files
 	int	cmd_showcfg;
 	int	cmd_hiscores;
 	int	cmd_override;

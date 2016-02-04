@@ -5,7 +5,7 @@
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2002 Jeremy Sheeley
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -551,7 +551,7 @@ void _manage::pause(bool p)
 
 void _manage::lost_myship()
 {
-	if(!prefs->cheat && !prefs->pushmove)
+	if(!prefs->cheats())
 	{
 		hi.score = score;
 		hi.end_scene = scene_num;
@@ -587,7 +587,7 @@ void _manage::add_score(int sc)
 	score += sc;
 	if(score >= GIGA)	//This *could* happen... Or maybe not. :-)
 		score = GIGA - 1;
-	else if(!prefs->cheat)
+	else if(!prefs->cheats())
 	{
 		if(score >= scorefile.highscore())
 		{
