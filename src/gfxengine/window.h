@@ -289,9 +289,13 @@ class windowbase_t
 
 	void set_render_params(SDL_Renderer *rn, Uint32 color)
 	{
-		SDL_SetRenderDrawBlendMode(rn, (SDL_BlendMode)_blendmode);
-		Uint32 bc = mulrgba(color,
-				(_colormod & 0xffffff) | (_alphamod << 24));
+		Uint32 bc = mulrgba(color, (_colormod & 0xffffff) |
+					(_alphamod << 24));
+		if((_alphamod != 255) && (_blendmode == GFX_BLENDMODE_COPY))
+			SDL_SetRenderDrawBlendMode(rn, SDL_BLENDMODE_BLEND);
+		else
+			SDL_SetRenderDrawBlendMode(rn,
+					(SDL_BlendMode)_blendmode);
 		SDL_SetRenderDrawColor(rn, get_r(bc), get_g(bc), get_b(bc),
 				get_a(bc));
 	}
