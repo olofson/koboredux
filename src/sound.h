@@ -116,6 +116,7 @@ class KOBO_sound
 	static A2_handle sfx_g;		// Ingame sfx group
 	static A2_handle music_g;	// Ingame music group
 	static A2_handle title_g;	// Title music group
+	static int current_noise;	// Index of current noise playing, or 0
 	static A2_handle noisehandle;	// Transition noise effect
 	static A2_handle gunhandle;	// Currently playing player gun sound
 	static A2_handle *modules;	// Loaded A2S modules
@@ -228,7 +229,7 @@ class KOBO_sound
 	static void ui_music_title();
 
 	// Various UI effects
-	static void ui_noise(int n);
+	static void ui_noise(int h);
 	static void ui_countdown(int remain);
 };
 

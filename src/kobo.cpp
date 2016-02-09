@@ -917,7 +917,7 @@ void KOBO_main::noiseburst()
 	if(prefs->quickstart)
 		return;
 
-	sound.ui_noise(2);
+	sound.ui_noise(SOUND_UI_LOADER);
 	wdash->fade(0.0f);
 	wdash->mode(DASHBOARD_NOISE);
 	int t0 = SDL_GetTicks();
@@ -1320,6 +1320,7 @@ int KOBO_main::run()
 
 		// Restart and reload stuff as needed
 		int res;
+		sound.ui_noise(0);
 		if(global_status & OS_RESTART_AUDIO)
 			if((res = restart_audio()))
 				return res;

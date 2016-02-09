@@ -45,6 +45,7 @@ A2_handle KOBO_sound::ui_g = 0;
 A2_handle KOBO_sound::sfx_g = 0;
 A2_handle KOBO_sound::music_g = 0;
 A2_handle KOBO_sound::title_g = 0;
+int KOBO_sound::current_noise = 0;
 A2_handle KOBO_sound::noisehandle = 0;
 A2_handle KOBO_sound::musichandle = 0;
 A2_handle KOBO_sound::gunhandle = 0;
@@ -694,13 +695,13 @@ void KOBO_sound::ui_music_title()
 }
 
 
-void KOBO_sound::ui_noise(int n)
+void KOBO_sound::ui_noise(int h)
 {
 	if(!state)
 		return;
-	if(!checksound(SOUND_UI_NOISE, "KOBO_sound::ui_noise()"))
+	if(h == current_noise)
 		return;
-	if(!checksound(SOUND_UI_LOADER, "KOBO_sound::ui_noise()"))
+	if(h && !checksound(h, "KOBO_sound::ui_noise()"))
 		return;
 	if(noisehandle)
 	{
@@ -708,9 +709,9 @@ void KOBO_sound::ui_noise(int n)
 		a2_Release(state, noisehandle);
 		noisehandle = 0;
 	}
-	if(n)
-		noisehandle = a2_Start(state, ui_g, sounds[
-				n == 1 ? SOUND_UI_NOISE : SOUND_UI_LOADER]);
+	if(h)
+		noisehandle = a2_Start(state, ui_g, sounds[h]);
+	current_noise = h;
 }
 
 

@@ -127,12 +127,11 @@ void _manage::run_noise()
 	{
 		noise_timer = 0;
 		noise = 0;
-		sound.ui_noise(0);
 	}
-
 	noise_level += (noise - noise_level) * 0.3f;
 	screen.set_noise(B_NOISE, noise_level, 0.0f, noise_level);
 	screen.noise(noise_level > 0.1f);
+	sound.ui_noise(noise ? SOUND_UI_NOISE : 0);
 }
 
 
@@ -142,7 +141,6 @@ void _manage::noise(int duration, int flash)
 	noise_duration = noise_timer = duration;
 	screen.set_noise(B_NOISE, 1.0f, 0.0f, 1.0f);
 	noise_level = 1.0f;
-	sound.ui_noise(1);
 }
 
 
