@@ -581,7 +581,7 @@ void _screen::init_scene(int sc)
 		{
 			// Plain intro - no map
 			radar_mode = RM_OFF;	// Clear radar
-			scene_num = 16;
+			scene_num = KOBO_TITLE_LEVEL;
 			restarts = 0;
 		}
 		else
@@ -874,44 +874,30 @@ void _screen::init_background()
 	switch(level)
 	{
 	  case 1:
-		// 32x32 planet
-		psize = 32;
 		md = SPINPLANET_SPIN;
 		bg_altitude = 192;
 		break;
 	  case 2:
-		// 48x48 planet
-		psize = 48;
 		md = SPINPLANET_SPIN;
 		bg_altitude = 176;
 		break;
 	  case 3:
-		// 64x64 planet
-		psize = 64;
 		md = SPINPLANET_SPIN;
 		bg_altitude = 160;
 		break;
 	  case 4:
-		// 96x96 planet
-		psize = 96;
 		md = SPINPLANET_SPIN;
 		bg_altitude = 144;
 		break;
 	  case 5:
-		// 128x128 planet
-		psize = 128;
 		md = SPINPLANET_SPIN;
 		bg_altitude = 128;
 		break;
 	  case 6:
-		// 192x192 planet
-		psize = 192;
 		md = SPINPLANET_SPIN;
 		bg_altitude = 112;
 		break;
 	  case 7:
-		// 256x256 planet
-		psize = 256;
 		md = SPINPLANET_SPIN;
 		bg_altitude = 96;
 		break;
@@ -940,11 +926,12 @@ void _screen::init_background()
 			13,	12,	11,	10,
 			8,	9
 		};
+		psize = 40 + level * 12 + level * level * 6;
 		wplanet->set_size(psize);
 		wplanet->set_source(B_R1_PLANET + region, 0);
 		wplanet->set_colors(entries, sizeof(entries));
 		wplanet->set_dither((spinplanet_dither_t)prefs->planetdither,
-				level * 15 - 160, level * 10 - 150);
+				level * 2 - 95, -100 - level * 2);
 	}
 
 	wbackdrop->resetmod();
