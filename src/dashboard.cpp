@@ -109,6 +109,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	// NOTE: wplanet is actually rendered in LOADING and JINGLE modes, but
 	//       due to the rendering order there, it's done manually by
 	//       dashboard_window_t::refresh()!
+	wbackdrop->visible(main);
 	wplanet->visible(main);
 	wmain->visible(main);
 	wshield->visible(main);
