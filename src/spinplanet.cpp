@@ -318,7 +318,8 @@ uint32_t *spinplanet_t::downscale_32bpp(uint32_t *src, int sp, int w, int h,
 					g += (c >> 8) & 0xff;
 					b += c & 0xff;
 				}
-			d[i++] = (r / n2 << 16) | (g / n2 << 8) | b / n2;
+			d[i++] = (r / n2 << 16) | (g / n2 << 8) | b / n2 |
+					(0xff << 24);
 		}
 	return d;
 }
@@ -440,7 +441,8 @@ void spinplanet_t::dth_prepare()
 				int b = ((c1 & 0xff) * rf +
 						(c2 & 0xff) * f) /
 						SPINPLANET_MAX_COLORS;
-				gradient[i] = (r << 16) | (g << 8) | b;
+				gradient[i] = (r << 16) | (g << 8) | b |
+						(0xff << 24);
 			}
 			clrs = gradient;
 			nclrs = 256;
