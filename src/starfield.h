@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -61,6 +61,7 @@ class KOBO_Starfield
 	int altitude;
 	int planetsize;
 	int planetscale;
+	int pivot;
 	int nstars;
 	KOBO_Star *stars;
 	Uint32 colors[STAR_COLORS];
@@ -70,7 +71,8 @@ class KOBO_Starfield
 	KOBO_Starfield();
 	~KOBO_Starfield();
 	void set_target(window_t *_target);
-	bool init(int _nstars, int _altitude, int _planetsize);
+	bool init(int _nstars, int _altitude, int _planetsize,
+			bool distant_only = false);
 	void render(int xo, int yo);
 };
 

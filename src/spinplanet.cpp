@@ -126,7 +126,7 @@ void spinplanet_t::init_lens()
 	int i = 0;
 	for(int y = 0; y < height(); ++y)
 	{
-		float cy = y - ycenter + .5f;
+		float cy = y - ycenter - .5f;
 
 		// Vertical clipping
 		if(r*r <= cy*cy)

@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -60,16 +60,26 @@ void KOBO_Starfield::set_target(window_t *_target)
 }
 
 
-bool KOBO_Starfield::init(int _nstars, int _altitude, int _planetsize)
+bool KOBO_Starfield::init(int _nstars, int _altitude, int _planetsize,
+		bool distant_only)
 {
 	altitude = _altitude;
 	planetsize = _planetsize;
-	if(altitude < 64)
-		planetscale = 512;
-	else if(altitude > 192)
-		planetscale = 256;
+	if(distant_only)
+	{
+		planetscale = altitude / 2;
+		pivot = 0;
+	}
 	else
-		planetscale = 512 - ((altitude - 64) << 1);
+	{
+		if(altitude < 64)
+			planetscale = 512;
+		else if(altitude > 192)
+			planetscale = 256;
+		else
+			planetscale = 512 - ((altitude - 64) << 1);
+		pivot = altitude;
+	}
 	if(_nstars != nstars)
 	{
 		free(stars);
@@ -98,7 +108,7 @@ void KOBO_Starfield::render(int xo, int yo)
 	int h = target->height() * 256;
 	int xc = w / 2;
 	int yc = h / 2;
-	int pivot = altitude << 8;	// Rotation pivot z coordinate
+	int pivot8 = pivot << 8;	// Rotation pivot z coordinate
 	int pclip = planetsize * planetsize / 4; // Planet radius squared
 
 	// Calculate delta from last position, dealing with map position wrap
@@ -123,7 +133,7 @@ void KOBO_Starfield::render(int xo, int yo)
 	for(int i = 0; i < nstars; ++i)
 	{
 		int iz = (int)stars[i].z;
-		int z =  (iz - pivot) * planetscale >> 8;
+		int z =  (iz - pivot8) * planetscale >> 8;
 
 		// Move star!
 		stars[i].x += dx * z >> 16;

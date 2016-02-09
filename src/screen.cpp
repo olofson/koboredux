@@ -961,7 +961,7 @@ void _screen::init_background()
 	}
 
 	wplanet->set_mode(md);
-	stars.init(prefs->stars, bg_altitude, psize);
+	stars.init(prefs->stars, bg_altitude, psize, true);
 }
 
 
@@ -1041,6 +1041,7 @@ void _screen::render_background()
 	if(bg_altitude >= 96)
 	{
 		wmain->resetmod();
+		wmain->alphamod(128);
 		stars.render(vx, vy);
 	}
 
