@@ -24,8 +24,9 @@ path "region-1"
 sprites	B_R1_TILES "tiles-green.png" 16 16
 sprites	B_R1_TILES_SMALL_SPACE "tiles-green-small-space.png" 12 12
 sprites	B_R1_TILES_TINY_SPACE "tiles-green-tiny-space.png" 8 8
-sprites	B_R1_TILES_SMALL_GROUND "tiles-green-small-ground.png" 12 12
-sprites	B_R1_TILES_TINY_GROUND "tiles-green-tiny-ground.png" 8 8
+sprites	B_R1_TILES_TINY_INTERMEDIATE "tiles-green-tiny-inter.png" 8 8
+sprites	B_R1_TILES_SMALL_GROUND "tiles-green-small-ground-2.png" 12 12
+sprites	B_R1_TILES_TINY_GROUND "tiles-green-tiny-ground-2.png" 8 8
 image B_R1_PLANET "planet-r1.png" 2 ABSSCALE BILINEAR
 image B_R1L8_GROUND "ground-r1l8.png"
 image B_R1L9_GROUND "ground-r1l9.png"

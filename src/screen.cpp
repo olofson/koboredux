@@ -241,11 +241,11 @@ void _screen::highscores(int t, float fade)
 	if(y < 0)
 		y = 0;
 	woverlay->center_fxp(PIXEL2CS(20) - y, "HALL OF FAME");
-	int xo = (int)(50 * 256 * mf);
-	woverlay->sprite_fxp(PIXEL2CS(32) - xo, PIXEL2CS(30),
-			B_PLAYER, (t / 50) % 16);
-	woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 32) + xo,
-			PIXEL2CS(30), B_PLAYER, 15 - (t / 50) % 16);
+	int xo = (int)(60 * 256 * mf);
+	woverlay->sprite_fxp(PIXEL2CS(48) - xo, PIXEL2CS(30),
+			B_PLAYER, (t / 50) % 32);
+	woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 48) + xo,
+			PIXEL2CS(30), B_PLAYER, 31 - (t / 50) % 32);
 
 	woverlay->font(B_NORMAL_FONT);
 	y = (int)(PIXEL2CS(75) * mf - 0.5f) - 256;
@@ -1040,17 +1040,23 @@ void _screen::render_background()
 		if(level + m >= 10)
 			continue;
 		int tiles = region;
-		if(bg_altitude >= 96)
+		if(bg_altitude > 100)
 			switch(m)
 			{
 			  case 0: tiles += B_R1_TILES_SMALL_SPACE; break;
 			  case 1: tiles += B_R1_TILES_TINY_SPACE; break;
 			}
-		else
+		else if(bg_altitude < 80)
 			switch(m)
 			{
 			  case 0: tiles += B_R1_TILES_SMALL_GROUND; break;
 			  case 1: tiles += B_R1_TILES_TINY_GROUND; break;
+			}
+		else
+			switch(m)
+			{
+			  case 0: tiles += B_R1_TILES_SMALL_SPACE; break;
+			  case 1: tiles += B_R1_TILES_TINY_INTERMEDIATE; break;
 			}
 		render_bases(bg_map[m], tiles, vx, vy);
 	}
