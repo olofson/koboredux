@@ -3,7 +3,7 @@
 	cfgparse.h - Generic Config File and Argument Parser
 -------------------------------------------------------------------
  * Copyright 2001, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -142,7 +142,6 @@ class config_parser_t
 	int		nkeys;		// For symbol table API
 	cfg_key_t	**table;	// For symbol table API
 	cfg_string_t	retbuf;		// For symbol table API
-	void initialize();
 	void print_switch(FILE *f, const char *base, int flag);
 	int read_config(char ***cv, FILE *f);
 	void add(cfg_key_t *_key);
@@ -170,6 +169,7 @@ class config_parser_t
 	config_parser_t();
 	virtual ~config_parser_t();
 	config_parser_t &operator = (config_parser_t &from);
+	void initialize();
 	void set_defaults();
 	int parse(int argc, char *argv[]);
 	int read(FILE *f);

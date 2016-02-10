@@ -171,6 +171,7 @@ void backdrop_t::refresh(SDL_Rect *r)
 static int main_init()
 {
 	prefs = new prefs_t;
+	prefs->initialize();
 	fmap = new filemapper_t;
 	gengine = new kobo_gfxengine_t;
 	return 0;
