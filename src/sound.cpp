@@ -89,8 +89,8 @@ KOBO_sound::KOBO_sound()
 
 KOBO_sound::~KOBO_sound()
 {
-	free(modules);
 	close();
+	free(modules);
 }
 
 
