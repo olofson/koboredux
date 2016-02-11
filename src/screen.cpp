@@ -327,6 +327,7 @@ void _screen::credits(int t)
 
 void _screen::help(int t)
 {
+	int cx = woverlay->width() / 2;
 	woverlay->font(B_BIG_FONT);
 	woverlay->center(53, "HOW TO PLAY");
 
@@ -338,10 +339,9 @@ void _screen::help(int t)
 		if(t > 2700)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
-		woverlay->sprite(woverlay->width() / 2, 105, B_PLAYER,
-				(t / 50) % 16);
-		woverlay->center(125, "Use arrow keys or NumPad.");
-		woverlay->center(135, "to control the ship.");
+		woverlay->sprite(cx, 105, B_PLAYER, (t / 50) % 32);
+		woverlay->center(130, "Use arrow keys or NumPad.");
+		woverlay->center(140, "to control the ship.");
 	}
 	else if(t < 3000)
 		return;
@@ -358,19 +358,18 @@ void _screen::help(int t)
 		for(i = 0; i < 4; ++i)
 		{
 			int t2 = t + 153 * i;
-			woverlay->sprite(woverlay->width() / 2 - (t2 / 5) % 120,
-					105, B_BOLT, 8 + (t2 / 50) % 4);
-			woverlay->sprite(
-					woverlay->width() / 2 + (t2 / 5) % 120,
-					105, B_BOLT, 8 + (t2 / 50) % 4);
+			woverlay->sprite(cx - (t2 / 5) % 120, 105,
+					B_BOLT, 16 + (t2 / 50) % 4);
+			woverlay->sprite(cx + (t2 / 5) % 120, 105,
+					B_BOLT, 16 + (t2 / 50) % 4);
 		}
-		woverlay->sprite(woverlay->width() / 2, 105, B_PLAYER, 4);
-		woverlay->center(135,
+		woverlay->sprite(cx, 105, B_PLAYER, 8);
+		woverlay->center(140,
 				"Use any SHIFT or CONTROL keys to fire.");
 	}
 	else if(t < 6000)
 		return;
-	
+
 	// 6000..9000: Bases
 	else if(t < 6200)
 		screen.set_highlight(112, 80);
@@ -381,18 +380,16 @@ void _screen::help(int t)
 		woverlay->font(B_MEDIUM_FONT);
 // TODO: Short demo of how to destroy a base
 		int i;
-		for(i = B_R1_TILES; i <= B_R5_TILES; ++i)
-		{
-			int xo = 24 * i - (5 * 24 / 2) + 4;
-			woverlay->sprite(woverlay->width() / 2 + xo, 105 - 8,
-					i, 7);
-		}
-		woverlay->center(135,
+		for(i = 0; i < 5; ++i)
+			woverlay->sprite(cx + 24 * i - ((4 * 24 + 16) / 2),
+					105 - 8, B_R1_TILES + i,
+					16 + (t / 50) % 8);
+		woverlay->center(140,
 				"Destroy bases by shooting their cores.");
 	}
 	else if(t < 9000)
 		return;
-	
+
 	// 9000..14000: Shoot everything!
 	else if(t < 9200)
 		screen.set_highlight(112, 80);
@@ -402,21 +399,21 @@ void _screen::help(int t)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
 // TODO: Short demo of intense battle
-		woverlay->sprite(50, 110, B_RING, (t / 30) % 16);
-		woverlay->sprite(65, 90, B_BOMB, (t / 40) % 16);
-		woverlay->sprite(80, 110, B_BMR_GREEN, (t / 80) % 16);
-		woverlay->sprite(95, 90, B_BMR_PURPLE, (t / 70) % 16);
-		woverlay->sprite(110, 110, B_BMR_PINK, (t / 60) % 16);
-		woverlay->sprite(125, 90, B_FIGHTER, (t / 50) % 16);
-		woverlay->sprite(140, 110, B_MISSILE1, (t / 45) % 16);
-		woverlay->sprite(155, 90, B_MISSILE2, (t / 40) % 16);
-		woverlay->sprite(170, 110, B_MISSILE3, (t / 55) % 16);
-		woverlay->center(125, "Shoot everything that moves,");
-		woverlay->center(135, "but avoid getting hit!");
+		woverlay->sprite(cx - 80, 110, B_RING, (t / 30) % 16);
+		woverlay->sprite(cx - 60, 90, B_BOMB, (t / 40) % 16);
+		woverlay->sprite(cx - 40, 110, B_BMR_GREEN, (t / 80) % 16);
+		woverlay->sprite(cx - 20, 90, B_BMR_PURPLE, (t / 70) % 16);
+		woverlay->sprite(cx, 110, B_BMR_PINK, (t / 60) % 16);
+		woverlay->sprite(cx + 20, 90, B_FIGHTER, (t / 50) % 16);
+		woverlay->sprite(cx + 40, 110, B_MISSILE1, (t / 45) % 16);
+		woverlay->sprite(cx + 60, 90, B_MISSILE2, (t / 40) % 16);
+		woverlay->sprite(cx + 80, 110, B_MISSILE3, (t / 55) % 16);
+		woverlay->center(130, "Shoot everything that moves,");
+		woverlay->center(140, "but avoid getting hit!");
 	}
 	else if(t < 14000)
 		return;
-	
+
 	// 14000..20000: Indestructible
 	else if(t < 14200)
 		screen.set_highlight(112, 80);
@@ -427,18 +424,15 @@ void _screen::help(int t)
 		woverlay->font(B_MEDIUM_FONT);
 // TODO: Demo destroying a rock
 		int i;
-		for(i = B_R1_TILES; i <= B_R2_TILES; ++i)
-		{
-			int xo = 24 * i - (5 * 24 / 2) + 4;
-			woverlay->sprite(woverlay->width() / 2 + xo, 82 - 8,
-					i, 0);
-		}
-		woverlay->center(87, "Some objects are indestructible...");
-		woverlay->sprite(65, 120, B_ROCK1, (t / 45) % 32);
-		woverlay->sprite(90, 115, B_ROCK2, (t / 40) % 32);
-		woverlay->sprite(115, 125, B_ROCK3, (t / 35) % 48);
-		woverlay->sprite(155, 120, B_BIGSHIP, (t / 40) % 16);
-		woverlay->center(135, "...or take many hits to destroy.");
+		for(i = 0; i < 5; ++i)
+			woverlay->sprite(cx + 24 * i - ((4 * 24 + 16) / 2),
+					82 - 8, B_R1_TILES + i, 32);
+		woverlay->center(90, "Some objects are indestructible...");
+		woverlay->sprite(cx - 60, 120, B_ROCK1, (t / 45) % 32);
+		woverlay->sprite(cx - 20, 115, B_ROCK2, (t / 40) % 32);
+		woverlay->sprite(cx + 20, 125, B_ROCK3, (t / 35) % 32);
+		woverlay->sprite(cx + 60, 120, B_BIGSHIP, (t / 40) % 16);
+		woverlay->center(140, "...or take many hits to destroy.");
 	}
 }
 
