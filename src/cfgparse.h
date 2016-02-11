@@ -28,6 +28,8 @@
 enum cfg_types_t
 {
 	CFG_NONE,
+	CFG_COMMENT,
+	CFG_SECTION,
 	CFG_BOOL,
 	CFG_INT,
 	CFG_FLOAT,
@@ -64,7 +66,27 @@ class cfg_key_t
 class cfg_comment_t : public cfg_key_t
 {
   public:
-	cfg_comment_t(const char *text)		{ name = text; }
+	cfg_comment_t(const char *text)
+	{
+		name = text;
+		typecode = CFG_COMMENT;
+	}
+	int read(int argc, char *argv[])	{ return 0; }
+	int copy(cfg_key_t *from);
+	void write(FILE *f);
+	void set_default()			{ ; }
+	int is_your_var(void *var)		{ return 0; }
+};
+
+
+class cfg_section_t : public cfg_key_t
+{
+  public:
+	cfg_section_t(const char *text)
+	{
+		name = text;
+		typecode = CFG_SECTION;
+	}
 	int read(int argc, char *argv[])	{ return 0; }
 	int copy(cfg_key_t *from);
 	void write(FILE *f);
@@ -152,6 +174,7 @@ class config_parser_t
   protected:
 	// Key registration: For use in inherited init()
 	void comment(const char *text);
+	void section(const char *_name);
 	void yesno(const char *_name, int &var, int def, bool save = true);
 	void command(const char *_name, int &var);
 	void key(const char *_name, int &var, int def, bool save = true);

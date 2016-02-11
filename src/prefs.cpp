@@ -30,19 +30,20 @@
 
 void prefs_t::init()
 {
-	comment("--------------------------------------------");
+	comment("------------------------------------------------");
 	comment(" Kobo Redux "KOBO_VERSION" Configuration File");
-	comment("--------------------------------------------");
+	comment("------------------------------------------------");
 	comment(" Switches - [no]<switch> or <switch> [<value>]");
 	comment(" Values - <key> [<value>|\"<string>\"]");
-	comment("--------------------------------------------");
-	comment("--- System options --------------------------");
+	comment("------------------------------------------------");
+
+	section("System");
 	yesno("logfile", logfile, 0); desc("Log To File");
 	key("logformat", logformat, 0); desc("Log File Format");
 	key("logverbosity", logverbosity, 2); desc("Log Verbosity Level");
 	yesno("quickstart", quickstart, 0); desc("Quick Startup");
 
-	comment("--- Input options --------------------------");
+	section("Input");
 	yesno("joystick", joystick, 0); desc("Enable Joystick");
 	key("joystick_index", joystick_index, 0); desc("Joystick Number");
 	yesno("mouse", mouse, 0); desc("Enable Mouse");
@@ -54,7 +55,7 @@ void prefs_t::init()
 	yesno("always_fire", always_fire, 0); desc("Always Fire");
 	yesno("mousecapture", mousecapture, 1); desc("In-game Mouse Capture");
 
-	comment("--- Game options ---------------------------");
+	section("Game");
 	yesno("scrollradar", scrollradar, 1); desc("Scrolling Radar");
 	yesno("filter", filter, 2); desc("Motion Interpolation");
 	key("timefilter", timefilter, 50); desc("Time Filter");
@@ -62,7 +63,7 @@ void prefs_t::init()
 	key("stars", stars, 500); desc("Number of Parallax Stars");
 	key("cannonloud", cannonloud, 100); desc("Player Cannons Loudness");
 
-	comment("--- Sound settings -------------------------");
+	section("Sound");
 	yesno("sound", sound, 1); desc("Enable Sound");
 	yesno("music", music, 1); desc("Enable Music");
 	key("audiodriver", audiodriver, ""); desc("Audio Driver");
@@ -78,7 +79,7 @@ void prefs_t::init()
 	key("music_vol", music_vol, 50); desc("Music Volume");
 	key("title_vol", title_vol, 70); desc("Title Music Volume");
 
-	comment("--- Video settings -------------------------");
+	section("Video");
 	yesno("fullscreen", fullscreen, 1); desc("Fullscreen Display");
 	key("width", width, 0); desc("Horizontal Resolution");
 	key("height", height, 0); desc("Vertical Resolution");
@@ -89,7 +90,7 @@ void prefs_t::init()
 	key("videomode", videomode, 1); desc("Video Mode");
 	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
 
-	comment("--- Graphics settings ----------------------");
+	section("Graphics");
 	key("gfxtheme", gfxtheme, ""); desc("Graphics Theme");
 	yesno("force_fallback_gfxtheme", force_fallback_gfxtheme, 0);
 			desc("Force Load Fallback Graphics Theme");
@@ -99,7 +100,7 @@ void prefs_t::init()
 	key("contrast", contrast, 100); desc("Contrast");
 	key("planetdither", planetdither, 5); desc("Planet Dither Style");
 
-	comment("--- Debug features -------------------------");
+	section("Debug");
 	yesno("debug", debug, 0); desc("Enable Debug Features");
 	yesno("show_fps", show_fps, 0); desc("Show Frame Rate");
 	yesno("indicator", indicator, 0);
@@ -110,7 +111,7 @@ void prefs_t::init()
 	yesno("show_tiles", show_tiles, 0); desc("Show Tile/Sprite Edges");
 	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
 
-	comment("--- Cheat/test features --------------------");
+	section("Cheat/test");
 	yesno("cheat_pushmove", cheat_pushmove, 0);
 			desc("Cheat: Enable Push Move Mode");
 	yesno("cheat_shield", cheat_shield, 0);
@@ -122,19 +123,20 @@ void prefs_t::init()
 	yesno("cheat_startlevel", cheat_startlevel, 0);
 			desc("Cheat: Unlimited Start Level Selector");
 
-	comment("--- File paths -----------------------------");
+	section("Paths");
 	key("files", dir, ""); desc("Game Root Path");
 	key("gfx", gfxdir, ""); desc("Graphics Data Path");
 	key("sfx", sfxdir, ""); desc("Sound Data Path");
 	key("scores", scoredir, ""); desc("Score File Path");
 
-	comment("--- Temporary variables --------------------");
+	section("Temporary variables");
 	key("last_profile", last_profile, 0);
 			desc("Last used player profile");
 	key("number_of_joysticks", number_of_joysticks, 0);
 			desc("Number of Connected Joysticks");
 
-	// "Commands" - never written to config files
+	section("Commands");
+	comment(" (Never written to config files!)");
 	command("showcfg", cmd_showcfg); desc("Show Configuration");
 	command("hiscores", cmd_hiscores); desc("List High Scores");
 	command("highscores", cmd_hiscores); desc("List High Scores");

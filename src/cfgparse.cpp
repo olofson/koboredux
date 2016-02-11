@@ -3,7 +3,7 @@
 	cfgparse.cpp - Generic Config File and Argument Parser
 -------------------------------------------------------------------
  * Copyright 2001, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -78,6 +78,23 @@ void cfg_comment_t::write(FILE *f)
 
 
 int cfg_comment_t::copy(cfg_key_t *from)
+{
+	if(typecode != from->typecode)
+		return -1;
+	return 0;
+}
+
+
+/*----------------------------------------------------------
+	cfg_section_t
+----------------------------------------------------------*/
+
+void cfg_section_t::write(FILE *f)
+{
+	fprintf(f, "\n# Section '%s'\n", name);
+}
+
+int cfg_section_t::copy(cfg_key_t *from)
 {
 	if(typecode != from->typecode)
 		return -1;
@@ -423,6 +440,12 @@ void config_parser_t::add(cfg_key_t *_key)
 void config_parser_t::comment(const char *text)
 {
 	add(new cfg_comment_t(text));
+}
+
+
+void config_parser_t::section(const char *_name)
+{
+	add(new cfg_section_t(_name));
 }
 
 
@@ -804,6 +827,8 @@ void config_parser_t::set(int symbol, int value)
 	switch(table[symbol]->typecode)
 	{
 	  case CFG_NONE:
+	  case CFG_COMMENT:
+	  case CFG_SECTION:
 		return;
 	  case CFG_BOOL:
 		{
@@ -841,6 +866,8 @@ void config_parser_t::set(int symbol, float value)
 	switch(table[symbol]->typecode)
 	{
 	  case CFG_NONE:
+	  case CFG_COMMENT:
+	  case CFG_SECTION:
 		return;
 	  case CFG_BOOL:
 		{
@@ -878,6 +905,8 @@ void config_parser_t::set(int symbol, const char *text)
 	switch(table[symbol]->typecode)
 	{
 	  case CFG_NONE:
+	  case CFG_COMMENT:
+	  case CFG_SECTION:
 		return;
 	  case CFG_BOOL:
 		{
@@ -930,6 +959,8 @@ int config_parser_t::get_i(int symbol)
 	switch(table[symbol]->typecode)
 	{
 	  case CFG_NONE:
+	  case CFG_COMMENT:
+	  case CFG_SECTION:
 		return 0;
 	  case CFG_BOOL:
 		{
@@ -963,6 +994,8 @@ float config_parser_t::get_f(int symbol)
 	switch(table[symbol]->typecode)
 	{
 	  case CFG_NONE:
+	  case CFG_COMMENT:
+	  case CFG_SECTION:
 		return 0.0;
 	  case CFG_BOOL:
 		{
@@ -996,6 +1029,8 @@ const char *config_parser_t::get_s(int symbol)
 	switch(table[symbol]->typecode)
 	{
 	  case CFG_NONE:
+	  case CFG_COMMENT:
+	  case CFG_SECTION:
 		return "";
 	  case CFG_BOOL:
 		{
@@ -1032,6 +1067,8 @@ int config_parser_t::get_default_i(int symbol)
 	switch(table[symbol]->typecode)
 	{
 	  case CFG_NONE:
+	  case CFG_COMMENT:
+	  case CFG_SECTION:
 		return 0;
 	  case CFG_BOOL:
 		{
@@ -1065,6 +1102,8 @@ float config_parser_t::get_default_f(int symbol)
 	switch(table[symbol]->typecode)
 	{
 	  case CFG_NONE:
+	  case CFG_COMMENT:
+	  case CFG_SECTION:
 		return 0.0;
 	  case CFG_BOOL:
 		{
@@ -1098,6 +1137,8 @@ const char *config_parser_t::get_default_s(int symbol)
 	switch(table[symbol]->typecode)
 	{
 	  case CFG_NONE:
+	  case CFG_COMMENT:
+	  case CFG_SECTION:
 		return "";
 	  case CFG_BOOL:
 		{

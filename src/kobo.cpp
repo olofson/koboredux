@@ -1916,35 +1916,83 @@ void kobo_gfxengine_t::post_render()
 
 static void put_usage()
 {
-	printf("\nKobo Redux %s\n", KOBO_VERSION);
-	printf("Usage: kobord [<options>]\n");
-	printf("Recognized options:\n");
+	// Check maximum space needed for names and default values
+	int maxnamelen = 8;
+	int maxdeflen = 4;
 	int s = -1;
 	while(1)
 	{
-		const char *fs;
 		s = prefs->find_next(s);
 		if(s < 0)
 			break;
+
+		int dl = strlen(prefs->get_default_s(s));
+		int nl = strlen(prefs->name(s));
 		switch(prefs->type(s))
 		{
 		  case CFG_BOOL:
-			fs = "	-[no]%-16.16s[%s]\t%s%s\n";
+			nl += 4;	// Space for "[no]" before the name
 			break;
 		  case CFG_INT:
 		  case CFG_FLOAT:
-			fs = "	-%-20.20s[%s]\t%s%s\n";
 			break;
 		  case CFG_STRING:
-			fs = "	-%-20.20s[\"%s\"]\t%s%s\n";
+			dl += 2;	// Space for default value quoting
+			break;
+		  default:
+			nl = 0;
+			continue;
+		}
+		if(dl > maxdeflen)
+			maxdeflen = dl;
+		if(nl > maxnamelen)
+			maxnamelen = nl;
+	}
+
+	// Column padding
+	maxnamelen += 2;
+	maxdeflen += 4;		// Space for [] brackets!
+
+	// Print nicely formatted documentation
+	printf("\nKobo Redux %s\n", KOBO_VERSION);
+	printf("Usage: kobord [<options>]\n");
+	printf("Recognized options:\n");
+	s = -1;
+	while(1)
+	{
+		s = prefs->find_next(s);
+		if(s < 0)
+			break;
+
+		char def[16];
+		snprintf(def, sizeof(def), prefs->type(s) == CFG_STRING ?
+				"[\"%s\"]" : "[%s]", prefs->get_default_s(s));
+
+		const char *fs;
+		int namelen = maxnamelen;
+		switch(prefs->type(s))
+		{
+		  case CFG_SECTION:
+			printf("\n  %s:\n", prefs->name(s));
+			continue;
+		  case CFG_BOOL:
+			fs = "    -[no]%-*.*s%-*.*s%s%s\n";
+			namelen = maxnamelen - 4;
+			break;
+		  case CFG_INT:
+		  case CFG_FLOAT:
+		  case CFG_STRING:
+			fs = "    -%-*.*s%-*.*s%s%s\n";
 			break;
 		  default:
 			continue;
 		}
-		printf(fs, prefs->name(s), prefs->get_default_s(s),
+		printf(fs, namelen, namelen, prefs->name(s),
+				maxdeflen, maxdeflen, def,
 				prefs->do_save(s) ? "" : "(Not saved!) ",
 				prefs->description(s));
 	}
+	printf("\n");
 }
 
 
