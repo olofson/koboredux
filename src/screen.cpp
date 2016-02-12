@@ -355,13 +355,13 @@ void _screen::help(int t)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
 		int i;
-		for(i = 0; i < 4; ++i)
+		int txo = t * cx / 8 / 15 % (cx / 8);
+		for(i = 0; i < 8; ++i)
 		{
-			int t2 = t + 153 * i;
-			woverlay->sprite(cx - (t2 / 5) % 120, 105,
-					B_BOLT, 16 + (t2 / 50) % 4);
-			woverlay->sprite(cx + (t2 / 5) % 120, 105,
-					B_BOLT, 16 + (t2 / 50) % 4);
+			woverlay->sprite(cx - cx * i / 8 - txo, 105,
+					B_BOLT, 16 + (t / 30 + i) % 4);
+			woverlay->sprite(cx + cx * i / 8 + txo, 105,
+					B_BOLT, 16 + (t / 30 + i) % 4);
 		}
 		woverlay->sprite(cx, 105, B_PLAYER, 8);
 		woverlay->center(140,
@@ -399,15 +399,16 @@ void _screen::help(int t)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
 // TODO: Short demo of intense battle
-		woverlay->sprite(cx - 80, 110, B_RING, (t / 30) % 16);
-		woverlay->sprite(cx - 60, 90, B_BOMB, (t / 40) % 16);
-		woverlay->sprite(cx - 40, 110, B_BMR_GREEN, (t / 80) % 16);
-		woverlay->sprite(cx - 20, 90, B_BMR_PURPLE, (t / 70) % 16);
-		woverlay->sprite(cx, 110, B_BMR_PINK, (t / 60) % 16);
-		woverlay->sprite(cx + 20, 90, B_FIGHTER, (t / 50) % 16);
-		woverlay->sprite(cx + 40, 110, B_MISSILE1, (t / 45) % 16);
-		woverlay->sprite(cx + 60, 90, B_MISSILE2, (t / 40) % 16);
-		woverlay->sprite(cx + 80, 110, B_MISSILE3, (t / 55) % 16);
+		woverlay->sprite(cx - 90, 90, B_RING, (t / 30) % 16);
+		woverlay->sprite(cx - 70, 110, B_GREENBOMB, (t / 40) % 16);
+		woverlay->sprite(cx - 50, 90, B_REDBOMB, 15 - (t / 40) % 16);
+		woverlay->sprite(cx - 30, 110, B_BMR_GREEN, (t / 80) % 16);
+		woverlay->sprite(cx - 10, 90, B_BMR_PURPLE, (t / 70) % 16);
+		woverlay->sprite(cx + 10, 110, B_BMR_PINK, (t / 60) % 16);
+		woverlay->sprite(cx + 30, 90, B_FIGHTER, (t / 50) % 16);
+		woverlay->sprite(cx + 50, 110, B_MISSILE1, (t / 45) % 16);
+		woverlay->sprite(cx + 70, 90, B_MISSILE2, (t / 40) % 16);
+		woverlay->sprite(cx + 90, 110, B_MISSILE3, (t / 55) % 16);
 		woverlay->center(130, "Shoot everything that moves,");
 		woverlay->center(140, "but avoid getting hit!");
 	}

@@ -95,7 +95,7 @@ alias B_R5L9_GROUND B_R1L9_GROUND FUTURE
 alias B_R5L10_GROUND B_R1L10_GROUND FUTURE
 
 path "sprites"
-sprites B_PLAYER "player.png" 40 40 2 CENTER
+#sprites B_PLAYER "player.png" 40 40 2 CENTER
 sprites B_BMR_GREEN "bmr-green.png" 40 40 2 CENTER
 sprites B_BMR_PURPLE "bmr-purple.png" 40 40 2 CENTER
 sprites B_BMR_PINK "bmr-pink.png" 40 40 2 CENTER
@@ -120,7 +120,8 @@ sprites B_BLTX_RED "bulletexpl2.png" 32 32 2 CENTER
 sprites B_BLTX_BLUE "bulletexpl2.png" 32 32 2 CENTER
 sprites B_RING "ring.png" 32 32 2 CENTER
 sprites B_RINGEXPL "ringexpl2b.png" 40 40 2 CENTER
-sprites B_BOMB "bomb.png" 24 24 2 CENTER
+#sprites B_REDBOMB "bomb.png" 24 24 2 CENTER
+#alias B_GREENBOMB B_REDBOMB
 sprites B_BOMBDETO "bombdeto.png" 40 40 2 CENTER
 sprites B_BIGSHIP "bigship.png" 72 72 2 CENTER
 
