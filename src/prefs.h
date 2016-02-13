@@ -107,6 +107,7 @@ class prefs_t : public config_parser_t
 	int	cheat_invulnerability;
 	int	cheat_firepower;
 	int	cheat_startlevel;
+	float	cheat_speed;
 
 	// Returns 'true' if any cheat/test features are enabled
 	bool cheats()
@@ -115,7 +116,8 @@ class prefs_t : public config_parser_t
 				cheat_shield ||
 				cheat_invulnerability ||
 				cheat_firepower ||
-				cheat_startlevel;
+				cheat_startlevel ||
+				cheat_speed;
 	}
 
 	// File paths

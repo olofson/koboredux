@@ -46,6 +46,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	type = tp;
 	skill = sk;
 	speed = 30;
+	if(prefs && prefs->cheat_speed)
+		speed /= prefs->cheat_speed;
 
 	// Player ship health and damage
 	health = 100;

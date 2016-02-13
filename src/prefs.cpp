@@ -122,6 +122,7 @@ void prefs_t::init()
 			desc("Cheat: Extra Firepower");
 	yesno("cheat_startlevel", cheat_startlevel, 0);
 			desc("Cheat: Unlimited Start Level Selector");
+	key("cheat_speed", cheat_speed, 0.0f); desc("Cheat: Game Speed");
 
 	section("Paths");
 	key("files", dir, ""); desc("Game Root Path");
@@ -150,4 +151,6 @@ void prefs_t::init()
 
 void prefs_t::postload()
 {
+	if(cheat_speed == 1.0f)
+		cheat_speed = 0.0f;
 }
