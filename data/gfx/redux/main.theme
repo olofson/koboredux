@@ -57,7 +57,7 @@ sprites B_PLAYER "kobo-mk1c.png" 24 24 CENTER
 #sprites B_MISSILE1 "missile.png" 40 40 2 CENTER
 #sprites B_MISSILE2 "missile2.png" 40 40 2 CENTER
 #sprites B_MISSILE3 "missile3.png" 40 40 2 CENTER
-sprites B_BOLT "orange-bolt.png" 8 8 CENTER
+sprites B_BOLT "orange-bolt-3.png" 8 8 CENTER
 sprites B_EXPLO1 "explo1.png" 24 24 CENTER
 alias B_EXPLO3 B_EXPLO1
 alias B_EXPLO4 B_EXPLO1

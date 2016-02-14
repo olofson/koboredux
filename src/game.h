@@ -3,7 +3,7 @@
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
  * Copyright (C) 2002, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -122,6 +122,7 @@ class game_t
 				// at full speed
 
 	// Player guns
+	int	bolt_speed;	// Nominal bolt speed
 	int	bolt_damage;	// Damage inflicted by player fire bolt
 	int	bolt_range;	// Max distance player bolts can travel
 	int	noseloadtime;	// logic frames per nose shot

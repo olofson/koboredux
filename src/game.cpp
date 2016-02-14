@@ -58,6 +58,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	cruise_speed = 2;
 
 	// Player guns
+	bolt_speed = 12;
 	bolt_range = (VIEWLIMIT >> 1) + 16 + 32;
 	if(prefs && prefs->cheat_firepower)
 		noseloadtime = tailloadtime = 0;

@@ -615,7 +615,7 @@ void _enemy::make_expl()
 		a = 6;
 		break;
 	  case B_BOLT:
-		frame = 32 + 8 * pubrand.get(2);
+		frame = 80 + 8 * pubrand.get(2);
 		di = pubrand.get(2);
 		a = 8;
 		break;

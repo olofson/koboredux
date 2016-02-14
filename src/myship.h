@@ -29,16 +29,24 @@
 #include "game.h"
 
 //---------------------------------------------------------------------------//
-enum _myship_state
+enum KOBO_myship_state
 {
 	SHIP_NORMAL,
 	SHIP_INVULNERABLE,
 	SHIP_DEAD
 };
 
-class _myship
+struct KOBO_player_bolt
 {
-	static _myship_state _state;
+	int x, y;
+	int dx, dy;
+	int dir, state;
+	cs_obj_t *object;
+};
+
+class KOBO_myship
+{
+	static KOBO_myship_state _state;
 	static int di;		// Direction (1: N, 2: NE, 3: W etc)
 	static int fdi;		// Filtered direction (sprite frames, 24:8)
 	static int dframes;	// Number of sprite rotation frames
@@ -50,23 +58,29 @@ class _myship
 	static int explo_time;
 	static int nose_reload_timer;
 	static int tail_reload_timer;
-	static int boltx[MAX_BOLTS], bolty[MAX_BOLTS];
-	static int boltdx[MAX_BOLTS], boltdy[MAX_BOLTS];
-	static int boltst[MAX_BOLTS];
+	static KOBO_player_bolt bolts[MAX_BOLTS];
 
 	// For the gfxengine connection
 	static cs_obj_t *object;
-	static cs_obj_t *bolt_objects[MAX_BOLTS];
 	static cs_obj_t *crosshair;
 
-	static void shot_single(int i, int dir, int offset);
+	static int shot_single(int dir, int loffset, int hoffset);
 	static void apply_position();
 	static void explode();
 	static void handle_controls();
 	static void update_position();
+	static inline int bolt_frame(int dir, int frame)
+	{
+		const char animtab[8] = { 0, 1, 2, 3, 2, 1, 2, 1 };
+		if(frame < 4)
+			return (dir - 1) * 4 + frame;
+		else
+			return 32 + ((dir - 1) & 3) * 8 +
+					animtab[(frame - 4) & 7];
+	}
   public:
-	 _myship();
-	static void state(_myship_state s);
+	KOBO_myship();
+	static void state(KOBO_myship_state s);
 	static int get_velx()		{ return vx; }
 	static int get_vely()		{ return vy; }
 	static int get_x()		{ return CS2PIXEL(x); }
@@ -97,6 +111,6 @@ class _myship
 	static bool in_range(int px, int py, int range, int &dist);
 };
 
-extern _myship myship;
+extern KOBO_myship myship;
 
 #endif // XKOBO_H_MYSHIP

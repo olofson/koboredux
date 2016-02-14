@@ -30,40 +30,35 @@
 #include "random.h"
 #include "sound.h"
 
-_myship_state _myship::_state;
-int _myship::di;
-int _myship::fdi;
-int _myship::dframes;
-int _myship::x;
-int _myship::y;
-int _myship::vx;
-int _myship::vy;
-int _myship::ax;
-int _myship::ay;
-int _myship::_health;
-int _myship::health_time;
-int _myship::explo_time;
-int _myship::nose_reload_timer;
-int _myship::tail_reload_timer;
-int _myship::boltx[MAX_BOLTS];
-int _myship::bolty[MAX_BOLTS];
-int _myship::boltdx[MAX_BOLTS];
-int _myship::boltdy[MAX_BOLTS];
-int _myship::boltst[MAX_BOLTS];
-cs_obj_t *_myship::object;
-cs_obj_t *_myship::bolt_objects[MAX_BOLTS];
-cs_obj_t *_myship::crosshair;
+KOBO_myship_state KOBO_myship::_state;
+int KOBO_myship::di;
+int KOBO_myship::fdi;
+int KOBO_myship::dframes;
+int KOBO_myship::x;
+int KOBO_myship::y;
+int KOBO_myship::vx;
+int KOBO_myship::vy;
+int KOBO_myship::ax;
+int KOBO_myship::ay;
+int KOBO_myship::_health;
+int KOBO_myship::health_time;
+int KOBO_myship::explo_time;
+int KOBO_myship::nose_reload_timer;
+int KOBO_myship::tail_reload_timer;
+KOBO_player_bolt KOBO_myship::bolts[MAX_BOLTS];
+cs_obj_t *KOBO_myship::object;
+cs_obj_t *KOBO_myship::crosshair;
 
 
-_myship::_myship()
+KOBO_myship::KOBO_myship()
 {
+	memset(bolts, 0, sizeof(bolts));
 	object = NULL;
-	memset(bolt_objects, 0, sizeof(bolt_objects));
 	crosshair = NULL;
 }
 
 
-void _myship::state(_myship_state s)
+void KOBO_myship::state(KOBO_myship_state s)
 {
 	if(prefs->cheat_shield && (s == SHIP_NORMAL))
 		s = SHIP_INVULNERABLE;
@@ -85,7 +80,7 @@ void _myship::state(_myship_state s)
 		// HACK: We don't use this for rendering in the normal fashion,
 		// because we want to filter rotation at the rendering frame
 		// rate. The engine should provide custom rendering callbacks
-		// for stuff like this...
+		// for stuff like this... (Same deal with the bolts!)
 		if(object)
 		{
 			cs_obj_show(object);
@@ -97,20 +92,20 @@ void _myship::state(_myship_state s)
 }
 
 
-void _myship::off()
+void KOBO_myship::off()
 {
 	state(SHIP_DEAD);
 	int i;
 	for(i = 0; i < MAX_BOLTS; i++)
-		if(bolt_objects[i])
+		if(bolts[i].object)
 		{
-			gengine->free_obj(bolt_objects[i]);
-			bolt_objects[i] = NULL;
+			gengine->free_obj(bolts[i].object);
+			bolts[i].object = NULL;
 		}
 }
 
 
-int _myship::init()
+int KOBO_myship::init()
 {
 	nose_reload_timer = 0;
 	tail_reload_timer = 0;
@@ -131,21 +126,14 @@ int _myship::init()
 
 	int i;
 	for(i = 0; i < MAX_BOLTS; i++)
-	{
-		boltx[i] = 0;
-		bolty[i] = 0;
-		boltdx[i] = 0;
-		boltdy[i] = 0;
-		boltst[i] = 0;
-		if(bolt_objects[i])
-			gengine->free_obj(bolt_objects[i]);
-		bolt_objects[i] = NULL;
-	}
+		if(bolts[i].object)
+			gengine->free_obj(bolts[i].object);
+	memset(bolts, 0, sizeof(bolts));
 	return 0;
 }
 
 
-void _myship::explode()
+void KOBO_myship::explode()
 {
 	if(explo_time > 64)
 		return;
@@ -167,10 +155,7 @@ void _myship::explode()
 }
 
 
-#define BEAMV1	12
-#define BEAMV2	(BEAMV1 * 2 / 3)
-
-void _myship::handle_controls()
+void KOBO_myship::handle_controls()
 {
 	int v;
 	if(prefs->cheat_pushmove)
@@ -210,7 +195,8 @@ void _myship::handle_controls()
 #endif
 }
 
-void _myship::move()
+
+void KOBO_myship::move()
 {
 	int i;
 	di = gamecontrol.dir();
@@ -256,13 +242,13 @@ void _myship::move()
 		int fired = 0;
 		if(tail_reload_timer > 0)
 			--tail_reload_timer;
-		else if(!_myship::tail_fire())
+		else if(!tail_fire())
 			fired = 1;	// Ok!
 		else
 			fired = 2;	// Overheat!
 		if(nose_reload_timer > 0)
 			--nose_reload_timer;
-		else if(!_myship::nose_fire())
+		else if(!nose_fire())
 			fired = 1;	// Ok!
 		else
 			fired = 2;	// Overheat!
@@ -280,36 +266,41 @@ void _myship::move()
 	}
 
 	// Bolts
-	const char animtab[8] = { 3, 2, 1, 0, 1, 2, 1, 2 };
 	for(i = 0; i < MAX_BOLTS; i++)
 	{
-		if(!boltst[i])
+		if(!bolts[i].state)
 			continue;
-		++boltst[i];
-		boltx[i] += boltdx[i];
-		bolty[i] += boltdy[i];
-		boltx[i] &= WORLD_SIZEX - 1;
-		bolty[i] &= WORLD_SIZEY - 1;
-		int dx = labs(wrapdist(boltx[i], CS2PIXEL(x), WORLD_SIZEX));
-		int dy = labs(wrapdist(bolty[i], CS2PIXEL(y), WORLD_SIZEY));
+		if(bolts[i].state <= 2)
+		{
+			bolts[i].x += bolts[i].dx * (bolts[i].state - 1) >> 1;
+			bolts[i].y += bolts[i].dy * (bolts[i].state - 1) >> 1;
+		}
+		else
+		{
+			bolts[i].x += bolts[i].dx;
+			bolts[i].y += bolts[i].dy;
+		}
+		++bolts[i].state;
+		bolts[i].x &= PIXEL2CS(WORLD_SIZEX) - 1;
+		bolts[i].y &= PIXEL2CS(WORLD_SIZEY) - 1;
+		int dx = labs(wrapdist(CS2PIXEL(bolts[i].x), CS2PIXEL(x),
+				WORLD_SIZEX));
+		int dy = labs(wrapdist(CS2PIXEL(bolts[i].y), CS2PIXEL(y),
+				WORLD_SIZEY));
 		if(dx >= game.bolt_range || dy >= game.bolt_range)
 		{
-			boltst[i] = 0;
-			if(bolt_objects[i])
-				gengine->free_obj(bolt_objects[i]);
-			bolt_objects[i] = NULL;
+			bolts[i].state = 0;
+			if(bolts[i].object)
+				gengine->free_obj(bolts[i].object);
+			bolts[i].object = NULL;
 		}
-		else if(bolt_objects[i])
-			cs_obj_image(bolt_objects[i], B_BOLT,
-					(bolt_objects[i]->anim.frame &
-					0xfffffff8) + animtab[boltst[i] & 7]);
 	}
 	// NOTE: We can't check bolt/base collisions here, as that would kill
 	//       bolts before core (enemy) collisions are checked!
 }
 
 
-void _myship::hit(int dmg)
+void KOBO_myship::hit(int dmg)
 {
 	if(!dmg)
 		return;
@@ -352,7 +343,7 @@ void _myship::hit(int dmg)
 }
 
 
-void _myship::health_bonus(int h)
+void KOBO_myship::health_bonus(int h)
 {
 	if(_state == SHIP_DEAD)
 		return;
@@ -365,24 +356,23 @@ void _myship::health_bonus(int h)
 
 
 // Check and handle base/bolt collisions
-void _myship::check_base_bolts()
+void KOBO_myship::check_base_bolts()
 {
 	for(int i = 0; i < MAX_BOLTS; i++)
 	{
-		if(!boltst[i])
+		if(!bolts[i].state)
 			continue;
 
-		int x1 = WORLD2MAPX(boltx[i]);
-		int y1 = WORLD2MAPY(bolty[i]);
+		int x1 = WORLD2MAPX(CS2PIXEL(bolts[i].x));
+		int y1 = WORLD2MAPY(CS2PIXEL(bolts[i].y));
 		if(IS_BASE(screen.get_map(x1, y1)))
 		{
 			sound.g_play(SOUND_METALLIC, x1 << 4, y1 << 4);
-			enemies.make(&boltexpl, PIXEL2CS(boltx[i]),
-					PIXEL2CS(bolty[i]));
-			boltst[i] = 0;
-			if(bolt_objects[i])
-				gengine->free_obj(bolt_objects[i]);
-			bolt_objects[i] = NULL;
+			enemies.make(&boltexpl, bolts[i].x, bolts[i].y);
+			bolts[i].state = 0;
+			if(bolts[i].object)
+				gengine->free_obj(bolts[i].object);
+			bolts[i].object = NULL;
 		}
 	}
 }
@@ -401,7 +391,7 @@ static inline void calc_bounce(int p2, int *p3, int *v)
 }
 
 // Check and handle base/ship collisions
-void _myship::update_position()
+void KOBO_myship::update_position()
 {
 	if(prefs->indicator)
 	{
@@ -494,20 +484,21 @@ void _myship::update_position()
 }
 
 
-int _myship::hit_bolt(int ex, int ey, int hitsize, int health)
+int KOBO_myship::hit_bolt(int ex, int ey, int hitsize, int health)
 {
 	int dmg = 0;
 	int i;
 	for(i = 0; i < MAX_BOLTS; i++)
 	{
-		if(boltst[i] == 0)
+		if(bolts[i].state == 0)
 			continue;
-		if(labs(wrapdist(ex, boltx[i], WORLD_SIZEX)) >= hitsize)
+		if(labs(wrapdist(ex, CS2PIXEL(bolts[i].x), WORLD_SIZEX)) >=
+				hitsize)
 			continue;
-		if(labs(wrapdist(ey, bolty[i], WORLD_SIZEY)) >= hitsize)
+		if(labs(wrapdist(ey, CS2PIXEL(bolts[i].y), WORLD_SIZEY)) >=
+				hitsize)
 			continue;
-		enemies.make(&boltexpl,
-				PIXEL2CS(boltx[i]), PIXEL2CS(bolty[i]));
+		enemies.make(&boltexpl, bolts[i].x, bolts[i].y);
 		dmg += game.bolt_damage;
 		if(dmg >= health)
 			break;
@@ -516,7 +507,7 @@ int _myship::hit_bolt(int ex, int ey, int hitsize, int health)
 }
 
 
-void _myship::put_crosshair()
+void KOBO_myship::put_crosshair()
 {
 	if(_state == SHIP_DEAD)
 		return;
@@ -536,7 +527,7 @@ void _myship::put_crosshair()
 }
 
 
-int _myship::put()
+int KOBO_myship::put()
 {
 	// Player
 	apply_position();
@@ -545,23 +536,24 @@ int _myship::put()
 	int i;
 	for(i = 0; i < MAX_BOLTS; i++)
 	{
-		if(!bolt_objects[i])
+		if(!bolts[i].object)
 			continue;
-		if(boltst[i])
+		if(bolts[i].state)
 		{
-			bolt_objects[i]->point.v.x = PIXEL2CS(boltx[i]);
-			bolt_objects[i]->point.v.y = PIXEL2CS(bolty[i]);
+			bolts[i].object->point.v.x = bolts[i].x;
+			bolts[i].object->point.v.y = bolts[i].y;
 		}
 	}
 	return 0;
 }
 
 
-void _myship::render()
+void KOBO_myship::render()
 {
 	if(!myship.object)
 		return;
 
+	// Render player ship
 	int maxd = dframes << 8;
 	int tdi = ((di - 1) * dframes << 8) / 8 + 127;
 	int ddi = tdi - fdi;
@@ -576,124 +568,71 @@ void _myship::render()
 	wmain->sprite_fxp(object->point.gx, object->point.gy,
 			B_PLAYER, fdi >> 8);
 
+	// Render bolts
+	int i;
+	for(i = 0; i < MAX_BOLTS; i++)
+	{
+		if(!bolts[i].state || !bolts[i].object)
+			continue;
+		wmain->sprite_fxp(bolts[i].object->point.gx,
+				bolts[i].object->point.gy, B_BOLT,
+				bolt_frame(bolts[i].dir, bolts[i].state - 2));
+	}
+
+	// Render shield
 	if(_state == SHIP_INVULNERABLE)
 		wmain->sprite_fxp(object->point.gx, object->point.gy,
 				B_SHIELDFX, manage.game_time() % 8);
 }
 
 
-void _myship::shot_single(int i, int dir, int offset)
-{
-	int doffset = (offset * 7071 + (offset > 0 ? 5000 : -5000)) / 10000;
-	boltst[i] = 1;
-	boltx[i] = CS2PIXEL(x);
-	bolty[i] = CS2PIXEL(y);
-	switch((dir + 1) % 8 + 1)
-	{
-	  case 1:
-		bolty[i] -= offset;
-		break;
-	  case 2:
-		bolty[i] -= doffset;
-		boltx[i] += doffset;
-		break;
-	  case 3:
-		boltx[i] += offset;
-		break;
-	  case 4:
-		boltx[i] += doffset;
-		bolty[i] += doffset;
-		break;
-	  case 5:
-		bolty[i] += offset;
-		break;
-	  case 6:
-		bolty[i] += doffset;
-		boltx[i] -= doffset;
-		break;
-	  case 7:
-		boltx[i] -= offset;
-		break;
-	  case 8:
-		boltx[i] -= doffset;
-		bolty[i] -= doffset;
-		break;
-	}
-	switch(dir)
-	{
-	  case 1:
-		boltdx[i] = 0;
-		boltdy[i] = -BEAMV1;
-		break;
-	  case 2:
-		boltdy[i] = -BEAMV2;
-		boltdx[i] = BEAMV2;
-		break;
-	  case 3:
-		boltdx[i] = BEAMV1;
-		boltdy[i] = 0;
-		break;
-	  case 4:
-		boltdx[i] = BEAMV2;
-		boltdy[i] = BEAMV2;
-		break;
-	  case 5:
-		boltdx[i] = 0;
-		boltdy[i] = BEAMV1;
-		break;
-	  case 6:
-		boltdy[i] = BEAMV2;
-		boltdx[i] = -BEAMV2;
-		break;
-	  case 7:
-		boltdx[i] = -BEAMV1;
-		boltdy[i] = 0;
-		break;
-	  case 8:
-		boltdx[i] = -BEAMV2;
-		boltdy[i] = -BEAMV2;
-		break;
-	}
-	if(!bolt_objects[i])
-		bolt_objects[i] = gengine->get_obj(LAYER_PLAYER);
-	if(bolt_objects[i])
-	{
-		bolt_objects[i]->point.v.x = PIXEL2CS(boltx[i]);
-		bolt_objects[i]->point.v.y = PIXEL2CS(bolty[i]);
-		cs_obj_image(bolt_objects[i], B_BOLT,
-				(((dir - 1) & 0x3) << 3) + 3);
-		cs_obj_show(bolt_objects[i]);
-	}
-}
-
-
-int _myship::nose_fire()
+int KOBO_myship::shot_single(int dir, int loffset, int hoffset)
 {
 	int i;
-	for(i = 0; i < MAX_BOLTS && boltst[i]; i++)
+	for(i = 0; i < MAX_BOLTS && bolts[i].state; i++)
 		;
 	if(i >= MAX_BOLTS)
 		return 1;
-	shot_single(i, di, 0);
+	bolts[i].state = 1;
+	bolts[i].dir = dir;
+	int sdi = sin(M_PI * (dir - 1) / 4) * 256.0f;
+	int cdi = cos(M_PI * (dir - 1) / 4) * 256.0f;
+	bolts[i].x = x - vx + loffset * sdi + hoffset * cdi;
+	bolts[i].y = y - vy - loffset * cdi + hoffset * sdi;
+	bolts[i].dx = vx + game.bolt_speed * sdi;
+	bolts[i].dy = vy - game.bolt_speed * cdi;
+	if(!bolts[i].object)
+		bolts[i].object = gengine->get_obj(LAYER_PLAYER);
+	if(bolts[i].object)
+	{
+		bolts[i].object->point.v.x = bolts[i].x;
+		bolts[i].object->point.v.y = bolts[i].y;
+		cs_obj_show(bolts[i].object);
+		cs_obj_hide(bolts[i].object);
+	}
+	return 0;
+}
+
+
+int KOBO_myship::nose_fire()
+{
+	if(shot_single(di, 15, 0))
+		return 1;
 	nose_reload_timer = game.noseloadtime;
 	return 0;
 }
 
 
-int _myship::tail_fire()
+int KOBO_myship::tail_fire()
 {
-	int i;
-	for(i = 0; i < MAX_BOLTS && boltst[i]; i++)
-		;
-	if(i >= MAX_BOLTS)
+	if(shot_single((di + 3) % 8 + 1, 11, 0))
 		return 1;
-	shot_single(i, (di > 4) ? (di - 4) : (di + 4), 0);
 	tail_reload_timer = game.tailloadtime;
 	return 0;
 }
 
 
-void _myship::set_position(int px, int py)
+void KOBO_myship::set_position(int px, int py)
 {
 	x = PIXEL2CS(px);
 	y = PIXEL2CS(py);
@@ -706,7 +645,7 @@ void _myship::set_position(int px, int py)
 }
 
 
-void _myship::apply_position()
+void KOBO_myship::apply_position()
 {
 	if(object)
 	{
@@ -716,7 +655,7 @@ void _myship::apply_position()
 }
 
 
-bool _myship::in_range(int px, int py, int range, int &dist)
+bool KOBO_myship::in_range(int px, int py, int range, int &dist)
 {
 	int dx = labs(wrapdist(x, px, PIXEL2CS(WORLD_SIZEX)));
 	if(dx > range)
