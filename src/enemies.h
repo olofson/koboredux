@@ -388,8 +388,10 @@ inline void _enemy::move()
 	y += v;
 	x &= PIXEL2CS(WORLD_SIZEX) - 1;
 	y &= PIXEL2CS(WORLD_SIZEY) - 1;
-	diffx = wrapdist(CS2PIXEL(x), myship.get_x(), WORLD_SIZEX);
-	diffy = wrapdist(CS2PIXEL(y), myship.get_y(), WORLD_SIZEY);
+	int dx = WRAPDISTXCS(x, myship.get_csx());
+	int dy = WRAPDISTYCS(y, myship.get_csy());
+	diffx = CS2PIXEL(dx);
+	diffy = CS2PIXEL(dy);
 	mindiff = MAX(labs(diffx), labs(diffy));
 	(this->*(ek->move)) ();
 
@@ -433,8 +435,8 @@ inline void _enemy::move_intro()
 	y += v;
 	x &= PIXEL2CS(WORLD_SIZEX) - 1;
 	y &= PIXEL2CS(WORLD_SIZEY) - 1;
-	diffx = wrapdist(CS2PIXEL(x), myship.get_x(), WORLD_SIZEX);
-	diffy = wrapdist(CS2PIXEL(y), myship.get_y(), WORLD_SIZEY);
+	diffx = WRAPDISTX(CS2PIXEL(x), myship.get_x());
+	diffy = WRAPDISTY(CS2PIXEL(y), myship.get_y());
 	mindiff = MAX(labs(diffx), labs(diffy));
 	(this->*(ek->move)) ();
 }

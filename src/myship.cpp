@@ -283,10 +283,8 @@ void KOBO_myship::move()
 		++bolts[i].state;
 		bolts[i].x &= PIXEL2CS(WORLD_SIZEX) - 1;
 		bolts[i].y &= PIXEL2CS(WORLD_SIZEY) - 1;
-		int dx = labs(wrapdist(CS2PIXEL(bolts[i].x), CS2PIXEL(x),
-				WORLD_SIZEX));
-		int dy = labs(wrapdist(CS2PIXEL(bolts[i].y), CS2PIXEL(y),
-				WORLD_SIZEY));
+		int dx = labs(WRAPDISTX(CS2PIXEL(bolts[i].x), CS2PIXEL(x)));
+		int dy = labs(WRAPDISTY(CS2PIXEL(bolts[i].y), CS2PIXEL(y)));
 		if(dx >= game.bolt_range || dy >= game.bolt_range)
 		{
 			bolts[i].state = 0;
@@ -492,11 +490,9 @@ int KOBO_myship::hit_bolt(int ex, int ey, int hitsize, int health)
 	{
 		if(bolts[i].state == 0)
 			continue;
-		if(labs(wrapdist(ex, CS2PIXEL(bolts[i].x), WORLD_SIZEX)) >=
-				hitsize)
+		if(labs(WRAPDISTX(ex, CS2PIXEL(bolts[i].x))) >= hitsize)
 			continue;
-		if(labs(wrapdist(ey, CS2PIXEL(bolts[i].y), WORLD_SIZEY)) >=
-				hitsize)
+		if(labs(WRAPDISTY(ey, CS2PIXEL(bolts[i].y))) >= hitsize)
 			continue;
 		enemies.make(&boltexpl, bolts[i].x, bolts[i].y);
 		dmg += game.bolt_damage;
@@ -657,10 +653,10 @@ void KOBO_myship::apply_position()
 
 bool KOBO_myship::in_range(int px, int py, int range, int &dist)
 {
-	int dx = labs(wrapdist(x, px, PIXEL2CS(WORLD_SIZEX)));
+	int dx = labs(WRAPDISTXCS(x, px));
 	if(dx > range)
 		return false;
-	int dy = labs(wrapdist(y, py, PIXEL2CS(WORLD_SIZEY)));
+	int dy = labs(WRAPDISTYCS(y, py));
 	if(dy > range)
 		return false;
 	dist = sqrt(dx*dx + dy*dy);
