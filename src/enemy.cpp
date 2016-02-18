@@ -253,16 +253,101 @@ void KOBO_enemy::kill_default()
 	release();
 }
 
+void KOBO_enemy::player_collision(int dx, int dy, int hs)
+{
+	if(bounce)
+		player_collision_bounce(dx, dy, hs);
+	else
+	{
+		if(prefs->indicator)
+			sound.g_player_damage();
+		else if(myship.alive())
+		{
+			hit(game.ram_damage);	// Ship damages object
+			myship.hit(damage);	// Object damages ship
+		}
+	}
+}
+
+void KOBO_enemy::player_collision_bounce(int dx, int dy, int hs)
+{
+	// "Physics enabled" objects have bounding circles!
+	int d = sqrt(dx * dx + dy * dy);
+	contact = hs - d;
+	if(contact <= 0)
+	{
+		contact = 0;
+		return;		// No intersection!
+	}
+
+	// Relative velocity
+	int dvx = h - myship.get_velx();
+	int dvy = v - myship.get_vely();
+
+	// Only apply impulses if the objects are moving towards each other!
+	if(dvx * dx + dvy * dy < 0)
+	{
+		// Calculate impulse based on contact point and velocity
+		//
+		// TODO:
+		//	Do away with some trig functions - not because it's
+		//	likely worth the effort performance wise, but because
+		//	it would be nice to keep the game logic all integer and
+		//	fully deterministic!
+		//
+		float da = atan2f(dy, dx);
+		float dva = atan2f(dvy, dvx);
+		float ra = da - dva;
+		float cosra = cos(ra);
+		float sinra = sin(ra);
+		int ix = (dvx * cosra - dvy * sinra) * cosra;
+		int iy = (dvx * sinra + dvy * cosra) * cosra;
+
+		// Velocity dependent damage!
+		int dmg = ((ix * ix + iy * iy) >> 8) /
+				(NOMINAL_DAMAGE_SPEED * NOMINAL_DAMAGE_SPEED);
+		if(myship.alive())
+		{
+			hit(game.ram_damage * dmg >> 8);
+			myship.hit(damage * dmg >> 8);
+		}
+
+		// Scale impulse for desired bounciness
+		ix = (256 + (KOBO_ENEMY_BOUNCE)) * ix >> 9;
+		iy = (256 + (KOBO_ENEMY_BOUNCE)) * iy >> 9;
+
+		// Apply impulse! (All objects have identical mass...)
+		h -= ix;
+		v -= iy;
+		myship.impulse(ix, iy);
+	}
+
+	// Since initial intersection and impulse rounding errors can allow
+	// objects to creep into each other, we nudge them back to right at the
+	// point of contact here.
+	x += contact * dx / d;
+	y += contact * dy / d;
+}
+
 void KOBO_enemy::render_hit_zone()
 {
 	if(!object)
 		return;
 	int r = PIXEL2CS(hitsize);
 	if(bounce)
+	{
+		if(contact)
+			wmain->foreground(wmain->map_rgb(255, 128, 0));
+		else
+			wmain->foreground(wmain->map_rgb(128, 0, 128));
 		wmain->circle_fxp(object->point.gx, object->point.gy, r);
+	}
 	else
+	{
+		wmain->foreground(wmain->map_rgb(128, 0, 128));
 		wmain->hairrect_fxp(object->point.gx - r, object->point.gy - r,
 				2 * r, 2 * r);
+	}
 }
 
 

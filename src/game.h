@@ -57,8 +57,14 @@
 // Minimum speed for impact damage (fraction of game.top_speed)
 #define	KOBO_MIN_DAMAGE_SPEED	0.5f
 
-// Define to have the player ship bounce off bases, rather than cling to them
-#define	BASE_BOUNCE
+// Player ship vs base bounciness (24:8; 256 ==> 100% energy preserved)
+#define	KOBO_BASE_BOUNCE	256
+
+// Player ship vs enemy ship bounciness (24:8; 256 ==> 100% energy preserved)
+#define	KOBO_ENEMY_BOUNCE	256
+
+// Relative impact velocity at which nominal ram damage is given
+#define	NOMINAL_DAMAGE_SPEED	4
 
 // Launch speed for enemies with launchspeed == 0
 #define	DEFAULT_LAUNCH_SPEED	4

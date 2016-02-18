@@ -134,7 +134,6 @@ void KOBO_enemies::put()
 void KOBO_enemies::render_hit_zones()
 {
 	KOBO_enemy *enemyp;
-	wmain->foreground(wmain->map_rgb(128, 0, 128));
 	wmain->blendmode(GFX_BLENDMODE_ADD);
 	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
 		enemyp->render_hit_zone();

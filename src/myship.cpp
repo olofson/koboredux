@@ -378,14 +378,10 @@ void KOBO_myship::check_base_bolts()
 // Calculate bounce
 static inline void calc_bounce(int p2, int *p3, int *v)
 {
-#ifdef BASE_BOUNCE
-	*p3 = 2 * p2 - *p3;
-	*v = -*v;
-#else
-	*p3 = p2;
-	*v = 0;
-#endif
+	*p3 = p2 + ((KOBO_BASE_BOUNCE) * (p2 - *p3) >> 8);
+	*v = -((KOBO_BASE_BOUNCE) * *v >> 8);
 }
+
 
 // Check and handle base/ship collisions
 void KOBO_myship::update_position()

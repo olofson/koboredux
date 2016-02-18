@@ -87,6 +87,11 @@ class KOBO_myship
 	static int get_y()		{ return CS2PIXEL(y); }
 	static int get_csx()		{ return x; }
 	static int get_csy()		{ return y; }
+	static void impulse(int ix, int iy)
+	{
+		vx += ix;
+		vy += iy;
+	}
 	static int init();
 	static void off();
 	static void move();

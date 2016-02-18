@@ -100,6 +100,7 @@ class KOBO_enemy
 	const KOBO_enemy_kind *ek;
 	int		x, y;
 	int		h, v;
+	int		contact;
 	int		di;
 	int		a, b;
 	int		soundhandle;	// Continuous positional sound fx
@@ -126,6 +127,8 @@ class KOBO_enemy
 	inline void init();
 	inline void release();
 	void state(KOBO_state s);
+	void player_collision(int dx, int dy, int hs);
+	void player_collision_bounce(int dx, int dy, int hs);
 	inline void move();
 	inline void move_intro();
 	inline void put();
@@ -287,6 +290,7 @@ inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 	di = dir;
 	h = h1;
 	v = v1;
+	contact = 0;
 	a = 0;
 	b = 0;
 	count = 0;
@@ -405,15 +409,9 @@ inline void KOBO_enemy::move()
 	//       the new ship/base "physics" instead.
 	//
 	if(!mapcollide && (hitsize >= 0) && (mindiff < (hitsize + HIT_MYSHIP)))
-	{
-		if(prefs->indicator)
-			sound.g_player_damage();
-		else if(myship.alive())
-		{
-			hit(game.ram_damage);	// Ship damages object
-			myship.hit(damage);	// Object damages ship
-		}
-	}
+		player_collision(dx, dy, PIXEL2CS(hitsize + HIT_MYSHIP));
+	else
+		contact = 0;
 
 	// Handle collisions with player bolts (Player bolts kill themselves
 	// when they hit something, so we don't need to hit them from here.)
