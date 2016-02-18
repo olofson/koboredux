@@ -230,6 +230,30 @@ class windowbase_t
 			select();
 	}
 
+	void translate_rect(int _x, int _y, int w, int h, SDL_Rect &r)
+	{
+		int x1 = (_x * xs + 128) >> 8;
+		int y1 = (_y * ys + 128) >> 8;
+		int x2 = ((_x + w) * xs + 128) >> 8;
+		int y2 = ((_y + h) * ys + 128) >> 8;
+		r.x = phys_rect.x + x1;
+		r.y = phys_rect.y + y1;
+		r.w = x2 - x1;
+		r.h = y2 - y1;
+	}
+
+	void translate_rect_fxp(int _x, int _y, int w, int h, SDL_Rect &r)
+	{
+		int xx = CS2PIXEL((_x * xs + 128) >> 8);
+		int yy = CS2PIXEL((_y * ys + 128) >> 8);
+		w = CS2PIXEL(((w + _x) * xs + 128) >> 8) - xx;
+		h = CS2PIXEL(((h + _y) * ys + 128) >> 8) - yy;
+		r.x = phys_rect.x + xx;
+		r.y = phys_rect.y + yy;
+		r.w = w;
+		r.h = h;
+	}
+
 	virtual void invalidate(SDL_Rect *r = NULL)	{ ; }
 	virtual void refresh(SDL_Rect *r)		{ ; }
 
@@ -451,8 +475,11 @@ class window_t : public windowbase_t
 
 	void point(int _x, int _y);
 	void rectangle(int _x, int _y, int w, int h);
+	void rectangle_fxp(int _x, int _y, int w, int h);
+	void hairrect_fxp(int _x, int _y, int w, int h);
 	void fillrect(int _x, int _y, int w, int h);
 	void fillrect_fxp(int _x, int _y, int w, int h);
+	void circle_fxp(int _x, int _y, int r);
 
 	void sprite(int _x, int _y, int bank, int frame);
 	void sprite_fxp(int _x, int _y, int bank, int frame);

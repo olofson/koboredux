@@ -605,14 +605,7 @@ void window_t::point(int _x, int _y)
 	{
 		check_select();
 		SDL_Rect r;
-		int x2 = ((_x + 1) * xs + 128) >> 8;
-		int y2 = ((_y + 1) * ys + 128) >> 8;
-		_x = (_x * xs + 128) >> 8;
-		_y = (_y * ys + 128) >> 8;
-		r.x = phys_rect.x + _x;
-		r.y = phys_rect.y + _y;
-		r.w = x2 - _x;
-		r.h = y2 - _y;
+		translate_rect(_x, _y, 1, 1, r);
 		set_render_params(renderer, fgcolor);
 		SDL_RenderFillRect(renderer, &r);
 	}
@@ -621,18 +614,11 @@ void window_t::point(int _x, int _y)
 
 void window_t::fillrect(int _x, int _y, int w, int h)
 {
-	int x2 = ((_x + w) * xs + 128) >> 8;
-	int y2 = ((_y + h) * ys + 128) >> 8;
-	_x = (_x * xs + 128) >> 8;
-	_y = (_y * ys + 128) >> 8;
 	if(!engine || !renderer)
 		return;
 	check_select();
 	SDL_Rect r;
-	r.x = phys_rect.x + _x;
-	r.y = phys_rect.y + _y;
-	r.w = x2 - _x;
-	r.h = y2 - _y;
+	translate_rect(_x, _y, w, h, r);
 	set_render_params(renderer, fgcolor);
 	SDL_RenderFillRect(renderer, &r);
 }
@@ -640,29 +626,84 @@ void window_t::fillrect(int _x, int _y, int w, int h)
 
 void window_t::rectangle(int _x, int _y, int w, int h)
 {
-	fillrect(_x, _y, w, 1);
-	fillrect(_x, _y + h - 1, w, 1);
-	fillrect(_x, _y + 1, 1, h - 2);
-	fillrect(_x + w - 1, _y + 1, 1, h - 2);
+	if(!engine || !renderer)
+		return;
+	check_select();
+	SDL_Rect r[4];
+	translate_rect(_x, _y, w, 1, r[0]);
+	translate_rect(_x, _y + h - 1, w, 1, r[1]);
+	translate_rect(_x, _y + 1, 1, h - 2, r[2]);
+	translate_rect(_x + w - 1, _y + 1, 1, h - 2, r[3]);
+	set_render_params(renderer, fgcolor);
+	SDL_RenderFillRects(renderer, r, 4);
+}
+
+
+void window_t::rectangle_fxp(int _x, int _y, int w, int h)
+{
+	if(!engine || !renderer)
+		return;
+	check_select();
+	SDL_Rect r[4];
+	translate_rect_fxp(_x, _y, w, 256, r[0]);
+	translate_rect_fxp(_x, _y + h - 256, w, 256, r[1]);
+	translate_rect_fxp(_x, _y + 256, 256, h - 512, r[2]);
+	translate_rect_fxp(_x + w - 256, _y + 256, 256, h - 512, r[3]);
+	set_render_params(renderer, fgcolor);
+	SDL_RenderFillRects(renderer, r, 4);
+}
+
+
+void window_t::circle_fxp(int _x, int _y, int r)
+{
+	if(!engine || !renderer)
+		return;
+	check_select();
+	_x = PIXEL2CS(phys_rect.x) + ((_x * xs + 128) >> 8);
+	_y = PIXEL2CS(phys_rect.y) + ((_y * ys + 128) >> 8);
+	r = (r * xs + 128) >> 8;
+	SDL_Point p[136];
+	int n;
+	if(CS2PIXEL(r) <= 10)
+		n = 12;
+	else if(CS2PIXEL(r) >= 500)
+		n = 135;
+	else
+		n = 16 + CS2PIXEL(r) / 4;
+	float a = 0.0f;
+	float da = 2.0f * M_PI / n;
+	for(int i = 0; i < n; ++i, a += da)
+	{
+		p[i].x = CS2PIXEL(_x + (int)(r * cosf(a)) + 128);
+		p[i].y = CS2PIXEL(_y + (int)(r * sinf(a)) + 128);
+	}
+	p[n] = p[0];
+	set_render_params(renderer, fgcolor);
+	SDL_RenderDrawLines(renderer, p, n + 1);
 }
 
 
 void window_t::fillrect_fxp(int _x, int _y, int w, int h)
 {
-	int xx = CS2PIXEL((_x * xs + 128) >> 8);
-	int yy = CS2PIXEL((_y * ys + 128) >> 8);
-	w = CS2PIXEL(((w + _x) * xs + 128) >> 8) - xx;
-	h = CS2PIXEL(((h + _y) * ys + 128) >> 8) - yy;
 	if(!engine || !renderer)
 		return;
 	check_select();
 	SDL_Rect r;
-	r.x = phys_rect.x + xx;
-	r.y = phys_rect.y + yy;
-	r.w = w;
-	r.h = h;
+	translate_rect_fxp(_x, _y, w, h, r);
 	set_render_params(renderer, fgcolor);
 	SDL_RenderFillRect(renderer, &r);
+}
+
+
+void window_t::hairrect_fxp(int _x, int _y, int w, int h)
+{
+	if(!engine || !renderer)
+		return;
+	check_select();
+	SDL_Rect r;
+	translate_rect_fxp(_x, _y, w, h, r);
+	set_render_params(renderer, fgcolor);
+	SDL_RenderDrawRect(renderer, &r);
 }
 
 
