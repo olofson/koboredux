@@ -131,6 +131,16 @@ void KOBO_enemies::put()
 		enemyp->put();
 }
 
+void KOBO_enemies::render_hit_zones()
+{
+	KOBO_enemy *enemyp;
+	wmain->foreground(wmain->map_rgb(128, 0, 128));
+	wmain->blendmode(GFX_BLENDMODE_ADD);
+	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
+		enemyp->render_hit_zone();
+	wmain->blendmode();
+}
+
 int KOBO_enemies::make(const KOBO_enemy_kind * ek, int x, int y, int h, int v,
 		int di)
 {

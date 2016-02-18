@@ -113,6 +113,7 @@ class KOBO_enemy
 	int		mindiff;
 	int		hitsize;
 	int		mapcollide;
+	int		bounce;
 	int		bank, frame;
 	void move_enemy_m(int quick, int maxspeed);
 	void move_enemy_template(int quick, int maxspeed);
@@ -137,6 +138,7 @@ class KOBO_enemy
 	inline bool can_splash_damage()	{ return takes_splash_damage; }
 	inline bool in_range(int px, int py, int range, int &dist);
 	inline int erase_cannon(int px, int py);
+	void render_hit_zone();
 
 	void playsound(KOBO_sounds si)
 	{
@@ -230,6 +232,7 @@ class KOBO_enemies
 	static void move();
 	static void move_intro();
 	static void put();
+	static void render_hit_zones();
 	static int make(const KOBO_enemy_kind * ek,
 			int x, int y, int h = 0, int v = 0, int di = 0);
 	static const KOBO_enemy_kind *randexp();
@@ -293,6 +296,7 @@ inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 	takes_splash_damage = true;
 	shootable = 1;
 	mapcollide = 0;
+	bounce = 0;
 	hitsize = ek->hitsize;
 	bank = ek->bank;
 	frame = ek->frame;

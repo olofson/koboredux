@@ -159,40 +159,39 @@ void KOBO_myship::handle_controls()
 {
 	int v;
 	if(prefs->cheat_pushmove)
-		v = gamecontrol.dir_push() ? PIXEL2CS(1) : 0;
+		v = gamecontrol.dir_push() ? PIXEL2CS(4) : 0;
 	else if(gamecontrol.dir_push())
 		v = PIXEL2CS(game.top_speed);
 	else
-#ifdef NOSPEEDLIMIT
-		v = 0;
-#else
 		v = PIXEL2CS(game.cruise_speed);
-#endif
-
 	int tvx = v * sin(M_PI * (di - 1) / 4);
 	int tvy = -v * cos(M_PI * (di - 1) / 4);
-#ifdef NOSPEEDLIMIT
-	ax = tvx >> 3;
-	ay = tvy >> 3;
-	if(gamecontrol.get_shot())
+	if(gamecontrol.dir_push() || !prefs->cheat_freewheel)
 	{
-		ax = ay = vx = vy = 0;
+		if(prefs->cheat_pushmove)
+		{
+			ax = (tvx - vx) >> 3;
+			ay = (tvy - vy) >> 3;
+		}
+		else
+		{
+			ax = (tvx - vx) >> 2;
+			ay = (tvy - vy) >> 2;
+			if(!tvx)
+			{
+				// Kill remainder creep caused by truncation
+				if((vx > -8) && (vx < 8))
+					ax = -vx;
+			}
+			if(!tvy)
+			{
+				if((vy > -8) && (vy < 8))
+					ay = -vy;
+			}
+		}
 	}
-#else
-	ax = (tvx - vx) >> 2;
-	ay = (tvy - vy) >> 2;
-	if(!tvx)
-	{
-		// Kill remainder creep speed caused by truncation
-		if((vx > -8) && (vx < 8))
-			ax = -vx;
-	}
-	if(!tvy)
-	{
-		if((vy > -8) && (vy < 8))
-			ay = -vy;
-	}
-#endif
+	else
+		ax = ay = 0;
 }
 
 
@@ -579,6 +578,17 @@ void KOBO_myship::render()
 	if(_state == SHIP_INVULNERABLE)
 		wmain->sprite_fxp(object->point.gx, object->point.gy,
 				B_SHIELDFX, manage.game_time() % 8);
+
+	if(prefs->show_hit)
+	{
+		int r = PIXEL2CS(HIT_MYSHIP);
+		wmain->foreground(wmain->map_rgb(128, 0, 128));
+		wmain->blendmode(GFX_BLENDMODE_ADD);
+		wmain->hairrect_fxp(object->point.gx - r,
+				object->point.gy - r, 2 * r, 2 * r);
+		wmain->circle_fxp(object->point.gx, object->point.gy, r);
+		wmain->blendmode();
+	}
 }
 
 

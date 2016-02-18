@@ -1828,6 +1828,9 @@ void kobo_gfxengine_t::pre_render()
 
 void kobo_gfxengine_t::post_render()
 {
+	if(prefs->show_hit)
+		enemies.render_hit_zones();
+
 	// HACK: Custom rendering "callback!" The engine should support this...
 	myship.render();
 

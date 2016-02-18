@@ -99,10 +99,12 @@ class prefs_t : public config_parser_t
 	int	show_map_border;
 	int	show_coordinates;
 	int	show_tiles;
+	int	show_hit;
 	int	tsdebug;	//Timestamp debugging
 
 	// Cheat/test features
 	int	cheat_pushmove;
+	int	cheat_freewheel;
 	int	cheat_shield;
 	int	cheat_invulnerability;
 	int	cheat_firepower;
@@ -113,6 +115,7 @@ class prefs_t : public config_parser_t
 	bool cheats()
 	{
 		return cheat_pushmove ||
+				cheat_freewheel ||
 				cheat_shield ||
 				cheat_invulnerability ||
 				cheat_firepower ||

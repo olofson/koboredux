@@ -109,11 +109,14 @@ void prefs_t::init()
 	yesno("show_coordinates", show_coordinates, 0);
 			desc("Show Object Coordinates");
 	yesno("show_tiles", show_tiles, 0); desc("Show Tile/Sprite Edges");
+	yesno("show_hit", show_hit, 0); desc("Show Hit Zones");
 	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
 
 	section("Cheat/test");
 	yesno("cheat_pushmove", cheat_pushmove, 0);
 			desc("Cheat: Enable Push Move Mode");
+	yesno("cheat_freewheel", cheat_freewheel, 0);
+			desc("Cheat: Free Physics When Releasing Controls");
 	yesno("cheat_shield", cheat_shield, 0);
 			desc("Cheat: Shield Always Up");
 	yesno("cheat_invulnerability", cheat_invulnerability, 0);

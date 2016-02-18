@@ -253,6 +253,18 @@ void KOBO_enemy::kill_default()
 	release();
 }
 
+void KOBO_enemy::render_hit_zone()
+{
+	if(!object)
+		return;
+	int r = PIXEL2CS(hitsize);
+	if(bounce)
+		wmain->circle_fxp(object->point.gx, object->point.gy, r);
+	else
+		wmain->hairrect_fxp(object->point.gx - r, object->point.gy - r,
+				2 * r, 2 * r);
+}
+
 
 /*
  * ===========================================================================
@@ -362,6 +374,7 @@ void KOBO_enemy::make_rock()
 	count = 500;
 	health = game.rock_health;
 	damage = game.rock_damage;
+	bounce = 1;
 	di = gamerand.get(5) + 1;
 	a = gamerand.get(1) ? 1 : -1;
 	switch(gamerand.get() % 3)
@@ -405,7 +418,7 @@ const KOBO_enemy_kind rock = {
 	&KOBO_enemy::make_rock,
 	&KOBO_enemy::move_rock,
 	&KOBO_enemy::kill_rock,
-	40,	// 12
+	12,
 	B_ROCK1, 0,
 	LAYER_ENEMIES,
 	0,
@@ -1465,6 +1478,7 @@ void KOBO_enemy::make_enemy_m1()
 {
 	di = 1;
 	health = 1000;		// Originally 26 hits
+	bounce = 1;
 	count = gamerand.get() & 15;
 }
 
@@ -1513,6 +1527,7 @@ void KOBO_enemy::make_enemy_m2()
 {
 	di = 1;
 	health = 1000;
+	bounce = 1;
 	count = gamerand.get() & 15;
 }
 
@@ -1559,6 +1574,7 @@ void KOBO_enemy::make_enemy_m3()
 {
 	di = 1;
 	health = 1000;
+	bounce = 1;
 	count = gamerand.get() & 15;
 }
 
@@ -1605,6 +1621,7 @@ void KOBO_enemy::make_enemy_m4()
 {
 	di = 1;
 	health = 1000;
+	bounce = 1;
 	count = gamerand.get() & 15;
 }
 
