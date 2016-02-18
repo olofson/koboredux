@@ -25,7 +25,7 @@
 #include "map.h"
 #include "random.h"
 
-void _map::init(const _scene *s)
+void KOBO_map::init(const KOBO_scene *s)
 {
 	clear();
 	for(int i = 0; i < s->base_max; i++)
@@ -34,7 +34,7 @@ void _map::init(const _scene *s)
 	convert(s->ratio);
 }
 
-void _map::clear()
+void KOBO_map::clear()
 {
 	int i, j;
 	for(i = 0; i < MAP_SIZEX; i++)
@@ -42,7 +42,7 @@ void _map::clear()
 			pos(i, j) = SPACE;
 }
 
-void _map::mark_edges()
+void KOBO_map::mark_edges()
 {
 	int i;
 	for(i = 0; i < MAP_SIZEX; i++)
@@ -51,7 +51,7 @@ void _map::mark_edges()
 		pos(0, i) = 0;
 }
 
-void _map::make_maze(int x, int y, int difx, int dify)
+void KOBO_map::make_maze(int x, int y, int difx, int dify)
 {
 	int i, j;
 	int vx, vy;
@@ -104,7 +104,7 @@ void _map::make_maze(int x, int y, int difx, int dify)
 	}
 }
 
-int _map::maze_pop()
+int KOBO_map::maze_pop()
 {
 	if(site_max == 0)
 		return 1;
@@ -122,14 +122,14 @@ int _map::maze_pop()
 	return 0;
 }
 
-void _map::maze_push(int x, int y)
+void KOBO_map::maze_push(int x, int y)
 {
 	sitex[site_max] = x;
 	sitey[site_max++] = y;
 	pos(x, y) = WALL;
 }
 
-void _map::maze_move_and_push(int x, int y, int d)
+void KOBO_map::maze_move_and_push(int x, int y, int d)
 {
 	int x1 = x;
 	int y1 = y;
@@ -152,7 +152,7 @@ void _map::maze_move_and_push(int x, int y, int d)
 	pos((x + x1) / 2, (y + y1) / 2) = WALL;
 }
 
-int _map::maze_judge(int cx, int cy, int dx, int dy, int x, int y)
+int KOBO_map::maze_judge(int cx, int cy, int dx, int dy, int x, int y)
 {
 	if((x < cx - dx) || (x > cx + dx) || (y < cy - dy)
 			|| (y > cy + dy))
@@ -200,7 +200,7 @@ static inline int bits2tile(int n)
 	return n;	// Other pipe parts or normal end nodes
 }
 
-void _map::convert(unsigned ratio)
+void KOBO_map::convert(unsigned ratio)
 {
 	int i, j;
 	int p = 0;
@@ -233,7 +233,7 @@ void _map::convert(unsigned ratio)
 		mark_edges();
 }
 
-int _map::test_line(int x1, int y1, int x3, int y3,
+int KOBO_map::test_line(int x1, int y1, int x3, int y3,
 		int *x2, int *y2, int *hx, int *hy)
 {
 	// End position (map)

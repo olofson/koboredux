@@ -2,7 +2,7 @@
  * XKOBO, a video-oriented game
  * Copyright 1995, 1996 Akira Higuchi <a-higuti@math.hokudai.ac.jp>
  * Copyright 2006, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -21,7 +21,7 @@
 
 #include "scenes.h"
 
-const _scene scenes[] = {
+const KOBO_scene scenes[] = {
 #if 0
 	/* Test map */
 	{

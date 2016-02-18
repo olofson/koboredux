@@ -81,8 +81,8 @@ kobo_gfxengine_t	*gengine = NULL;
 screen_window_t		*wscreen = NULL;
 dashboard_window_t	*wdash = NULL;
 shieldbar_t		*wshield = NULL;
-radar_map_t		*wmap = NULL;
-radar_window_t		*wradar = NULL;
+KOBO_radar_map		*wmap = NULL;
+KOBO_radar_window	*wradar = NULL;
 
 backdrop_t		*wbackdrop = NULL;
 spinplanet_t		*wplanet = NULL;
@@ -852,8 +852,8 @@ int KOBO_main::init_display(prefs_t *p)
 	woverlay = new window_t(gengine);
 	dhigh = new display_t(gengine);
 	dscore = new display_t(gengine);
-	wmap = new radar_map_t(gengine);
-	wradar = new radar_window_t(gengine);
+	wmap = new KOBO_radar_map(gengine);
+	wradar = new KOBO_radar_window(gengine);
 	dstage = new display_t(gengine);
 	dregion = new display_t(gengine);
 	dlevel = new display_t(gengine);

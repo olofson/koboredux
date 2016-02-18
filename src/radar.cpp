@@ -4,8 +4,8 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2005-2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
- * 
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
+ *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
  * Free Software Foundation;  either version 2 of the License,  or (at your
@@ -33,9 +33,9 @@
 #include "random.h"
 
 /*---------------------------------------------------------------------
-	radar_map_t
+	KOBO_radar_map
 ---------------------------------------------------------------------*/
-radar_map_t::radar_map_t(gfxengine_t *e) : window_t(e)
+KOBO_radar_map::KOBO_radar_map(gfxengine_t *e) : window_t(e)
 {
 	w = MAP_SIZEX;
 	h = MAP_SIZEY;
@@ -46,7 +46,7 @@ radar_map_t::radar_map_t(gfxengine_t *e) : window_t(e)
 }
 
 
-void radar_map_t::update(int x, int y, int draw_space)
+void KOBO_radar_map::update(int x, int y, int draw_space)
 {
 	int a = MAP_BITS(screen.get_map(x, y));
 	if(IS_SPACE(a))
@@ -66,7 +66,7 @@ void radar_map_t::update(int x, int y, int draw_space)
 }
 
 
-void radar_map_t::refresh(SDL_Rect *r)
+void KOBO_radar_map::refresh(SDL_Rect *r)
 {
 	int draw_space = 1;
 	SDL_Rect nr;
@@ -88,9 +88,9 @@ void radar_map_t::refresh(SDL_Rect *r)
 
 
 /*---------------------------------------------------------------------
-	radar_window_t
+	KOBO_radar_window
 ---------------------------------------------------------------------*/
-radar_window_t::radar_window_t(gfxengine_t *e) : window_t(e)
+KOBO_radar_window::KOBO_radar_window(gfxengine_t *e) : window_t(e)
 {
 	_mode = RM_OFF;
 	old_scrollradar = -1;
@@ -102,7 +102,7 @@ radar_window_t::radar_window_t(gfxengine_t *e) : window_t(e)
 }
 
 
-void radar_window_t::update(int mx, int my)
+void KOBO_radar_window::update(int mx, int my)
 {
 	SDL_Rect r;
 	r.x = mx & (MAP_SIZEX - 1);
@@ -112,7 +112,7 @@ void radar_window_t::update(int mx, int my)
 }
 
 
-void radar_window_t::refresh(SDL_Rect *r)
+void KOBO_radar_window::refresh(SDL_Rect *r)
 {
 	switch(_mode)
 	{
@@ -144,7 +144,7 @@ void radar_window_t::refresh(SDL_Rect *r)
 }
 
 
-void radar_window_t::mode(radar_modes_t newmode)
+void KOBO_radar_window::mode(KOBO_radar_modes newmode)
 {
 	if(newmode == RM__REINIT)
 		newmode = _mode;
@@ -160,14 +160,14 @@ void radar_window_t::mode(radar_modes_t newmode)
 }
 
 
-void radar_window_t::set_scroll(int xscroll, int yscroll)
+void KOBO_radar_window::set_scroll(int xscroll, int yscroll)
 {
 	xoffs = (xscroll + MAP_SIZEX / 2) & (MAP_SIZEX - 1);
 	yoffs = (yscroll + MAP_SIZEY / 2) & (MAP_SIZEY - 1);
 }
 
 
-void radar_window_t::radar()
+void KOBO_radar_window::radar()
 {
 	int xpos_new = (myship.get_x() & (WORLD_SIZEX - 1)) >> 4;
 	int ypos_new = (myship.get_y() & (WORLD_SIZEY - 1)) >> 4;
@@ -192,7 +192,7 @@ void radar_window_t::radar()
 }
 
 
-void radar_window_t::frame()
+void KOBO_radar_window::frame()
 {
 	if(prefs->scrollradar != old_scrollradar)
 	{

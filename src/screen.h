@@ -30,7 +30,7 @@
 
 class window_t;
 
-class _screen
+class KOBO_screen
 {
   protected:
 	static window_t *target;
@@ -44,8 +44,8 @@ class _screen
 	static int bg_planet;
 	static int restarts;
 	static int generate_count;
-	static _map map;
-	static _map bg_map[KOBO_BG_MAP_LEVELS];
+	static KOBO_map map;
+	static KOBO_map bg_map[KOBO_BG_MAP_LEVELS];
 	static int show_title;
 	static int do_noise;
 	static float _fps;
@@ -70,15 +70,15 @@ class _screen
 	static void render_title_plasma(int t, float fade, int y, int h);
 	static void render_title_noise(float fade, int y, int h,
 			int bank, int frame);
-	static void render_bases(_map &map, int tileset, int vx, int vy);
+	static void render_bases(KOBO_map &map, int tileset, int vx, int vy);
 	static void clean_scrap_tile(int x, int y)
 	{
 		if((map.pos(x, y) & SPACE) && (MAP_TILE(map.pos(x, y))))
 			set_map(x, y, SPACE);
 	}
   public:
-	~_screen();
-	static radar_modes_t radar_mode;	// Last set radar mode
+	~KOBO_screen();
+	static KOBO_radar_modes radar_mode;	// Last set radar mode
 	static void init_maps();
 	static void init_graphics();
 	static void init_background();
@@ -119,6 +119,6 @@ class _screen
 	static void noise(int on);
 };
 
-extern _screen screen;
+extern KOBO_screen screen;
 
 #endif	//_KOBO_SCREEN_H_

@@ -37,42 +37,42 @@
 #include "config.h"
 #include "random.h"
 
-int _screen::scene_max;
-int _screen::scene_num;
-int _screen::region;
-int _screen::level;
-int _screen::bg_altitude;
-int _screen::bg_clouds;
-int _screen::restarts;
-int _screen::generate_count;
-_map _screen::map;
-_map _screen::bg_map[KOBO_BG_MAP_LEVELS];
-int _screen::show_title = 0;
-int _screen::do_noise = 0;
-float _screen::_fps = 40;
-float _screen::scroller_speed = SCROLLER_SPEED;
-float _screen::target_speed = SCROLLER_SPEED;
-int _screen::noise_y = 0;
-int _screen::noise_h = WMAIN_H;
-int _screen::noise_source = B_NOISE;
-float _screen::noise_fade = 0.0f;
-float _screen::noise_bright = 0.0f;
-float _screen::noise_depth = 0.0f;
-int _screen::highlight_y = WMAIN_H / 2;
-int _screen::highlight_h = 0;
-int _screen::hi_sc[10];
-int _screen::hi_st[10];
-char _screen::hi_nm[10][20];
-radar_modes_t _screen::radar_mode = RM_OFF;
-KOBO_Starfield _screen::stars;
+int KOBO_screen::scene_max;
+int KOBO_screen::scene_num;
+int KOBO_screen::region;
+int KOBO_screen::level;
+int KOBO_screen::bg_altitude;
+int KOBO_screen::bg_clouds;
+int KOBO_screen::restarts;
+int KOBO_screen::generate_count;
+KOBO_map KOBO_screen::map;
+KOBO_map KOBO_screen::bg_map[KOBO_BG_MAP_LEVELS];
+int KOBO_screen::show_title = 0;
+int KOBO_screen::do_noise = 0;
+float KOBO_screen::_fps = 40;
+float KOBO_screen::scroller_speed = SCROLLER_SPEED;
+float KOBO_screen::target_speed = SCROLLER_SPEED;
+int KOBO_screen::noise_y = 0;
+int KOBO_screen::noise_h = WMAIN_H;
+int KOBO_screen::noise_source = B_NOISE;
+float KOBO_screen::noise_fade = 0.0f;
+float KOBO_screen::noise_bright = 0.0f;
+float KOBO_screen::noise_depth = 0.0f;
+int KOBO_screen::highlight_y = WMAIN_H / 2;
+int KOBO_screen::highlight_h = 0;
+int KOBO_screen::hi_sc[10];
+int KOBO_screen::hi_st[10];
+char KOBO_screen::hi_nm[10][20];
+KOBO_radar_modes KOBO_screen::radar_mode = RM_OFF;
+KOBO_Starfield KOBO_screen::stars;
 
 
-_screen::~_screen()
+KOBO_screen::~KOBO_screen()
 {
 }
 
 
-void _screen::init_maps()
+void KOBO_screen::init_maps()
 {
 	scene_max = 0;
 	while(scenes[scene_max].ratio != -1)
@@ -80,13 +80,13 @@ void _screen::init_maps()
 }
 
 
-void _screen::init_graphics()
+void KOBO_screen::init_graphics()
 {
 	stars.set_target(wmain);
 }
 
 
-void _screen::render_title_plasma(int t, float fade, int y, int h)
+void KOBO_screen::render_title_plasma(int t, float fade, int y, int h)
 {
 #if 0
 	s_sprite_t *s = gengine->get_sprite(B_FOCUSFX, 0);
@@ -119,7 +119,7 @@ void _screen::render_title_plasma(int t, float fade, int y, int h)
 }
 
 
-void _screen::render_title_noise(float fade, int y, int h, int bank, int frame)
+void KOBO_screen::render_title_noise(float fade, int y, int h, int bank, int frame)
 {
 #if 0
 	for(int ty = 0; ty < h; )
@@ -150,7 +150,7 @@ static int flashin(int t)
 }
 
 
-void _screen::title(int t, float fade, int mode)
+void KOBO_screen::title(int t, float fade, int mode)
 {
 	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), B_LOGO);
 	if(!b)
@@ -209,7 +209,7 @@ void _screen::title(int t, float fade, int mode)
 }
 
 
-void _screen::init_highscores()
+void KOBO_screen::init_highscores()
 {
 	for(unsigned int i = 0; i < 10; ++i)
 		if(i < scorefile.highs)
@@ -229,7 +229,7 @@ void _screen::init_highscores()
 }
 
 
-void _screen::highscores(int t, float fade)
+void KOBO_screen::highscores(int t, float fade)
 {
 	int i, y;
 	float mf = (1.0f - fade);
@@ -284,7 +284,7 @@ void _screen::highscores(int t, float fade)
 }
 
 
-void _screen::credits(int t)
+void KOBO_screen::credits(int t)
 {
 	if((t % 4000 < 3600) && (t / 4000 <= 1))
 		screen.set_highlight(102, 70);
@@ -325,7 +325,7 @@ void _screen::credits(int t)
 }
 
 
-void _screen::help(int t)
+void KOBO_screen::help(int t)
 {
 	int cx = woverlay->width() / 2;
 	woverlay->font(B_BIG_FONT);
@@ -438,7 +438,7 @@ void _screen::help(int t)
 }
 
 
-void _screen::scroller()
+void KOBO_screen::scroller()
 {
 	if(do_noise)
 		return;
@@ -562,7 +562,7 @@ void _screen::scroller()
 }
 
 
-void _screen::init_scene(int sc)
+void KOBO_screen::init_scene(int sc)
 {
 	wplanet->resetmod();
 	wplanet->blendmode(GFX_BLENDMODE_ALPHA);
@@ -613,12 +613,12 @@ void _screen::init_scene(int sc)
 }
 
 
-int _screen::prepare()
+int KOBO_screen::prepare()
 {
 	if(scene_num < 0)
 		return 0;
 
-	const _scene *s = &scenes[scene_num];
+	const KOBO_scene *s = &scenes[scene_num];
 	int i, j;
 	int count_core = 0;
 	int c = 0;
@@ -663,7 +663,7 @@ int _screen::prepare()
 }
 
 
-void _screen::generate_fixed_enemies()
+void KOBO_screen::generate_fixed_enemies()
 {
 	static int sint[16] =
 			{ 0, 12, 23, 30, 32, 30, 23, 12, 0, -12, -23, -30,
@@ -671,7 +671,7 @@ void _screen::generate_fixed_enemies()
 	static int cost[16] =
 			{ 32, 30, 23, 12, 0, -12, -23, -30, -32, -30, -23,
 				-12, 0, 12, 23, 30 };
-	const _scene *s = &scenes[scene_num];
+	const KOBO_scene *s = &scenes[scene_num];
 	if(generate_count < s->enemy_max)
 	{
 		int j;
@@ -707,14 +707,14 @@ void _screen::generate_fixed_enemies()
 }
 
 
-void _screen::set_map(int x, int y, int n)
+void KOBO_screen::set_map(int x, int y, int n)
 {
 	map.pos(x, y) = n;
 	wradar->update(x, y);
 }
 
 
-void _screen::render_noise()
+void KOBO_screen::render_noise()
 {
 	if(!do_noise)
 		return;
@@ -753,7 +753,7 @@ void _screen::render_noise()
 }
 
 
-void _screen::set_noise(int source, float fade, float bright, float depth)
+void KOBO_screen::set_noise(int source, float fade, float bright, float depth)
 {
 	noise_source = source;
 	noise_y = 0;
@@ -767,7 +767,7 @@ void _screen::set_noise(int source, float fade, float bright, float depth)
 #define	FOCUSGRID_REP_HORIZON	33
 #define	FOCUSGRID_REP_NEAR	103
 
-void _screen::render_highlight()
+void KOBO_screen::render_highlight()
 {
 	if(!highlight_h)
 		highlight_y = wmain->height() / 2;
@@ -848,14 +848,14 @@ void _screen::render_highlight()
 }
 
 
-void _screen::set_highlight(int y, int h)
+void KOBO_screen::set_highlight(int y, int h)
 {
 	highlight_y = y;
 	highlight_h = h * 1.25f;
 }
 
 
-void _screen::init_background()
+void KOBO_screen::init_background()
 {
 	// Select layers, altitudes etc...
 	bg_altitude = 0;
@@ -947,7 +947,7 @@ void _screen::init_background()
 }
 
 
-void _screen::render_bases(_map &map, int tileset, int vx, int vy)
+void KOBO_screen::render_bases(KOBO_map &map, int tileset, int vx, int vy)
 {
 	s_bank_t *b = s_get_bank(gengine->get_gfx(), tileset);
 	if(!b)
@@ -1002,7 +1002,7 @@ void _screen::render_bases(_map &map, int tileset, int vx, int vy)
 }
 
 
-void _screen::render_background()
+void KOBO_screen::render_background()
 {
 	if(do_noise && (noise_fade >= 1.0f))
 		return;
@@ -1065,20 +1065,20 @@ void _screen::render_background()
 }
 
 
-void _screen::render_fx()
+void KOBO_screen::render_fx()
 {
 	render_noise();
 	render_highlight();
 }
 
 
-void _screen::fps(float f)
+void KOBO_screen::fps(float f)
 {
 	_fps = f;
 }
 
 
-void _screen::noise(int on)
+void KOBO_screen::noise(int on)
 {
 	do_noise = on;
 }

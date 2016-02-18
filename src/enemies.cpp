@@ -26,23 +26,23 @@
 #include "random.h"
 #include "radar.h"
 
-_enemy _enemies::enemy[ENEMY_MAX];
-_enemy *_enemies::enemy_max;
-const enemy_kind *_enemies::ekind_to_generate_1;
-const enemy_kind *_enemies::ekind_to_generate_2;
-int _enemies::e1_interval;
-int _enemies::e2_interval;
-int _enemies::explocount = 0;
-int _enemies::is_intro = 0;
+KOBO_enemy KOBO_enemies::enemy[ENEMY_MAX];
+KOBO_enemy *KOBO_enemies::enemy_max;
+const KOBO_enemy_kind *KOBO_enemies::ekind_to_generate_1;
+const KOBO_enemy_kind *KOBO_enemies::ekind_to_generate_2;
+int KOBO_enemies::e1_interval;
+int KOBO_enemies::e2_interval;
+int KOBO_enemies::explocount = 0;
+int KOBO_enemies::is_intro = 0;
 
 
-_enemy::_enemy()
+KOBO_enemy::KOBO_enemy()
 {
 	object = NULL;
 	_state = notuse;
 }
 
-void _enemy::state(_state_t s)
+void KOBO_enemy::state(KOBO_state s)
 {
 	switch(s)
 	{
@@ -77,16 +77,16 @@ void _enemy::state(_state_t s)
 }
 
 
-void _enemies::off()
+void KOBO_enemies::off()
 {
-	_enemy *enemyp;
+	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 		enemyp->state(notuse);
 }
 
-int _enemies::init()
+int KOBO_enemies::init()
 {
-	_enemy *enemyp;
+	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 		enemyp->init();
 	enemy_max = enemy;
@@ -98,9 +98,9 @@ int _enemies::init()
 	return 0;
 }
 
-void _enemies::move()
+void KOBO_enemies::move()
 {
-	_enemy *enemyp;
+	KOBO_enemy *enemyp;
 	/* realize reserved enemies */
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 	{
@@ -111,9 +111,9 @@ void _enemies::move()
 		enemyp->move();
 }
 
-void _enemies::move_intro()
+void KOBO_enemies::move_intro()
 {
-	_enemy *enemyp;
+	KOBO_enemy *enemyp;
 	/* realize reserved enemies */
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 	{
@@ -124,24 +124,24 @@ void _enemies::move_intro()
 		enemyp->move_intro();
 }
 
-void _enemies::put()
+void KOBO_enemies::put()
 {
-	_enemy *enemyp;
+	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
 		enemyp->put();
 }
 
-int _enemies::make(const enemy_kind * ek, int x, int y, int h, int v,
+int KOBO_enemies::make(const KOBO_enemy_kind * ek, int x, int y, int h, int v,
 		int di)
 {
-	_enemy *enemyp;
+	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 		if(!enemyp->make(ek, x, y, h, v, di))
 			return 0;
 	return 1;
 }
 
-const enemy_kind *_enemies::randexp()
+const KOBO_enemy_kind *KOBO_enemies::randexp()
 {
 	explocount += 1 + pubrand.get(1);
 	switch(explocount & 3)
@@ -157,10 +157,10 @@ const enemy_kind *_enemies::randexp()
 	}
 }
 
-int _enemies::erase_cannon(int x, int y)
+int KOBO_enemies::erase_cannon(int x, int y)
 {
 	int count = 0;
-	_enemy *enemyp;
+	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 		count += enemyp->erase_cannon(x, y);
 	if(count)
@@ -168,27 +168,27 @@ int _enemies::erase_cannon(int x, int y)
 	return count;
 }
 
-void _enemies::hit_map(int x, int y, int dmg)
+void KOBO_enemies::hit_map(int x, int y, int dmg)
 {
 	if(!dmg)
 		return;
-	for(_enemy *enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
+	for(KOBO_enemy *enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 		if(enemyp->can_hit_map(x, y))
 			enemyp->hit(dmg);
 }
 
-int _enemies::exist_pipe()
+int KOBO_enemies::exist_pipe()
 {
 	int count = 0;
-	_enemy *enemyp;
+	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 		if(enemyp->is_pipe())
 			count++;
 	return count;
 }
 
-void _enemies::set_ekind_to_generate(const enemy_kind * e1, int i1,
-		const enemy_kind * e2, int i2)
+void KOBO_enemies::set_ekind_to_generate(const KOBO_enemy_kind * e1, int i1,
+		const KOBO_enemy_kind * e2, int i2)
 {
 	ekind_to_generate_1 = e1;
 	ekind_to_generate_2 = e2;
@@ -196,13 +196,13 @@ void _enemies::set_ekind_to_generate(const enemy_kind * e1, int i1,
 	e2_interval = i2;
 }
 
-void _enemies::splash_damage(int x, int y, int damage)
+void KOBO_enemies::splash_damage(int x, int y, int damage)
 {
 	int maxdist = PIXEL2CS(damage);
 	int dist;
 
 	// Enemies
-	for(_enemy *enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
+	for(KOBO_enemy *enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 	{
 		if(!enemyp->can_splash_damage())
 			continue;

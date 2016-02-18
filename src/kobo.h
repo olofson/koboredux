@@ -93,8 +93,8 @@ extern prefs_t			*prefs;
 extern screen_window_t		*wscreen;
 extern dashboard_window_t	*wdash;
 extern shieldbar_t		*wshield;
-extern radar_map_t		*wmap;
-extern radar_window_t		*wradar;
+extern KOBO_radar_map		*wmap;
+extern KOBO_radar_window	*wradar;
 
 extern backdrop_t		*wbackdrop;
 extern spinplanet_t		*wplanet;

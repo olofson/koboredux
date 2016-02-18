@@ -50,10 +50,10 @@
 #define	COLL_VERTICAL	0x02
 #define	COLL_STUCK	0x04
 
-class _map
+class KOBO_map
 {
   public:
-	void init(const _scene *s);
+	void init(const KOBO_scene *s);
 	unsigned short &pos(int x, int y)
 	{
 		x &= MAP_SIZEX - 1;

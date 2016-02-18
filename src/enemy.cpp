@@ -28,6 +28,7 @@
 #include "random.h"
 #include <math.h>
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // Fast integer atan() approximation. Input is 24:8 fixed point.
 // Output is 0..64 for 0..45 deg, accurate down to LSB.
@@ -107,7 +108,7 @@ static int speed2dir(int sx, int sy, int frames)
  * ===========================================================================
  */
 
-inline void _enemy::move_enemy_m(int quick, int maxspeed)
+inline void KOBO_enemy::move_enemy_m(int quick, int maxspeed)
 {
 	if(diffx > 0)
 	{
@@ -131,7 +132,7 @@ inline void _enemy::move_enemy_m(int quick, int maxspeed)
 	}
 }
 
-inline void _enemy::move_enemy_template(int quick, int maxspeed)
+inline void KOBO_enemy::move_enemy_template(int quick, int maxspeed)
 {
 	if(diffx > 0)
 	{
@@ -158,7 +159,7 @@ inline void _enemy::move_enemy_template(int quick, int maxspeed)
 		di = ndi;
 }
 
-inline void _enemy::move_enemy_template_2(int quick, int maxspeed)
+inline void KOBO_enemy::move_enemy_template_2(int quick, int maxspeed)
 {
 	h = -PIXEL2CS(diffy) >> quick;
 	v = PIXEL2CS(diffx) >> quick;
@@ -188,7 +189,7 @@ inline void _enemy::move_enemy_template_2(int quick, int maxspeed)
 		di = ndi;
 }
 
-inline void _enemy::move_enemy_template_3(int quick, int maxspeed)
+inline void KOBO_enemy::move_enemy_template_3(int quick, int maxspeed)
 {
 	h = PIXEL2CS(diffy) >> quick;
 	v = -PIXEL2CS(diffx) >> quick;
@@ -218,7 +219,7 @@ inline void _enemy::move_enemy_template_3(int quick, int maxspeed)
 		di = ndi;
 }
 
-inline void _enemy::launch(const enemy_kind *ekp)
+inline void KOBO_enemy::launch(const KOBO_enemy_kind *ekp)
 {
 #ifndef NOENEMYFIRE
 	if(enemies.is_intro)
@@ -235,7 +236,7 @@ inline void _enemy::launch(const enemy_kind *ekp)
 	playsound(ekp->launchsound);
 }
 
-void _enemy::shot_template_8_dir(const enemy_kind *ekp)
+void KOBO_enemy::shot_template_8_dir(const KOBO_enemy_kind *ekp)
 {
 	static int vx[] = { 0, 200, 300, 200, 0, -200, -300, -200 };
 	static int vy[] = { -300, -200, 0, 200, 300, 200, 0, -200 };
@@ -246,7 +247,7 @@ void _enemy::shot_template_8_dir(const enemy_kind *ekp)
 	playsound(ekp->launchsound);
 }
 
-void _enemy::kill_default()
+void KOBO_enemy::kill_default()
 {
 	enemies.make(enemies.randexp(), x, y, h >> 1, v >> 1);
 	release();
@@ -259,7 +260,7 @@ void _enemy::kill_default()
  * ===========================================================================
  */
 
-void _enemy::make_bullet_green()
+void KOBO_enemy::make_bullet_green()
 {
 	di = 1 + pubrand.get(3);
 	health = 1;
@@ -268,19 +269,19 @@ void _enemy::make_bullet_green()
 	takes_splash_damage = false;
 }
 
-void _enemy::make_bullet_red()
+void KOBO_enemy::make_bullet_red()
 {
 	make_bullet_green();
 	damage = 40;
 }
 
-void _enemy::make_bullet_blue()
+void KOBO_enemy::make_bullet_blue()
 {
 	make_bullet_green();
 	damage = 10;
 }
 
-void _enemy::move_bullet()
+void KOBO_enemy::move_bullet()
 {
 	if(mindiff >= ((VIEWLIMIT >> 1) + 32))
 		release();
@@ -289,29 +290,29 @@ void _enemy::move_bullet()
 		di = 1;
 }
 
-void _enemy::kill_bullet_green()
+void KOBO_enemy::kill_bullet_green()
 {
 	enemies.make(&greenbltexpl, x, y);
 	release();
 }
 
-void _enemy::kill_bullet_red()
+void KOBO_enemy::kill_bullet_red()
 {
 	enemies.make(&redbltexpl, x, y);
 	release();
 }
 
-void _enemy::kill_bullet_blue()
+void KOBO_enemy::kill_bullet_blue()
 {
 	enemies.make(&bluebltexpl, x, y);
 	release();
 }
 
-const enemy_kind greenbullet = {
+const KOBO_enemy_kind greenbullet = {
 	0,
-	&_enemy::make_bullet_green,
-	&_enemy::move_bullet,
-	&_enemy::kill_bullet_green,
+	&KOBO_enemy::make_bullet_green,
+	&KOBO_enemy::move_bullet,
+	&KOBO_enemy::kill_bullet_green,
 	2,
 	B_BLT_GREEN, 0,
 	LAYER_BULLETS,
@@ -321,11 +322,11 @@ const enemy_kind greenbullet = {
 	SOUND_NONE
 };
 
-const enemy_kind redbullet = {
+const KOBO_enemy_kind redbullet = {
 	0,
-	&_enemy::make_bullet_red,
-	&_enemy::move_bullet,
-	&_enemy::kill_bullet_red,
+	&KOBO_enemy::make_bullet_red,
+	&KOBO_enemy::move_bullet,
+	&KOBO_enemy::kill_bullet_red,
 	2,
 	B_BLT_RED, 0,
 	LAYER_BULLETS,
@@ -335,11 +336,11 @@ const enemy_kind redbullet = {
 	SOUND_NONE
 };
 
-const enemy_kind bluebullet = {
+const KOBO_enemy_kind bluebullet = {
 	0,
-	&_enemy::make_bullet_blue,
-	&_enemy::move_bullet,
-	&_enemy::kill_bullet_blue,
+	&KOBO_enemy::make_bullet_blue,
+	&KOBO_enemy::move_bullet,
+	&KOBO_enemy::kill_bullet_blue,
 	2,
 	B_BLT_BLUE, 0,
 	LAYER_BULLETS,
@@ -356,7 +357,7 @@ const enemy_kind bluebullet = {
  * ===========================================================================
  */
 
-void _enemy::make_rock()
+void KOBO_enemy::make_rock()
 {
 	count = 500;
 	health = game.rock_health;
@@ -377,7 +378,7 @@ void _enemy::make_rock()
 	}
 }
 
-void _enemy::move_rock()
+void KOBO_enemy::move_rock()
 {
 #if 0
 	if(bank == B_ROCK3)
@@ -393,18 +394,18 @@ void _enemy::move_rock()
 	di = ((di + a - 1) & 31) + 1;
 }
 
-void _enemy::kill_rock()
+void KOBO_enemy::kill_rock()
 {
 	enemies.make(&rockexpl, x, y, h >> 1, v >> 1);
 	release();
 }
 
-const enemy_kind rock = {
+const KOBO_enemy_kind rock = {
 	10,
-	&_enemy::make_rock,
-	&_enemy::move_rock,
-	&_enemy::kill_rock,
-	12,
+	&KOBO_enemy::make_rock,
+	&KOBO_enemy::move_rock,
+	&KOBO_enemy::kill_rock,
+	40,	// 12
 	B_ROCK1, 0,
 	LAYER_ENEMIES,
 	0,
@@ -420,7 +421,7 @@ const enemy_kind rock = {
  * ===========================================================================
  */
 
-void _enemy::make_ring()
+void KOBO_enemy::make_ring()
 {
 	count = 500;
 	health = 20;
@@ -428,24 +429,24 @@ void _enemy::make_ring()
 	di = 1;
 }
 
-void _enemy::move_ring()
+void KOBO_enemy::move_ring()
 {
 	di += 1 + pubrand.get(1);
 	if(di > 16)
 		di = 1;
 }
 
-void _enemy::kill_ring()
+void KOBO_enemy::kill_ring()
 {
 	enemies.make(&ringexpl, x, y, h >> 1, v >> 1);
 	release();
 }
 
-const enemy_kind ring = {
+const KOBO_enemy_kind ring = {
 	1,
-	&_enemy::make_ring,
-	&_enemy::move_ring,
-	&_enemy::kill_ring,
+	&KOBO_enemy::make_ring,
+	&KOBO_enemy::move_ring,
+	&KOBO_enemy::kill_ring,
 	4,
 	B_RING, 0,
 	LAYER_BULLETS,
@@ -462,7 +463,7 @@ const enemy_kind ring = {
  * ===========================================================================
  */
 
-void _enemy::make_bomb()
+void KOBO_enemy::make_bomb()
 {
 	count = 500;
 	health = 20;
@@ -470,7 +471,7 @@ void _enemy::make_bomb()
 	di = 1;
 }
 
-void _enemy::move_bomb1()
+void KOBO_enemy::move_bomb1()
 {
 	int h1 = labs(diffx);
 	int v1 = labs(diffy);
@@ -500,11 +501,11 @@ void _enemy::move_bomb1()
 		di = 1;
 }
 
-const enemy_kind bomb1 = {
+const KOBO_enemy_kind bomb1 = {
 	5,
-	&_enemy::make_bomb,
-	&_enemy::move_bomb1,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_bomb,
+	&KOBO_enemy::move_bomb1,
+	&KOBO_enemy::kill_default,
 	5,
 	B_GREENBOMB, 0,
 	LAYER_ENEMIES,
@@ -521,7 +522,7 @@ const enemy_kind bomb1 = {
  * ===========================================================================
  */
 
-void _enemy::move_bomb2()
+void KOBO_enemy::move_bomb2()
 {
 	int h1 = labs(diffx);
 	int v1 = labs(diffy);
@@ -565,11 +566,11 @@ void _enemy::move_bomb2()
 		di = 16;
 }
 
-const enemy_kind bomb2 = {
+const KOBO_enemy_kind bomb2 = {
 	20,
-	&_enemy::make_bomb,
-	&_enemy::move_bomb2,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_bomb,
+	&KOBO_enemy::move_bomb2,
+	&KOBO_enemy::kill_default,
 	5,
 	B_REDBOMB, 0,
 	LAYER_ENEMIES,
@@ -587,7 +588,7 @@ const enemy_kind bomb2 = {
  * ===========================================================================
  */
 
-void _enemy::make_expl()
+void KOBO_enemy::make_expl()
 {
 	health = 1;
 	damage = 0;
@@ -622,17 +623,17 @@ void _enemy::make_expl()
 	}
 }
 
-void _enemy::move_expl()
+void KOBO_enemy::move_expl()
 {
 	if(++di > a)
 		release();
 }
 
-const enemy_kind explosion = {
+const KOBO_enemy_kind explosion = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_EXPLO1, 0,
 	LAYER_FX,
@@ -642,11 +643,11 @@ const enemy_kind explosion = {
 	SOUND_NONE
 };
 
-const enemy_kind explosion3 = {
+const KOBO_enemy_kind explosion3 = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_EXPLO3, 0,
 	LAYER_FX,
@@ -656,11 +657,11 @@ const enemy_kind explosion3 = {
 	SOUND_NONE
 };
 
-const enemy_kind explosion4 = {
+const KOBO_enemy_kind explosion4 = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_EXPLO4, 0,
 	LAYER_FX,
@@ -670,11 +671,11 @@ const enemy_kind explosion4 = {
 	SOUND_NONE
 };
 
-const enemy_kind explosion5 = {
+const KOBO_enemy_kind explosion5 = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_EXPLO5, 0,
 	LAYER_FX,
@@ -692,11 +693,11 @@ const enemy_kind explosion5 = {
  * ===========================================================================
  */
 
-const enemy_kind ringexpl = {
+const KOBO_enemy_kind ringexpl = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_RINGEXPL, 0,
 	LAYER_FX,
@@ -714,11 +715,11 @@ const enemy_kind ringexpl = {
  * ===========================================================================
  */
 
-const enemy_kind greenbltexpl = {
+const KOBO_enemy_kind greenbltexpl = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_BLTX_GREEN, 0,
 	LAYER_FX,
@@ -728,11 +729,11 @@ const enemy_kind greenbltexpl = {
 	SOUND_NONE
 };
 
-const enemy_kind redbltexpl = {
+const KOBO_enemy_kind redbltexpl = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_BLTX_RED, 0,
 	LAYER_FX,
@@ -742,11 +743,11 @@ const enemy_kind redbltexpl = {
 	SOUND_NONE
 };
 
-const enemy_kind bluebltexpl = {
+const KOBO_enemy_kind bluebltexpl = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_BLTX_BLUE, 0,
 	LAYER_FX,
@@ -764,11 +765,11 @@ const enemy_kind bluebltexpl = {
  * ===========================================================================
  */
 
-const enemy_kind boltexpl = {
+const KOBO_enemy_kind boltexpl = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_BOLT, 0,
 	LAYER_FX,
@@ -786,11 +787,11 @@ const enemy_kind boltexpl = {
  * ===========================================================================
  */
 
-const enemy_kind rockexpl = {
+const KOBO_enemy_kind rockexpl = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_ROCKEXPL, 0,
 	LAYER_FX,
@@ -808,11 +809,11 @@ const enemy_kind rockexpl = {
  * ===========================================================================
  */
 
-const enemy_kind bombdeto = {
+const KOBO_enemy_kind bombdeto = {
 	0,
-	&_enemy::make_expl,
-	&_enemy::move_expl,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_default,
 	-1,
 	B_BOMBDETO, 0,
 	LAYER_ENEMIES,
@@ -829,7 +830,7 @@ const enemy_kind bombdeto = {
  * ===========================================================================
  */
 
-void _enemy::make_cannon()
+void KOBO_enemy::make_cannon()
 {
 	mapcollide = 1;
 	count = 0;
@@ -840,7 +841,7 @@ void _enemy::make_cannon()
 	a = gamerand.get() & b;
 }
 
-void _enemy::move_cannon()
+void KOBO_enemy::move_cannon()
 {
 	count++;
 	count &= b;
@@ -849,24 +850,24 @@ void _enemy::move_cannon()
 }
 
 // For destruction via core chain reaction
-void _enemy::destroy_cannon()
+void KOBO_enemy::destroy_cannon()
 {
 	enemies.make(enemies.randexp(), x, y);
 	release();
 }
 
 // For destruction via normal damage
-void _enemy::kill_cannon()
+void KOBO_enemy::kill_cannon()
 {
 	enemies.make(&pipein, x, y);
 	destroy_cannon();
 }
 
-const enemy_kind cannon = {
+const KOBO_enemy_kind cannon = {
 	10,
-	&_enemy::make_cannon,
-	&_enemy::move_cannon,
-	&_enemy::kill_cannon,
+	&KOBO_enemy::make_cannon,
+	&KOBO_enemy::move_cannon,
+	&KOBO_enemy::kill_cannon,
 	4,
 	-1, 0,
 	LAYER_BASES,
@@ -883,7 +884,7 @@ const enemy_kind cannon = {
  * ===========================================================================
  */
 
-void _enemy::make_core()
+void KOBO_enemy::make_core()
 {
 	mapcollide = 1;
 	count = 0;
@@ -897,7 +898,7 @@ void _enemy::make_core()
 				CS2PIXEL(x), CS2PIXEL(y));
 }
 
-void _enemy::move_core()
+void KOBO_enemy::move_core()
 {
 	count++;
 	count &= b;
@@ -905,7 +906,7 @@ void _enemy::move_core()
 		this->launch(enemies.ek2());
 }
 
-void _enemy::kill_core()
+void KOBO_enemy::kill_core()
 {
 	sound.g_stop(soundhandle);
 	enemies.make(&pipeout, x, y, 0, 0, 3);
@@ -917,11 +918,11 @@ void _enemy::kill_core()
 	manage.destroyed_a_core();
 }
 
-const enemy_kind core = {
+const KOBO_enemy_kind core = {
 	200,
-	&_enemy::make_core,
-	&_enemy::move_core,
-	&_enemy::kill_core,
+	&KOBO_enemy::make_core,
+	&KOBO_enemy::move_core,
+	&KOBO_enemy::kill_core,
 	4,
 	-1, 0,
 	LAYER_BASES,
@@ -939,7 +940,7 @@ const enemy_kind core = {
  * ===========================================================================
  */
 
-void _enemy::make_pipein()
+void KOBO_enemy::make_pipein()
 {
 	health = 1;
 	damage = 0;
@@ -948,7 +949,7 @@ void _enemy::make_pipein()
 	a = 0;
 }
 
-void _enemy::move_pipein()
+void KOBO_enemy::move_pipein()
 {
 	if(--count > 0)
 		return;
@@ -1012,11 +1013,11 @@ void _enemy::move_pipein()
 	a = a_next;
 }
 
-const enemy_kind pipein = {
+const KOBO_enemy_kind pipein = {
 	0,
-	&_enemy::make_pipein,
-	&_enemy::move_pipein,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_pipein,
+	&KOBO_enemy::move_pipein,
+	&KOBO_enemy::kill_default,
 	-1,
 	-1, 0,
 	LAYER_BASES,
@@ -1034,7 +1035,7 @@ const enemy_kind pipein = {
  * ===========================================================================
  */
 
-void _enemy::make_pipeout()
+void KOBO_enemy::make_pipeout()
 {
 	int x1 = (CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4;
 	int y1 = (CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4;
@@ -1065,7 +1066,7 @@ void _enemy::make_pipeout()
 	}
 }
 
-void _enemy::move_pipeout()
+void KOBO_enemy::move_pipeout()
 {
 	if(--count > 0)
 		return;
@@ -1154,11 +1155,11 @@ void _enemy::move_pipeout()
 	a = a_next;
 }
 
-const enemy_kind pipeout = {
+const KOBO_enemy_kind pipeout = {
 	0,
-	&_enemy::make_pipeout,
-	&_enemy::move_pipeout,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_pipeout,
+	&KOBO_enemy::move_pipeout,
+	&KOBO_enemy::kill_default,
 	-1,
 	-1, 0,
 	LAYER_BASES,
@@ -1176,22 +1177,22 @@ const enemy_kind pipeout = {
  * ===========================================================================
  */
 
-void _enemy::make_enemy1()
+void KOBO_enemy::make_enemy1()
 {
 	di = 1;
 	health = 20;
 }
 
-void _enemy::move_enemy1()
+void KOBO_enemy::move_enemy1()
 {
 	this->move_enemy_template(2, 256);
 }
 
-const enemy_kind enemy1 = {
+const KOBO_enemy_kind enemy1 = {
 	2,
-	&_enemy::make_enemy1,
-	&_enemy::move_enemy1,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy1,
+	&KOBO_enemy::move_enemy1,
+	&KOBO_enemy::kill_default,
 	6,
 	B_MISSILE1, 0,
 	LAYER_ENEMIES,
@@ -1209,14 +1210,14 @@ const enemy_kind enemy1 = {
  * ===========================================================================
  */
 
-void _enemy::make_enemy2()
+void KOBO_enemy::make_enemy2()
 {
 	di = 1;
 	health = 80;
 	count = gamerand.get() & 63;
 }
 
-void _enemy::move_enemy2()
+void KOBO_enemy::move_enemy2()
 {
 	this->move_enemy_template(4, 192);
 	if(--(count) <= 0)
@@ -1227,11 +1228,11 @@ void _enemy::move_enemy2()
 	}
 }
 
-const enemy_kind enemy2 = {
+const KOBO_enemy_kind enemy2 = {
 	10,
-	&_enemy::make_enemy2,
-	&_enemy::move_enemy2,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy2,
+	&KOBO_enemy::move_enemy2,
+	&KOBO_enemy::kill_default,
 	6,
 	B_FIGHTER, 0,
 	LAYER_ENEMIES,
@@ -1249,22 +1250,22 @@ const enemy_kind enemy2 = {
  * ===========================================================================
  */
 
-void _enemy::make_enemy3()
+void KOBO_enemy::make_enemy3()
 {
 	di = 1;
 	health = 40;
 }
 
-void _enemy::move_enemy3()
+void KOBO_enemy::move_enemy3()
 {
 	this->move_enemy_template(32, 96);
 }
 
-const enemy_kind enemy3 = {
+const KOBO_enemy_kind enemy3 = {
 	1,
-	&_enemy::make_enemy3,
-	&_enemy::move_enemy3,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy3,
+	&KOBO_enemy::move_enemy3,
+	&KOBO_enemy::kill_default,
 	6,
 	B_MISSILE2, 0,
 	LAYER_ENEMIES,
@@ -1282,22 +1283,22 @@ const enemy_kind enemy3 = {
  * ===========================================================================
  */
 
-void _enemy::make_enemy4()
+void KOBO_enemy::make_enemy4()
 {
 	di = 1;
 	health = 40;
 }
 
-void _enemy::move_enemy4()
+void KOBO_enemy::move_enemy4()
 {
 	this->move_enemy_template(4, 96);
 }
 
-const enemy_kind enemy4 = {
+const KOBO_enemy_kind enemy4 = {
 	1,
-	&_enemy::make_enemy4,
-	&_enemy::move_enemy4,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy4,
+	&KOBO_enemy::move_enemy4,
+	&KOBO_enemy::kill_default,
 	6,
 	B_MISSILE3, 0,
 	LAYER_ENEMIES,
@@ -1315,7 +1316,7 @@ const enemy_kind enemy4 = {
  * ===========================================================================
  */
 
-void _enemy::make_enemy()
+void KOBO_enemy::make_enemy()
 {
 	count = gamerand.get() & 127;
 	di = 1;
@@ -1323,7 +1324,7 @@ void _enemy::make_enemy()
 	a = 0;
 }
 
-void _enemy::move_enemy5()
+void KOBO_enemy::move_enemy5()
 {
 	if(a == 0)
 	{
@@ -1347,11 +1348,11 @@ void _enemy::move_enemy5()
 	}
 }
 
-const enemy_kind enemy5 = {
+const KOBO_enemy_kind enemy5 = {
 	5,
-	&_enemy::make_enemy,
-	&_enemy::move_enemy5,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy,
+	&KOBO_enemy::move_enemy5,
+	&KOBO_enemy::kill_default,
 	6,
 	B_BMR_GREEN, 0,
 	LAYER_ENEMIES,
@@ -1369,7 +1370,7 @@ const enemy_kind enemy5 = {
  * ===========================================================================
  */
 
-void _enemy::move_enemy6()
+void KOBO_enemy::move_enemy6()
 {
 	if(a == 0)
 	{
@@ -1393,11 +1394,11 @@ void _enemy::move_enemy6()
 	}
 }
 
-const enemy_kind enemy6 = {
+const KOBO_enemy_kind enemy6 = {
 	2,
-	&_enemy::make_enemy,
-	&_enemy::move_enemy6,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy,
+	&KOBO_enemy::move_enemy6,
+	&KOBO_enemy::kill_default,
 	6,
 	B_BMR_PURPLE, 0,
 	LAYER_ENEMIES,
@@ -1415,7 +1416,7 @@ const enemy_kind enemy6 = {
  * ===========================================================================
  */
 
-void _enemy::move_enemy7()
+void KOBO_enemy::move_enemy7()
 {
 	if(a == 0)
 	{
@@ -1439,11 +1440,11 @@ void _enemy::move_enemy7()
 	}
 }
 
-const enemy_kind enemy7 = {
+const KOBO_enemy_kind enemy7 = {
 	5,
-	&_enemy::make_enemy,
-	&_enemy::move_enemy7,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy,
+	&KOBO_enemy::move_enemy7,
+	&KOBO_enemy::kill_default,
 	6,
 	B_BMR_PINK, 0,
 	LAYER_ENEMIES,
@@ -1460,14 +1461,14 @@ const enemy_kind enemy7 = {
  * ===========================================================================
  */
 
-void _enemy::make_enemy_m1()
+void KOBO_enemy::make_enemy_m1()
 {
 	di = 1;
 	health = 1000;		// Originally 26 hits
 	count = gamerand.get() & 15;
 }
 
-void _enemy::move_enemy_m1()
+void KOBO_enemy::move_enemy_m1()
 {
 	this->move_enemy_m(3, 128);
 	if(++di > 16)
@@ -1487,11 +1488,11 @@ void _enemy::move_enemy_m1()
 	}
 }
 
-const enemy_kind enemy_m1 = {
+const KOBO_enemy_kind enemy_m1 = {
 	50,
-	&_enemy::make_enemy_m1,
-	&_enemy::move_enemy_m1,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy_m1,
+	&KOBO_enemy::move_enemy_m1,
+	&KOBO_enemy::kill_default,
 	12,
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
@@ -1508,14 +1509,14 @@ const enemy_kind enemy_m1 = {
  * ===========================================================================
  */
 
-void _enemy::make_enemy_m2()
+void KOBO_enemy::make_enemy_m2()
 {
 	di = 1;
 	health = 1000;
 	count = gamerand.get() & 15;
 }
 
-void _enemy::move_enemy_m2()
+void KOBO_enemy::move_enemy_m2()
 {
 	this->move_enemy_m(3, 128);
 	if(++di > 16)
@@ -1533,11 +1534,11 @@ void _enemy::move_enemy_m2()
 	}
 }
 
-const enemy_kind enemy_m2 = {
+const KOBO_enemy_kind enemy_m2 = {
 	50,
-	&_enemy::make_enemy_m2,
-	&_enemy::move_enemy_m2,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy_m2,
+	&KOBO_enemy::move_enemy_m2,
+	&KOBO_enemy::kill_default,
 	12,
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
@@ -1554,14 +1555,14 @@ const enemy_kind enemy_m2 = {
  * ===========================================================================
  */
 
-void _enemy::make_enemy_m3()
+void KOBO_enemy::make_enemy_m3()
 {
 	di = 1;
 	health = 1000;
 	count = gamerand.get() & 15;
 }
 
-void _enemy::move_enemy_m3()
+void KOBO_enemy::move_enemy_m3()
 {
 	this->move_enemy_m(3, 128);
 	if(--di < 1)
@@ -1579,11 +1580,11 @@ void _enemy::move_enemy_m3()
 	}
 }
 
-const enemy_kind enemy_m3 = {
+const KOBO_enemy_kind enemy_m3 = {
 	50,
-	&_enemy::make_enemy_m3,
-	&_enemy::move_enemy_m3,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy_m3,
+	&KOBO_enemy::move_enemy_m3,
+	&KOBO_enemy::kill_default,
 	12,
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
@@ -1600,19 +1601,19 @@ const enemy_kind enemy_m3 = {
  * ===========================================================================
  */
 
-void _enemy::make_enemy_m4()
+void KOBO_enemy::make_enemy_m4()
 {
 	di = 1;
 	health = 1000;
 	count = gamerand.get() & 15;
 }
 
-void _enemy::move_enemy_m4()
+void KOBO_enemy::move_enemy_m4()
 {
 	this->move_enemy_m(2, 96);
 	if(--di < 1)
 		di = 16;
-	static const enemy_kind *shot[8] = {
+	static const KOBO_enemy_kind *shot[8] = {
 		&enemy1, &enemy2, &bomb2, &ring, &enemy1, &enemy2, &ring,
 		&enemy1
 	};
@@ -1629,11 +1630,11 @@ void _enemy::move_enemy_m4()
 	}
 }
 
-const enemy_kind enemy_m4 = {
+const KOBO_enemy_kind enemy_m4 = {
 	100,
-	&_enemy::make_enemy_m4,
-	&_enemy::move_enemy_m4,
-	&_enemy::kill_default,
+	&KOBO_enemy::make_enemy_m4,
+	&KOBO_enemy::move_enemy_m4,
+	&KOBO_enemy::kill_default,
 	12,
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,

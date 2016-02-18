@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2005-2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -26,7 +26,7 @@
 
 #include "window.h"
 
-enum radar_modes_t
+enum KOBO_radar_modes
 {
 	RM__REINIT,	// Reinitialize (lost windows etc)
 	RM_OFF,		// Gray, empty
@@ -37,7 +37,7 @@ enum radar_modes_t
 };
 
 // The off-screen map window
-class radar_map_t : public window_t
+class KOBO_radar_map : public window_t
 {
   public:
 	int w, h;			//Map size (tiles)
@@ -45,15 +45,15 @@ class radar_map_t : public window_t
 	Uint32 pixel_launcher;
 	Uint32 pixel_hard;
 	Uint32 pixel_bg;
-	radar_map_t(gfxengine_t *e);
+	KOBO_radar_map(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
 	void update(int x, int y, int draw_space);	//Update one tile
 };
 
 // The on-screen radar window
-class radar_window_t : public window_t
+class KOBO_radar_window : public window_t
 {
-	radar_modes_t _mode;
+	KOBO_radar_modes _mode;
 	int old_scrollradar;		//To detect prefs change
 	int xpos, ypos;			//Player position (tiles)
 	int xoffs, yoffs;		//Scroll offset (tiles)
@@ -64,9 +64,9 @@ class radar_window_t : public window_t
 	void noise();			//Render noise effect
 	void set_scroll(int xscroll, int yscroll);	//Set map scroll offset
   public:
-	radar_window_t(gfxengine_t *e);
+	KOBO_radar_window(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
-	void mode(radar_modes_t newmode);//Set radar mode
+	void mode(KOBO_radar_modes newmode);//Set radar mode
 	void update(int mx, int my);	//Update map + radar
 	void frame();			//Track player, drive logic etc...
 };

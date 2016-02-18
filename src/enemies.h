@@ -32,15 +32,15 @@
 #include "sound.h"
 
 
-class _enemy;
-class _enemies;
+class KOBO_enemy;
+class KOBO_enemies;
 //---------------------------------------------------------------------------//
-struct enemy_kind
+struct KOBO_enemy_kind
 {
 	int		score;
-	void (_enemy::*make) ();
-	void (_enemy::*move) ();
-	void (_enemy::*kill) ();
+	void (KOBO_enemy::*make) ();
+	void (KOBO_enemy::*move) ();
+	void (KOBO_enemy::*kill) ();
 	int		hitsize;
 	int		bank, frame;
 	int		layer;
@@ -50,54 +50,54 @@ struct enemy_kind
 	KOBO_sounds	deathsound;
 };
 
-extern const enemy_kind greenbullet;
-extern const enemy_kind redbullet;
-extern const enemy_kind bluebullet;
-extern const enemy_kind explosion;
-extern const enemy_kind explosion3;
-extern const enemy_kind explosion4;
-extern const enemy_kind explosion5;
-extern const enemy_kind ringexpl;
-extern const enemy_kind greenbltexpl;
-extern const enemy_kind redbltexpl;
-extern const enemy_kind bluebltexpl;
-extern const enemy_kind boltexpl;
-extern const enemy_kind rockexpl;
-extern const enemy_kind enemy1;
-extern const enemy_kind enemy2;
-extern const enemy_kind enemy3;
-extern const enemy_kind enemy4;
-extern const enemy_kind enemy5;
-extern const enemy_kind enemy6;
-extern const enemy_kind enemy7;
-extern const enemy_kind bomb1;
-extern const enemy_kind bomb2;
-extern const enemy_kind bombdeto;
-extern const enemy_kind cannon;
-extern const enemy_kind pipein;
-extern const enemy_kind core;
-extern const enemy_kind pipeout;
-extern const enemy_kind rock;
-extern const enemy_kind ring;
-extern const enemy_kind enemy_m1;
-extern const enemy_kind enemy_m2;
-extern const enemy_kind enemy_m3;
-extern const enemy_kind enemy_m4;
+extern const KOBO_enemy_kind greenbullet;
+extern const KOBO_enemy_kind redbullet;
+extern const KOBO_enemy_kind bluebullet;
+extern const KOBO_enemy_kind explosion;
+extern const KOBO_enemy_kind explosion3;
+extern const KOBO_enemy_kind explosion4;
+extern const KOBO_enemy_kind explosion5;
+extern const KOBO_enemy_kind ringexpl;
+extern const KOBO_enemy_kind greenbltexpl;
+extern const KOBO_enemy_kind redbltexpl;
+extern const KOBO_enemy_kind bluebltexpl;
+extern const KOBO_enemy_kind boltexpl;
+extern const KOBO_enemy_kind rockexpl;
+extern const KOBO_enemy_kind enemy1;
+extern const KOBO_enemy_kind enemy2;
+extern const KOBO_enemy_kind enemy3;
+extern const KOBO_enemy_kind enemy4;
+extern const KOBO_enemy_kind enemy5;
+extern const KOBO_enemy_kind enemy6;
+extern const KOBO_enemy_kind enemy7;
+extern const KOBO_enemy_kind bomb1;
+extern const KOBO_enemy_kind bomb2;
+extern const KOBO_enemy_kind bombdeto;
+extern const KOBO_enemy_kind cannon;
+extern const KOBO_enemy_kind pipein;
+extern const KOBO_enemy_kind core;
+extern const KOBO_enemy_kind pipeout;
+extern const KOBO_enemy_kind rock;
+extern const KOBO_enemy_kind ring;
+extern const KOBO_enemy_kind enemy_m1;
+extern const KOBO_enemy_kind enemy_m2;
+extern const KOBO_enemy_kind enemy_m3;
+extern const KOBO_enemy_kind enemy_m4;
 
 
 //---------------------------------------------------------------------------//
-enum _state_t
+enum KOBO_state
 {
 	notuse,
 	reserved,
 	moving
 };
 
-class _enemy
+class KOBO_enemy
 {
 	cs_obj_t	*object;	// For the gfxengine connection
-	_state_t	_state;
-	const enemy_kind *ek;
+	KOBO_state	_state;
+	const KOBO_enemy_kind *ek;
 	int		x, y;
 	int		h, v;
 	int		di;
@@ -118,17 +118,17 @@ class _enemy
 	void move_enemy_template(int quick, int maxspeed);
 	void move_enemy_template_2(int quick, int maxspeed);
 	void move_enemy_template_3(int quick, int maxspeed);
-	void launch(const enemy_kind * ekp);
-	void shot_template_8_dir(const enemy_kind * ekp);
+	void launch(const KOBO_enemy_kind *ekp);
+	void shot_template_8_dir(const KOBO_enemy_kind *ekp);
       public:
-	 _enemy();
+	 KOBO_enemy();
 	inline void init();
 	inline void release();
-	void state(_state_t s);
+	void state(KOBO_state s);
 	inline void move();
 	inline void move_intro();
 	inline void put();
-	inline int make(const enemy_kind * k,
+	inline int make(const KOBO_enemy_kind *k,
 			int px, int py, int h1, int v1, int dir = 0);
 	inline int realize();
 	inline int is_pipe();
@@ -214,12 +214,12 @@ class _enemy
 };
 
 //---------------------------------------------------------------------------//
-class _enemies
+class KOBO_enemies
 {
-	static _enemy enemy[ENEMY_MAX];
-	static _enemy *enemy_max;
-	static const enemy_kind *ekind_to_generate_1;
-	static const enemy_kind *ekind_to_generate_2;
+	static KOBO_enemy enemy[ENEMY_MAX];
+	static KOBO_enemy *enemy_max;
+	static const KOBO_enemy_kind *ekind_to_generate_1;
+	static const KOBO_enemy_kind *ekind_to_generate_2;
 	static int e1_interval;
 	static int e2_interval;
 	static int explocount;
@@ -230,20 +230,20 @@ class _enemies
 	static void move();
 	static void move_intro();
 	static void put();
-	static int make(const enemy_kind * ek,
+	static int make(const KOBO_enemy_kind * ek,
 			int x, int y, int h = 0, int v = 0, int di = 0);
-	static const enemy_kind *randexp();
+	static const KOBO_enemy_kind *randexp();
 	static int erase_cannon(int x, int y);
 	static int exist_pipe();
 	static void hit_map(int x, int y, int dmg);
-	static void set_ekind_to_generate(const enemy_kind * ek1, int i1,
-			const enemy_kind * ek2, int i2);
+	static void set_ekind_to_generate(const KOBO_enemy_kind * ek1, int i1,
+			const KOBO_enemy_kind * ek2, int i2);
 	static void splash_damage(int x, int y, int damage);
-	static const enemy_kind *ek1()
+	static const KOBO_enemy_kind *ek1()
 	{
 		return ekind_to_generate_1;
 	}
-	static const enemy_kind *ek2()
+	static const KOBO_enemy_kind *ek2()
 	{
 		return ekind_to_generate_2;
 	}
@@ -257,21 +257,21 @@ class _enemies
 	}
 };
 
-extern _enemies enemies;
+extern KOBO_enemies enemies;
 
 
-inline void _enemy::init()
+inline void KOBO_enemy::init()
 {
 	state(notuse);
 }
 
-inline void _enemy::release()
+inline void KOBO_enemy::release()
 {
 	playsound(ek->deathsound);
 	state(notuse);
 }
 
-inline int _enemy::make(const enemy_kind *k, int px, int py,
+inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 		int h1, int v1, int dir)
 {
 	if(_state != notuse)
@@ -302,7 +302,7 @@ inline int _enemy::make(const enemy_kind *k, int px, int py,
 	return 0;
 }
 
-inline void _enemy::hit(int dmg)
+inline void KOBO_enemy::hit(int dmg)
 {
 	if(HEALTH_INDESTRUCTIBLE != health)
 		health -= dmg;
@@ -331,7 +331,7 @@ inline void _enemy::hit(int dmg)
 	(this->*(ek->kill)) ();
 }
 
-inline bool _enemy::can_hit_map(int px, int py)
+inline bool KOBO_enemy::can_hit_map(int px, int py)
 {
 	if(_state == notuse)
 		return false;
@@ -341,7 +341,7 @@ inline bool _enemy::can_hit_map(int px, int py)
 			((signed)(CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4 == py);
 }
 
-inline bool _enemy::in_range(int px, int py, int range, int &dist)
+inline bool KOBO_enemy::in_range(int px, int py, int range, int &dist)
 {
 	if(_state == notuse)
 		return false;
@@ -361,7 +361,7 @@ inline bool _enemy::in_range(int px, int py, int range, int &dist)
 	return dist <= range;
 }
 
-inline int _enemy::erase_cannon(int px, int py)
+inline int KOBO_enemy::erase_cannon(int px, int py)
 {
 	if( (ek == &cannon) && can_hit_map(px, py) )
 	{
@@ -371,7 +371,7 @@ inline int _enemy::erase_cannon(int px, int py)
 	return 0;
 }
 
-inline void _enemy::move()
+inline void KOBO_enemy::move()
 {
 	if(_state == notuse)
 		return;
@@ -427,7 +427,7 @@ inline void _enemy::move()
 	}
 }
 
-inline void _enemy::move_intro()
+inline void KOBO_enemy::move_intro()
 {
 	if(_state != moving)
 		return;
@@ -441,7 +441,7 @@ inline void _enemy::move_intro()
 	(this->*(ek->move)) ();
 }
 
-inline void _enemy::put()
+inline void KOBO_enemy::put()
 {
 	if(!object)
 		return;
@@ -450,7 +450,7 @@ inline void _enemy::put()
 	cs_obj_image(object, bank, frame + di - 1);
 }
 
-inline int _enemy::realize()
+inline int KOBO_enemy::realize()
 {
 	if(_state == reserved)
 	{
@@ -465,11 +465,9 @@ inline int _enemy::realize()
 	return (_state == moving);
 }
 
-inline int _enemy::is_pipe()
+inline int KOBO_enemy::is_pipe()
 {
 	return ((_state != notuse) && ((ek == &pipein) || (ek == &pipeout)));
 }
 
-
 #endif				// XKOBO_H_ENEMIES
-

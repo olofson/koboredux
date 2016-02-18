@@ -3,7 +3,7 @@
  * Copyright 1995, 1996 Akira Higuchi
  *     a-higuti@math.hokudai.ac.jp
  * Copyright 2006, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -29,33 +29,33 @@
 #define SCENE_ENEMY_MAX   20
 #define SCENE_BASE_MAX    40
 
-struct enemy_set
+struct KOBO_enemy_set
 {
-	const enemy_kind *kind;
+	const KOBO_enemy_kind *kind;
 	int num;
 	int speed;
 };
 
-struct  _base
+struct KOBO_base
 {
 	int x, y, h, v;
 };
 
-struct _scene
+struct KOBO_scene
 {
 	int ratio;
 	int startx;
 	int starty;
-	const enemy_kind *ek1;
+	const KOBO_enemy_kind *ek1;
 	int ek1_interval;
-	const enemy_kind *ek2;
+	const KOBO_enemy_kind *ek2;
 	int ek2_interval;
 	int enemy_max;
-	enemy_set enemy[SCENE_ENEMY_MAX];
+	KOBO_enemy_set enemy[SCENE_ENEMY_MAX];
 	int base_max;
-	_base base[SCENE_BASE_MAX];
+	KOBO_base base[SCENE_BASE_MAX];
 };
 
-extern const _scene scenes[];
+extern const KOBO_scene scenes[];
 
 #endif // XKOBO_H_SCENES
