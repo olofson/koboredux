@@ -149,6 +149,7 @@ void prefs_t::init()
 	command("help", cmd_help); desc("Print usage info and exit");
 	command("options_man", cmd_options_man);
 			desc("Print options for 'man'");
+	key("warp", cmd_warp, 0, false); desc("Warp To Stage");
 }
 
 

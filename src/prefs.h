@@ -143,6 +143,7 @@ class prefs_t : public config_parser_t
 	int	cmd_autoshot;	//Take ingame screenshots
 	int	cmd_help;	//Show help and exit
 	int	cmd_options_man;//Output OPTIONS doc in Un*x man source format
+	int	cmd_warp;
 };
 
 #endif	//_KOBO_PREFS_H_

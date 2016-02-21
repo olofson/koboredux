@@ -457,7 +457,7 @@ void config_parser_t::yesno(const char *_name, int &var, int def, bool save)
 
 void config_parser_t::command(const char *_name, int &var)
 {
-	add(new cfg_switch_t(_name, var, 0, 0));
+	add(new cfg_switch_t(_name, var, 0, false));
 }
 
 

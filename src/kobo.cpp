@@ -1203,6 +1203,15 @@ int KOBO_main::open()
 	manage.init();
 
 	gsm.push(&st_intro_title);
+
+	if(prefs->cmd_warp)
+	{
+		log_printf(ULOG, "Warping to stage %d!\n", prefs->cmd_warp);
+		manage.select_scene(prefs->cmd_warp - 1);
+		scorefile.profile()->skill = SKILL_NORMAL;
+		gsm.push(&st_game);
+	}
+
 	return 0;
 }
 
