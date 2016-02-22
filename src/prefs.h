@@ -120,7 +120,8 @@ class prefs_t : public config_parser_t
 				cheat_invulnerability ||
 				cheat_firepower ||
 				cheat_startlevel ||
-				cheat_speed;
+				cheat_speed ||
+				cmd_warp;
 	}
 
 	// File paths
