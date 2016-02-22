@@ -271,8 +271,12 @@ void KOBO_myship::move()
 			continue;
 		if(bolts[i].state <= 2)
 		{
-			bolts[i].x += bolts[i].dx * (bolts[i].state - 1) >> 1;
-			bolts[i].y += bolts[i].dy * (bolts[i].state - 1) >> 1;
+			bolts[i].x += vx;
+			bolts[i].y += vy;
+			bolts[i].x += (bolts[i].dx - vx) *
+					(bolts[i].state - 1) >> 1;
+			bolts[i].y += (bolts[i].dy - vy) *
+					(bolts[i].state - 1) >> 1;
 		}
 		else
 		{
@@ -618,7 +622,7 @@ int KOBO_myship::shot_single(int dir, int loffset, int hoffset)
 
 int KOBO_myship::nose_fire()
 {
-	if(shot_single(di, 15, 0))
+	if(shot_single(di, 14, 0))
 		return 1;
 	nose_reload_timer = game.noseloadtime;
 	return 0;
@@ -627,7 +631,7 @@ int KOBO_myship::nose_fire()
 
 int KOBO_myship::tail_fire()
 {
-	if(shot_single((di + 3) % 8 + 1, 11, 0))
+	if(shot_single((di + 3) % 8 + 1, 12, 0))
 		return 1;
 	tail_reload_timer = game.tailloadtime;
 	return 0;
