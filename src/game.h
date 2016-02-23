@@ -48,8 +48,9 @@
 // changed to 336, to match the new view size.
 #define VIEWLIMIT		336
 
-// Player ship hit rect size
-#define HIT_MYSHIP		5
+// Player ship hit rect/circle size
+#define HIT_MYSHIP_NORMAL	5
+#define HIT_MYSHIP_SHIELD	14
 
 // Player bolt hit rect size
 #define HIT_BOLT		5

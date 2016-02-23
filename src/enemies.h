@@ -127,8 +127,8 @@ class KOBO_enemy
 	inline void init();
 	inline void release();
 	void state(KOBO_state s);
-	void player_collision(int dx, int dy, int hs);
-	void player_collision_bounce(int dx, int dy, int hs);
+	void player_collision(int dx, int dy);
+	void player_collision_bounce(int dx, int dy);
 	inline void move();
 	inline void move_intro();
 	inline void put();
@@ -408,8 +408,9 @@ inline void KOBO_enemy::move()
 	// NOTE: Cores and cannons have mapcollide == 1, and are handled via
 	//       the new ship/base "physics" instead.
 	//
-	if(!mapcollide && (hitsize >= 0) && (mindiff < (hitsize + HIT_MYSHIP)))
-		player_collision(dx, dy, PIXEL2CS(hitsize + HIT_MYSHIP));
+	if(!mapcollide && (hitsize >= 0) &&
+			(mindiff < (hitsize + myship.get_hitsize())))
+		player_collision(dx, dy);
 	else
 		contact = 0;
 

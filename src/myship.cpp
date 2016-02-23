@@ -40,6 +40,7 @@ int KOBO_myship::vx;
 int KOBO_myship::vy;
 int KOBO_myship::ax;
 int KOBO_myship::ay;
+int KOBO_myship::hitsize;
 int KOBO_myship::_health;
 int KOBO_myship::health_time;
 int KOBO_myship::explo_time;
@@ -129,6 +130,8 @@ int KOBO_myship::init()
 		if(bolts[i].object)
 			gengine->free_obj(bolts[i].object);
 	memset(bolts, 0, sizeof(bolts));
+
+	hitsize = HIT_MYSHIP_NORMAL;
 	return 0;
 }
 
@@ -215,6 +218,20 @@ void KOBO_myship::move()
 			if((_health != rn) && (_health < rn))
 				++_health;
 		}
+	}
+
+	// Hitrect/bounding circle size
+	switch(_state)
+	{
+	  case SHIP_DEAD:
+	  case SHIP_NORMAL:
+		if(hitsize > HIT_MYSHIP_NORMAL)
+			--hitsize;
+		break;
+	  case SHIP_INVULNERABLE:
+		if(hitsize < HIT_MYSHIP_SHIELD)
+			++hitsize;
+		break;
 	}
 
 	// Movement and collisions
@@ -581,7 +598,7 @@ void KOBO_myship::render()
 
 	if(prefs->show_hit)
 	{
-		int r = PIXEL2CS(HIT_MYSHIP);
+		int r = PIXEL2CS(hitsize);
 		wmain->foreground(wmain->map_rgb(128, 0, 128));
 		wmain->blendmode(GFX_BLENDMODE_ADD);
 		wmain->hairrect_fxp(object->point.gx - r,

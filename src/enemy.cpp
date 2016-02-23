@@ -253,10 +253,10 @@ void KOBO_enemy::kill_default()
 	release();
 }
 
-void KOBO_enemy::player_collision(int dx, int dy, int hs)
+void KOBO_enemy::player_collision(int dx, int dy)
 {
 	if(bounce)
-		player_collision_bounce(dx, dy, hs);
+		player_collision_bounce(dx, dy);
 	else
 	{
 		if(prefs->indicator)
@@ -269,11 +269,11 @@ void KOBO_enemy::player_collision(int dx, int dy, int hs)
 	}
 }
 
-void KOBO_enemy::player_collision_bounce(int dx, int dy, int hs)
+void KOBO_enemy::player_collision_bounce(int dx, int dy)
 {
 	// "Physics enabled" objects have bounding circles!
 	int d = sqrt(dx * dx + dy * dy);
-	contact = hs - d;
+	contact = PIXEL2CS(hitsize + myship.get_hitsize()) - d;
 	if(contact <= 0)
 	{
 		contact = 0;

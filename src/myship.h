@@ -53,6 +53,7 @@ class KOBO_myship
 	static int x, y;	// Position
 	static int vx, vy;	// Velocity
 	static int ax, ay;	// Acceleration
+	static int hitsize;
 	static int _health;
 	static int health_time;
 	static int explo_time;
@@ -87,6 +88,7 @@ class KOBO_myship
 	static int get_y()		{ return CS2PIXEL(y); }
 	static int get_csx()		{ return x; }
 	static int get_csy()		{ return y; }
+	static int get_hitsize()	{ return hitsize; }
 	static void impulse(int ix, int iy)
 	{
 		vx += ix;
