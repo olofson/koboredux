@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 2001-2003, 2006-2007, 2009 David Olofson
  * Copyright 2005 Erik Auerswald
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -34,13 +34,12 @@ void system_options_t::build()
 	medium();
 	label("System Options");
 
+	xoffs = 0.55;
 	space();
 	small();
-	xoffs = 0.6;
 	yesno("Quick Startup", &prf->quickstart, 0);
 
 	space();
-	xoffs = 0.6;
 	list("Maximum Frame Rate", &prf->maxfps, OS_REBUILD);
 	{
 		char buf[10];
@@ -68,7 +67,6 @@ void system_options_t::build()
 		yesno("Strictly Regulated", &prf->maxfps_strict, 0);
 
 	space();
-	xoffs = 0.6;
 	list("Time Filter", &prf->timefilter, OS_UPDATE_ENGINE);
 		item("Off", 100);
 		item("Fast", 75);
@@ -81,13 +79,11 @@ void system_options_t::build()
 		item("Extrapolation", 2);
 
 	space();
-	xoffs = 0.6;
 	yesno("Log Messages to File", &prf->logfile, OS_RESTART_LOGGER);
 	list("Log Output Format", &prf->logformat, 0);
 		item("Plain Text", 0);
 		item("ANSI Coloring", 1);
 		item("HTML", 2);
-	xoffs = 0.45;
 	list("Log Verbosity", &prf->logverbosity, 0);
 		item("Critical Errors Only", 0);
 		item("Errors Only", 1);
@@ -141,16 +137,16 @@ void video_options_t::build()
 		firstbuild = 0;
 	}
 
-	xoffs = 0.35;
+	xoffs = 0.55;
 	list("Show Modes" , &showmodes, OS_REBUILD);
 		item("Show All", VMM_ALL);
 		item("Recommended Modes", VMM__RECOMMENDED);
 		item("Common Modes", VMM__COMMON);
 		item("Widescreen Modes", VMM__WIDESCREEN);
 		item("Non Widescreen Modes", VMM__NONWIDESCREEN);
-	xoffs = 0.7;
+//	xoffs = 0.7;
 	yesno("Show Odd Low Resolutions" , &showlow, OS_REBUILD);
-	xoffs = 0.5;
+//	xoffs = 0.5;
 	list("Display Mode", &prf->videomode, OS_RESTART_VIDEO | OS_REBUILD);
 		char buf[256];
 		buf[sizeof(buf) - 1] = 0;
@@ -200,8 +196,32 @@ void video_options_t::build()
 				OS_RESTART_VIDEO);
 	}
 	space();
-	xoffs = 0.55;
+//	xoffs = 0.55;
 	yesno("Vertical Retrace Sync", &prf->vsync, OS_RESTART_VIDEO);
+	space();
+//	xoffs = 0.6;
+	list("Planet Dither Style", &prf->planetdither, OS_UPDATE_SCREEN);
+		item("None", SPINPLANET_DITHER_NONE);
+		item("Random", SPINPLANET_DITHER_RANDOM);
+		item("Ordered", SPINPLANET_DITHER_ORDERED);
+		item("Skewed", SPINPLANET_DITHER_SKEWED);
+		item("Noise", SPINPLANET_DITHER_NOISE);
+		item("Semi Interlace", SPINPLANET_DITHER_SEMIINTERLACE);
+		item("Interlace", SPINPLANET_DITHER_INTERLACE);
+		item("TrueColor", SPINPLANET_DITHER_TRUECOLOR);
+#if 0
+	space(1);
+	list("Scale Mode", &prf->scalemode, OS_RELOAD_GRAPHICS);
+		item("Nearest", GFX_SCALE_NEAREST);
+		item("Bilinear", GFX_SCALE_BILINEAR);
+		item("Scale2x", GFX_SCALE_SCALE2X);
+		item("Diamond2x", GFX_SCALE_DIAMOND);
+	yesno("Alpha Blending", &prf->alpha, OS_RELOAD_GRAPHICS);
+	list("Brightness", &prf->brightness, OS_RELOAD_GRAPHICS);
+		perc_list(50, 150, 10);
+	list("Contrast", &prf->contrast, OS_RELOAD_GRAPHICS);
+		perc_list(50, 150, 10);
+#endif
 	big();
 	space();
 	xoffs = 0.5;
@@ -216,49 +236,13 @@ void video_options_t::close()
 }
 
 
-void graphics_options_t::build()
-{
-	medium();
-	label("Graphics Options");
-	space();
-	small();
-	xoffs = 0.6;
-	list("Planet Dither Style", &prf->planetdither, OS_UPDATE_SCREEN);
-		item("None", SPINPLANET_DITHER_NONE);
-		item("Random", SPINPLANET_DITHER_RANDOM);
-		item("Ordered", SPINPLANET_DITHER_ORDERED);
-		item("Skewed", SPINPLANET_DITHER_SKEWED);
-		item("Noise", SPINPLANET_DITHER_NOISE);
-		item("Semi Interlace", SPINPLANET_DITHER_SEMIINTERLACE);
-		item("Interlace", SPINPLANET_DITHER_INTERLACE);
-		item("TrueColor", SPINPLANET_DITHER_TRUECOLOR);
-	list("Scale Mode", &prf->scalemode, OS_RELOAD_GRAPHICS);
-		item("Nearest", GFX_SCALE_NEAREST);
-		item("Bilinear", GFX_SCALE_BILINEAR);
-		item("Scale2x", GFX_SCALE_SCALE2X);
-		item("Diamond2x", GFX_SCALE_DIAMOND);
-	space(1);
-	yesno("Alpha Blending", &prf->alpha, OS_RELOAD_GRAPHICS);
-	space();
-	list("Brightness", &prf->brightness, OS_RELOAD_GRAPHICS);
-		perc_list(50, 150, 10);
-	list("Contrast", &prf->contrast, OS_RELOAD_GRAPHICS);
-		perc_list(50, 150, 10);
-	big();
-	space();
-	xoffs = 0.5;
-	button("ACCEPT", OS_CLOSE);
-	button("CANCEL", OS_CANCEL);
-}
-
-
 void audio_options_t::build()
 {
 	medium();
 	label("Sound Options");
 	small();
 	space();
-	xoffs = 0.57;
+	xoffs = 0.55;
 	yesno("Enable Sound", &prf->sound, OS_RESTART_AUDIO | OS_REBUILD);
 	if(prf->sound)
 	{
@@ -383,7 +367,7 @@ void control_options_t::build()
 	label("Control Options");
 	space();
 	small();
-	xoffs = 0.67;
+	xoffs = 0.6;
 	yesno("Always Fire", &prf->always_fire, OS_RESTART_INPUT);
 	space();
 	yesno("Broken NumPad Diagonals", &prf->broken_numdia, 0);
@@ -465,7 +449,6 @@ void game_options_t::build()
 		item("Massive", 2500);
 		item("Insane", 8000);
 	space();
-	xoffs = 0.7;
 	list("Cannon Sound Suppression", &prf->cannonloud, 0);
 		item("Off", 200);
 		item("Low", 100);

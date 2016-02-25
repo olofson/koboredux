@@ -1541,7 +1541,6 @@ void options_main_t::build()
 	button("Game", 4);
 	button("Controls", 3);
 	button("Video", 1);
-	button("Graphics", 6);
 	button("Audio", 2);
 	button("System", 5);
 	space();
@@ -1576,9 +1575,6 @@ void st_options_main_t::select(int tag)
 		break;
 	  case 5:
 		gsm.push(&st_options_system);
-		break;
-	  case 6:
-		gsm.push(&st_options_graphics);
 		break;
 	}
 }
@@ -1669,7 +1665,6 @@ void st_options_base_t::escape()
 ----------------------------------------------------------*/
 st_options_system_t st_options_system;
 st_options_video_t st_options_video;
-st_options_graphics_t st_options_graphics;
 st_options_audio_t st_options_audio;
 st_options_control_t st_options_control;
 st_options_game_t st_options_game;

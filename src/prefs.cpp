@@ -63,7 +63,7 @@ void prefs_t::init()
 	key("stars", stars, 500); desc("Number of Parallax Stars");
 	key("cannonloud", cannonloud, 100); desc("Player Cannons Loudness");
 
-	section("Sound");
+	section("Audio");
 	yesno("sound", sound, 1); desc("Enable Sound");
 	yesno("music", music, 1); desc("Enable Music");
 	key("audiodriver", audiodriver, ""); desc("Audio Driver");
@@ -90,7 +90,6 @@ void prefs_t::init()
 	key("videomode", videomode, 1); desc("Video Mode");
 	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
 
-	section("Graphics");
 	key("gfxtheme", gfxtheme, ""); desc("Graphics Theme");
 	yesno("force_fallback_gfxtheme", force_fallback_gfxtheme, 0);
 			desc("Force Load Fallback Graphics Theme");
