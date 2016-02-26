@@ -139,14 +139,12 @@ void video_options_t::build()
 
 	xoffs = 0.55;
 	list("Show Modes" , &showmodes, OS_REBUILD);
-		item("Show All", VMM_ALL);
-		item("Recommended Modes", VMM__RECOMMENDED);
-		item("Common Modes", VMM__COMMON);
-		item("Widescreen Modes", VMM__WIDESCREEN);
-		item("Non Widescreen Modes", VMM__NONWIDESCREEN);
-//	xoffs = 0.7;
+		item("Show All", (int)VMM_ALL);
+		item("Recommended Modes", (int)VMM__RECOMMENDED);
+		item("Common Modes", (int)VMM__COMMON);
+		item("Widescreen Modes", (int)VMM__WIDESCREEN);
+		item("Non Widescreen Modes", (int)VMM__NONWIDESCREEN);
 	yesno("Show Odd Low Resolutions" , &showlow, OS_REBUILD);
-//	xoffs = 0.5;
 	list("Display Mode", &prf->videomode, OS_RESTART_VIDEO | OS_REBUILD);
 		char buf[256];
 		buf[sizeof(buf) - 1] = 0;
@@ -196,10 +194,8 @@ void video_options_t::build()
 				OS_RESTART_VIDEO);
 	}
 	space();
-//	xoffs = 0.55;
 	yesno("Vertical Retrace Sync", &prf->vsync, OS_RESTART_VIDEO);
 	space();
-//	xoffs = 0.6;
 	list("Planet Dither Style", &prf->planetdither, OS_UPDATE_SCREEN);
 		item("None", SPINPLANET_DITHER_NONE);
 		item("Random", SPINPLANET_DITHER_RANDOM);

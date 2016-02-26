@@ -3,7 +3,7 @@
 	toolkit.h - Simple "GUI" toolkit for config screens.
 ---------------------------------------------------------------------------
  * Copyright 2001, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -50,7 +50,7 @@ class ct_widget_t : public window_t
 	int		transparent;
 	int		highlighted;
 	Uint32		_color;
-	int		_value;
+	double		_value;
 	int		_widget_index;
 	ct_align_t	_halign;
 	ct_align_t	_valign;
@@ -67,9 +67,9 @@ class ct_widget_t : public window_t
 	void transparency(int t);
 	void highlight(int hl);
 	void color(Uint32 _cl);
-	virtual void change(int delta);
-	virtual void value(int val);
-	virtual int value();
+	virtual void change(double delta);
+	virtual void value(double val);
+	virtual double value();
 
 	//Contents alignment modes.
 	virtual void halign(ct_align_t ha);
@@ -116,14 +116,14 @@ class ct_item_t
   protected:
 	char	_caption[64];
 	int	_index;
-	int	_value;
+	double	_value;
   public:
 	ct_item_t	*next, *prev;	//*CIRCULAR* list!
 	ct_item_t(const char *cap = NULL, int val = 0);
 	void caption(const char *cap);
 	const char *caption()	{ return _caption; }
-	void value(int val)	{ _value = val; }
-	int value()		{ return _value; }
+	void value(double val)	{ _value = val; }
+	double value()		{ return _value; }
 	void index(int i)	{ _index = i; }
 	int index()		{ return _index; }
 };
@@ -143,9 +143,9 @@ class ct_list_t : public ct_label_t
 	void select(ct_item_t *item);
 	void select(int ind);
 	ct_item_t *selected();
-	void value(int val);
-	int value();
-	void change(int delta);
+	void value(double val);
+	double value();
+	void change(double delta);
 	virtual void halign(ct_align_t ha);
 };
 

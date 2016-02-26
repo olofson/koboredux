@@ -3,7 +3,7 @@
 	toolkit.cpp - Simple "GUI" toolkit for config screens.
 ---------------------------------------------------------------------------
  * Copyright 2001, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -155,19 +155,19 @@ void ct_widget_t::render_text_aligned(const char *buf)
 }
 
 
-void ct_widget_t::change(int delta)
+void ct_widget_t::change(double delta)
 {
 	_value += delta;
 }
 
 
-void ct_widget_t::value(int val)
+void ct_widget_t::value(double val)
 {
 	_value = val;
 }
 
 
-int ct_widget_t::value()
+double ct_widget_t::value()
 {
 	return _value;
 }
@@ -386,7 +386,7 @@ ct_item_t *ct_list_t::selected()
 }
 
 
-void ct_list_t::value(int val)
+void ct_list_t::value(double val)
 {
 	if(!items)
 		return;
@@ -395,7 +395,7 @@ void ct_list_t::value(int val)
 	_selected = items;
 	while(_selected->value() != val)
 	{
-		if(labs(_selected->value()-val) < labs(best->value()-val))
+		if(abs(_selected->value() - val) < abs(best->value() - val))
 			best = _selected;
 		if(_selected->next == items)
 			break;
@@ -407,7 +407,7 @@ void ct_list_t::value(int val)
 }
 
 
-int ct_list_t::value()
+double ct_list_t::value()
 {
 	if(!items)
 		return dummy_item.value();
@@ -418,17 +418,17 @@ int ct_list_t::value()
 }
 
 
-void ct_list_t::change(int delta)
+void ct_list_t::change(double delta)
 {
 	if(_selected)
 	{
-		if(0 == delta)
-			delta = 1;
-		if(delta > 0)
-			for(int i = 0; i < delta; ++i)
+		if(!delta)
+			delta = 1.0f;
+		if(delta > 0.0f)
+			for(int i = 0; i < (int)delta; ++i)
 				_selected = _selected->next;
-		else if(delta < 0)
-			for(int i = 0; i > delta; --i)
+		else if(delta < 0.0f)
+			for(int i = 0; i > (int)delta; --i)
 				_selected = _selected->prev;
 		select(_selected);	//To update _value, render etc...
 	}
@@ -500,7 +500,7 @@ void ct_spin_t::render()
 {
 	char buf[128];
 	ct_widget_t::render();
-	snprintf(buf, sizeof(buf), "%s: %d %s", caption(), _value, unit());
+	snprintf(buf, sizeof(buf), "%s: %f %s", caption(), _value, unit());
 	render_text_aligned(buf);
 }
 
