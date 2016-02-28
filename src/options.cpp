@@ -92,11 +92,14 @@ void system_options_t::build()
 		item("More Debug", 4);
 		item("Everything", 5);
 
+	xoffs = 0.5;
 	big();
 	space();
-	xoffs = 0.5;
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL);
+	space();
+	small();
+	help();
 }
 
 
@@ -218,11 +221,15 @@ void video_options_t::build()
 	list("Contrast", &prf->contrast, OS_RELOAD_GRAPHICS);
 		perc_list(50, 150, 10);
 #endif
+
+	xoffs = 0.5;
 	big();
 	space();
-	xoffs = 0.5;
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL);
+	space();
+	small();
+	help();
 }
 
 void video_options_t::close()
@@ -343,11 +350,15 @@ void audio_options_t::build()
 				perc_list(100, 200, 25);
 		}
 	}
-	space();
-	big();
+
 	xoffs = 0.5;
+	big();
+	space();
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL | OS_UPDATE_AUDIO);
+	space();
+	small();
+	help();
 }
 
 void audio_options_t::prepare_to_apply()
@@ -407,11 +418,15 @@ void control_options_t::build()
 	}
 	space();
 	yesno("In-game Mouse Capture", &prf->mousecapture, 0);
+
+	xoffs = 0.5;
 	big();
 	space();
-	xoffs = 0.5;
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL);
+	space();
+	small();
+	help();
 }
 
 
@@ -449,11 +464,15 @@ void game_options_t::build()
 		item("Off", 200);
 		item("Low", 100);
 		item("High", 50);
+
+	xoffs = 0.5;
 	big();
 	space();
-	xoffs = 0.5;
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL | OS_UPDATE_ENGINE);
+	space();
+	small();
+	help();
 }
 
 
@@ -484,9 +503,13 @@ void cheat_options_t::build()
 		item("150%", 1.5f);
 		item("175%", 1.75f);
 		item("200%", 2.0f);
+
+	xoffs = 0.5;
 	big();
 	space();
-	xoffs = 0.5;
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL);
+	space();
+	small();
+	help();
 }

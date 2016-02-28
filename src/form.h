@@ -41,11 +41,13 @@ class kobo_form_t : public ct_form_t
   protected:
 	ct_widget_t	*current_widget;
 	ct_list_t	*current_list;
+	ct_label_t	*help_bar;
 	int		ypos;
 	int		_big;
 	float		xoffs;
 	ct_align_t	halign;
 	virtual void init_widget(ct_widget_t *wg);
+	void update_help();
 
 	//Toolkit
 	void big();
@@ -58,6 +60,7 @@ class kobo_form_t : public ct_form_t
 			const char *unit, int tag = 0);
 	void button(const char *cap, int tag = 0);
 	void space(int lines = 1);
+	void help();
 
 	//List tools
 	void list(const char *cap, void *var, int tag = 0);

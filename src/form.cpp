@@ -32,6 +32,7 @@ kobo_form_t::kobo_form_t(gfxengine_t *e) : ct_form_t(e)
 {
 	ypos = 0;
 	current_list = NULL;
+	help_bar = NULL;
 	_big = 0;
 	xoffs = 0.5;
 	halign = ALIGN_DEFAULT;
@@ -43,10 +44,32 @@ kobo_form_t::~kobo_form_t()
 }
 
 
+void kobo_form_t::update_help()
+{
+	if(!help_bar)
+		return;
+	if(!selected()->user)
+	{
+		help_bar->caption("");
+		return;
+	}
+
+	int handle = prefs->get(selected()->user);
+	if(handle < 0)
+	{
+		help_bar->caption("");
+		return;
+	}
+
+	help_bar->caption(prefs->description(handle));
+}
+
+
 void kobo_form_t::next()
 {
 	sound.ui_play(SOUND_UI_MOVE);
 	ct_form_t::next();
+	update_help();
 }
 
 
@@ -54,6 +77,7 @@ void kobo_form_t::prev()
 {
 	sound.ui_play(SOUND_UI_MOVE);
 	ct_form_t::prev();
+	update_help();
 }
 
 
@@ -267,6 +291,14 @@ void kobo_form_t::space(int lines)
 }
 
 
+void kobo_form_t::help()
+{
+	help_bar = new ct_label_t(engine, "");
+	init_widget(help_bar);
+	help_bar->font(B_SMALL_FONT);
+}
+
+
 void kobo_form_t::end()
 {
 }
@@ -311,4 +343,5 @@ void kobo_form_t::build_all()
 			break;
 		}
 	}
+	update_help();
 }
