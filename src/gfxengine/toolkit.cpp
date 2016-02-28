@@ -251,7 +251,7 @@ void ct_label_t::render()
 	ct_item_t::
 ----------------------------------------------------------*/
 
-ct_item_t::ct_item_t(const char *cap, int val)
+ct_item_t::ct_item_t(const char *cap, double val)
 {
 	if(cap)
 		caption(cap);

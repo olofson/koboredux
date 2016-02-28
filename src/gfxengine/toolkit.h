@@ -119,7 +119,7 @@ class ct_item_t
 	double	_value;
   public:
 	ct_item_t	*next, *prev;	//*CIRCULAR* list!
-	ct_item_t(const char *cap = NULL, int val = 0);
+	ct_item_t(const char *cap = NULL, double val = 0.0f);
 	void caption(const char *cap);
 	const char *caption()	{ return _caption; }
 	void value(double val)	{ _value = val; }
