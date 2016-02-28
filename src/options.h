@@ -75,4 +75,11 @@ class game_options_t : public config_form_t
 	void build();
 };
 
+class cheat_options_t : public config_form_t
+{
+  public:
+	cheat_options_t(gfxengine_t *e) : config_form_t(e) { }
+	void build();
+};
+
 #endif 	//_KOBO_OPTIONS_H_

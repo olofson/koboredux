@@ -398,6 +398,13 @@ class st_options_base_t : public st_menu_base_t
 /*----------------------------------------------------------
 	Options Submenues
 ----------------------------------------------------------*/
+class st_options_cheat_t : public st_options_base_t
+{
+  public:
+	st_options_cheat_t()	{ name = "options_cheat"; }
+	config_form_t *oopen()	{ return new cheat_options_t(gengine); }
+};
+
 class st_options_system_t : public st_options_base_t
 {
   public:
@@ -507,6 +514,7 @@ extern st_main_menu_t st_main_menu;
 extern st_skill_menu_t st_skill_menu;
 extern st_new_player_t st_new_player;
 extern st_options_main_t st_options_main;
+extern st_options_cheat_t st_options_cheat;
 extern st_options_system_t st_options_system;
 extern st_options_video_t st_options_video;
 extern st_options_audio_t st_options_audio;

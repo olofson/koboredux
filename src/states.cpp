@@ -1543,6 +1543,8 @@ void options_main_t::build()
 	button("Video", 1);
 	button("Audio", 2);
 	button("System", 5);
+//TODO:	if(prefs->cheats)
+		button("Cheats", 6);
 	space();
 
 	button("DONE!", 0);
@@ -1575,6 +1577,9 @@ void st_options_main_t::select(int tag)
 		break;
 	  case 5:
 		gsm.push(&st_options_system);
+		break;
+	  case 6:
+		gsm.push(&st_options_cheat);
 		break;
 	}
 }
@@ -1663,6 +1668,7 @@ void st_options_base_t::escape()
 /*----------------------------------------------------------
 	Options...
 ----------------------------------------------------------*/
+st_options_cheat_t st_options_cheat;
 st_options_system_t st_options_system;
 st_options_video_t st_options_video;
 st_options_audio_t st_options_audio;

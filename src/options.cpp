@@ -455,3 +455,38 @@ void game_options_t::build()
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL | OS_UPDATE_ENGINE);
 }
+
+
+void cheat_options_t::build()
+{
+	medium();
+	label("Game Options");
+	space();
+	small();
+	xoffs = 0.6;
+	yesno("Push Move Mode", &prf->cheat_pushmove, 0);
+	yesno("Freewheel Mode", &prf->cheat_freewheel, 0);
+	yesno("Shield", &prf->cheat_shield, 0);
+	yesno("Invulnerability", &prf->cheat_invulnerability, 0);
+	yesno("Extra Firepower", &prf->cheat_firepower, 0);
+	yesno("Star Level Selector", &prf->cheat_startlevel, 0);
+	space();
+	list("Game Speed", &prf->cheat_speed, 0);
+		item("Normal", 0.0f);
+		item("10%", 0.1f);
+		item("20%", 0.2f);
+		item("25%", 0.25f);
+		item("33%", 0.33f);
+		item("50%", 0.5f);
+		item("75%", 0.75f);
+		item("125%", 1.25f);
+		item("133%", 1.33f);
+		item("150%", 1.5f);
+		item("175%", 1.75f);
+		item("200%", 2.0f);
+	big();
+	space();
+	xoffs = 0.5;
+	button("ACCEPT", OS_CLOSE);
+	button("CANCEL", OS_CANCEL);
+}
