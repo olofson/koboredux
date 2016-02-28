@@ -70,7 +70,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	  case SKILL_NORMAL:
 		ram_damage = 100;
 		bolt_damage = 40;
-		rock_health = 500;
+		rock_health = 1000;
 		rock_damage = 40;
 		crash_damage = 30;
 		splash_damage_multiplier = 2;
@@ -82,7 +82,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	  case SKILL_HARD:
 		ram_damage = 50;
 		bolt_damage = 30;
-		rock_health = 1000;
+		rock_health = 2000;
 		rock_damage = 60;
 		crash_damage = 40;
 		splash_damage_multiplier = 3;
