@@ -303,13 +303,12 @@ void KOBO_enemy::player_collision_bounce(int dx, int dy)
 		int ix = (dvx * cosra - dvy * sinra) * cosra;
 		int iy = (dvx * sinra + dvy * cosra) * cosra;
 
-		// Velocity dependent damage!
-		int dmg = ((ix * ix + iy * iy) >> 8) /
-				(NOMINAL_DAMAGE_SPEED * NOMINAL_DAMAGE_SPEED);
 		if(myship.alive())
 		{
-			hit(game.ram_damage * dmg >> 8);
-			myship.hit(damage * dmg >> 8);
+			// Velocity dependent damage!
+			int vel = sqrt(ix * ix + iy * iy);
+			hit(game.scale_vel_damage(vel, game.ram_damage));
+			myship.hit(game.scale_vel_damage(vel, damage));
 		}
 
 		// Scale impulse for desired bounciness
