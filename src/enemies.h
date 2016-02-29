@@ -98,24 +98,23 @@ class KOBO_enemy
 	cs_obj_t	*object;	// For the gfxengine connection
 	KOBO_state	_state;
 	const KOBO_enemy_kind *ek;
-	int		x, y;
-	int		h, v;
-	int		contact;
-	int		di;
-	int		a, b;
-	int		soundhandle;	// Continuous positional sound fx
-	int		count;
-	int		health;
-	int		damage;
-	int		splash_damage;
-	bool		takes_splash_damage;
-	int		shootable;
-	int		diffx, diffy;
-	int		mindiff;
-	int		hitsize;
-	int		mapcollide;
-	int		bounce;
-	int		bank, frame;
+	int	x, y;			// Position
+	int	h, v;			// Velocity
+	int	contact;		// 0 or amount of overlap (24:8)
+	int	di;			// Direction
+	int	a, b, count;		// "AI" work variables
+	int	soundhandle;		// Continuous positional sound fx
+	int	bank, frame;		// Current sprite bank and frame
+	int	health;			// Current health
+	int	damage;			// Damage dealt to player at contact
+	int	splash_damage;		// Splash damage dealt on death
+	bool	takes_splash_damage;
+	bool	shootable;		// Can be hit by player bolts
+	bool	physics;		// Use physics collision responses
+	bool	mapcollide;		// Tied to tile; collisions via map!
+	bool	detonate_on_contact;	// Detonate on contact with player
+	int	diffx, diffy, mindiff;	// Distance to player
+	int	hitsize;		// Hit square/circle radius
 	void move_enemy_m(int quick, int maxspeed);
 	void move_enemy_template(int quick, int maxspeed);
 	void move_enemy_template_2(int quick, int maxspeed);
@@ -128,7 +127,6 @@ class KOBO_enemy
 	inline void release();
 	void state(KOBO_state s);
 	void player_collision(int dx, int dy);
-	void player_collision_bounce(int dx, int dy);
 	inline void move();
 	inline void move_intro();
 	inline void put();
@@ -137,6 +135,7 @@ class KOBO_enemy
 	inline int realize();
 	inline int is_pipe();
 	void hit(int dmg);
+	void detonate();
 	inline bool can_hit_map(int px, int py);
 	inline bool can_splash_damage()	{ return takes_splash_damage; }
 	inline bool in_range(int px, int py, int range, int &dist);
@@ -298,9 +297,10 @@ inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 	damage = 50;
 	splash_damage = 0;
 	takes_splash_damage = true;
-	shootable = 1;
-	mapcollide = 0;
-	bounce = 0;
+	shootable = true;
+	mapcollide = false;
+	physics = true;
+	detonate_on_contact = false;
 	hitsize = ek->hitsize;
 	bank = ek->bank;
 	frame = ek->frame;
@@ -336,6 +336,13 @@ inline void KOBO_enemy::hit(int dmg)
 	if(splash_damage)
 		enemies.splash_damage(x, y, splash_damage);
 	manage.add_score(ek->score);
+	(this->*(ek->kill)) ();
+}
+
+inline void KOBO_enemy::detonate()
+{
+	if(splash_damage)
+		enemies.splash_damage(x, y, splash_damage);
 	(this->*(ek->kill)) ();
 }
 
@@ -404,11 +411,7 @@ inline void KOBO_enemy::move()
 	(this->*(ek->move)) ();
 
 	// Handle collisions with the player ship
-	//
-	// NOTE: Cores and cannons have mapcollide == 1, and are handled via
-	//       the new ship/base "physics" instead.
-	//
-	if(!mapcollide && (hitsize >= 0) &&
+	if(!mapcollide && myship.alive() && (hitsize >= 0) &&
 			(mindiff < (hitsize + myship.get_hitsize())))
 		player_collision(dx, dy);
 	else
@@ -421,13 +424,8 @@ inline void KOBO_enemy::move()
 
 	int dmg = myship.hit_bolt(CS2PIXEL(x), CS2PIXEL(y),
 				hitsize + HIT_BOLT, health);
-	if(dmg)
-	{
-		if(prefs->indicator)
-			sound.g_player_damage();
-		else if(shootable)
-			hit(dmg);	// Bolt damages object
-	}
+	if(dmg && shootable)
+		hit(dmg);	// Bolt damages object
 }
 
 inline void KOBO_enemy::move_intro()

@@ -255,22 +255,16 @@ void KOBO_enemy::kill_default()
 
 void KOBO_enemy::player_collision(int dx, int dy)
 {
-	if(bounce)
-		player_collision_bounce(dx, dy);
-	else
+	if(!physics)
 	{
-		if(prefs->indicator)
-			sound.g_player_damage();
-		else if(myship.alive())
-		{
+		if(detonate_on_contact)
+			detonate();		// Object detonates!
+		else
 			hit(game.ram_damage);	// Ship damages object
-			myship.hit(damage);	// Object damages ship
-		}
+		myship.hit(damage);		// Object damages ship
+		return;
 	}
-}
 
-void KOBO_enemy::player_collision_bounce(int dx, int dy)
-{
 	// "Physics enabled" objects have bounding circles!
 	int d = sqrt(dx * dx + dy * dy);
 	contact = PIXEL2CS(hitsize + myship.get_hitsize()) - d;
@@ -278,6 +272,15 @@ void KOBO_enemy::player_collision_bounce(int dx, int dy)
 	{
 		contact = 0;
 		return;		// No intersection!
+	}
+
+	// Detonate-on-contact needs no physics. (Unless we knock things around
+	// when dealing splash damage, but that doesn't belong here anyway.)
+	if(detonate_on_contact)
+	{
+		detonate();		// Object detonates!
+		myship.hit(damage);	// Object delivers full damage to ship
+		return;
 	}
 
 	// Relative velocity
@@ -303,13 +306,10 @@ void KOBO_enemy::player_collision_bounce(int dx, int dy)
 		int ix = (dvx * cosra - dvy * sinra) * cosra;
 		int iy = (dvx * sinra + dvy * cosra) * cosra;
 
-		if(myship.alive())
-		{
-			// Velocity dependent damage!
-			int vel = sqrt(ix * ix + iy * iy);
-			hit(game.scale_vel_damage(vel, game.ram_damage));
-			myship.hit(game.scale_vel_damage(vel, damage));
-		}
+		// Velocity dependent damage!
+		int vel = sqrt(ix * ix + iy * iy);
+		hit(game.scale_vel_damage(vel, game.ram_damage));
+		myship.hit(game.scale_vel_damage(vel, damage));
 
 		// Scale impulse for desired bounciness
 		ix = (256 + (KOBO_ENEMY_BOUNCE)) * ix >> 9;
@@ -333,7 +333,7 @@ void KOBO_enemy::render_hit_zone()
 	if(!object)
 		return;
 	int r = PIXEL2CS(hitsize);
-	if(bounce)
+	if(physics)
 	{
 		if(contact)
 			wmain->foreground(wmain->map_rgb(255, 128, 0));
@@ -360,9 +360,11 @@ void KOBO_enemy::make_bullet_green()
 {
 	di = 1 + pubrand.get(3);
 	health = 1;
-	shootable = 0;
+	shootable = false;
+	physics = false;
 	damage = 20;
 	takes_splash_damage = false;
+	detonate_on_contact = true;
 }
 
 void KOBO_enemy::make_bullet_red()
@@ -458,7 +460,6 @@ void KOBO_enemy::make_rock()
 	count = 500;
 	health = game.rock_health;
 	damage = game.rock_damage;
-	bounce = 1;
 	di = gamerand.get(5) + 1;
 	a = gamerand.get(1) ? 1 : -1;
 	switch(gamerand.get() % 3)
@@ -520,6 +521,8 @@ const KOBO_enemy_kind rock = {
 
 void KOBO_enemy::make_ring()
 {
+	physics = false;
+	detonate_on_contact = true;
 	count = 500;
 	health = 20;
 	damage = 30;
@@ -562,6 +565,7 @@ const KOBO_enemy_kind ring = {
 
 void KOBO_enemy::make_bomb()
 {
+	physics = false;
 	count = 500;
 	health = 20;
 	damage = 70;
@@ -689,7 +693,8 @@ void KOBO_enemy::make_expl()
 {
 	health = 1;
 	damage = 0;
-	shootable = 0;
+	shootable = false;
+	physics = false;
 	switch(bank)
 	{
 	  case B_EXPLO1:
@@ -929,7 +934,8 @@ const KOBO_enemy_kind bombdeto = {
 
 void KOBO_enemy::make_cannon()
 {
-	mapcollide = 1;
+	physics = false;
+	mapcollide = true;
 	count = 0;
 	health = game.node_health;
 	damage = 0;
@@ -983,7 +989,8 @@ const KOBO_enemy_kind cannon = {
 
 void KOBO_enemy::make_core()
 {
-	mapcollide = 1;
+	physics = false;
+	mapcollide = true;
 	count = 0;
 	health = game.core_health;
 	damage = 0;
@@ -1041,7 +1048,8 @@ void KOBO_enemy::make_pipein()
 {
 	health = 1;
 	damage = 0;
-	shootable = 0;
+	shootable = false;
+	physics = false;
 	count = 0;
 	a = 0;
 }
@@ -1140,7 +1148,8 @@ void KOBO_enemy::make_pipeout()
 	screen.set_map(x1, y1, SPACE);
 	health = 1;
 	damage = 0;
-	shootable = 0;
+	shootable = false;
+	physics = false;
 	count = 0;
 	switch (di)
 	{
@@ -1276,6 +1285,8 @@ const KOBO_enemy_kind pipeout = {
 
 void KOBO_enemy::make_enemy1()
 {
+	physics = false;
+	detonate_on_contact = true;
 	di = 1;
 	health = 20;
 }
@@ -1349,6 +1360,8 @@ const KOBO_enemy_kind enemy2 = {
 
 void KOBO_enemy::make_enemy3()
 {
+	physics = false;
+	detonate_on_contact = true;
 	di = 1;
 	health = 40;
 }
@@ -1382,6 +1395,8 @@ const KOBO_enemy_kind enemy3 = {
 
 void KOBO_enemy::make_enemy4()
 {
+	physics = false;
+	detonate_on_contact = true;
 	di = 1;
 	health = 40;
 }
@@ -1562,7 +1577,6 @@ void KOBO_enemy::make_enemy_m1()
 {
 	di = 1;
 	health = 1000;		// Originally 26 hits
-	bounce = 1;
 	count = gamerand.get() & 15;
 }
 
@@ -1611,7 +1625,6 @@ void KOBO_enemy::make_enemy_m2()
 {
 	di = 1;
 	health = 1000;
-	bounce = 1;
 	count = gamerand.get() & 15;
 }
 
@@ -1658,7 +1671,6 @@ void KOBO_enemy::make_enemy_m3()
 {
 	di = 1;
 	health = 1000;
-	bounce = 1;
 	count = gamerand.get() & 15;
 }
 
@@ -1705,7 +1717,6 @@ void KOBO_enemy::make_enemy_m4()
 {
 	di = 1;
 	health = 1000;
-	bounce = 1;
 	count = gamerand.get() & 15;
 }
 

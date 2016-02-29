@@ -102,8 +102,6 @@ void prefs_t::init()
 	section("Debug");
 	yesno("debug", debug, 0); desc("Enable Debug Features");
 	yesno("show_fps", show_fps, 0); desc("Show Frame Rate");
-	yesno("indicator", indicator, 0);
-			desc("Enable Collision Indicator Mode");
 	yesno("show_map_border", show_map_border, 0); desc("Show Map Border");
 	yesno("show_coordinates", show_coordinates, 0);
 			desc("Show Object Coordinates");

@@ -94,7 +94,6 @@ class prefs_t : public config_parser_t
 	// Debug features
 	int	debug;
 	int	show_fps;
-	int	indicator;	//Enable collision testing mode
 	int	force_fallback_gfxtheme;	// Force load fallback theme
 	int	show_map_border;
 	int	show_coordinates;

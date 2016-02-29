@@ -407,17 +407,6 @@ static inline void calc_bounce(int p2, int *p3, int *v)
 // Check and handle base/ship collisions
 void KOBO_myship::update_position()
 {
-	if(prefs->indicator)
-	{
-		// No collision response; just update and test.
-		x += vx;
-		y += vy;
-		if(IS_BASE(screen.get_map(WORLD2MAPX(CS2PIXEL(x)),
-				WORLD2MAPY(CS2PIXEL(y)))))
-			sound.g_player_damage();
-		return;
-	}
-
 	// Approximation: Apply half of the acceleration before collision
 	// handling, and half after, to avoid continuous acceleration fun.
 	vx += ax / 2;
