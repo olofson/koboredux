@@ -330,7 +330,6 @@ void KOBO_sound::timestamp_nudge(float ms)
 
 void KOBO_sound::timestamp_bump(float ms)
 {
-//printf("bump %f\n", ms);
 	if(!state)
 		return;
 	int min = 0;
@@ -363,18 +362,6 @@ void KOBO_sound::timestamp_bump(float ms)
 
 void KOBO_sound::frame()
 {
-#if 0
-	// Positional audio test
-	static int aaa = 0;
-	if(++aaa > 20)
-		aaa = 0;
-	if(aaa == 10)
-		g_play(SOUND_OVERHEAT, PIXEL2CS(listener_x + 128),
-				PIXEL2CS(listener_y), 0.5f, -0.5f);
-	else if (aaa == 20)
-		g_play(SOUND_OVERHEAT, PIXEL2CS(listener_x - 128),
-				PIXEL2CS(listener_y), 0.5f, 0.5f);
-#endif
 	// Various sound control logic
 	rumble = 0;	// Only one per logic frame!
 	if(state)

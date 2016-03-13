@@ -104,6 +104,7 @@ class KOBO_enemy
 	int	di;			// Direction
 	int	a, b, count;		// "AI" work variables
 	int	soundhandle;		// Continuous positional sound fx
+	int	soundtimer;		// Positional audio update timer
 	int	bank, frame;		// Current sprite bank and frame
 	int	health;			// Current health
 	int	damage;			// Damage dealt to player at contact
@@ -229,6 +230,7 @@ class KOBO_enemies
 	static int explocount;
       public:
 	static int is_intro;
+	static int sound_update_period;
 	static int init();
 	static void off();
 	static void move();
@@ -305,6 +307,7 @@ inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 	bank = ek->bank;
 	frame = ek->frame;
 	soundhandle = 0;
+	soundtimer = enemies.sound_update_period;
 	(this->*(ek->make)) ();
 	bank = s_get_actual_bank(gengine->get_gfx(), bank);
 	return 0;
@@ -393,8 +396,11 @@ inline void KOBO_enemy::move()
 
 	// Need to update this for stationary objects as well, as the listener
 	// is (usually) moving around at all times!
-	if(soundhandle > 0)
+	if((soundhandle > 0) && (soundtimer-- <= 0))
+	{
 		sound.g_move(soundhandle, CS2PIXEL(x), CS2PIXEL(y));
+		soundtimer = enemies.sound_update_period;
+	}
 
 	if(_state != moving)
 		return;

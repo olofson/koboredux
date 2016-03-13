@@ -34,6 +34,7 @@ int KOBO_enemies::e1_interval;
 int KOBO_enemies::e2_interval;
 int KOBO_enemies::explocount = 0;
 int KOBO_enemies::is_intro = 0;
+int KOBO_enemies::sound_update_period = 3;
 
 
 KOBO_enemy::KOBO_enemy()
@@ -95,6 +96,7 @@ int KOBO_enemies::init()
 	e1_interval = 1;
 	e2_interval = 1;
 	is_intro = 0;
+	sound_update_period = KOBO_SOUND_UPDATE_PERIOD / game.speed;
 	return 0;
 }
 

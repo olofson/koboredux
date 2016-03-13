@@ -23,6 +23,9 @@
 #ifndef KOBO_SOUND_H
 #define KOBO_SOUND_H
 
+// Desired approximate update period for positional audio (ms)
+#define	KOBO_SOUND_UPDATE_PERIOD	100
+
 #include "config.h"
 #include "audiality2.h"
 
@@ -41,8 +44,6 @@
 	KOBO_DEFS(INGAMESONG3,	"IngameSong")			\
 	KOBO_DEFS(INGAMESONG4,	"IngameSong")			\
 	KOBO_DEFS(INGAMESONG5,	"IngameSong")			\
-	KOBO_DEFS(ONEUP,	"GiveEnergyMega")		\
-	KOBO_DEFS(FINE,		"")				\
 	KOBO_DEFS(LAUNCH,	"Launch")			\
 	KOBO_DEFS(LAUNCH_BULLET,"FireElectro")			\
 	KOBO_DEFS(LAUNCH_RING,	"")				\
@@ -63,7 +64,6 @@
 	KOBO_DEFS(EXPLO_M2,	"MegaDeath")			\
 	KOBO_DEFS(EXPLO_M3,	"MegaDeath")			\
 	KOBO_DEFS(EXPLO_M4,	"MegaDeath")			\
-	KOBO_DEFS(BZZZT,	"")				\
 	KOBO_DEFS(RUMBLE,	"BaseRumble")			\
 	KOBO_DEFS(SHOT,		"FirePlasma")			\
 	KOBO_DEFS(METALLIC,	"Klank")			\
