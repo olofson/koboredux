@@ -2,9 +2,11 @@ def title	"KRMaster"
 def version	"0.7.0"
 def description	"Kobo Redux master section"
 def author	"David Olofson"
-def copyright	"Copyright 2015 David Olofson"
+def copyright	"Copyright 2016 David Olofson"
 def license	"CC BY-NC-ND 3.0"
 def a2sversion	"1.9.1"
+
+def FADETIME	250
 
 MasterGroup()
 {
@@ -17,11 +19,11 @@ MasterGroup()
 	DCB.cutoff 10f
 	WS.amount .5
 	PM.vol .5
-	setall
-.restart
-	d 100
-	2(V)	{ PM.vol V; force restart }
-	3(WSA)	{ WS.amount (WSA * .25); force restart }
+	set
+/*	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
+	3(WSA)	{ WS.amount (WSA * .25); ramp WS.amount FADETIME }*/
+	2(V)	{ PM.vol V; ramp FADETIME }
+	3(WSA)	{ WS.amount (WSA * .25); ramp FADETIME }
 }
 
 UIGroup()
@@ -43,10 +45,8 @@ UIGroup()
 	FBD.fbdelay 67; FBD.fbgain .1
 	FBD.ldelay 70; FBD.lgain .1
 	FBD.rdelay 83; FBD.rgain .1
-	setall
-.restart
-	d 100
-	2(V)	{ PM.vol V; force restart }
+	set
+	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
 }
 
 SFXGroup()
@@ -56,10 +56,8 @@ SFXGroup()
 		panmix PM 2 >
 	}
 	PM.vol .5
-	setall
-.restart
-	d 100
-	2(V)	{ PM.vol V; force restart }
+	set
+	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
 }
 
 MusicGroup()
@@ -69,10 +67,8 @@ MusicGroup()
 		panmix PM 2 >
 	}
 	PM.vol .5
-	setall
-.restart
-	d 100
-	2(V)	{ PM.vol V; force restart }
+	set
+	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
 }
 
 def TitleMusicGroup MusicGroup

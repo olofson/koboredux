@@ -1082,7 +1082,7 @@ wave ReactorTurbineWave
 .h1(P V=1)
 {
 	struct { wtosc }
-	w square; p P; a V; setall
+	w square; p P; a V; set
 	sleep
 }
 
