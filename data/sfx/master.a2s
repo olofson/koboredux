@@ -20,10 +20,8 @@ MasterGroup()
 	WS.amount .5
 	PM.vol .5
 	set
-/*	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
-	3(WSA)	{ WS.amount (WSA * .25); ramp WS.amount FADETIME }*/
-	2(V)	{ PM.vol V; ramp FADETIME }
-	3(WSA)	{ WS.amount (WSA * .25); ramp FADETIME }
+	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
+	3(WSA)	{ WS.amount (WSA * .25); ramp WS.amount FADETIME }
 }
 
 UIGroup()
