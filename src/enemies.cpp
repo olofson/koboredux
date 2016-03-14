@@ -126,6 +126,13 @@ void KOBO_enemies::move_intro()
 		enemyp->move_intro();
 }
 
+void KOBO_enemies::restart_sounds()
+{
+	KOBO_enemy *enemyp;
+	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
+		enemyp->startsound();
+}
+
 void KOBO_enemies::put()
 {
 	KOBO_enemy *enemyp;

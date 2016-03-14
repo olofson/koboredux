@@ -45,6 +45,7 @@ struct KOBO_enemy_kind
 	int		bank, frame;
 	int		layer;
 	int		launchspeed;
+	KOBO_sounds	sound;
 	KOBO_sounds	launchsound;
 	KOBO_sounds	impactsound;
 	KOBO_sounds	deathsound;
@@ -143,6 +144,7 @@ class KOBO_enemy
 	inline int erase_cannon(int px, int py);
 	void render_hit_zone();
 
+	void startsound();
 	void playsound(KOBO_sounds si)
 	{
 		sound.g_play(si, CS2PIXEL(x), CS2PIXEL(y));
@@ -235,6 +237,7 @@ class KOBO_enemies
 	static void off();
 	static void move();
 	static void move_intro();
+	static void restart_sounds();
 	static void put();
 	static void render_hit_zones();
 	static int make(const KOBO_enemy_kind * ek,
@@ -274,8 +277,19 @@ inline void KOBO_enemy::init()
 
 inline void KOBO_enemy::release()
 {
+	if(soundhandle)
+		sound.g_stop(soundhandle);
 	playsound(ek->deathsound);
 	state(notuse);
+}
+
+inline void KOBO_enemy::startsound()
+{
+	soundhandle = 0;
+	if(enemies.is_intro || (_state == notuse) || !ek->sound)
+		return;
+	soundhandle = sound.g_start(ek->sound, CS2PIXEL(x), CS2PIXEL(y));
+	soundtimer = enemies.sound_update_period;
 }
 
 inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
@@ -306,8 +320,7 @@ inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 	hitsize = ek->hitsize;
 	bank = ek->bank;
 	frame = ek->frame;
-	soundhandle = 0;
-	soundtimer = enemies.sound_update_period;
+	startsound();
 	(this->*(ek->make)) ();
 	bank = s_get_actual_bank(gengine->get_gfx(), bank);
 	return 0;

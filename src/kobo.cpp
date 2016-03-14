@@ -1253,6 +1253,7 @@ int KOBO_main::restart_audio()
 	wdash->mode(manage.game_in_progress() ?
 			DASHBOARD_GAME : DASHBOARD_TITLE);
 	wradar->mode(screen.radar_mode);
+	enemies.restart_sounds();
 	return 0;
 }
 
