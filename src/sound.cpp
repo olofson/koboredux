@@ -56,6 +56,9 @@ float KOBO_sound::buffer_latency = 0.0f;
 int KOBO_sound::current_song = 0;
 bool KOBO_sound::music_is_ingame = false;
 
+// Index of path to the sound effects module below. (Hack for reload_sfx().)
+#define	KOBO_SFX_MODULE	1
+
 static const char *kobo_a2sfiles[] =
 {
 	"SFX>>master.a2s",
@@ -119,10 +122,13 @@ A2_handle KOBO_sound::load_a2s(const char *path)
 --------------------------------------------------*/
 
 
-int KOBO_sound::load(int (*prog)(const char *msg), int force)
+bool KOBO_sound::load(int (*prog)(const char *msg), int module)
 {
-	for(int i = 0; i < A2SFILE__COUNT; ++i)
-		modules[i] = load_a2s(kobo_a2sfiles[i]);
+	if(module >= 0)
+		modules[module] = load_a2s(kobo_a2sfiles[module]);
+	else
+		for(int i = 0; i < A2SFILE__COUNT; ++i)
+			modules[i] = load_a2s(kobo_a2sfiles[i]);
 
 	for(int i = 0; i < SOUND__COUNT; ++i)
 	{
@@ -157,7 +163,18 @@ int KOBO_sound::load(int (*prog)(const char *msg), int force)
 	init_mixdown();
 	prefschange();
 
-	return prog(NULL);
+	if(prog)
+		prog(NULL);
+	return true;
+}
+
+
+bool KOBO_sound::reload_sfx()
+{
+	a2_Release(state, modules[KOBO_SFX_MODULE]);
+	modules[KOBO_SFX_MODULE] = 0;
+	sounds_loaded = 0;
+	return load(NULL, KOBO_SFX_MODULE);
 }
 
 

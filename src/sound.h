@@ -154,7 +154,8 @@ class KOBO_sound
 	--------------------------------------------------*/
 	static int open();
 	static void prefschange();
-	static int load(int (*prog)(const char *msg), int force);
+	static bool load(int (*prog)(const char *msg) = NULL, int bank = -1);
+	static bool reload_sfx();
 	static void close();
 
 	/*--------------------------------------------------

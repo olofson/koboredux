@@ -325,7 +325,7 @@ class KOBO_main
 	static void doing(const char *msg);
 	static int load_palette();
 	static int load_graphics();
-	static int load_sounds(int render_all = 0);
+	static int load_sounds();
 
 	static int init_js(prefs_t *p);
 	static void close_js();
@@ -1008,12 +1008,12 @@ static int progress_cb(const char *msg)
 }
 
 
-int KOBO_main::load_sounds(int render_all)
+int KOBO_main::load_sounds()
 {
 	if(!prefs->sound)
 		return 0;
 	wdash->show_progress();
-	return sound.load(progress_cb, render_all);
+	return sound.load(progress_cb);
 }
 
 
