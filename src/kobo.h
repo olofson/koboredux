@@ -57,8 +57,14 @@ class kobo_gfxengine_t : public gfxengine_t
 	int pointer_margin_height_min;
 	int pointer_margin_height_max;
 #endif
+	int st_sound;
+	int st_handle;
+	int st_x;
+	int st_y;
 	void pre_loop();
 	void pre_advance(float fractional_frame);
+	void st_update_sound_displays();
+	bool soundtools_event(SDL_Event &ev);
 	void frame();
 	void pre_render();
 	void post_render();
@@ -67,6 +73,7 @@ class kobo_gfxengine_t : public gfxengine_t
 	void fullscreen_toggle();
 	float timestamp_delay();
   public:
+	kobo_gfxengine_t();
 #ifdef ENABLE_TOUCHSCREEN
 	void setup_pointer_margin(int, int);
 #endif

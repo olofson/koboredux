@@ -108,6 +108,7 @@ void prefs_t::init()
 	yesno("show_tiles", show_tiles, 0); desc("Show Tile/Sprite Edges");
 	yesno("show_hit", show_hit, 0); desc("Show Hit Zones");
 	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
+	yesno("soundtools", soundtools, 0); desc("Sound Design Tools");
 	key("toolstheme", toolstheme, ""); desc("Authoring Tools Theme");
 
 	section("Cheat/test");

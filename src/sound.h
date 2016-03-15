@@ -162,6 +162,8 @@ class KOBO_sound
 		Info
 	--------------------------------------------------*/
 	static inline float latency()	{ return buffer_latency; }
+	static const char *symname(unsigned wid);
+	static const char *scriptname(unsigned wid);
 
 	/*--------------------------------------------------
 		Main controls

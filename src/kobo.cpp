@@ -302,6 +302,11 @@ class KOBO_main
 	// Backup in case we screw up we can't get back up
 	static prefs_t		safe_prefs;
 
+	// Sound design tools
+	static label_t		*st_hotkeys;
+	static display_t	*st_symname;
+	static display_t	*st_scriptname;
+
 	static int restart_audio();
 	static int restart_video();
 	static int reload_graphics();
@@ -368,6 +373,10 @@ int		KOBO_main::xoffs = 0;
 int		KOBO_main::yoffs = 0;
 
 prefs_t		KOBO_main::safe_prefs;
+
+label_t		*KOBO_main::st_hotkeys = NULL;
+display_t	*KOBO_main::st_symname = NULL;
+display_t	*KOBO_main::st_scriptname = NULL;
 
 
 static KOBO_main km;
@@ -702,6 +711,41 @@ void KOBO_main::build_screen()
 		dfps->font(B_NORMAL_FONT);
 		dfps->caption("FPS");
 	}
+
+	if(prefs->soundtools)
+	{
+		st_hotkeys = new label_t(gengine);
+		st_hotkeys->place(conx, cony + WCONSOLE_H - 19 - 20 - 82,
+				WCONSOLE_W, 81);
+		st_hotkeys->color(wdash->map_rgb(16, 16, 16));
+		st_hotkeys->font(B_SMALL_FONT);
+		st_hotkeys->caption(
+				"F1: Reload sounds\n"
+				"CTRL+F1: Audio restart\n"
+				"F2/F3: Next/prev SFX\n"
+				"\r"
+				"F4: Play detached\n"
+				"F5: Play while holding\n"
+				"F6: Start\n"
+				"F7: Stop\n"
+				"F8: Kill all sounds\n"
+				"\r"
+				"F9-F12: Send(2, 0.25-1.0)");
+
+		st_symname = new display_t(gengine);
+		st_symname->place(conx, cony + WCONSOLE_H - 19 - 20,
+				WCONSOLE_W, 19);
+		st_symname->color(wdash->map_rgb(24, 24, 24));
+		st_symname->font(B_SMALL_FONT);
+		st_symname->caption("SFX Symbol Name");
+
+		st_scriptname = new display_t(gengine);
+		st_scriptname->place(conx, cony + WCONSOLE_H - 19,
+				WCONSOLE_W, 19);
+		st_scriptname->color(wdash->map_rgb(24, 24, 24));
+		st_scriptname->font(B_SMALL_FONT);
+		st_scriptname->caption("SFX Script Name");
+	}
 }
 
 
@@ -882,6 +926,12 @@ void KOBO_main::close_display()
 	pxright = NULL;
 	delete dfps;
 	dfps = NULL;
+	delete st_hotkeys;
+	st_hotkeys = NULL;
+	delete st_symname;
+	st_symname = NULL;
+	delete st_scriptname;
+	st_scriptname = NULL;
 	delete dstage;
 	dstage = NULL;
 	delete dregion;
@@ -1367,6 +1417,21 @@ int KOBO_main::run()
 	Kobo Graphics Engine
 ----------------------------------------------------------*/
 
+kobo_gfxengine_t::kobo_gfxengine_t()
+{
+#ifdef ENABLE_TOUCHSCREEN
+	pointer_margin_used = false;
+	pointer_margin_width_min = 0;
+	pointer_margin_width_max = 0;
+	pointer_margin_height_min = 0;
+	pointer_margin_height_max = 0;
+#endif
+	st_sound = 0;
+	st_handle = 0;
+	st_x = st_y = 0;
+}
+
+
 #ifdef ENABLE_TOUCHSCREEN
 void kobo_gfxengine_t::setup_pointer_margin(int dw, int dh)
 {
@@ -1455,6 +1520,7 @@ float kobo_gfxengine_t::timestamp_delay()
 
 void kobo_gfxengine_t::pre_loop()
 {
+	st_update_sound_displays();
 	sound.timestamp_reset();
 	sound.timestamp_bump(timestamp_delay() +
 			1000.0f / (prefs->maxfps > 60 ? 60 : prefs->maxfps));
@@ -1477,9 +1543,152 @@ void kobo_gfxengine_t::pre_advance(float fractional_frame)
 }
 
 
+void kobo_gfxengine_t::st_update_sound_displays()
+{
+	if(!prefs->soundtools)
+		return;
+	log_printf(ULOG, "Selected sound %s: \"%s\"\n",
+			sound.symname(st_sound), sound.scriptname(st_sound));
+	km.st_symname->text(sound.symname(st_sound));
+	km.st_scriptname->text(sound.scriptname(st_sound));
+}
+
+
+bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
+{
+	if((ev.type != SDL_KEYDOWN) && (ev.type != SDL_KEYUP))
+		return false;	// Only key up/down!
+
+	int ms = SDL_GetModState();
+	if(ms & (KMOD_ALT | KMOD_SHIFT | KMOD_GUI))
+		return false;	// No qualifiers!
+
+	// CTRL + F1: Restart audio engine
+	if(ms && KMOD_CTRL)
+	{
+		if((ev.type == SDL_KEYDOWN) && (ev.key.keysym.sym == SDLK_F1))
+		{
+			if(ev.key.repeat)
+				return true;
+			global_status |= OS_RESTART_AUDIO;
+			stop();
+			return true;
+		}
+		else
+			return false;
+	}
+
+	switch (ev.type)
+	{
+	  case SDL_KEYDOWN:
+		switch(ev.key.keysym.sym)
+		{
+		  case SDLK_F1:		// Reload sounds
+			if(ev.key.repeat)
+				return true;
+			sound.reload_sfx();
+			enemies.restart_sounds();
+			return true;
+		  case SDLK_F2:		// Select prev sound
+			--st_sound;
+			if(st_sound < 1)
+				st_sound = SOUND__COUNT - 1;
+			st_update_sound_displays();
+			return true;
+		  case SDLK_F3:		// Select next sound
+			++st_sound;
+			if(st_sound >= SOUND__COUNT)
+				st_sound = 1;
+			st_update_sound_displays();
+			return true;
+		  case SDLK_F4:		// Play detached
+			if(st_handle)
+			{
+				sound.g_stop(st_handle);
+				st_handle = 0;
+			}
+			st_x = myship.get_x();
+			st_y = myship.get_y();
+			sound.g_play(st_sound, st_x, st_y);
+			return true;
+		  case SDLK_F5:		// Play while holding key; press
+			if(ev.key.repeat)
+				return true;
+			/* Fall-through! */
+		  case SDLK_F6:		// Start
+			if(st_handle)
+				sound.g_stop(st_handle);
+			st_x = myship.get_x();
+			st_y = myship.get_y();
+			st_handle = sound.g_start(st_sound, st_x, st_y);
+			return true;
+		  case SDLK_F7:		// Stop
+			if(ev.key.repeat)
+				return true;
+			if(st_handle)
+			{
+				sound.g_stop(st_handle);
+				st_handle = 0;
+			}
+			return true;
+		  case SDLK_F8:		// Kill all sounds
+			if(ev.key.repeat)
+				return true;
+			sound.g_kill_all();
+			return true;
+		  case SDLK_F9:		// Deal 25% damage
+			sound.g_control(st_handle, 2, .25f);
+			return true;
+		  case SDLK_F10:	// Deal 50% damage
+			sound.g_control(st_handle, 2, .5f);
+			return true;
+		  case SDLK_F11:	// Deal 75% damage
+			sound.g_control(st_handle, 2, .75f);
+			return true;
+		  case SDLK_F12:	// Deal 100% damage
+			sound.g_control(st_handle, 2, 1.0f);
+			return true;
+		  default:
+			return false;
+		}
+	  case SDL_KEYUP:
+		switch(ev.key.keysym.sym)
+		{
+		  case SDLK_F1:
+		  case SDLK_F2:
+		  case SDLK_F3:
+		  case SDLK_F4:
+			return true;
+		  case SDLK_F5:		// Play while holding key; release
+			if(st_handle)
+			{
+				sound.g_stop(st_handle);
+				st_handle = 0;
+			}
+			return true;
+		  case SDLK_F6:
+		  case SDLK_F7:
+		  case SDLK_F8:
+		  case SDLK_F9:
+		  case SDLK_F10:
+		  case SDLK_F11:
+		  case SDLK_F12:
+			return true;
+		  default:
+			return false;
+		}
+	  default:
+		return false;
+	}
+}
+
+
 void kobo_gfxengine_t::frame()
 {
 	sound.frame();
+
+	if(prefs->soundtools && st_handle)
+		sound.g_move(st_handle, st_x, st_y);
 
 	if(!gsm.current())
 	{
@@ -1501,6 +1710,8 @@ void kobo_gfxengine_t::frame()
 	while(SDL_PollEvent(&ev))
 	{
 		int ms;
+		if(prefs->soundtools && soundtools_event(ev))
+			continue;
 		switch (ev.type)
 		{
 		  case SDL_KEYDOWN:
@@ -1524,17 +1735,6 @@ void kobo_gfxengine_t::frame()
 			  case SDLK_s:
 #endif
 				gengine->screenshot();
-				break;
-			  case SDLK_r:
-				if(!prefs->debug)
-					break;
-				ms = SDL_GetModState();
-				if(ms & (KMOD_ALT | KMOD_SHIFT | KMOD_GUI))
-					break;
-				if(!(ms & KMOD_CTRL))
-					break;
-				global_status |= OS_RESTART_AUDIO;
-				stop();
 				break;
 			  default:
 				break;
@@ -1848,6 +2048,21 @@ void kobo_gfxengine_t::post_render()
 
 	// HACK: Custom rendering "callback!" The engine should support this...
 	myship.render();
+
+	if(prefs->soundtools)
+	{
+		// Ear (listener position)
+		wmain->sprite(WMAIN_W / 2, WMAIN_H / 2, B_SOUND_ICONS, 1);
+
+		// Speaker (sound source position)
+		int ssx = PIXEL2CS(st_x) - gengine->xoffs(LAYER_BASES);
+		int ssy = PIXEL2CS(st_y) - gengine->yoffs(LAYER_BASES);
+		ssx += PIXEL2CS(WORLD_SIZEX);
+		ssy += PIXEL2CS(WORLD_SIZEY);
+		ssx %= PIXEL2CS(WORLD_SIZEX);
+		ssy %= PIXEL2CS(WORLD_SIZEY);
+		wmain->sprite_fxp(ssx, ssy, B_SOUND_ICONS, 0);
+	}
 
 	gsm.post_render();
 #ifdef DEBUG

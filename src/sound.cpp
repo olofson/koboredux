@@ -325,6 +325,25 @@ void KOBO_sound::close()
 }
 
 
+/*--------------------------------------------------
+	Info
+--------------------------------------------------*/
+
+const char *KOBO_sound::symname(unsigned wid)
+{
+	if(wid >= SOUND__COUNT)
+		return "<OUT OF RANGE>";
+	return kobo_soundsymnames[wid];
+}
+
+
+const char *KOBO_sound::scriptname(unsigned wid)
+{
+	if(wid >= SOUND__COUNT)
+		return "<OUT OF RANGE>";
+	return kobo_soundnames[wid];
+}
+
 
 /*--------------------------------------------------
 	Main controls
