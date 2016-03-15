@@ -104,7 +104,8 @@ Impact(P V=1 PanX)
 
 ImpactGround(P V=1 PanX)
 {
-	struct { wtosc }
+	struct { wtosc; panmix }
+	pan PanX
 	+tr P
 	w triangle; p (rand 1 + .5); a (V * .3); set a
 	10 { -p .2; d 2 }
