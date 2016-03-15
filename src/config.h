@@ -178,13 +178,6 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	PROXY_FLASH_PERIOD	30
 #define	PROXY_FLASH_DURATION	20
 
-/* Labeled text display */
-#define	D_LINE_HEIGHT		9
-#define	D_LINE1_POS		1
-#define	D_LINE1_TXOFFS		0
-#define	D_LINE2_POS		9
-#define	D_LINE2_TXOFFS		0
-
 /* Proximity indicator LED bars */
 #define PROXY_LED_SIZE		8
 

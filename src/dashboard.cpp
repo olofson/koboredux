@@ -293,20 +293,19 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 
 
 /*----------------------------------------------------------
-	Labeled text display
+	Label
 ----------------------------------------------------------*/
 
-display_t::display_t(gfxengine_t *e) : window_t(e)
+label_t::label_t(gfxengine_t *e) : window_t(e)
 {
 	_color = map_rgb(0);
 	_on = 0;
 	caption("CAPTION");
-	text("TEXT");
 	on();
 }
 
 
-void display_t::color(Uint32 _cl)
+void label_t::color(Uint32 _cl)
 {
 	_color = _cl;
 	if(_on)
@@ -314,11 +313,51 @@ void display_t::color(Uint32 _cl)
 }
 
 
-void display_t::caption(const char *cap)
+void label_t::caption(const char *cap)
 {
 	strncpy(_caption, cap, sizeof(_caption));
 	if(_on)
 		invalidate();
+}
+
+
+void label_t::on()
+{
+	if(_on)
+		return;
+
+	_on = 1;
+	invalidate();
+}
+
+
+void label_t::off()
+{
+	if(!_on)
+		return;
+
+	_on = 0;
+	invalidate();
+}
+
+
+void label_t::refresh(SDL_Rect *r)
+{
+	background(_color);
+	clear();
+	if(_on)
+		center(1, _caption);
+}
+
+
+
+/*----------------------------------------------------------
+	Labeled text display
+----------------------------------------------------------*/
+
+display_t::display_t(gfxengine_t *e) : label_t(e)
+{
+	text("TEXT");
 }
 
 
@@ -330,58 +369,15 @@ void display_t::text(const char *txt)
 }
 
 
-void display_t::on()
-{
-	if(_on)
-		return;
-
-	_on = 1;
-	invalidate();
-}
-
-
-void display_t::off()
-{
-	if(!_on)
-		return;
-
-	_on = 0;
-	invalidate();
-}
-
-
-void display_t::render_caption()
-{
-	SDL_Rect r;
-	r.x = 0;
-	r.y = D_LINE1_POS;
-	r.w = width();
-	r.h = D_LINE_HEIGHT;
-	background(_color);
-	clear(&r);
-	if(_on)
-		center(D_LINE1_POS + D_LINE1_TXOFFS, _caption);
-}
-
-
-void display_t::render_text()
-{
-	SDL_Rect r;
-	r.x = 0;
-	r.y = D_LINE2_POS;
-	r.w = width();
-	r.h = D_LINE_HEIGHT;
-	background(_color);
-	clear(&r);
-	if(_on)
-		center(D_LINE2_POS + D_LINE2_TXOFFS, _text);
-}
-
-
 void display_t::refresh(SDL_Rect *r)
 {
-	render_caption();
-	render_text();
+	background(_color);
+	clear();
+	if(_on)
+	{
+		center(1, _caption);
+		center(height() / 2 + 1, _text);
+	}
 }
 
 

@@ -80,23 +80,31 @@ class dashboard_window_t : public window_t
 };
 
 
-// Labeled text display
-class display_t : public window_t
+// Label
+class label_t : public window_t
 {
-	char	_caption[64];
-	char	_text[64];
+  protected:
+	char	_caption[1024];
 	int	_on;
 	Uint32	_color;
-	void render_caption();
-	void render_text();
   public:
-	display_t(gfxengine_t *e);
+	label_t(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
 	void color(Uint32 _cl);
 	void caption(const char *cap);
-	void text(const char *txt);
 	void on();
 	void off();
+};
+
+
+// Labeled text display
+class display_t : public label_t
+{
+	char	_text[64];
+  public:
+	display_t(gfxengine_t *e);
+	void refresh(SDL_Rect *r);
+	void text(const char *txt);
 };
 
 
