@@ -1,0 +1,10 @@
+message "Kobo Redux Tools Theme"
+message "Copyright 2016 David Olofson"
+message "CC BY-SA 4.0 (http://creativecommons.org/licenses/by-sa/4.0/)"
+
+#------------------------------------------------------------------------------
+message "Loading graphics for tools"
+#------------------------------------------------------------------------------
+
+path ""
+sprites B_SOUND_ICONS "soundicons.png" 16 16 CENTER

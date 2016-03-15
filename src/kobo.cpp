@@ -978,6 +978,11 @@ int KOBO_main::load_graphics()
 			KOBO_DEFAULT_GFX_THEME))
 		log_printf(WLOG, "Couldn't load graphics theme!\n");
 
+	// Try to load graphics theme for authoring tools
+	if(!tp.load_theme(prefs->toolstheme[0] ? prefs->toolstheme :
+			KOBO_DEFAULT_TOOLS_THEME))
+		log_printf(WLOG, "Couldn't load tools graphics theme!\n");
+
 	screen.init_graphics();
 
 	// We can try to run with missing graphics, but without the menu font,
