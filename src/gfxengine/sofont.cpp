@@ -363,6 +363,12 @@ void SoFont::PutString(int x, int y, const char *text, SDL_Rect *clip)
 			y += height * yscale >> 8;
 			i++;
 		}
+		else if(text[i] == '\r')
+		{
+			x = x0;
+			y += height * yscale >> 9;
+			i++;
+		}
 		else if((text[i] >= START_CHAR) && (text[i] <= max_i))
 		{
 			ofs = text[i] - START_CHAR;
@@ -426,6 +432,12 @@ void SoFont::PutStringWithCursor(int xs, int y,
 				y += height * yscale >> 8;
 				i++;
 			}
+			else if(text[i] == '\r')
+			{
+				x = xs;
+				y += height * yscale >> 9;
+				i++;
+			}
 			else if((text[i] >= START_CHAR)
 					&& (text[i] <= max_i))
 			{
@@ -465,7 +477,7 @@ int SoFont::TextWidth(const char *text, int min, int max)
 			x += spacew;
 			i++;
 		}
-		else if(text[i] == '\n')
+		else if((text[i] == '\n') || (text[i] == '\r'))
 		{
 			if(x >  maxx)
 				maxx = x;
