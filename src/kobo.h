@@ -35,7 +35,7 @@
 #include "dashboard.h"
 #include "sound.h"
 #include "spinplanet.h"
-#include "graphics.h"
+#include "themeparser.h"
 
 
   /////////////////////////////////////////////////////////////////////////////

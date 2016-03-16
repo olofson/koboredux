@@ -26,6 +26,7 @@ set(sources
 	states.cpp
 	spinplanet.cpp
 	starfield.cpp
+	themeparser.cpp
 	logger.c
 	gfxengine/gfxengine.cpp
 	gfxengine/sofont.cpp
