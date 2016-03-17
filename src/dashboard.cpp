@@ -140,7 +140,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		wplanet->set_source(B_OAPLANET, 0);
 		wplanet->set_dither(SPINPLANET_DITHER_RAW, 0, 0);
 		wplanet->set_mode(SPINPLANET_SPIN);
-		jingelstars.set_target(this);
+		jingelstars.set_target(this, KOBO_P_LOADER);
 		jingelstars.init(1000, 100, psize);
 		break;
 	  default:
@@ -200,7 +200,8 @@ void dashboard_window_t::render_progress()
 		52,	51,	50
 	};
 	for(int i = 0; i < 3; ++i)
-		colors[i] = map_rgb(get_engine()->palette(entries[i]));
+		colors[i] = map_rgb(get_engine()->palette(KOBO_P_LOADER,
+				entries[i]));
 
 	x = 0;
 	w = (int)(_percent * 0.01f * width() + 0.5f);
@@ -263,7 +264,8 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 				int ci = pubrand.get(3) * _fade + 0.5f;
 				c = entries[ci];
 			}
-			foreground(map_rgb(get_engine()->palette(c)));
+			foreground(map_rgb(get_engine()->palette(KOBO_P_LOADER,
+					c)));
 			fillrect(0, y, width(), 1);
 		}
 		break;

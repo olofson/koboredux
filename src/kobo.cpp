@@ -995,7 +995,8 @@ int KOBO_main::load_palette()
 		log_printf(ELOG, "Couldn't find fallback palette!\n");
 		return -1;
 	}
-	if(!gengine->load_palette(fn))
+	if(!gengine->load_palette(KOBO_P_LOADER, fn) ||
+			!gengine->load_palette(KOBO_P_MAIN, fn))
 	{
 		log_printf(ELOG, "Couldn't load fallback palette!\n");
 		return -2;

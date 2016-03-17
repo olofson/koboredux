@@ -41,7 +41,7 @@ KOBO_Starfield::~KOBO_Starfield()
 }
 
 
-void KOBO_Starfield::init_colors()
+void KOBO_Starfield::init_colors(unsigned pal)
 {
 	const char entries[] = {
 		1,	52,	51,	2,
@@ -49,14 +49,15 @@ void KOBO_Starfield::init_colors()
 	};
 	for(int i = 0; i < STAR_COLORS; ++i)
 		colors[STAR_COLORS - i - 1] = target->map_rgb(
-				target->get_engine()->palette(entries[i]));
+				target->get_engine()->palette(pal,
+				entries[i]));
 }
 
 
-void KOBO_Starfield::set_target(window_t *_target)
+void KOBO_Starfield::set_target(window_t *_target, unsigned pal)
 {
 	target = _target;
-	init_colors();
+	init_colors(pal);
 }
 
 

@@ -218,6 +218,9 @@ static TP_keywords tp_keywords[] =
 	{ "FALLBACK",		KTK_FLAG,	KOBO_FALLBACK		},
 	{ "FUTURE",		KTK_FLAG,	KOBO_FUTURE		},
 
+	{ "P_LOADER",		KTK_PALETTE,	KOBO_P_LOADER	},
+	{ "P_MAIN",		KTK_PALETTE,	KOBO_P_MAIN	},
+
 	{ NULL, KTK_EOF, 0 }
 };
 
@@ -667,6 +670,10 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sfont()
 
 KOBO_TP_Tokens KOBO_ThemeParser::handle_palette()
 {
+	if(!expect(KTK_PALETTE))
+		return KTK_ERROR;
+	int pal = iv;
+
 	if(!expect(KTK_STRING))
 		return KTK_ERROR;
 	const char *fn;
@@ -680,9 +687,9 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_palette()
 		return KTK_ERROR;
 	}
 
-	log_printf(ULOG, "[Theme Loader] palette \"%s\"\n", fn);
+	log_printf(ULOG, "[Theme Loader] palette %d \"%s\"\n", pal, fn);
 
-	if(!gengine->load_palette(fn))
+	if(!gengine->load_palette(pal, fn))
 	{
 		char *s = strdup(sv);
 		dump_line();

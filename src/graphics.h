@@ -167,7 +167,7 @@ enum KOBO_gfxbanks
 extern const char *kobo_gfxbanknames[];
 
 
-typedef enum
+enum KOBO_GfxDescFlags
 {
 	// Clamping/wrapping options for filters
 	KOBO_CLAMP =		0x0001,	// Clamp to frame edge pixels
@@ -186,6 +186,14 @@ typedef enum
 	KOBO_NOBRIGHT =		0x0400,	// Disable brightness/contrast filter
 	KOBO_FALLBACK =		0x1000,	// Disable "in use" overwrite warning
 	KOBO_FUTURE =		0x2000	// Allow alias to (still) empty banks
-} KOBO_GfxDescFlags;
+};
+
+
+// NOTE: tp_keywords[] in themeparser.cpp needs to cover these!
+enum KOBO_Palettes
+{
+	KOBO_P_LOADER,
+	KOBO_P_MAIN
+};
 
 #endif // _KOBO_GRAPHICS_H_

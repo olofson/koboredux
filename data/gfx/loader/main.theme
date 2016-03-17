@@ -6,6 +6,7 @@ message "CC BY-ND 4.0 (http://creativecommons.org/licenses/by-nd/4.0/)"
 message "Loading loading screen graphics"
 #------------------------------------------------------------------------------
 
+palette P_LOADER "DO64-0.24.gpl"
 image B_OALOGO "olofsonarcade-do64-ovl.png" CENTER
 image B_OAPLANET "oaplanet-pcb.png" 2 ABSSCALE SCALE2X
 sfont B_LOADER_FONT "loaderfont.png"

@@ -136,7 +136,8 @@ void KOBO_radar_window::refresh(SDL_Rect *r)
 		else
 			blit(0, 0, wmap);
 		int t = SDL_GetTicks();
-		foreground(map_rgb(engine->palette(28 + t / 100 % 8)));
+		foreground(map_rgb(engine->palette(KOBO_P_MAIN,
+				28 + t / 100 % 8)));
 		point((xpos - pxoffs) & (MAP_SIZEX - 1),
 				(ypos - pyoffs) & (MAP_SIZEY - 1));
 		break;
@@ -148,10 +149,10 @@ void KOBO_radar_window::mode(KOBO_radar_modes newmode)
 {
 	if(newmode == RM__REINIT)
 		newmode = _mode;
-	wmap->pixel_core = map_rgb(engine->palette(29));
-	wmap->pixel_hard = map_rgb(engine->palette(33));
-	wmap->pixel_launcher = map_rgb(engine->palette(31));
-	wmap->pixel_bg = map_rgb(engine->palette(0));
+	wmap->pixel_core = map_rgb(engine->palette(KOBO_P_MAIN, 29));
+	wmap->pixel_hard = map_rgb(engine->palette(KOBO_P_MAIN, 33));
+	wmap->pixel_launcher = map_rgb(engine->palette(KOBO_P_MAIN, 31));
+	wmap->pixel_bg = map_rgb(engine->palette(KOBO_P_MAIN, 0));
 	wmap->background(wmap->pixel_bg);
 	_mode = newmode;
 	time = SDL_GetTicks();

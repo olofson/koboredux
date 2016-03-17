@@ -25,6 +25,7 @@
 #define	_GFXENGINE_H_
 
 #define GFX_BANKS	256
+#define GFX_PALETTES	8
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,8 +110,8 @@ class gfxengine_t
 	void dither(int type = 0);
 	void noalpha(int threshold = 128);
 	void brightness(float bright, float contr);
-	int load_palette(const char *path);
-	uint32_t palette(unsigned ind);
+	int load_palette(unsigned pal, const char *path);
+	uint32_t palette(unsigned pal, unsigned ind);
 
 	int loadimage(int bank, const char *name);
 	int loadtiles(int bank, int w, int h, const char *name);
@@ -244,7 +245,7 @@ class gfxengine_t
 	float		yratio[CS_LAYERS];
 
 	s_container_t	*gfx;
-	GFX_palette	*_palette;
+	GFX_palette	*palettes[GFX_PALETTES];
 	cs_engine_t	*csengine;
 	VMM_ModeID	_modeid;
 	int		_fullscreen;

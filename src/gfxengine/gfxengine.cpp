@@ -57,7 +57,7 @@ gfxengine_t::gfxengine_t()
 	sxs = sys = 256;	// 1.0
 	sf1 = sf2 = acf = bcf = markf = dsf = NULL;
 	gfx = NULL;
-	_palette = NULL;
+	memset(palettes, 0, sizeof(palettes));
 	csengine = NULL;
 	_vsync = 1;
 	_fullscreen = 0;
@@ -106,11 +106,12 @@ gfxengine_t::~gfxengine_t()
 		w->engine = NULL;
 		w = w->next;
 	}
-	if(_palette)
-	{
-		gfx_palette_free(_palette);
-		_palette = NULL;
-	}
+	for(int i = 0; i < GFX_PALETTES; ++i)
+		if(palettes[i])
+		{
+			gfx_palette_free(palettes[i]);
+			palettes[i] = NULL;
+		}
 }
 
 
@@ -624,19 +625,23 @@ void gfxengine_t::unload(int bank)
 }
 
 
-int gfxengine_t::load_palette(const char *path)
+int gfxengine_t::load_palette(unsigned pal, const char *path)
 {
-	if(_palette)
-		gfx_palette_free(_palette);
-	_palette = gfx_palette_load(path);
-	return (_palette != NULL);
+	if(pal >= GFX_PALETTES)
+		return 0;
+	if(palettes[pal])
+		gfx_palette_free(palettes[pal]);
+	palettes[pal] = gfx_palette_load(path);
+	return (palettes[pal] != NULL);
 }
 
-uint32_t gfxengine_t::palette(unsigned ind)
+uint32_t gfxengine_t::palette(unsigned pal, unsigned ind)
 {
-	if(!_palette)
+	if(pal >= GFX_PALETTES)
 		return 0;
-	return gfx_palette_get(_palette, ind);
+	if(!palettes[pal])
+		return 0;
+	return gfx_palette_get(palettes[pal], ind);
 }
 
 

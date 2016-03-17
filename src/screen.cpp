@@ -82,7 +82,7 @@ void KOBO_screen::init_maps()
 
 void KOBO_screen::init_graphics()
 {
-	stars.set_target(wmain);
+	stars.set_target(wmain, KOBO_P_MAIN);
 }
 
 
@@ -924,7 +924,7 @@ void KOBO_screen::init_background()
 		psize = 40 + level * 12 + level * level * 6;
 		wplanet->set_size(psize);
 		wplanet->set_source(B_R1_PLANET + region, 0);
-		wplanet->set_colors(entries, sizeof(entries));
+		wplanet->set_colors(entries, sizeof(entries), KOBO_P_MAIN);
 		wplanet->set_dither((spinplanet_dither_t)prefs->planetdither,
 				level * 2 - 95, -100 - level * 2);
 	}

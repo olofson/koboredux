@@ -23,7 +23,7 @@ message "Loading in-game graphics"
 
 # Palette for realtime rendering and effects
 path ""
-palette "DO64-0.24.gpl"
+palette P_MAIN "DO64-0.24.gpl"
 
 # Region 1 (maps 1-10)
 path "region-1"

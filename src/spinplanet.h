@@ -2,7 +2,7 @@
 ----------------------------------------------------------------------
 	spinplanet.h - Spinning planet effect
 ----------------------------------------------------------------------
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -114,7 +114,7 @@ class spinplanet_t : public stream_window_t
 	virtual ~spinplanet_t();
 	void clear();
 	void set_source(int bank, int frame);
-	void set_colors(const unsigned char *c, int nc);
+	void set_colors(const unsigned char *c, int nc, unsigned pal);
 	void set_size(int size)			{ psize = size; }
 	void set_mode(spinplanet_modes_t md);
 	void set_dither(spinplanet_dither_t dth, int brightness, int contrast);

@@ -33,7 +33,8 @@ enum KOBO_TP_Tokens
 	KTK_EOF = 0,
 	KTK_EOLN,
 
-	KTK_BANK,	// iv = bank
+	KTK_BANK,	// iv = bank index
+	KTK_PALETTE,	// iv = palette index
 	KTK_FLAG,	// iv = flag bit mask
 	KTK_STRING,	// sv = nul terminated string
 	KTK_NUMBER,	// rv = value
@@ -97,6 +98,7 @@ class KOBO_ThemeParser
 		  case KTK_EOF:		return "EOF";
 		  case KTK_EOLN:	return "EOLN";
 		  case KTK_BANK:	return "BANK";
+		  case KTK_PALETTE:	return "PALETTE";
 		  case KTK_FLAG:	return "FLAG";
 		  case KTK_STRING:	return "STRING";
 		  case KTK_NUMBER:	return "NUMBER";

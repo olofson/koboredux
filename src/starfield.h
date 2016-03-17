@@ -66,11 +66,11 @@ class KOBO_Starfield
 	KOBO_Star *stars;
 	Uint32 colors[STAR_COLORS];
 	int oxo, oyo;
-	void init_colors();
+	void init_colors(unsigned pal);
   public:
 	KOBO_Starfield();
 	~KOBO_Starfield();
-	void set_target(window_t *_target);
+	void set_target(window_t *_target, unsigned pal);
 	bool init(int _nstars, int _altitude, int _planetsize,
 			bool distant_only = false);
 	void render(int xo, int yo);
