@@ -305,10 +305,10 @@ class KOBO_main
 	// Sound design tools
 	static label_t		*st_hotkeys;
 	static display_t	*st_symname;
-	static display_t	*st_scriptname;
 
 	static int restart_audio();
 	static int restart_video();
+	static int reload_sounds();
 	static int reload_graphics();
 
 	static int open();
@@ -376,7 +376,6 @@ prefs_t		KOBO_main::safe_prefs;
 
 label_t		*KOBO_main::st_hotkeys = NULL;
 display_t	*KOBO_main::st_symname = NULL;
-display_t	*KOBO_main::st_scriptname = NULL;
 
 
 static KOBO_main km;
@@ -715,7 +714,7 @@ void KOBO_main::build_screen()
 	if(prefs->soundtools)
 	{
 		st_hotkeys = new label_t(gengine);
-		st_hotkeys->place(conx, cony + WCONSOLE_H - 19 - 20 - 82,
+		st_hotkeys->place(conx, cony + WCONSOLE_H - 19 - 82,
 				WCONSOLE_W, 81);
 		st_hotkeys->color(wdash->map_rgb(16, 16, 16));
 		st_hotkeys->font(B_SMALL_FONT);
@@ -733,18 +732,11 @@ void KOBO_main::build_screen()
 				"F9-F12: Send(2, 0.25-1.0)");
 
 		st_symname = new display_t(gengine);
-		st_symname->place(conx, cony + WCONSOLE_H - 19 - 20,
+		st_symname->place(conx, cony + WCONSOLE_H - 19,
 				WCONSOLE_W, 19);
 		st_symname->color(wdash->map_rgb(24, 24, 24));
 		st_symname->font(B_SMALL_FONT);
 		st_symname->caption("SFX Symbol Name");
-
-		st_scriptname = new display_t(gengine);
-		st_scriptname->place(conx, cony + WCONSOLE_H - 19,
-				WCONSOLE_W, 19);
-		st_scriptname->color(wdash->map_rgb(24, 24, 24));
-		st_scriptname->font(B_SMALL_FONT);
-		st_scriptname->caption("SFX Script Name");
 	}
 }
 
@@ -930,8 +922,6 @@ void KOBO_main::close_display()
 	st_hotkeys = NULL;
 	delete st_symname;
 	st_symname = NULL;
-	delete st_scriptname;
-	st_scriptname = NULL;
 	delete dstage;
 	dstage = NULL;
 	delete dregion;
@@ -968,7 +958,7 @@ void KOBO_main::noiseburst()
 	if(prefs->quickstart)
 		return;
 
-	sound.ui_noise(SOUND_UI_LOADER);
+	sound.ui_noise(S_UI_LOADER);
 	wdash->fade(0.0f);
 	wdash->mode(DASHBOARD_NOISE);
 	int t0 = SDL_GetTicks();
@@ -1064,7 +1054,16 @@ int KOBO_main::load_sounds()
 	if(!prefs->sound)
 		return 0;
 	wdash->show_progress();
-	return sound.load(progress_cb);
+	sound.load(KOBO_SB_LOADER, KOBO_LOADER_SFX_THEME, progress_cb);
+	wdash->progress(0.33f);	// FIXME
+	if(prefs->force_fallback_sfxtheme)
+		sound.load(KOBO_SB_FALLBACK, KOBO_FALLBACK_SFX_THEME,
+				progress_cb);
+	wdash->progress(0.67f);	// FIXME
+	sound.load(KOBO_SB_MAIN, prefs->sfxtheme[0] ? prefs->sfxtheme :
+			KOBO_DEFAULT_SFX_THEME, progress_cb);
+	wdash->progress(1.0f);	// FIXME
+	return 0;
 }
 
 
@@ -1225,15 +1224,13 @@ int KOBO_main::open()
 		return -1;
 
 	sound.open();
-
-	if(load_sounds() < 0)
-		return -3;
+	load_sounds();
 
 	load_palette();
 	noiseburst();
 
 	if(!prefs->quickstart)
-		sound.jingle(SOUND_OAJINGLE);
+		sound.jingle(S_OAJINGLE);
 	int jtime = SDL_GetTicks() + 5000;
 
 	if(load_graphics() < 0)
@@ -1300,8 +1297,7 @@ int KOBO_main::restart_audio()
 	sound.close();
 	if(sound.open() < 0)
 		return 4;
-	if(load_sounds() < 0)
-		return 5;
+	load_sounds();
 	wdash->progress_done();
 	wdash->mode(DASHBOARD_BLACK);
 	log_printf(ULOG, "--- Audio restarted.\n");
@@ -1343,6 +1339,23 @@ int KOBO_main::restart_video()
 	// FIXME: We may not always need to reload graphics, but that's a bit
 	// tricky to tell for sure, so we just take the easy, safe path here.
 	global_status |= OS_RELOAD_GRAPHICS;
+	return 0;
+}
+
+
+int KOBO_main::reload_sounds()
+{
+	if(!prefs->sound)
+	{
+		log_printf(ULOG, "--- Audio off - not reloading sounds!\n");
+		return 0;
+	}
+
+	log_printf(ULOG, "--- Reloading sounds...\n");
+	sound.unload(KOBO_SB_ALL);
+	load_sounds();
+	log_printf(ULOG, "--- Sounds reloaded.\n");
+	enemies.restart_sounds();
 	return 0;
 }
 
@@ -1548,10 +1561,8 @@ void kobo_gfxengine_t::st_update_sound_displays()
 {
 	if(!prefs->soundtools)
 		return;
-	log_printf(ULOG, "Selected sound %s: \"%s\"\n",
-			sound.symname(st_sound), sound.scriptname(st_sound));
+	log_printf(ULOG, "Selected sound %s\n", sound.symname(st_sound));
 	km.st_symname->text(sound.symname(st_sound));
-	km.st_scriptname->text(sound.scriptname(st_sound));
 }
 
 
@@ -1587,18 +1598,17 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 		  case SDLK_F1:		// Reload sounds
 			if(ev.key.repeat)
 				return true;
-			sound.reload_sfx();
-			enemies.restart_sounds();
+			km.reload_sounds();
 			return true;
 		  case SDLK_F2:		// Select prev sound
 			--st_sound;
 			if(st_sound < 1)
-				st_sound = SOUND__COUNT - 1;
+				st_sound = S__COUNT - 1;
 			st_update_sound_displays();
 			return true;
 		  case SDLK_F3:		// Select next sound
 			++st_sound;
-			if(st_sound >= SOUND__COUNT)
+			if(st_sound >= S__COUNT)
 				st_sound = 1;
 			st_update_sound_displays();
 			return true;

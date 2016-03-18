@@ -54,10 +54,24 @@
 #define vsnprintf _vsnprintf
 #endif
 
+// Default and fallback graphics themes
 #define	KOBO_LOADER_GFX_THEME		"GFX>>loader"
 #define	KOBO_FALLBACK_GFX_THEME		"GFX>>mono"
 #define	KOBO_DEFAULT_GFX_THEME		"GFX>>redux"
 #define	KOBO_DEFAULT_TOOLS_THEME	"GFX>>tools"
+
+// Default and fallback sound themes
+#define	KOBO_LOADER_SFX_THEME		"SFX>>loader"
+#define	KOBO_FALLBACK_SFX_THEME		"SFX>>mono"
+#define	KOBO_DEFAULT_SFX_THEME		"SFX>>redux"
+
+// Sound banks to load the different sound themes into
+enum KOBO_sound_banks {
+	KOBO_SB_ALL = -1,
+	KOBO_SB_LOADER = 0,
+	KOBO_SB_FALLBACK,
+	KOBO_SB_MAIN
+};
 
 /*
  * SDL2 pixel format for surface and textures.

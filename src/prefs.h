@@ -65,6 +65,7 @@ class prefs_t : public config_parser_t
 	int	tsdelay;	//Timestamp delay in ms
 
 	// Sound: Mixer
+	cfg_string_t	sfxtheme;	//Path to sound theme file
 	int	volume;		//Digital master volume
 	int	vol_boost;	//Master volume boost
 	int	ui_vol;		//User interface volume
@@ -94,7 +95,8 @@ class prefs_t : public config_parser_t
 	// Debug features
 	int	debug;
 	int	show_fps;
-	int	force_fallback_gfxtheme;	// Force load fallback theme
+	int	force_fallback_gfxtheme; // Force load fallback graphics theme
+	int	force_fallback_sfxtheme; // Force load fallback sound theme
 	int	show_map_border;
 	int	show_coordinates;
 	int	show_tiles;

@@ -3,7 +3,7 @@
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
  * Copyright 2001-2003, 2006-2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -99,7 +99,7 @@ void config_form_t::setstatus(int mask)
 	{
 		if(delta == 0)
 		{
-			sound.ui_play(SOUND_UI_OK);
+			sound.ui_play(S_UI_OK);
 			setstatus(OS_CLOSE);
 		}
 	}
@@ -107,13 +107,13 @@ void config_form_t::setstatus(int mask)
 	{
 		if(delta == 0)
 		{
-			sound.ui_play(SOUND_UI_CANCEL);
+			sound.ui_play(S_UI_CANCEL);
 			undo();
 			setstatus(OS_CLOSE);
 		}
 	}
 	else
-		sound.ui_play(SOUND_UI_TICK);
+		sound.ui_play(S_UI_TICK);
 
 	if(selected()->user)
 		prf->changed = 1;

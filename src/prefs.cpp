@@ -72,6 +72,7 @@ void prefs_t::init()
 	key("audiobuffer", audiobuffer, 0); desc("Custom Audio Buffer Size");
 	key("tsdelay", tsdelay, 5); desc("Timestamp Delay");
 
+	key("sfxtheme", sfxtheme, ""); desc("Sound Theme");
 	key("volume", volume, 100); desc("Master Volume");
 	key("vol_boost", vol_boost, 2); desc("Volume Boost");
 	key("ui_vol", ui_vol, 50); desc("User Interface Volume");
@@ -91,8 +92,6 @@ void prefs_t::init()
 	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
 
 	key("gfxtheme", gfxtheme, ""); desc("Graphics Theme");
-	yesno("force_fallback_gfxtheme", force_fallback_gfxtheme, 0);
-			desc("Force Load Fallback Graphics Theme");
 	key("scalemode", scalemode, 0); desc("Scaling Filter Mode");
 	yesno("alpha", alpha, 1); desc("Use Alpha Blending");
 	key("brightness", brightness, 100); desc("Brightness");
@@ -110,6 +109,10 @@ void prefs_t::init()
 	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
 	yesno("soundtools", soundtools, 0); desc("Sound Design Tools");
 	key("toolstheme", toolstheme, ""); desc("Authoring Tools Theme");
+	yesno("force_fallback_gfxtheme", force_fallback_gfxtheme, 0);
+			desc("Force Load Fallback Graphics Theme");
+	yesno("force_fallback_sfxtheme", force_fallback_sfxtheme, 0);
+			desc("Force Load Fallback Sound Theme");
 
 	section("Cheat/test");
 	yesno("cheat_pushmove", cheat_pushmove, 0);

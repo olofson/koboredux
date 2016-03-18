@@ -131,7 +131,7 @@ void _manage::run_noise()
 	noise_level += (noise - noise_level) * 0.3f;
 	screen.set_noise(B_NOISE, noise_level, 0.0f, noise_level);
 	screen.noise(noise_level > 0.1f);
-	sound.ui_noise(noise ? SOUND_UI_NOISE : 0);
+	sound.ui_noise(noise ? S_UI_NOISE : 0);
 }
 
 
@@ -540,10 +540,10 @@ void _manage::pause(bool p)
 	if(paused)
 	{
 		sound.g_player_fire(false);
-		sound.ui_play(SOUND_UI_PAUSE);
+		sound.ui_play(S_UI_PAUSE);
 	}
 	else
-		sound.ui_play(SOUND_UI_PLAY);
+		sound.ui_play(S_UI_PLAY);
 }
 
 

@@ -67,7 +67,7 @@ void kobo_form_t::update_help()
 
 void kobo_form_t::next()
 {
-	sound.ui_play(SOUND_UI_MOVE);
+	sound.ui_play(S_UI_MOVE);
 	ct_form_t::next();
 	update_help();
 }
@@ -75,7 +75,7 @@ void kobo_form_t::next()
 
 void kobo_form_t::prev()
 {
-	sound.ui_play(SOUND_UI_MOVE);
+	sound.ui_play(S_UI_MOVE);
 	ct_form_t::prev();
 	update_help();
 }

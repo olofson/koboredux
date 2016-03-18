@@ -26,77 +26,78 @@
 // Desired approximate update period for positional audio (ms)
 #define	KOBO_SOUND_UPDATE_PERIOD	100
 
+// Bank slots, for keeping track of multiple themes
+#define	KOBO_SOUND_BANKS	8
+
 #include "config.h"
 #include "audiality2.h"
 
 // Sound effects, songs and other program handles
-#define KOBO_ALLSOUNDS						\
-	KOBO_DEFS(NONE,		"")				\
-	KOBO_DEFS(G_MASTER,	"MasterGroup")			\
-	KOBO_DEFS(G_UI,		"UIGroup")			\
-	KOBO_DEFS(G_SFX,	"SFXGroup")			\
-	KOBO_DEFS(G_MUSIC,	"MusicGroup")			\
-	KOBO_DEFS(G_TITLE,	"TitleMusicGroup")		\
-	KOBO_DEFS(OAJINGLE,	"OAJingle")			\
-	KOBO_DEFS(TITLESONG,	"TitleSong")			\
-	KOBO_DEFS(INGAMESONG1,	"IngameSong")			\
-	KOBO_DEFS(INGAMESONG2,	"IngameSong")			\
-	KOBO_DEFS(INGAMESONG3,	"IngameSong")			\
-	KOBO_DEFS(INGAMESONG4,	"IngameSong")			\
-	KOBO_DEFS(INGAMESONG5,	"IngameSong")			\
-	KOBO_DEFS(LAUNCH,	"Launch")			\
-	KOBO_DEFS(LAUNCH_BULLET,"FireElectro")			\
-	KOBO_DEFS(LAUNCH_RING,	"")				\
-	KOBO_DEFS(LAUNCH_BOMB,	"Launch")			\
-	KOBO_DEFS(DAMAGE,	"Impact")			\
-	KOBO_DEFS(DAMAGE_M1,	"Impact")			\
-	KOBO_DEFS(DAMAGE_M2,	"Impact")			\
-	KOBO_DEFS(DAMAGE_M3,	"Impact")			\
-	KOBO_DEFS(DAMAGE_M4,	"Impact")			\
-	KOBO_DEFS(HIT_ROCK,	"ImpactGround")			\
-	KOBO_DEFS(EXPLO_NODE,	"SegmentDeath")			\
-	KOBO_DEFS(EXPLO_CORE,	"MegaDeath")			\
-	KOBO_DEFS(EXPLO_ENEMY,	"BoomerangDeath")		\
-	KOBO_DEFS(EXPLO_PLAYER,	"KoboDeath")			\
-	KOBO_DEFS(EXPLO_RING,	"LavaImpact")			\
-	KOBO_DEFS(EXPLO_ROCK,	"")				\
-	KOBO_DEFS(EXPLO_M1,	"MegaDeath")			\
-	KOBO_DEFS(EXPLO_M2,	"MegaDeath")			\
-	KOBO_DEFS(EXPLO_M3,	"MegaDeath")			\
-	KOBO_DEFS(EXPLO_M4,	"MegaDeath")			\
-	KOBO_DEFS(RUMBLE,	"BaseRumble")			\
-	KOBO_DEFS(SHOT,		"FirePlasma")			\
-	KOBO_DEFS(METALLIC,	"Klank")			\
-	KOBO_DEFS(BOMB_DETO,	"Bomb")				\
-	KOBO_DEFS(ENEMYM,	"Teleport")			\
-	KOBO_DEFS(CORE,		"Reactor")			\
-	KOBO_DEFS(UI_OPEN,	"UIOpen")			\
-	KOBO_DEFS(UI_OK,	"UIOK")				\
-	KOBO_DEFS(UI_MOVE,	"UIMove")			\
-	KOBO_DEFS(UI_TICK,	"UITick")			\
-	KOBO_DEFS(UI_CDTICK,	"UICountdownTick")		\
-	KOBO_DEFS(UI_GAMEOVER,	"UIGameOver")			\
-	KOBO_DEFS(UI_READY,	"UIReady")			\
-	KOBO_DEFS(UI_PLAY,	"UIPlay")			\
-	KOBO_DEFS(UI_PAUSE,	"UIPause")			\
-	KOBO_DEFS(UI_CANCEL,	"UICancel")			\
-	KOBO_DEFS(UI_ERROR,	"UIError")			\
-	KOBO_DEFS(UI_LOADER,	"UILoader")			\
-	KOBO_DEFS(UI_NOISE,	"UINoise")
+#define KOBO_ALLSOUNDS			\
+	KOBO_DEFS(NONE)			\
+	KOBO_DEFS(G_MASTER)		\
+	KOBO_DEFS(G_UI)			\
+	KOBO_DEFS(G_SFX)		\
+	KOBO_DEFS(G_MUSIC)		\
+	KOBO_DEFS(G_TITLE)		\
+	KOBO_DEFS(OAJINGLE)		\
+	KOBO_DEFS(TITLESONG)		\
+	KOBO_DEFS(INGAMESONG1)		\
+	KOBO_DEFS(INGAMESONG2)		\
+	KOBO_DEFS(INGAMESONG3)		\
+	KOBO_DEFS(INGAMESONG4)		\
+	KOBO_DEFS(INGAMESONG5)		\
+	KOBO_DEFS(LAUNCH)		\
+	KOBO_DEFS(LAUNCH_BULLET)	\
+	KOBO_DEFS(LAUNCH_RING)		\
+	KOBO_DEFS(LAUNCH_BOMB)		\
+	KOBO_DEFS(DAMAGE)		\
+	KOBO_DEFS(DAMAGE_M1)		\
+	KOBO_DEFS(DAMAGE_M2)		\
+	KOBO_DEFS(DAMAGE_M3)		\
+	KOBO_DEFS(DAMAGE_M4)		\
+	KOBO_DEFS(HIT_ROCK)		\
+	KOBO_DEFS(EXPLO_NODE)		\
+	KOBO_DEFS(EXPLO_CORE)		\
+	KOBO_DEFS(EXPLO_ENEMY)		\
+	KOBO_DEFS(EXPLO_PLAYER)		\
+	KOBO_DEFS(EXPLO_RING)		\
+	KOBO_DEFS(EXPLO_ROCK)		\
+	KOBO_DEFS(EXPLO_M1)		\
+	KOBO_DEFS(EXPLO_M2)		\
+	KOBO_DEFS(EXPLO_M3)		\
+	KOBO_DEFS(EXPLO_M4)		\
+	KOBO_DEFS(RUMBLE)		\
+	KOBO_DEFS(SHOT)			\
+	KOBO_DEFS(METALLIC)		\
+	KOBO_DEFS(BOMB_DETO)		\
+	KOBO_DEFS(ENEMYM)		\
+	KOBO_DEFS(CORE)			\
+	KOBO_DEFS(UI_OPEN)		\
+	KOBO_DEFS(UI_OK)		\
+	KOBO_DEFS(UI_MOVE)		\
+	KOBO_DEFS(UI_TICK)		\
+	KOBO_DEFS(UI_CDTICK)		\
+	KOBO_DEFS(UI_GAMEOVER)		\
+	KOBO_DEFS(UI_READY)		\
+	KOBO_DEFS(UI_PLAY)		\
+	KOBO_DEFS(UI_PAUSE)		\
+	KOBO_DEFS(UI_CANCEL)		\
+	KOBO_DEFS(UI_ERROR)		\
+	KOBO_DEFS(UI_LOADER)		\
+	KOBO_DEFS(UI_NOISE)
 
-#define	KOBO_DEFS(x, y)	SOUND_##x,
+#define	KOBO_DEFS(x)	S_##x,
 enum KOBO_sounds
 {
 	KOBO_ALLSOUNDS
-	SOUND__COUNT
+	S__COUNT
 };
 #undef	KOBO_DEFS
 
 
 class KOBO_sound
 {
-	static int	sounds_loaded;
-	static int	music_loaded;
 	static int	tsdcounter;
 
 	// In-game sfx stuff
@@ -119,8 +120,9 @@ class KOBO_sound
 	static int current_noise;	// Index of current noise playing, or 0
 	static A2_handle noisehandle;	// Transition noise effect
 	static A2_handle gunhandle;	// Currently playing player gun sound
-	static A2_handle *modules;	// Loaded A2S modules
-	static A2_handle sounds[SOUND__COUNT];	// Sounds, songs etc
+	static A2_handle banks[KOBO_SOUND_BANKS];	// Loaded A2S modules
+	static A2_handle sounds[S__COUNT];	// Sounds, songs etc
+	static unsigned sbank[S__COUNT];	// Bank each sound belongs to
 	static float buffer_latency;
 
 	// Currently playing song
@@ -128,7 +130,6 @@ class KOBO_sound
 	static A2_handle musichandle;	// A2 handle
 	static bool music_is_ingame;	// Title or ingame group?
 
-	static int load_a2s(const char *path);
 	static void init_mixdown();
 	static bool checksound(int wid, const char *where);
 	static void update_music(bool newsong);
@@ -154,8 +155,9 @@ class KOBO_sound
 	--------------------------------------------------*/
 	static int open();
 	static void prefschange();
-	static bool load(int (*prog)(const char *msg) = NULL, int bank = -1);
-	static bool reload_sfx();
+	static bool load(unsigned bank, const char *themepath,
+			int (*prog)(const char *msg) = NULL);
+	static void unload(int bank);
 	static void close();
 
 	/*--------------------------------------------------
@@ -163,7 +165,6 @@ class KOBO_sound
 	--------------------------------------------------*/
 	static inline float latency()	{ return buffer_latency; }
 	static const char *symname(unsigned wid);
-	static const char *scriptname(unsigned wid);
 
 	/*--------------------------------------------------
 		Main controls

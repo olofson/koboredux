@@ -473,7 +473,7 @@ st_get_ready_t::st_get_ready_t()
 
 void st_get_ready_t::enter()
 {
-	sound.ui_play(SOUND_UI_READY);
+	sound.ui_play(S_UI_READY);
 	start_time = (int)SDL_GetTicks();
 	frame_time = 0;
 	countdown = prefs->countdown;
@@ -501,7 +501,7 @@ void st_get_ready_t::press(gc_targets_t button)
 	  case BTN_DR:
 	  case BTN_FIRE:
 	  case BTN_YES:
-		sound.ui_play(SOUND_UI_PLAY);
+		sound.ui_play(S_UI_PLAY);
 		manage.pause(false);
 		manage.player_ready();
 		pop();
@@ -531,7 +531,7 @@ void st_get_ready_t::frame()
 	{
 		if(frame_time > 700)
 		{
-			sound.ui_play(SOUND_UI_PLAY);
+			sound.ui_play(S_UI_PLAY);
 			manage.pause(false);
 			manage.player_ready();
 			pop();
@@ -546,7 +546,7 @@ void st_get_ready_t::frame()
 
 		if(countdown < 1)
 		{
-			sound.ui_play(SOUND_UI_PLAY);
+			sound.ui_play(S_UI_PLAY);
 			manage.pause(false);
 			manage.player_ready();
 			pop();
@@ -614,7 +614,7 @@ st_game_over_t::st_game_over_t()
 
 void st_game_over_t::enter()
 {
-	sound.ui_play(SOUND_UI_GAMEOVER);
+	sound.ui_play(S_UI_GAMEOVER);
 	start_time = (int)SDL_GetTicks();
 	frame_time = 0;
 }
@@ -641,7 +641,7 @@ void st_game_over_t::press(gc_targets_t button)
 	  case BTN_START:
 	  case BTN_SELECT:
 	  case BTN_YES:
-		sound.ui_play(SOUND_UI_OK);
+		sound.ui_play(S_UI_OK);
 		manage.abort_game();
 		pop();
 		break;
@@ -723,7 +723,7 @@ void st_menu_base_t::enter()
 {
 	form = open();
 	if(sounds)
-		sound.ui_play(SOUND_UI_OPEN);
+		sound.ui_play(S_UI_OPEN);
 }
 
 // Because we may get back here after changing the configuration!
@@ -850,7 +850,7 @@ void st_menu_base_t::press(gc_targets_t button)
 		break;
 	  case 0:
 		if(sounds)
-			sound.ui_play(SOUND_UI_CANCEL);
+			sound.ui_play(S_UI_CANCEL);
 		select(0);
 		pop();
 		break;
@@ -946,7 +946,7 @@ void st_new_player_t::frame()
 void st_new_player_t::enter()
 {
 	menu->open();
-	sound.ui_play(SOUND_UI_OPEN);
+	sound.ui_play(S_UI_OPEN);
 }
 
 void st_new_player_t::leave()
@@ -967,7 +967,7 @@ void st_new_player_t::press(gc_targets_t button)
 		switch(button)
 		{
 		  case BTN_EXIT:
-			sound.ui_play(SOUND_UI_OK);
+			sound.ui_play(S_UI_OK);
 			menu->editing = 0;
 			menu->next();	// Select the CANCEL option.
 			menu->next();
@@ -978,7 +978,7 @@ void st_new_player_t::press(gc_targets_t button)
 				break;
 		  case BTN_START:
 		  case BTN_SELECT:
-			sound.ui_play(SOUND_UI_OK);
+			sound.ui_play(S_UI_OK);
 			menu->editing = 0;
 			menu->next();	// Select the OK option.
 			break;
@@ -993,7 +993,7 @@ void st_new_player_t::press(gc_targets_t button)
 				menu->name[menu->currentIndex] = 'A';
 			else
 				menu->name[menu->currentIndex]++;
-			sound.ui_play(SOUND_UI_TICK);
+			sound.ui_play(S_UI_TICK);
 			break;
 
 		  case BTN_DEC:
@@ -1006,18 +1006,18 @@ void st_new_player_t::press(gc_targets_t button)
 				menu->name[menu->currentIndex] = 'Z';
 			else
 				menu->name[menu->currentIndex]--;
-			sound.ui_play(SOUND_UI_TICK);
+			sound.ui_play(S_UI_TICK);
 			break;
 
 		  case BTN_RIGHT:
 			if(menu->currentIndex < sizeof(menu->name) - 2)
 			{
 				menu->currentIndex++;
-				sound.ui_play(SOUND_UI_TICK);
+				sound.ui_play(S_UI_TICK);
 			}
 			else
 			{
-				sound.ui_play(SOUND_UI_ERROR);
+				sound.ui_play(S_UI_ERROR);
 				break;
 			}
 			if(menu->name[menu->currentIndex] == '\0')
@@ -1030,10 +1030,10 @@ void st_new_player_t::press(gc_targets_t button)
 			{
 				menu->name[menu->currentIndex] = '\0';
 				menu->currentIndex--;
-				sound.ui_play(SOUND_UI_TICK);
+				sound.ui_play(S_UI_TICK);
 			}
 			else
-				sound.ui_play(SOUND_UI_ERROR);
+				sound.ui_play(S_UI_ERROR);
 			break;
 
 		  default:
@@ -1045,13 +1045,13 @@ void st_new_player_t::press(gc_targets_t button)
 				if(menu->currentIndex < sizeof(menu->name) - 2)
 				{
 					menu->currentIndex++;
-					sound.ui_play(SOUND_UI_TICK);
+					sound.ui_play(S_UI_TICK);
 				}
 				else
-					sound.ui_play(SOUND_UI_ERROR);
+					sound.ui_play(S_UI_ERROR);
 			}
 			else
-				sound.ui_play(SOUND_UI_ERROR);
+				sound.ui_play(S_UI_ERROR);
 #endif
 			break;
 		}
@@ -1098,7 +1098,7 @@ void st_new_player_t::press(gc_targets_t button)
 					|| button == BTN_SELECT
 					|| button == BTN_FIRE)
 			{
-				sound.ui_play(SOUND_UI_OK);
+				sound.ui_play(S_UI_OK);
 				menu->editing = 1;
 			}
 			break;
@@ -1107,13 +1107,13 @@ void st_new_player_t::press(gc_targets_t button)
 			switch(scorefile.add_player(menu->name))
 			{
 			  case 0:
-				sound.ui_play(SOUND_UI_OK);
+				sound.ui_play(S_UI_OK);
 				prefs->last_profile = scorefile.current_profile();
 				prefs->changed = 1;
 				pop();
 				break;
 			  case -1:
-				sound.ui_play(SOUND_UI_ERROR);
+				sound.ui_play(S_UI_ERROR);
 				st_error.message("Cannot create Player Profile!",
 						"Too many profiles!");
 				gsm.change(&st_error);
@@ -1121,13 +1121,13 @@ void st_new_player_t::press(gc_targets_t button)
 			  case -2:
 			  case -3:
 				prefs->last_profile = scorefile.current_profile();
-				sound.ui_play(SOUND_UI_ERROR);
+				sound.ui_play(S_UI_ERROR);
 				st_error.message("Cannot save Player Profile!",
 						"Please, check your installation.");
 				gsm.change(&st_error);
 				break;
 			  default:
-				sound.ui_play(SOUND_UI_ERROR);
+				sound.ui_play(S_UI_ERROR);
 				st_error.message("Cannot create Player Profile!",
 						"Bug or internal error.");
 				gsm.change(&st_error);
@@ -1136,7 +1136,7 @@ void st_new_player_t::press(gc_targets_t button)
 			break;
 
 		  case MENU_TAG_CANCEL:
-			sound.ui_play(SOUND_UI_CANCEL);
+			sound.ui_play(S_UI_CANCEL);
 			strcpy(menu->name, "A");
 			pop();
 			break;
@@ -1168,7 +1168,7 @@ st_error_t::st_error_t()
 
 void st_error_t::enter()
 {
-	sound.ui_play(SOUND_UI_ERROR);
+	sound.ui_play(S_UI_ERROR);
 	start_time = (int)SDL_GetTicks();
 }
 
@@ -1194,7 +1194,7 @@ void st_error_t::press(gc_targets_t button)
 	  case BTN_START:
 	  case BTN_SELECT:
 	  case BTN_YES:
-		sound.ui_play(SOUND_UI_OK);
+		sound.ui_play(S_UI_OK);
 		pop();
 		break;
 	  default:
@@ -1208,7 +1208,7 @@ void st_error_t::frame()
 	frame_time = (int)SDL_GetTicks() - start_time;
 #if 0
 	if(frame_time % 1000 < 500)
-		sound.ui_play(SOUND_UI_ERROR);
+		sound.ui_play(S_UI_ERROR);
 #endif
 }
 
@@ -1399,7 +1399,7 @@ void st_main_menu_t::select(int tag)
 		gsm.push(&st_new_player);
 		break;
 	  case 4:	// Player: Inc/Dec
-		sound.ui_play(SOUND_UI_TICK);
+		sound.ui_play(S_UI_TICK);
 		prefs->changed = 1;
 		scorefile.select_profile(prefs->last_profile);
 		menu->rebuild();
@@ -1409,7 +1409,7 @@ void st_main_menu_t::select(int tag)
 //		menu->rebuild();
 		break;
 	  case 5:	// Start level: Inc/Dec
-		sound.ui_play(SOUND_UI_TICK);
+		sound.ui_play(S_UI_TICK);
 		manage.select_scene(menu->start_level);
 		break;
 	  case MENU_TAG_CANCEL:
@@ -1417,7 +1417,7 @@ void st_main_menu_t::select(int tag)
 		break;
 	  case 50:	// Save Game
 	  case 51:	// Load Game
-		sound.ui_play(SOUND_UI_ERROR);
+		sound.ui_play(S_UI_ERROR);
 		st_error.message("Game saves not yet implemented!",
 				"Tell Dave that you want them.");
 		gsm.push(&st_error);
@@ -1608,7 +1608,7 @@ void st_options_base_t::close()
 
 void st_options_base_t::enter()
 {
-	sound.ui_play(SOUND_UI_OPEN);
+	sound.ui_play(S_UI_OPEN);
 	st_menu_base_t::enter();
 }
 
@@ -1658,7 +1658,7 @@ void st_options_base_t::press(gc_targets_t button)
 
 void st_options_base_t::escape()
 {
-	sound.ui_play(SOUND_UI_CANCEL);
+	sound.ui_play(S_UI_CANCEL);
 	cfg_form->undo();
 	check_update();
 }
@@ -1764,12 +1764,12 @@ void st_ask_exit_t::select(int tag)
 	  case MENU_TAG_OK:
 		sound.music(-1);
 		manage.abort_game();
-		sound.ui_play(SOUND_UI_OK);
+		sound.ui_play(S_UI_OK);
 		exit_game = 1;
 		pop();
 		break;
 	  case MENU_TAG_CANCEL:
-		sound.ui_play(SOUND_UI_CANCEL);
+		sound.ui_play(S_UI_CANCEL);
 		if(manage.game_in_progress())
 			gsm.change(&st_pause_game);
 		else
@@ -1797,7 +1797,7 @@ void st_ask_abort_game_t::select(int tag)
 	switch(tag)
 	{
 	  case MENU_TAG_OK:
-		sound.ui_play(SOUND_UI_OK);
+		sound.ui_play(S_UI_OK);
 		manage.abort_game();
 		pop();
 		break;

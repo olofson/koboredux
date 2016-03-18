@@ -243,7 +243,7 @@ void KOBO_enemy::shot_template_8_dir(const KOBO_enemy_kind *ekp)
 	int i;
 	for(i = 0; i < 8; i++)
 		enemies.make(ekp, x, y, vx[i], vy[i]);
-	playsound(SOUND_ENEMYM);
+	playsound(S_ENEMYM);
 	playsound(ekp->launchsound);
 }
 
@@ -415,10 +415,10 @@ const KOBO_enemy_kind greenbullet = {
 	B_BLT_GREEN, 0,
 	LAYER_BULLETS,
 	3,
-	SOUND_NONE,
-	SOUND_LAUNCH_BULLET,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_LAUNCH_BULLET,
+	S_NONE,
+	S_NONE
 };
 
 const KOBO_enemy_kind redbullet = {
@@ -430,10 +430,10 @@ const KOBO_enemy_kind redbullet = {
 	B_BLT_RED, 0,
 	LAYER_BULLETS,
 	2,
-	SOUND_NONE,
-	SOUND_LAUNCH_BULLET,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_LAUNCH_BULLET,
+	S_NONE,
+	S_NONE
 };
 
 const KOBO_enemy_kind bluebullet = {
@@ -445,10 +445,10 @@ const KOBO_enemy_kind bluebullet = {
 	B_BLT_BLUE, 0,
 	LAYER_BULLETS,
 	5,
-	SOUND_NONE,
-	SOUND_LAUNCH_BULLET,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_LAUNCH_BULLET,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -510,10 +510,10 @@ const KOBO_enemy_kind rock = {
 	B_ROCK1, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH,
-	SOUND_HIT_ROCK,
-	SOUND_EXPLO_ROCK
+	S_NONE,
+	S_LAUNCH,
+	S_HIT_ROCK,
+	S_EXPLO_ROCK
 };
 
 
@@ -555,10 +555,10 @@ const KOBO_enemy_kind ring = {
 	B_RING, 0,
 	LAYER_BULLETS,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH_RING,
-	SOUND_NONE,
-	SOUND_EXPLO_RING
+	S_NONE,
+	S_LAUNCH_RING,
+	S_NONE,
+	S_EXPLO_RING
 };
 
 
@@ -600,7 +600,7 @@ void KOBO_enemy::move_bomb1()
 		enemies.make(&redbullet, x, y, vx2, vy2);
 		enemies.make(&redbullet, x, y, vx3, vy3);
 		enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
-		playsound(SOUND_BOMB_DETO);
+		playsound(S_BOMB_DETO);
 		release();
 	}
 	if(++di > 16)
@@ -616,10 +616,10 @@ const KOBO_enemy_kind bomb1 = {
 	B_GREENBOMB, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH_BOMB,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_ENEMY
+	S_NONE,
+	S_LAUNCH_BOMB,
+	S_DAMAGE,
+	S_EXPLO_ENEMY
 };
 
 
@@ -666,7 +666,7 @@ void KOBO_enemy::move_bomb2()
 		enemies.make(&redbullet, x, y, vx4, vy4);
 		enemies.make(&redbullet, x, y, vx5, vy5);
 		enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
-		playsound(SOUND_BOMB_DETO);
+		playsound(S_BOMB_DETO);
 		release();
 	}
 	if(--di < 1)
@@ -682,10 +682,10 @@ const KOBO_enemy_kind bomb2 = {
 	B_REDBOMB, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH_BOMB,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_ENEMY
+	S_NONE,
+	S_LAUNCH_BOMB,
+	S_DAMAGE,
+	S_EXPLO_ENEMY
 };
 
 
@@ -747,10 +747,10 @@ const KOBO_enemy_kind explosion = {
 	B_EXPLO1, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 const KOBO_enemy_kind explosion3 = {
@@ -762,10 +762,10 @@ const KOBO_enemy_kind explosion3 = {
 	B_EXPLO3, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 const KOBO_enemy_kind explosion4 = {
@@ -777,10 +777,10 @@ const KOBO_enemy_kind explosion4 = {
 	B_EXPLO4, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 const KOBO_enemy_kind explosion5 = {
@@ -792,10 +792,10 @@ const KOBO_enemy_kind explosion5 = {
 	B_EXPLO5, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -815,10 +815,10 @@ const KOBO_enemy_kind ringexpl = {
 	B_RINGEXPL, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -838,10 +838,10 @@ const KOBO_enemy_kind greenbltexpl = {
 	B_BLTX_GREEN, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 const KOBO_enemy_kind redbltexpl = {
@@ -853,10 +853,10 @@ const KOBO_enemy_kind redbltexpl = {
 	B_BLTX_RED, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 const KOBO_enemy_kind bluebltexpl = {
@@ -868,10 +868,10 @@ const KOBO_enemy_kind bluebltexpl = {
 	B_BLTX_BLUE, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -891,10 +891,10 @@ const KOBO_enemy_kind boltexpl = {
 	B_BOLT, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -914,10 +914,10 @@ const KOBO_enemy_kind rockexpl = {
 	B_ROCKEXPL, 0,
 	LAYER_FX,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -937,10 +937,10 @@ const KOBO_enemy_kind bombdeto = {
 	B_BOMBDETO, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -993,10 +993,10 @@ const KOBO_enemy_kind cannon = {
 	-1, 0,
 	LAYER_BASES,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_NODE
+	S_NONE,
+	S_NONE,
+	S_DAMAGE,
+	S_EXPLO_NODE
 };
 
 
@@ -1046,10 +1046,10 @@ const KOBO_enemy_kind core = {
 	-1, 0,
 	LAYER_BASES,
 	0,
-	SOUND_CORE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_CORE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -1122,7 +1122,7 @@ void KOBO_enemy::move_pipein()
 	}
 	if(mindiff < ((VIEWLIMIT >> 1) + 32))
 	{
-		playsound(SOUND_RUMBLE);
+		playsound(S_RUMBLE);
 		enemies.make(enemies.randexp(),
 				x + PIXEL2CS(pubrand.get(4) - 8),
 				y + PIXEL2CS(pubrand.get(4) - 8), 0, 0, 1);
@@ -1143,10 +1143,10 @@ const KOBO_enemy_kind pipein = {
 	-1, 0,
 	LAYER_BASES,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -1224,7 +1224,7 @@ void KOBO_enemy::move_pipeout()
 	{
 		release();
 		screen.set_map(x1, y1, SPACE);
-		playsound(SOUND_RUMBLE);
+		playsound(S_RUMBLE);
 		if(mindiff < ((VIEWLIMIT >> 1) + 32))
 			enemies.make(enemies.randexp(), x, y, 0, 0, 1);
 		return;
@@ -1267,7 +1267,7 @@ void KOBO_enemy::move_pipeout()
 		return;
 	}
 	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
-	playsound(SOUND_RUMBLE);
+	playsound(S_RUMBLE);
 	if(mindiff < ((VIEWLIMIT >> 1) + 32))
 		enemies.make(&explosion,
 				x + PIXEL2CS(pubrand.get(4) - 8),
@@ -1287,10 +1287,10 @@ const KOBO_enemy_kind pipeout = {
 	-1, 0,
 	LAYER_BASES,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_NONE
+	S_NONE,
+	S_NONE,
+	S_NONE,
+	S_NONE
 };
 
 
@@ -1323,10 +1323,10 @@ const KOBO_enemy_kind enemy1 = {
 	B_MISSILE1, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_ENEMY
+	S_NONE,
+	S_LAUNCH,
+	S_DAMAGE,
+	S_EXPLO_ENEMY
 };
 
 
@@ -1364,10 +1364,10 @@ const KOBO_enemy_kind enemy2 = {
 	B_FIGHTER, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_ENEMY
+	S_NONE,
+	S_LAUNCH,
+	S_DAMAGE,
+	S_EXPLO_ENEMY
 };
 
 
@@ -1400,10 +1400,10 @@ const KOBO_enemy_kind enemy3 = {
 	B_MISSILE2, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_ENEMY
+	S_NONE,
+	S_LAUNCH,
+	S_DAMAGE,
+	S_EXPLO_ENEMY
 };
 
 
@@ -1436,10 +1436,10 @@ const KOBO_enemy_kind enemy4 = {
 	B_MISSILE3, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_ENEMY
+	S_NONE,
+	S_LAUNCH,
+	S_DAMAGE,
+	S_EXPLO_ENEMY
 };
 
 
@@ -1491,10 +1491,10 @@ const KOBO_enemy_kind enemy5 = {
 	B_BMR_GREEN, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_ENEMY
+	S_NONE,
+	S_LAUNCH,
+	S_DAMAGE,
+	S_EXPLO_ENEMY
 };
 
 
@@ -1538,10 +1538,10 @@ const KOBO_enemy_kind enemy6 = {
 	B_BMR_PURPLE, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_ENEMY
+	S_NONE,
+	S_LAUNCH,
+	S_DAMAGE,
+	S_EXPLO_ENEMY
 };
 
 
@@ -1585,10 +1585,10 @@ const KOBO_enemy_kind enemy7 = {
 	B_BMR_PINK, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_LAUNCH,
-	SOUND_DAMAGE,
-	SOUND_EXPLO_ENEMY
+	S_NONE,
+	S_LAUNCH,
+	S_DAMAGE,
+	S_EXPLO_ENEMY
 };
 
 
@@ -1634,10 +1634,10 @@ const KOBO_enemy_kind enemy_m1 = {
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_DAMAGE_M1,
-	SOUND_EXPLO_M1
+	S_NONE,
+	S_NONE,
+	S_DAMAGE_M1,
+	S_EXPLO_M1
 };
 
 
@@ -1681,10 +1681,10 @@ const KOBO_enemy_kind enemy_m2 = {
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_DAMAGE_M2,
-	SOUND_EXPLO_M2
+	S_NONE,
+	S_NONE,
+	S_DAMAGE_M2,
+	S_EXPLO_M2
 };
 
 
@@ -1728,10 +1728,10 @@ const KOBO_enemy_kind enemy_m3 = {
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_DAMAGE_M3,
-	SOUND_EXPLO_M3
+	S_NONE,
+	S_NONE,
+	S_DAMAGE_M3,
+	S_EXPLO_M3
 };
 
 
@@ -1779,8 +1779,8 @@ const KOBO_enemy_kind enemy_m4 = {
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
 	0,
-	SOUND_NONE,
-	SOUND_NONE,
-	SOUND_DAMAGE_M4,
-	SOUND_EXPLO_M4
+	S_NONE,
+	S_NONE,
+	S_DAMAGE_M4,
+	S_EXPLO_M4
 };

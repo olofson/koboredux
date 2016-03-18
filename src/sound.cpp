@@ -26,8 +26,6 @@
 #include "kobolog.h"
 #include "random.h"
 
-int KOBO_sound::sounds_loaded = 0;
-int KOBO_sound::music_loaded = 0;
 int KOBO_sound::tsdcounter = 0;
 
 int KOBO_sound::listener_x = 0;
@@ -49,35 +47,17 @@ int KOBO_sound::current_noise = 0;
 A2_handle KOBO_sound::noisehandle = 0;
 A2_handle KOBO_sound::musichandle = 0;
 A2_handle KOBO_sound::gunhandle = 0;
-A2_handle *KOBO_sound::modules = NULL;
-A2_handle KOBO_sound::sounds[SOUND__COUNT];
+A2_handle KOBO_sound::banks[KOBO_SOUND_BANKS];
+A2_handle KOBO_sound::sounds[S__COUNT];
+unsigned KOBO_sound::sbank[S__COUNT];
 float KOBO_sound::buffer_latency = 0.0f;
 
 int KOBO_sound::current_song = 0;
 bool KOBO_sound::music_is_ingame = false;
 
-// Index of path to the sound effects module below. (Hack for reload_sfx().)
-#define	KOBO_SFX_MODULE	1
 
-static const char *kobo_a2sfiles[] =
-{
-	"SFX>>master.a2s",
-	"SFX>>sfx.a2s",
-	"SFX>>uisfx.a2s",
-	"SFX>>music.a2s"
-};
-
-#define	A2SFILE__COUNT	((int)(sizeof(kobo_a2sfiles) / sizeof(char *)))
-
-#define	KOBO_DEFS(x, y)	y,
+#define	KOBO_DEFS(x)	"S_" #x,
 static const char *kobo_soundnames[] =
-{
-	KOBO_ALLSOUNDS
-};
-#undef	KOBO_DEFS
-
-#define	KOBO_DEFS(x, y)	"SOUND_" #x,
-static const char *kobo_soundsymnames[] =
 {
 	KOBO_ALLSOUNDS
 };
@@ -86,34 +66,15 @@ static const char *kobo_soundsymnames[] =
 
 KOBO_sound::KOBO_sound()
 {
-	modules = (A2_handle *)calloc(A2SFILE__COUNT, sizeof(A2_handle));
+	memset(banks, 0, sizeof(banks));
+	memset(sounds, 0, sizeof(sounds));
+	memset(sbank, 0, sizeof(sbank));
 }
 
 
 KOBO_sound::~KOBO_sound()
 {
 	close();
-	free(modules);
-}
-
-
-A2_handle KOBO_sound::load_a2s(const char *path)
-{
-	A2_handle h;
-	log_printf(ULOG, "Loading A2S bank \"%s\"\n", path);
-	const char *p = fmap->get(path);
-	if(!p)
-	{
-		log_printf(ELOG, "Couldn't find \"%s\"!\n", path);
-		return -1;
-	}
-	if((h = a2_Load(state, p, 0)) < 0)
-	{
-		log_printf(ELOG, "Couldn't load\"%s\"! (%s)\n", path,
-				a2_ErrorString((A2_errors)-h));
-		return -1;
-	}
-	return h;
 }
 
 
@@ -122,42 +83,117 @@ A2_handle KOBO_sound::load_a2s(const char *path)
 --------------------------------------------------*/
 
 
-bool KOBO_sound::load(int (*prog)(const char *msg), int module)
+bool KOBO_sound::load(unsigned bank, const char *themepath,
+		int (*prog)(const char *msg))
 {
-	if(module >= 0)
-		modules[module] = load_a2s(kobo_a2sfiles[module]);
-	else
-		for(int i = 0; i < A2SFILE__COUNT; ++i)
-			modules[i] = load_a2s(kobo_a2sfiles[i]);
-
-	for(int i = 0; i < SOUND__COUNT; ++i)
+	if(bank >= KOBO_SOUND_BANKS)
 	{
-		A2_handle h = 0;
-		for(int j = 0; j < A2SFILE__COUNT; ++j)
+		log_printf(ELOG, "Sound bank %d out of range!\n", bank);
+		return false;
+	}
+
+	unload(bank);
+
+	char path[256];
+	snprintf(path, sizeof(path), "%s/main.a2s", themepath);
+
+	log_printf(ULOG, "Loading A2S bank \"%s\"\n", path);
+	const char *p = fmap->get(path);
+	if(!p)
+	{
+		log_printf(ELOG, "Couldn't find \"%s\"!\n", path);
+		return false;
+	}
+	if((banks[bank] = a2_Load(state, p, 0)) < 0)
+	{
+		log_printf(ELOG, "Couldn't load\"%s\"! (%s)\n", path,
+				a2_ErrorString((A2_errors)-banks[bank]));
+		banks[bank] = 0;
+		return false;
+	}
+
+	for(int i = 1; i < S__COUNT; ++i)
+	{
+		int h = a2_Get(state, banks[bank], kobo_soundnames[i]);
+		if(h <= 0)
+			continue;
+
+		sounds[i] = h;
+		sbank[i] = bank;
+		log_printf(ULOG, "%s(%d) handle:%d bank:%d\n",
+				kobo_soundnames[i], i, h, bank);
+
+		// Kill and invalidate an previous sound this replaces. (This
+		// isn't really supposed to happen, unless there are themes
+		// with overlapping exports!)
+		if(i == current_song)
 		{
-			int hh = a2_Get(state, modules[j], kobo_soundnames[i]);
-			if(hh > 0)
+			current_song = 0;
+			a2_Kill(state, musichandle);
+			musichandle = 0;
+		}
+		if(i == current_noise)
+		{
+			current_noise = 0;
+			a2_Kill(state, noisehandle);
+			noisehandle = 0;
+		}
+		switch(i)
+		{
+		  case S_SHOT:
+			a2_Kill(state, gunhandle);
+			gunhandle = 0;
+			break;
+		  case S_G_MASTER:
+			if(master_g > 0)
 			{
-				h = hh;
+				a2_Kill(state, master_g);
+				master_g = 0;
+			}
+			break;
+		  case S_G_UI:
+			if(ui_g > 0)
+			{
+				a2_Kill(state, ui_g);
+				ui_g = 0;
+			}
+			break;
+		  case S_G_SFX:
+			if(sfx_g > 0)
+			{
+				a2_Kill(state, sfx_g);
+				sfx_g = 0;
+			}
+			break;
+		  case S_G_MUSIC:
+			if(music_g > 0)
+			{
+				a2_Kill(state, music_g);
+				music_g = 0;
+			}
+			break;
+		  case S_G_TITLE:
+			if(title_g > 0)
+			{
+				a2_Kill(state, title_g);
+				title_g = 0;
+			}
+			break;
+		}
+	}
+
+	if(prefs->soundtools)
+	{
+		for(int i = 1; i < S__COUNT; ++i)
+			if(!sounds[i])
+			{
+				log_printf(WLOG, "Remaining undefined sfx:\n");
 				break;
 			}
-		}
-		if(h > 0)
-		{
-			sounds[i] = h;
-			log_printf(ULOG, "%s(%d) \"%s\" h:%d\n",
-					kobo_soundsymnames[i], i,
-					kobo_soundnames[i], h);
-		}
-		else
-		{
-			log_printf(ULOG, "%s(%d) \"%s\" (%s)\n",
-					kobo_soundsymnames[i], i,
-					kobo_soundnames[i],
-					h ? a2_ErrorString((A2_errors)-h) :
-					"Not found!");
-			sounds[i] = 0;
-		}
+		for(int i = 1; i < S__COUNT; ++i)
+			if(!sounds[i])
+				log_printf(WLOG, "  %s(%d)\n",
+						kobo_soundnames[i], i);
 	}
 
 	init_mixdown();
@@ -169,55 +205,131 @@ bool KOBO_sound::load(int (*prog)(const char *msg), int module)
 }
 
 
-bool KOBO_sound::reload_sfx()
+void KOBO_sound::unload(int bank)
 {
-	a2_Release(state, modules[KOBO_SFX_MODULE]);
-	modules[KOBO_SFX_MODULE] = 0;
-	sounds_loaded = 0;
-	return load(NULL, KOBO_SFX_MODULE);
+	if(bank < 0)
+	{
+		for(int i = 0; i < KOBO_SOUND_BANKS; ++i)
+			unload(i);
+		return;
+	}
+
+	if(bank >= KOBO_SOUND_BANKS)
+	{
+		log_printf(ELOG, "Sound bank %d out of range!\n", bank);
+		return;
+	}
+
+	if(!state)
+		return;
+
+	if(!banks[bank])
+		return;
+
+	// Unload bank! (This will kill any playing sounds from this bank.)
+	a2_Release(state, banks[bank]);
+	banks[bank] = 0;
+
+	// Remove any handles that were referring to that bank
+	for(int i = 1; i < S__COUNT; ++i)
+		if(sounds[i] && (sbank[i] == (unsigned)bank))
+		{
+			if(i == current_song)
+			{
+				current_song = 0;
+				musichandle = 0;
+			}
+			if(i == current_noise)
+			{
+				current_noise = 0;
+				noisehandle = 0;
+			}
+			switch(i)
+			{
+			  case S_SHOT:
+				gunhandle = 0;
+				break;
+			  case S_G_MASTER:
+				master_g = 0;
+				break;
+			  case S_G_UI:
+				ui_g = 0;
+				break;
+			  case S_G_SFX:
+				sfx_g = 0;
+				break;
+			  case S_G_MUSIC:
+				music_g = 0;
+				break;
+			  case S_G_TITLE:
+				title_g = 0;
+				break;
+			}
+			sounds[i] = 0;
+		}
 }
 
 
 void KOBO_sound::init_mixdown()
 {
-	master_g = a2_Start(state, rootvoice, sounds[SOUND_G_MASTER]);
-	if(master_g < 0)
+	if(master_g <= 0)
 	{
-		log_printf(WLOG, "Couldn't create master mixer group! (%s)\n",
-				a2_ErrorString((A2_errors)-master_g));
-		master_g = a2_NewGroup(state, rootvoice);
+		master_g = a2_Start(state, rootvoice, sounds[S_G_MASTER]);
+		if(master_g < 0)
+		{
+			log_printf(WLOG, "Couldn't create master mixer group!"
+					" (%s)\n",
+					a2_ErrorString((A2_errors)-master_g));
+			master_g = a2_NewGroup(state, rootvoice);
+		}
 	}
 
-	ui_g = a2_Start(state, master_g, sounds[SOUND_G_UI]);
-	if(ui_g < 0)
+	if(ui_g <= 0)
 	{
-		log_printf(WLOG, "Couldn't create UI mixer group! (%s)\n",
-				a2_ErrorString((A2_errors)-ui_g));
-		ui_g = a2_NewGroup(state, master_g);
+		ui_g = a2_Start(state, master_g, sounds[S_G_UI]);
+		if(ui_g < 0)
+		{
+			log_printf(WLOG, "Couldn't create UI mixer group!"
+					" (%s)\n",
+					a2_ErrorString((A2_errors)-ui_g));
+			ui_g = a2_NewGroup(state, master_g);
+		}
 	}
 
-	sfx_g = a2_Start(state, master_g, sounds[SOUND_G_SFX]);
-	if(sfx_g < 0)
+	if(sfx_g <= 0)
 	{
-		log_printf(WLOG, "Couldn't create SFX mixer group! (%s)\n",
-				a2_ErrorString((A2_errors)-sfx_g));
-		sfx_g = a2_NewGroup(state, master_g);
+		sfx_g = a2_Start(state, master_g, sounds[S_G_SFX]);
+		if(sfx_g < 0)
+		{
+			log_printf(WLOG, "Couldn't create SFX mixer group!"
+					" (%s)\n",
+					a2_ErrorString((A2_errors)-sfx_g));
+			sfx_g = a2_NewGroup(state, master_g);
+		}
 	}
 
-	music_g = a2_Start(state, master_g, sounds[SOUND_G_MUSIC]);
-	if(music_g < 0)
+	if(music_g <= 0)
 	{
-		log_printf(WLOG, "Couldn't create music mixer group! (%s)\n",
-				a2_ErrorString((A2_errors)-music_g));
-		music_g = a2_NewGroup(state, master_g);
+		music_g = a2_Start(state, master_g, sounds[S_G_MUSIC]);
+		if(music_g < 0)
+		{
+			log_printf(WLOG, "Couldn't create music mixer group!"
+					" (%s)\n",
+					a2_ErrorString((A2_errors)-music_g));
+			music_g = a2_NewGroup(state, master_g);
+		}
 	}
 
-	title_g = a2_Start(state, master_g, sounds[SOUND_G_TITLE]);
-	if(title_g < 0)
+	if(title_g <= 0)
 	{
-		log_printf(WLOG, "Couldn't create music mixer group! (%s)\n",
-				a2_ErrorString((A2_errors)-title_g));
-		title_g = a2_NewGroup(state, master_g);
+		title_g = a2_Start(state, master_g, sounds[S_G_TITLE]);
+		if(title_g < 0)
+		{
+			log_printf(WLOG, "Couldn't create music mixer group!"
+					" (%s)\n",
+					a2_ErrorString((A2_errors)-title_g));
+			title_g = a2_NewGroup(state, master_g);
+		}
 	}
 }
 
@@ -303,25 +415,20 @@ int KOBO_sound::open()
 
 void KOBO_sound::close()
 {
+	for(int i = 0; i < KOBO_SOUND_BANKS; ++i)
+		unload(i);
 	if(state)
 	{
 		a2_Close(state);
 		state = NULL;
 	}
-	sounds_loaded = 0;
-	music_loaded = 0;
 	rootvoice = 0;
 	master_g = 0;
 	ui_g = 0;
 	sfx_g = 0;
 	music_g = 0;
 	title_g = 0;
-	noisehandle = 0;
-	musichandle = 0;
-	gunhandle = 0;
 	buffer_latency = 0.0f;
-	memset(modules, 0, A2SFILE__COUNT * sizeof(A2_handle));
-	memset(sounds, 0, sizeof(sounds));
 }
 
 
@@ -331,15 +438,7 @@ void KOBO_sound::close()
 
 const char *KOBO_sound::symname(unsigned wid)
 {
-	if(wid >= SOUND__COUNT)
-		return "<OUT OF RANGE>";
-	return kobo_soundsymnames[wid];
-}
-
-
-const char *KOBO_sound::scriptname(unsigned wid)
-{
-	if(wid >= SOUND__COUNT)
+	if(wid >= S__COUNT)
 		return "<OUT OF RANGE>";
 	return kobo_soundnames[wid];
 }
@@ -410,7 +509,7 @@ void KOBO_sound::update_music(bool newsong)
 	if(!state)
 		return;
 
-	// Stop any playing song, if ne wsong, or music is disabled in prefs
+	// Stop any playing song, if new song, or music is disabled in prefs
 	if(musichandle && (newsong || !prefs->music))
 	{
 		a2_Send(state, musichandle, 1);
@@ -468,20 +567,19 @@ void KOBO_sound::jingle(int sng)
 
 bool KOBO_sound::checksound(int wid, const char *where)
 {
-	if(wid < 0 || wid >= SOUND__COUNT)
+	if(wid < 0 || wid >= S__COUNT)
 	{
 		log_printf(ELOG, "%s: Sound index %d is out of range!\n",
 				where, wid);
 		return false;
 	}
-	if(wid == SOUND_NONE)
+	if(wid == S_NONE)
 		return false;	// This is not an error...
 	if(!sounds[wid])
 	{
 		if(prefs->debug)
-			log_printf(ELOG, "%s: Sound \"%s\" (%s/%d) not"
-				" loaded!\n", where, kobo_soundnames[wid],
-				kobo_soundsymnames[wid], wid);
+			log_printf(ELOG, "%s: Sound %s (%d) not loaded!\n",
+					where, kobo_soundnames[wid], wid);
 		return false;
 	}
 	return true;
@@ -490,7 +588,7 @@ bool KOBO_sound::checksound(int wid, const char *where)
 
 void KOBO_sound::g_music(unsigned scene)
 {
-	music(SOUND_INGAMESONG1 + scene / 10 % 5, true);
+	music(S_INGAMESONG1 + scene / 10 % 5, true);
 }
 
 
@@ -498,7 +596,7 @@ void KOBO_sound::ui_play(unsigned wid, int vol, int pitch, int pan)
 {
 	if(!state)
 		return;
-	if(wid < 0 || wid >= SOUND__COUNT)
+	if(wid < 0 || wid >= S__COUNT)
 	{
 		log_printf(ELOG, "KOBO_sound::up_play(): Sound index %d is "
 				"out of range!\n", wid);
@@ -653,9 +751,9 @@ void KOBO_sound::g_player_fire(bool on)
 	}
 	else if(on)
 	{
-		if(!checksound(SOUND_SHOT, "KOBO_sound::g_player_fire()"))
+		if(!checksound(S_SHOT, "KOBO_sound::g_player_fire()"))
 			return;
-		gunhandle = a2_Start(state, sfx_g, sounds[SOUND_SHOT], 0.0f,
+		gunhandle = a2_Start(state, sfx_g, sounds[S_SHOT], 0.0f,
 				(prefs->cannonloud << 14) / 6553600.0f);
 		if(gunhandle < 0)
 		{
@@ -672,8 +770,8 @@ void KOBO_sound::g_player_damage(float level)
 {
 	if(!state)
 		return;
-	if(checksound(SOUND_DAMAGE, "KOBO_sound::g_player_damage()"))
-		a2_Play(state, sfx_g, sounds[SOUND_DAMAGE], 0.0f, level);
+	if(checksound(S_DAMAGE, "KOBO_sound::g_player_damage()"))
+		a2_Play(state, sfx_g, sounds[S_DAMAGE], 0.0f, level);
 }
 
 
@@ -682,9 +780,8 @@ void KOBO_sound::g_player_explo_start()
 	g_player_damage();
 	if(!state)
 		return;
-	if(checksound(SOUND_EXPLO_PLAYER,
-			"KOBO_sound::g_player_explo_start()"))
-		a2_Play(state, sfx_g, sounds[SOUND_EXPLO_PLAYER]);
+	if(checksound(S_EXPLO_PLAYER, "KOBO_sound::g_player_explo_start()"))
+		a2_Play(state, sfx_g, sounds[S_EXPLO_PLAYER]);
 }
 
 
@@ -714,7 +811,7 @@ void KOBO_sound::g_kill_all()
 
 void KOBO_sound::ui_music_title()
 {
-	music(SOUND_TITLESONG);
+	music(S_TITLESONG);
 }
 
 
@@ -740,5 +837,5 @@ void KOBO_sound::ui_noise(int h)
 
 void KOBO_sound::ui_countdown(int remain)
 {
-	ui_play(SOUND_UI_CDTICK, 32768, (60 - remain)<<16);
+	ui_play(S_UI_CDTICK, 32768, (60 - remain)<<16);
 }
