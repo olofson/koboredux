@@ -330,7 +330,7 @@ class KOBO_main
 	static void doing(const char *msg);
 	static int load_palette();
 	static int load_graphics();
-	static int load_sounds();
+	static int load_sounds(bool progress = true);
 
 	static int init_js(prefs_t *p);
 	static void close_js();
@@ -1049,20 +1049,24 @@ static int progress_cb(const char *msg)
 }
 
 
-int KOBO_main::load_sounds()
+int KOBO_main::load_sounds(bool progress)
 {
 	if(!prefs->sound)
 		return 0;
-	wdash->show_progress();
+	if(progress)
+		wdash->show_progress();
 	sound.load(KOBO_SB_LOADER, KOBO_LOADER_SFX_THEME, progress_cb);
-	wdash->progress(0.33f);	// FIXME
+	if(progress)
+		wdash->progress(0.33f);	// FIXME
 	if(prefs->force_fallback_sfxtheme)
 		sound.load(KOBO_SB_FALLBACK, KOBO_FALLBACK_SFX_THEME,
 				progress_cb);
-	wdash->progress(0.67f);	// FIXME
+	if(progress)
+		wdash->progress(0.67f);	// FIXME
 	sound.load(KOBO_SB_MAIN, prefs->sfxtheme[0] ? prefs->sfxtheme :
 			KOBO_DEFAULT_SFX_THEME, progress_cb);
-	wdash->progress(1.0f);	// FIXME
+	if(progress)
+		wdash->progress(1.0f);	// FIXME
 	return 0;
 }
 
@@ -1353,7 +1357,7 @@ int KOBO_main::reload_sounds()
 
 	log_printf(ULOG, "--- Reloading sounds...\n");
 	sound.unload(KOBO_SB_ALL);
-	load_sounds();
+	load_sounds(false);
 	log_printf(ULOG, "--- Sounds reloaded.\n");
 	enemies.restart_sounds();
 	return 0;
