@@ -35,7 +35,6 @@ def S_DAMAGE_M3		sfx.Impact
 def S_DAMAGE_M4		sfx.Impact
 def S_HIT_ROCK		sfx.ImpactGround
 def S_EXPLO_NODE	sfx.SegmentDeath
-def S_EXPLO_CORE	sfx.MegaDeath
 def S_EXPLO_ENEMY	sfx.BoomerangDeath
 def S_EXPLO_PLAYER	sfx.KoboDeath
 def S_EXPLO_RING	sfx.LavaImpact
