@@ -250,7 +250,7 @@ void KOBO_enemy::shot_template_8_dir(const KOBO_enemy_kind *ekp)
 void KOBO_enemy::kill_default()
 {
 	enemies.make(enemies.randexp(), x, y, h >> 1, v >> 1);
-	release();
+	die();
 }
 
 void KOBO_enemy::player_collision(int dx, int dy)
@@ -498,7 +498,7 @@ void KOBO_enemy::move_rock()
 void KOBO_enemy::kill_rock()
 {
 	enemies.make(&rockexpl, x, y, h >> 1, v >> 1);
-	release();
+	die();
 }
 
 const KOBO_enemy_kind rock = {
@@ -543,7 +543,7 @@ void KOBO_enemy::move_ring()
 void KOBO_enemy::kill_ring()
 {
 	enemies.make(&ringexpl, x, y, h >> 1, v >> 1);
-	release();
+	die();
 }
 
 const KOBO_enemy_kind ring = {
@@ -974,14 +974,15 @@ void KOBO_enemy::move_cannon()
 void KOBO_enemy::destroy_cannon()
 {
 	enemies.make(enemies.randexp(), x, y);
-	release();
+	die();
 }
 
 // For destruction via normal damage
 void KOBO_enemy::kill_cannon()
 {
+	enemies.make(enemies.randexp(), x, y);
 	enemies.make(&pipein, x, y);
-	destroy_cannon();
+	die();
 }
 
 const KOBO_enemy_kind cannon = {
@@ -1033,7 +1034,7 @@ void KOBO_enemy::kill_core()
 	enemies.make(&pipeout, x, y, 0, 0, 1);
 	enemies.make(&pipeout, x, y, 0, 0, 5);
 	enemies.make(&explosion4, x, y);
-	release();
+	die();
 	manage.destroyed_a_core();
 }
 
@@ -1621,7 +1622,7 @@ void KOBO_enemy::move_enemy_m1()
 	if(health < 200)
 	{
 		this->shot_template_8_dir(&enemy2);
-		release();
+		die();
 	}
 }
 
@@ -1668,7 +1669,7 @@ void KOBO_enemy::move_enemy_m2()
 	if(health < 200)
 	{
 		this->shot_template_8_dir(&bomb2);
-		release();
+		die();
 	}
 }
 
@@ -1715,7 +1716,7 @@ void KOBO_enemy::move_enemy_m3()
 	if(health < 200)
 	{
 		this->shot_template_8_dir(&rock);
-		release();
+		die();
 	}
 }
 
@@ -1766,7 +1767,7 @@ void KOBO_enemy::move_enemy_m4()
 	if(health < 200)
 	{
 		this->shot_template_8_dir(&rock);
-		release();
+		die();
 	}
 }
 

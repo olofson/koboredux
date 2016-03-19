@@ -127,6 +127,7 @@ class KOBO_enemy
 	 KOBO_enemy();
 	inline void init();
 	inline void release();
+	inline void die();
 	void state(KOBO_state s);
 	void player_collision(int dx, int dy);
 	inline void move();
@@ -279,8 +280,13 @@ inline void KOBO_enemy::release()
 {
 	if(soundhandle)
 		sound.g_stop(soundhandle);
-	playsound(ek->deathsound);
 	state(notuse);
+}
+
+inline void KOBO_enemy::die()
+{
+	playsound(ek->deathsound);
+	release();
 }
 
 inline void KOBO_enemy::startsound()
@@ -335,7 +341,7 @@ inline void KOBO_enemy::hit(int dmg)
 		if(health <= 0)
 		{
 			enemies.make(&explosion, x, y);
-			release();
+			die();
 		}
 		return;
 	}
