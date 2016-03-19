@@ -78,6 +78,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		node_health = 40;
 		core_destroyed_health_bonus = 25;
 		stage_cleared_health_bonus = 25;
+		bomb_delay = 10;
 		break;
 	  case SKILL_HARD:
 		ram_damage = 50;
@@ -90,6 +91,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		node_health = 50;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 25;
+		bomb_delay = 5;
 		break;
 	  case SKILL_INSANE:
 	  default:
@@ -103,6 +105,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		node_health = 60;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 10;
+		bomb_delay = 2;
 		break;
 	}
 }

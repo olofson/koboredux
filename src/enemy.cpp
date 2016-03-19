@@ -561,36 +561,50 @@ void KOBO_enemy::make_bomb()
 	health = 20;
 	damage = 70;
 	di = 1;
+	c = 0;		// Trigger-to-detonation timer
 }
 
 void KOBO_enemy::move_bomb1()
 {
+	if(++di > 16)
+		di = 1;
+
 	int h1 = labs(diffx);
 	int v1 = labs(diffy);
 	if(((h1 < 100) && (v1 < 30)) || ((h1 < 30) && (v1 < 100)))
 	{
-		int vx1 = PIXEL2CS(-diffx) / (3*8);
-		int vy1 = PIXEL2CS(-diffy) / (3*8);
-		int vx2 = vx1, vx3 = vx1;
-		int vy2 = vy1, vy3 = vy1;
-		int i;
-		for(i = 0; i < 4; i++)
-		{
-			int tmp = vx2;
-			vx2 += (vy2 >> 4);
-			vy2 -= (tmp >> 4);
-			tmp = vx3;
-			vx3 -= (vy3 >> 4);
-			vy3 += (tmp >> 4);
-		}
-		enemies.make(&redbullet, x, y, vx2, vy2);
-		enemies.make(&redbullet, x, y, vx3, vy3);
-		enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
-		playsound(S_BOMB_DETO);
-		release();
+		if(!c)
+			startsound(S_BOMB_TRIG);
+		++c;
 	}
-	if(++di > 16)
-		di = 1;
+	else
+	{
+		stopsound();
+		c = 0;
+	}
+	if(c < game.bomb_delay)
+		return;
+
+	// Detonate!
+	int vx1 = PIXEL2CS(-diffx) / (3*8);
+	int vy1 = PIXEL2CS(-diffy) / (3*8);
+	int vx2 = vx1, vx3 = vx1;
+	int vy2 = vy1, vy3 = vy1;
+	int i;
+	for(i = 0; i < 4; i++)
+	{
+		int tmp = vx2;
+		vx2 += (vy2 >> 4);
+		vy2 -= (tmp >> 4);
+		tmp = vx3;
+		vx3 -= (vy3 >> 4);
+		vy3 += (tmp >> 4);
+	}
+	enemies.make(&redbullet, x, y, vx2, vy2);
+	enemies.make(&redbullet, x, y, vx3, vy3);
+	enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
+	playsound(S_BOMB_DETO);
+	release();
 }
 
 const KOBO_enemy_kind bomb1 = {
@@ -617,46 +631,59 @@ const KOBO_enemy_kind bomb1 = {
 
 void KOBO_enemy::move_bomb2()
 {
+	if(--di < 1)
+		di = 16;
+
 	int h1 = labs(diffx);
 	int v1 = labs(diffy);
 	if(((h1 < 100) && (v1 < 20)) || ((h1 < 20) && (v1 < 100)))
 	{
-		int vx1 = PIXEL2CS(-diffx) / (3*8);
-		int vy1 = PIXEL2CS(-diffy) / (3*8);
-		int vx2 = vx1, vx3 = vx1;
-		int vy2 = vy1, vy3 = vy1;
-		int i;
-		for(i = 0; i < 6; i++)
-		{
-			int tmp = vx2;
-			vx2 += (vy2 >> 4);
-			vy2 -= (tmp >> 4);
-			tmp = vx3;
-			vx3 -= (vy3 >> 4);
-			vy3 += (tmp >> 4);
-		}
-		int vx4 = vx2, vx5 = vx3;
-		int vy4 = vy2, vy5 = vy3;
-		for(i = 0; i < 6; i++)
-		{
-			int tmp = vx2;
-			vx2 += (vy2 >> 4);
-			vy2 -= (tmp >> 4);
-			tmp = vx3;
-			vx3 -= (vy3 >> 4);
-			vy3 += (tmp >> 4);
-		}
-		enemies.make(&redbullet, x, y, vx1, vy1);
-		enemies.make(&redbullet, x, y, vx2, vy2);
-		enemies.make(&redbullet, x, y, vx3, vy3);
-		enemies.make(&redbullet, x, y, vx4, vy4);
-		enemies.make(&redbullet, x, y, vx5, vy5);
-		enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
-		playsound(S_BOMB_DETO);
-		release();
+		if(!c)
+			startsound(S_BOMB_TRIG);
+		++c;
 	}
-	if(--di < 1)
-		di = 16;
+	else
+	{
+		stopsound();
+		c = 0;
+	}
+	if(c < game.bomb_delay)
+		return;
+
+	// Detonate!
+	int vx1 = PIXEL2CS(-diffx) / (3*8);
+	int vy1 = PIXEL2CS(-diffy) / (3*8);
+	int vx2 = vx1, vx3 = vx1;
+	int vy2 = vy1, vy3 = vy1;
+	int i;
+	for(i = 0; i < 6; i++)
+	{
+		int tmp = vx2;
+		vx2 += (vy2 >> 4);
+		vy2 -= (tmp >> 4);
+		tmp = vx3;
+		vx3 -= (vy3 >> 4);
+		vy3 += (tmp >> 4);
+	}
+	int vx4 = vx2, vx5 = vx3;
+	int vy4 = vy2, vy5 = vy3;
+	for(i = 0; i < 6; i++)
+	{
+		int tmp = vx2;
+		vx2 += (vy2 >> 4);
+		vy2 -= (tmp >> 4);
+		tmp = vx3;
+		vx3 -= (vy3 >> 4);
+		vy3 += (tmp >> 4);
+	}
+	enemies.make(&redbullet, x, y, vx1, vy1);
+	enemies.make(&redbullet, x, y, vx2, vy2);
+	enemies.make(&redbullet, x, y, vx3, vy3);
+	enemies.make(&redbullet, x, y, vx4, vy4);
+	enemies.make(&redbullet, x, y, vx5, vy5);
+	enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
+	playsound(S_BOMB_DETO);
+	release();
 }
 
 const KOBO_enemy_kind bomb2 = {

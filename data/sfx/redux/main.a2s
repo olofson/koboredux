@@ -46,6 +46,7 @@ def S_EXPLO_M4		sfx.MegaDeath
 def S_RUMBLE		sfx.BaseRumble
 def S_SHOT		sfx.FirePlasma
 def S_METALLIC		sfx.Klank
+def S_BOMB_TRIG		sfx.BombTrig
 def S_BOMB_DETO		sfx.Bomb
 def S_ENEMYM		sfx.Teleport
 def S_CORE		sfx.Reactor

@@ -36,7 +36,7 @@ int KOBO_enemies::explocount = 0;
 int KOBO_enemies::is_intro = 0;
 int KOBO_enemies::sound_update_period = 3;
 
-
+//---------------------------------------------------------------------------//
 KOBO_enemy::KOBO_enemy()
 {
 	object = NULL;
@@ -77,7 +77,14 @@ void KOBO_enemy::state(KOBO_state s)
 	_state = s;
 }
 
+void KOBO_enemy::restartsound()
+{
+	soundhandle = 0;
+	if(ek->sound)
+		startsound(ek->sound);
+}
 
+//---------------------------------------------------------------------------//
 void KOBO_enemies::off()
 {
 	KOBO_enemy *enemyp;
@@ -130,7 +137,7 @@ void KOBO_enemies::restart_sounds()
 {
 	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		enemyp->startsound();
+		enemyp->restartsound();
 }
 
 void KOBO_enemies::put()

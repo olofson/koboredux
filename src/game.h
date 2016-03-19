@@ -140,6 +140,7 @@ class game_t
 	int	rock_damage;
 	int	core_health;
 	int	node_health;
+	int	bomb_delay;	// Bomb trigger-to-detonation delay
 
 	game_t();
 	void reset();
