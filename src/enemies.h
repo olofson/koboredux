@@ -103,7 +103,7 @@ class KOBO_enemy
 	int	h, v;			// Velocity
 	int	contact;		// 0 or amount of overlap (24:8)
 	int	di;			// Direction
-	int	a, b, count;		// "AI" work variables
+	int	a, b, c;		// "AI" work variables
 	int	soundhandle;		// Continuous positional sound fx
 	int	soundtimer;		// Positional audio update timer
 	int	bank, frame;		// Current sprite bank and frame
@@ -314,7 +314,7 @@ inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 	contact = 0;
 	a = 0;
 	b = 0;
-	count = 0;
+	c = 0;
 	health = 20;
 	damage = 50;
 	splash_damage = 0;

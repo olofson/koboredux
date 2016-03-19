@@ -460,7 +460,6 @@ const KOBO_enemy_kind bluebullet = {
 
 void KOBO_enemy::make_rock()
 {
-	count = 500;
 	health = game.rock_health;
 	damage = game.rock_damage;
 	di = gamerand.get(5) + 1;
@@ -481,17 +480,6 @@ void KOBO_enemy::make_rock()
 
 void KOBO_enemy::move_rock()
 {
-#if 0
-	if(bank == B_ROCK3)
-	{
-		di += a;
-		if(di < 1)
-			di += 48;
-		else if(di > 48)
-			di -= 48;
-	}
-	else
-#endif
 	di = ((di + a - 1) & 31) + 1;
 }
 
@@ -527,7 +515,6 @@ void KOBO_enemy::make_ring()
 {
 	physics = false;
 	detonate_on_contact = true;
-	count = 500;
 	health = 20;
 	damage = 30;
 	di = 1;
@@ -571,7 +558,6 @@ const KOBO_enemy_kind ring = {
 void KOBO_enemy::make_bomb()
 {
 	physics = false;
-	count = 500;
 	health = 20;
 	damage = 70;
 	di = 1;
@@ -954,7 +940,7 @@ void KOBO_enemy::make_cannon()
 {
 	physics = false;
 	mapcollide = true;
-	count = 0;
+	c = 0;
 	health = game.node_health;
 	damage = 0;
 	splash_damage = 25;
@@ -964,9 +950,9 @@ void KOBO_enemy::make_cannon()
 
 void KOBO_enemy::move_cannon()
 {
-	count++;
-	count &= b;
-	if(count == a && mindiff < ((VIEWLIMIT >> 1) + 8))
+	c++;
+	c &= b;
+	if(c == a && mindiff < ((VIEWLIMIT >> 1) + 8))
 		this->launch(enemies.ek1());
 }
 
@@ -1011,7 +997,7 @@ void KOBO_enemy::make_core()
 {
 	physics = false;
 	mapcollide = true;
-	count = 0;
+	c = 0;
 	health = game.core_health;
 	damage = 0;
 	splash_damage = 50;
@@ -1021,9 +1007,9 @@ void KOBO_enemy::make_core()
 
 void KOBO_enemy::move_core()
 {
-	count++;
-	count &= b;
-	if(count == a && mindiff < ((VIEWLIMIT >> 1) + 8))
+	c++;
+	c &= b;
+	if(c == a && mindiff < ((VIEWLIMIT >> 1) + 8))
 		this->launch(enemies.ek2());
 }
 
@@ -1067,15 +1053,15 @@ void KOBO_enemy::make_pipein()
 	damage = 0;
 	shootable = false;
 	physics = false;
-	count = 0;
+	c = 0;
 	a = 0;
 }
 
 void KOBO_enemy::move_pipein()
 {
-	if(--count > 0)
+	if(--c > 0)
 		return;
-	count = 2 + gamerand.get(2);
+	c = 2 + gamerand.get(2);
 
 	int x1 = (CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4;
 	int y1 = (CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4;
@@ -1168,7 +1154,7 @@ void KOBO_enemy::make_pipeout()
 	damage = 0;
 	shootable = false;
 	physics = false;
-	count = 0;
+	c = 0;
 	switch (di)
 	{
 	  case 1:
@@ -1192,10 +1178,10 @@ void KOBO_enemy::make_pipeout()
 
 void KOBO_enemy::move_pipeout()
 {
-	if(--count > 0)
+	if(--c > 0)
 		return;
 
-	count = 2 + gamerand.get(2);
+	c = 2 + gamerand.get(2);
 
 	int x1 = (CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4;
 	int y1 = (CS2PIXEL(y) & (WORLD_SIZEY - 1)) >> 4;
@@ -1342,17 +1328,17 @@ void KOBO_enemy::make_enemy2()
 {
 	di = 1;
 	health = 80;
-	count = gamerand.get() & 63;
+	c = gamerand.get() & 63;
 }
 
 void KOBO_enemy::move_enemy2()
 {
 	this->move_enemy_template(4, 192);
-	if(--(count) <= 0)
+	if(--c <= 0)
 	{
 		if(mindiff < ((VIEWLIMIT >> 1) + 8))
 			this->launch(&redbullet);
-		count = 32;
+		c = 32;
 	}
 }
 
@@ -1453,7 +1439,7 @@ const KOBO_enemy_kind enemy4 = {
 
 void KOBO_enemy::make_enemy()
 {
-	count = gamerand.get() & 127;
+	c = gamerand.get() & 127;
 	di = 1;
 	health = 60;
 	a = 0;
@@ -1475,9 +1461,9 @@ void KOBO_enemy::move_enemy5()
 		else
 			a = 0;
 	}
-	if((--count) <= 0)
+	if(--c <= 0)
 	{
-		count = 8;
+		c = 8;
 		if(mindiff > ((VIEWLIMIT >> 1) - 32))
 			this->launch(&greenbullet);
 	}
@@ -1522,9 +1508,9 @@ void KOBO_enemy::move_enemy6()
 		else
 			a = 0;
 	}
-	if((--count) <= 0)
+	if(--c <= 0)
 	{
-		count = 128;
+		c = 128;
 		if(mindiff > ((VIEWLIMIT >> 1) - 32))
 			this->launch(&redbullet);
 	}
@@ -1569,9 +1555,9 @@ void KOBO_enemy::move_enemy7()
 		else
 			a = 0;
 	}
-	if((--count) <= 0)
+	if(--c <= 0)
 	{
-		count = 4;
+		c = 4;
 		if(mindiff > ((VIEWLIMIT >> 1) - 32))
 			this->launch(&bluebullet);
 	}
@@ -1603,7 +1589,7 @@ void KOBO_enemy::make_enemy_m1()
 {
 	di = 1;
 	health = 1000;		// Originally 26 hits
-	count = gamerand.get() & 15;
+	c = gamerand.get() & 15;
 }
 
 void KOBO_enemy::move_enemy_m1()
@@ -1611,9 +1597,9 @@ void KOBO_enemy::move_enemy_m1()
 	this->move_enemy_m(3, 128);
 	if(++di > 16)
 		di = 1;
-	if((count--) <= 0)
+	if(c-- <= 0)
 	{
-		count = 4;
+		c = 4;
 		if(mindiff < ((VIEWLIMIT >> 1) - 16))
 		{
 			this->launch(&enemy1);
@@ -1652,7 +1638,7 @@ void KOBO_enemy::make_enemy_m2()
 {
 	di = 1;
 	health = 1000;
-	count = gamerand.get() & 15;
+	c = gamerand.get() & 15;
 }
 
 void KOBO_enemy::move_enemy_m2()
@@ -1660,9 +1646,9 @@ void KOBO_enemy::move_enemy_m2()
 	this->move_enemy_m(3, 128);
 	if(++di > 16)
 		di = 1;
-	if((count--) <= 0)
+	if(c-- <= 0)
 	{
-		count = 8;
+		c = 8;
 		if(mindiff < ((VIEWLIMIT >> 1) + 8))
 			this->launch(&enemy2);
 	}
@@ -1699,7 +1685,7 @@ void KOBO_enemy::make_enemy_m3()
 {
 	di = 1;
 	health = 1000;
-	count = gamerand.get() & 15;
+	c = gamerand.get() & 15;
 }
 
 void KOBO_enemy::move_enemy_m3()
@@ -1707,9 +1693,9 @@ void KOBO_enemy::move_enemy_m3()
 	this->move_enemy_m(3, 128);
 	if(--di < 1)
 		di = 16;
-	if((count--) <= 0)
+	if(c-- <= 0)
 	{
-		count = 64;
+		c = 64;
 		if(mindiff < ((VIEWLIMIT >> 1) + 8))
 			this->shot_template_8_dir(&bomb2);
 	}
@@ -1746,7 +1732,7 @@ void KOBO_enemy::make_enemy_m4()
 {
 	di = 1;
 	health = 1000;
-	count = gamerand.get() & 15;
+	c = gamerand.get() & 15;
 }
 
 void KOBO_enemy::move_enemy_m4()
@@ -1758,9 +1744,9 @@ void KOBO_enemy::move_enemy_m4()
 		&enemy1, &enemy2, &bomb2, &ring, &enemy1, &enemy2, &ring,
 		&enemy1
 	};
-	if((count--) <= 0)
+	if(c-- <= 0)
 	{
-		count = 64;
+		c = 64;
 		if(mindiff < ((VIEWLIMIT >> 1) + 8))
 			this->shot_template_8_dir(shot[gamerand.get() & 7]);
 	}
