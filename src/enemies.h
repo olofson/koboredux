@@ -129,6 +129,7 @@ class KOBO_enemy
 	inline void release();
 	inline void die();
 	void state(KOBO_state s);
+	inline bool in_use()	{ return _state != notuse; }
 	void player_collision(int dx, int dy);
 	inline void move();
 	inline void move_intro();

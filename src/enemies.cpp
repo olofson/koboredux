@@ -137,7 +137,8 @@ void KOBO_enemies::restart_sounds()
 {
 	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		enemyp->restartsound();
+		if(enemyp->in_use())
+			enemyp->restartsound();
 }
 
 void KOBO_enemies::put()
