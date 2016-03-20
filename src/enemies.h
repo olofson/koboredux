@@ -51,9 +51,9 @@ struct KOBO_enemy_kind
 	KOBO_sounds	deathsound;
 };
 
-extern const KOBO_enemy_kind greenbullet;
-extern const KOBO_enemy_kind redbullet;
-extern const KOBO_enemy_kind bluebullet;
+extern const KOBO_enemy_kind bullet1;
+extern const KOBO_enemy_kind bullet2;
+extern const KOBO_enemy_kind bullet2;
 extern const KOBO_enemy_kind explosion;
 extern const KOBO_enemy_kind explosion3;
 extern const KOBO_enemy_kind explosion4;
@@ -153,13 +153,13 @@ class KOBO_enemy
 
 	void kill_default();
 
-	void make_bullet_green();
-	void make_bullet_red();
-	void make_bullet_blue();
+	void make_bullet1();
+	void make_bullet2();
+	void make_bullet3();
 	void move_bullet();
-	void kill_bullet_green();
-	void kill_bullet_red();
-	void kill_bullet_blue();
+	void kill_bullet1();
+	void kill_bullet2();
+	void kill_bullet3();
 
 	void make_rock();
 	void move_rock();

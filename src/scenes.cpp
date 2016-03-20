@@ -26,7 +26,7 @@ const KOBO_scene scenes[] = {
 	/* Test map */
 	{
 		0, 32, 0,
-		&greenbullet, 128, &greenbullet, 16,
+		&bullet2, 128, &bullet2, 16,
 		1,{
 			{&enemy_m4,  5, 5},
 		},
@@ -39,7 +39,7 @@ const KOBO_scene scenes[] = {
 	/* 1 */
 	{
 		0, 32, 96,
-		&greenbullet, 128, &greenbullet, 16,
+		&bullet2, 128, &bullet2, 16,
 		1,{
 			{&enemy4,  10, 5},
 		},
@@ -51,7 +51,7 @@ const KOBO_scene scenes[] = {
 	/* 2 */
 	{
 		0, 32, 96,
-		&greenbullet, 64, &greenbullet, 64,
+		&bullet2, 64, &bullet2, 64,
 		3,{
 			{&enemy4,   10,  5},
 			{&enemy4,   10,  5},
@@ -67,7 +67,7 @@ const KOBO_scene scenes[] = {
 	/* 3 */
 	{
 		64, 32, 64,
-		&greenbullet, 64, &greenbullet, 16,
+		&bullet2, 64, &bullet2, 16,
 		1,{
 			{&rock,	 20,  3},
 		},
@@ -83,7 +83,7 @@ const KOBO_scene scenes[] = {
 	/* 4 */
 	{
 		0, 32, 96,
-		&greenbullet, 32, &greenbullet, 8,
+		&bullet2, 32, &bullet2, 8,
 		1,{
 			{&enemy4,  10, 5},
 		},
@@ -96,7 +96,7 @@ const KOBO_scene scenes[] = {
 	/* 5 */
 	{
 		0, 32, 96,
-		&greenbullet, 128, &greenbullet, 128,
+		&bullet2, 128, &bullet2, 128,
 		3,{
 			{&enemy6,   10,  5},
 			{&enemy6,   10,  5},
@@ -160,7 +160,7 @@ const KOBO_scene scenes[] = {
 	/* 9 */
 	{
 		0, 32, 96,
-		&greenbullet, 16, &greenbullet, 8,
+		&bullet2, 16, &bullet2, 8,
 		1,{
 			{&bomb2, 20, 5},
 		},
@@ -202,7 +202,7 @@ const KOBO_scene scenes[] = {
 	/* 12 */
 	{
 		0, 47, 33,
-		&greenbullet, 128, &greenbullet, 16,
+		&bullet2, 128, &bullet2, 16,
 		3,{
 			{&enemy6,  10, 5},
 			{&enemy6,  10, 5},
@@ -233,7 +233,7 @@ const KOBO_scene scenes[] = {
 	/* 14 */
 	{
 		0, 24, 107,
-		&enemy2, 128, &greenbullet, 8,
+		&enemy2, 128, &bullet2, 8,
 		4,{
 			{&enemy3,  10, 5},
 			{&enemy6,  10, 5},
@@ -282,7 +282,7 @@ const KOBO_scene scenes[] = {
 	/* 17 */
 	{
 		0, 53, 17,
-		&greenbullet, 32, &enemy1, 32,
+		&bullet2, 32, &enemy1, 32,
 		1,{
 			{&enemy3,  10, 5},
 		},
@@ -374,7 +374,7 @@ const KOBO_scene scenes[] = {
 	/* 21 */
 	{
 		0, 26, 30,
-		&enemy1, 128, &greenbullet, 16,
+		&enemy1, 128, &bullet2, 16,
 		2,{
 			{&enemy3,  20, 5},
 			{&rock,	50, 5},
@@ -391,7 +391,7 @@ const KOBO_scene scenes[] = {
 	/* 22 */
 	{
 		0, 38, 120,
-		&ring, 128, &greenbullet, 16,
+		&ring, 128, &bullet2, 16,
 		6,{
 			{&ring,	10, 5},
 			{&ring,	10, 5},
@@ -454,7 +454,7 @@ const KOBO_scene scenes[] = {
 	/* 24 */
 	{
 		127, 32, 41,
-		&enemy1, 128, &greenbullet, 16,
+		&enemy1, 128, &bullet2, 16,
 		3,{
 			{&rock,	50, 5},
 			{&enemy2,  20, 5},
@@ -474,7 +474,7 @@ const KOBO_scene scenes[] = {
 	/* 25 */
 	{
 		256, 32, 96,
-		&greenbullet, 32, &enemy1, 32,
+		&bullet2, 32, &enemy1, 32,
 		2,{
 			{&enemy6,  50, 5},
 			{&rock,   100, 5},
@@ -529,7 +529,7 @@ const KOBO_scene scenes[] = {
 	/* 27 */
 	{
 		0, 32, 64,
-		&greenbullet, 32, &enemy5, 32,
+		&bullet2, 32, &enemy5, 32,
 		3,{
 			{&enemy1,  20, 5},
 			{&bomb1,   50, 5},
@@ -559,7 +559,7 @@ const KOBO_scene scenes[] = {
 	/* 29 */
 	{
 		0, 32, 60,
-		&enemy2, 128, &greenbullet, 4,
+		&enemy2, 128, &bullet2, 4,
 		5,{
 			{&enemy5,  20, 5},
 			{&bomb2,   10, 5},
@@ -578,7 +578,7 @@ const KOBO_scene scenes[] = {
 	/* 30 */
 	{
 		0, 23, 71,
-		&enemy5, 64, &greenbullet, 16,
+		&enemy5, 64, &bullet2, 16,
 		3,{
 			{&enemy6,   2, 5},
 			{&enemy6,   2, 5},
@@ -636,7 +636,7 @@ const KOBO_scene scenes[] = {
 	/* 32 */
 	{
 		0, 32, 96,
-		&greenbullet, 128, &greenbullet, 16,
+		&bullet2, 128, &bullet2, 16,
 		0,{
 			{&enemy1,  40, 10},
 		},
@@ -666,7 +666,7 @@ const KOBO_scene scenes[] = {
 	/* 34 */
 	{
 		0, 54, 120,
-		&enemy6, 64, &greenbullet, 16,
+		&enemy6, 64, &bullet2, 16,
 		1,{
 			{&bomb2,   10, 5},
 		},
@@ -716,7 +716,7 @@ const KOBO_scene scenes[] = {
 	/* 36 */
 	{
 		0, 32, 64,
-		&greenbullet, 16, &enemy2, 64,
+		&bullet2, 16, &enemy2, 64,
 		5,{
 			{&enemy1,   10, 10},
 			{&enemy2,   10, 10},
@@ -740,7 +740,7 @@ const KOBO_scene scenes[] = {
 	/* 37 */
 	{
 		256, 32, 96,
-		&greenbullet, 64, &ring, 64,
+		&bullet2, 64, &ring, 64,
 		0,{
 			{&ring,	  0,  5},
 		},
@@ -850,7 +850,7 @@ const KOBO_scene scenes[] = {
 	/* 41 */
 	{
 		0, 32, 96,
-		&greenbullet, 64, &greenbullet, 16,
+		&bullet2, 64, &bullet2, 16,
 		1,{
 			{&bomb2,	40, 10},
 		},
@@ -971,7 +971,7 @@ const KOBO_scene scenes[] = {
 	/* 46 */
 	{
 		0, 59, 34,
-		&greenbullet, 64, &greenbullet, 16,
+		&bullet2, 64, &bullet2, 16,
 		4,{
 			{&rock,	15, 5},
 			{&enemy_m3, 1, 5},
@@ -1118,7 +1118,7 @@ const KOBO_scene scenes[] = {
 	/* 49 */
 	{
 		0, 38, 67,
-		&greenbullet, 32, &greenbullet, 8,
+		&bullet2, 32, &bullet2, 8,
 		6,{
 			{&enemy2,  10, 5},
 			{&bomb1,   50, 5},
@@ -1155,7 +1155,7 @@ const KOBO_scene scenes[] = {
 	/* 50 */
 	{
 		0, 32, 120,
-		&greenbullet, 8, &enemy1, 8,
+		&bullet2, 8, &enemy1, 8,
 		1,{
 			{&bomb2, 80, 5},
 		},

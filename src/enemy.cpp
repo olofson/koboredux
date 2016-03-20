@@ -356,27 +356,27 @@ void KOBO_enemy::render_hit_zone()
  * ===========================================================================
  */
 
-void KOBO_enemy::make_bullet_green()
+void KOBO_enemy::make_bullet1()
 {
 	di = 1 + pubrand.get(3);
 	health = 1;
 	shootable = false;
 	physics = false;
-	damage = 20;
+	damage = 10;
 	takes_splash_damage = false;
 	detonate_on_contact = true;
 }
 
-void KOBO_enemy::make_bullet_red()
+void KOBO_enemy::make_bullet2()
 {
-	make_bullet_green();
-	damage = 40;
+	make_bullet1();
+	damage = 20;
 }
 
-void KOBO_enemy::make_bullet_blue()
+void KOBO_enemy::make_bullet3()
 {
-	make_bullet_green();
-	damage = 10;
+	make_bullet1();
+	damage = 40;
 }
 
 void KOBO_enemy::move_bullet()
@@ -388,65 +388,65 @@ void KOBO_enemy::move_bullet()
 		di = 1;
 }
 
-void KOBO_enemy::kill_bullet_green()
-{
-	enemies.make(&greenbltexpl, x, y);
-	release();
-}
-
-void KOBO_enemy::kill_bullet_red()
-{
-	enemies.make(&redbltexpl, x, y);
-	release();
-}
-
-void KOBO_enemy::kill_bullet_blue()
+void KOBO_enemy::kill_bullet1()
 {
 	enemies.make(&bluebltexpl, x, y);
 	release();
 }
 
-const KOBO_enemy_kind greenbullet = {
-	0,
-	&KOBO_enemy::make_bullet_green,
-	&KOBO_enemy::move_bullet,
-	&KOBO_enemy::kill_bullet_green,
-	2,
-	B_BLT_GREEN, 0,
-	LAYER_BULLETS,
-	3,
-	S_NONE,
-	S_LAUNCH_BULLET,
-	S_NONE,
-	S_NONE
-};
+void KOBO_enemy::kill_bullet2()
+{
+	enemies.make(&greenbltexpl, x, y);
+	release();
+}
 
-const KOBO_enemy_kind redbullet = {
-	0,
-	&KOBO_enemy::make_bullet_red,
-	&KOBO_enemy::move_bullet,
-	&KOBO_enemy::kill_bullet_red,
-	2,
-	B_BLT_RED, 0,
-	LAYER_BULLETS,
-	2,
-	S_NONE,
-	S_LAUNCH_BULLET,
-	S_NONE,
-	S_NONE
-};
+void KOBO_enemy::kill_bullet3()
+{
+	enemies.make(&redbltexpl, x, y);
+	release();
+}
 
-const KOBO_enemy_kind bluebullet = {
+const KOBO_enemy_kind bullet1 = {
 	0,
-	&KOBO_enemy::make_bullet_blue,
+	&KOBO_enemy::make_bullet1,
 	&KOBO_enemy::move_bullet,
-	&KOBO_enemy::kill_bullet_blue,
+	&KOBO_enemy::kill_bullet1,
 	2,
 	B_BLT_BLUE, 0,
 	LAYER_BULLETS,
 	5,
 	S_NONE,
-	S_LAUNCH_BULLET,
+	S_LAUNCH_BULLET1,
+	S_NONE,
+	S_NONE
+};
+
+const KOBO_enemy_kind bullet2 = {
+	0,
+	&KOBO_enemy::make_bullet2,
+	&KOBO_enemy::move_bullet,
+	&KOBO_enemy::kill_bullet2,
+	2,
+	B_BLT_GREEN, 0,
+	LAYER_BULLETS,
+	3,
+	S_NONE,
+	S_LAUNCH_BULLET2,
+	S_NONE,
+	S_NONE
+};
+
+const KOBO_enemy_kind bullet3 = {
+	0,
+	&KOBO_enemy::make_bullet3,
+	&KOBO_enemy::move_bullet,
+	&KOBO_enemy::kill_bullet3,
+	2,
+	B_BLT_RED, 0,
+	LAYER_BULLETS,
+	2,
+	S_NONE,
+	S_LAUNCH_BULLET3,
 	S_NONE,
 	S_NONE
 };
@@ -600,8 +600,8 @@ void KOBO_enemy::move_bomb1()
 		vx3 -= (vy3 >> 4);
 		vy3 += (tmp >> 4);
 	}
-	enemies.make(&redbullet, x, y, vx2, vy2);
-	enemies.make(&redbullet, x, y, vx3, vy3);
+	enemies.make(&bullet3, x, y, vx2, vy2);
+	enemies.make(&bullet3, x, y, vx3, vy3);
 	enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
 	playsound(S_BOMB_DETO);
 	release();
@@ -676,11 +676,11 @@ void KOBO_enemy::move_bomb2()
 		vx3 -= (vy3 >> 4);
 		vy3 += (tmp >> 4);
 	}
-	enemies.make(&redbullet, x, y, vx1, vy1);
-	enemies.make(&redbullet, x, y, vx2, vy2);
-	enemies.make(&redbullet, x, y, vx3, vy3);
-	enemies.make(&redbullet, x, y, vx4, vy4);
-	enemies.make(&redbullet, x, y, vx5, vy5);
+	enemies.make(&bullet3, x, y, vx1, vy1);
+	enemies.make(&bullet3, x, y, vx2, vy2);
+	enemies.make(&bullet3, x, y, vx3, vy3);
+	enemies.make(&bullet3, x, y, vx4, vy4);
+	enemies.make(&bullet3, x, y, vx5, vy5);
 	enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
 	playsound(S_BOMB2_DETO);
 	release();
@@ -1364,7 +1364,7 @@ void KOBO_enemy::move_enemy2()
 	if(--c <= 0)
 	{
 		if(mindiff < ((VIEWLIMIT >> 1) + 8))
-			this->launch(&redbullet);
+			this->launch(&bullet3);
 		c = 32;
 	}
 }
@@ -1492,7 +1492,7 @@ void KOBO_enemy::move_enemy5()
 	{
 		c = 8;
 		if(mindiff > ((VIEWLIMIT >> 1) - 32))
-			this->launch(&greenbullet);
+			this->launch(&bullet2);
 	}
 }
 
@@ -1539,7 +1539,7 @@ void KOBO_enemy::move_enemy6()
 	{
 		c = 128;
 		if(mindiff > ((VIEWLIMIT >> 1) - 32))
-			this->launch(&redbullet);
+			this->launch(&bullet3);
 	}
 }
 
@@ -1586,7 +1586,7 @@ void KOBO_enemy::move_enemy7()
 	{
 		c = 4;
 		if(mindiff > ((VIEWLIMIT >> 1) - 32))
-			this->launch(&bluebullet);
+			this->launch(&bullet1);
 	}
 }
 
