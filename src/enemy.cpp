@@ -1648,10 +1648,10 @@ const KOBO_enemy_kind enemy_m1 = {
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
 	0,
+	S_ENEMY_M1,
 	S_NONE,
 	S_NONE,
-	S_DAMAGE_M1,
-	S_EXPLO_M1
+	S_NONE
 };
 
 
@@ -1695,10 +1695,10 @@ const KOBO_enemy_kind enemy_m2 = {
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
 	0,
+	S_ENEMY_M2,
 	S_NONE,
 	S_NONE,
-	S_DAMAGE_M2,
-	S_EXPLO_M2
+	S_NONE
 };
 
 
@@ -1742,10 +1742,10 @@ const KOBO_enemy_kind enemy_m3 = {
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
 	0,
+	S_ENEMY_M3,
 	S_NONE,
 	S_NONE,
-	S_DAMAGE_M3,
-	S_EXPLO_M3
+	S_NONE
 };
 
 
@@ -1793,8 +1793,8 @@ const KOBO_enemy_kind enemy_m4 = {
 	B_BIGSHIP, 0,
 	LAYER_ENEMIES,
 	0,
+	S_ENEMY_M4,
 	S_NONE,
 	S_NONE,
-	S_DAMAGE_M4,
-	S_EXPLO_M4
+	S_NONE
 };

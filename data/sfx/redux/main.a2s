@@ -31,20 +31,12 @@ def S_LAUNCH_BULLET3	sfx.FireElectro
 def S_LAUNCH_RING	sfx.Launch
 def S_LAUNCH_BOMB	sfx.Launch
 def S_DAMAGE		sfx.Impact
-def S_DAMAGE_M1		sfx.Impact
-def S_DAMAGE_M2		sfx.Impact
-def S_DAMAGE_M3		sfx.Impact
-def S_DAMAGE_M4		sfx.Impact
 def S_HIT_ROCK		sfx.ImpactGround
 def S_EXPLO_NODE	sfx.SegmentDeath
 def S_EXPLO_ENEMY	sfx.BoomerangDeath
 def S_EXPLO_PLAYER	sfx.KoboDeath
 def S_EXPLO_RING	sfx.LavaImpact
 def S_EXPLO_ROCK	sfx.BoomerangDeath
-def S_EXPLO_M1		sfx.MegaDeath
-def S_EXPLO_M2		sfx.MegaDeath
-def S_EXPLO_M3		sfx.MegaDeath
-def S_EXPLO_M4		sfx.MegaDeath
 def S_RUMBLE		sfx.BaseRumble
 def S_SHOT		sfx.FirePlasma
 def S_METALLIC		sfx.Klank
@@ -52,8 +44,12 @@ def S_BOMB_TRIG		sfx.BombTrig
 def S_BOMB_DETO		sfx.BombDetonation
 def S_BOMB2_TRIG	sfx.BombTrig
 def S_BOMB2_DETO	sfx.BombDetonation
-def S_BIGSPAWN		sfx.Teleport
 def S_CORE		sfx.Reactor
+def S_BIGSPAWN		sfx.Teleport
+def S_ENEMY_M1		sfx.Reactor
+def S_ENEMY_M2		sfx.Reactor
+def S_ENEMY_M3		sfx.Reactor
+def S_ENEMY_M4		sfx.Reactor
 
 
   //////////////////////////////////
