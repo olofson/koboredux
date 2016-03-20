@@ -243,7 +243,7 @@ void KOBO_enemy::shot_template_8_dir(const KOBO_enemy_kind *ekp)
 	int i;
 	for(i = 0; i < 8; i++)
 		enemies.make(ekp, x, y, vx[i], vy[i]);
-	playsound(S_ENEMYM);
+	playsound(S_BIGSPAWN);
 	playsound(ekp->launchsound);
 }
 
@@ -639,7 +639,7 @@ void KOBO_enemy::move_bomb2()
 	if(((h1 < 100) && (v1 < 20)) || ((h1 < 20) && (v1 < 100)))
 	{
 		if(!c)
-			startsound(S_BOMB_TRIG);
+			startsound(S_BOMB2_TRIG);
 		++c;
 	}
 	else
@@ -682,7 +682,7 @@ void KOBO_enemy::move_bomb2()
 	enemies.make(&redbullet, x, y, vx4, vy4);
 	enemies.make(&redbullet, x, y, vx5, vy5);
 	enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
-	playsound(S_BOMB_DETO);
+	playsound(S_BOMB2_DETO);
 	release();
 }
 

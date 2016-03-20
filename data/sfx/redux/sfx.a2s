@@ -369,8 +369,8 @@ BombTrig(P V=1 PanX)
 	!playing 1
 	while (playing) {
 		3 {
-			p 4; d 10
-			p 6; d 10
+			p 40n;	d 10
+			p 45n;	d 10
 		}
 	}
 	1() {
@@ -385,7 +385,7 @@ BombTrig(P V=1 PanX)
 }
 
 
-Bomb(P V=1 PanX)
+BombDetonation(P V=1 PanX)
 {
 	struct { inline; panmix }
 	pan PanX
