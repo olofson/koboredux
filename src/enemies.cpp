@@ -48,6 +48,7 @@ void KOBO_enemy::state(KOBO_state s)
 	switch(s)
 	{
 	  case notuse:
+		stopsound();
 		if(object)
 		{
 			gengine->free_obj(object);
