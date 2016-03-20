@@ -33,14 +33,14 @@ def FADETIME	100
 Launch(P V=1 PanX)
 {
 	struct { wtosc; inline; panmix }
-	pan PanX
-	a (V * .5)
+	pan PanX; vol V; set
+	a .5
 	w noise; p -2
 	15 {
 		+p .4; d 3
 	}
-	fump P (V * 2)
-	a (V * .1); d 50
+	fump P 2
+	a .1; d 50
 	-p 2
 	a 0; d 200
 }
@@ -58,15 +58,15 @@ Launch(P V=1 PanX)
 FireElectro(P V=1 PanX)
 {
 	struct { wtosc; inline; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
 	w saw; a 0
 	5 {
-		p 5; +a (V * .04)
+		p 5; +a .04
 		15 {	d 1; -p .2 }
 	}
 	*a .5
-	Electro1 (V * .3)
+	Electro1 .3
 	20 {
 		p 3.7; *a .85
 		14 {	d 1; -p .2 }
@@ -90,24 +90,24 @@ FireElectro(P V=1 PanX)
 Impact(P V=1 PanX)
 {
 	struct { wtosc; inline; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
-	blopp 0 V .7
-	w square; p (rand .5 + 1); a (V * .3); set a
+	blopp 0 1 .7
+	w square; p (rand .5 + 1); a .3; set a
 	5 { -p .2; d 1 }
-	w triangle; a V
+	w triangle; a 1
 	15 { -p .1; d 2 }
 	a 0; d 10
-	w noise; p (rand .5 + 4); a (V * .1); set a; a 0; d 100
+	w noise; p (rand .5 + 4); a .1; set a; a 0; d 100
 }
 
 
 ImpactGround(P V=1 PanX)
 {
 	struct { wtosc; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
-	w triangle; p (rand 1 + .5); a (V * .3); set a
+	w triangle; p (rand 1 + .5); a .3; set a
 	10 { -p .2; d 2 }
 	10 { -p .1; d 5 }
 	p (rand .5 - 3); a 0; d 100
@@ -117,25 +117,26 @@ ImpactGround(P V=1 PanX)
 LavaImpact(P V=1 PanX)
 {
 	struct { wtosc; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
-	w triangle; p (rand 1 + 1); a (V * .3)
+	w triangle; p (rand 1 + 1); a .3
 	5 {	-p .2; d .5 }
 	20 {	-p .1; d 1 }
 	a 0; d 10
 	w sine
 	10 {
-		p (rand 1 - 1); +a (V * .05); d 2
+		p (rand 1 - 1); +a .05; d 2
 	}
 	wg (a - .01) {
-		p (rand 1 - 2); *a (V * .8); d 2
+		p (rand 1 - 2); *a .8; d 2
 	}
 	w noise; p 6
 	50 {
-		a (V * rand .1); set a; d (1 + rand 15)
+		a (rand .1); set a; d (1 + rand 15)
 	}
-	wg (V - .01) {
-		a (V * rand .1); set a; d (1 + rand 15); *V .93
+	!A 1
+	wg (A - .01) {
+		@a (A * rand .1); d (1 + rand 15); *A .93
 	}
 }
 
@@ -184,11 +185,11 @@ LavaImpact(P V=1 PanX)
 SegmentDeath(P V=1 PanX)
 {
 	struct { inline; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
-	Explosion (rand 1) (V * 2) .1
-	Explosion (rand 1 - 1) (V * 2) .2
-	Rattle (rand 1 - .5) (V * 1.5) 20 .85 10
+	Explosion (rand 1) 2 .1
+	Explosion (rand 1 - 1) 2 .2
+	Rattle (rand 1 - .5) 1.5 20 .85 10
 }
 
 
@@ -210,20 +211,20 @@ SegmentDeath(P V=1 PanX)
 MegaDeath(P V=1 PanX)
 {
 	struct { inline; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	tr P
-	Explosion (1.5 + rand .5) V .2
+	Explosion (1.5 + rand .5) 1 .2
 	d (50 + rand 100)
-	Sweep (V * .4) (rand .1 - .7) triangle 2 250 .99
-	Sweep (V * .4) (rand .1 - 1) triangle 2 250 .99
-	Sweep (V * .15) -1 saw 2 250 .99
-	Sweep (V * .15) -1.2 saw 2 250 .99
-	Sweep V -2 triangle 1 250 .99
-	Sweep (V * 2) -3 triangle 1 250 .99
+	Sweep .4 (rand .1 - .7) triangle 2 250 .99
+	Sweep .4 (rand .1 - 1) triangle 2 250 .99
+	Sweep .15 -1 saw 2 250 .99
+	Sweep .15 -1.2 saw 2 250 .99
+	Sweep 1 -2 triangle 1 250 .99
+	Sweep 2 -3 triangle 1 250 .99
 	d (50 + rand 300)
-	Explosion 0 V 1
+	Explosion 0 1 1
 	d (200 + rand 500)
-	Explosion -.5 V 1
+	Explosion -.5 1 1
 }
 
 
@@ -258,40 +259,40 @@ MegaDeath(P V=1 PanX)
 BoomerangDeath(P V=1 PanX)
 {
 	struct { inline; panmix }
-	pan PanX
-	Explosion (P + 1.5 + rand .5) V .2
-	Rumble P (V * 2) .9
-	Rattle P (V * 2) 30 .7 20
+	pan PanX; vol V; set
+	Explosion (P + 1.5 + rand .5) 1 .2
+	Rumble P 2 .9
+	Rattle P 2 30 .7 20
 	d (100 + rand 100)
-	Debris P (V * 4) 20 .7 30
-	Rumble (P - .9) (V * 2) .97
+	Debris P 4 20 .7 30
+	Rumble (P - .9) 2 .97
 }
 
 
 KoboDeath(P V=1 PanX)
 {
 	struct { inline; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
-	Explosion (2 + rand .5) V .3
-	Explosion (rand .5 - 1) V 1
-	Rumble -1 (V * 4) .98
-	Rattle 0 (V * 1.5) 50 .85 50
-	Debris 0 (V * 3) 40 .9 50
-	Sweep (V * .04) (rand .2 + 2.7) saw 2 150 .95
-	Sweep (V * .04) (rand .2 + 3) saw 2 150 .95
-	Sweep (V * .2) (rand .2 + 1.2) triangle 2 150 .95
-	Sweep (V * .2) (rand .2) triangle 2 150 .95
-	Sweep V -2 triangle 1 250 .99
-	Sweep V -2.5 triangle 1 250 .99
+	Explosion (2 + rand .5) 1 .3
+	Explosion (rand .5 - 1) 1 1
+	Rumble -1 4 .98
+	Rattle 0 1.5 50 .85 50
+	Debris 0 3 40 .9 50
+	Sweep .04 (rand .2 + 2.7) saw 2 150 .95
+	Sweep .04 (rand .2 + 3) saw 2 150 .95
+	Sweep .2 (rand .2 + 1.2) triangle 2 150 .95
+	Sweep .2 (rand .2) triangle 2 150 .95
+	Sweep 1 -2 triangle 1 250 .99
+	Sweep 1 -2.5 triangle 1 250 .99
 }
 
 
 BaseRumble(P V=1 PanX)
 {
 	struct { wtosc; panmix }
-	pan PanX
-	w triangle; a (V * 2)
+	pan PanX; vol V; set
+	w triangle; a 2
 	-P (4 + rand .5)
 	!po (3 + rand 1)
 	50 {
@@ -312,27 +313,27 @@ BaseRumble(P V=1 PanX)
 FirePlasma(P V=1 PanX)
 {
 	struct { wtosc; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
 
 .retrig
 	// Fire!
-	a (V * .1); set a; w noise; p 5; d 10
-	a (V * .5); set a; w triangle; p 1.5
+	a .1; set a; w noise; p 5; d 10
+	a .5; set a; w triangle; p 1.5
 	6 {	d 5; -p .5; +p (rand .1); -a .025 }
 	w saw; p (2 + rand .2); a .005; set a
-	+a (V * .005)
+	+a .005
 	+p .9; d 10
 	-p .85; d 10
 
 	// Recharge (aborted if retrigged)
 	9 {
-		+a (V * .005)
+		+a .005
 		+p .9; d 10
 		-p .85; d 10
 	}
 	20 {
-		-a (V * .003)
+		-a .003
 		+p .7; d 10
 		-p .65; d 10
 	}
@@ -347,15 +348,14 @@ FirePlasma(P V=1 PanX)
 Klank(P V=1 PanX)
 {
 	struct { wtosc; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
-	*V .25
-	w noise;	p 5;	a (V * .6); set a;	d 5
+	w noise;	p 5;	@a .15;		d 5
 	w square
-	p (rand .1 );		a (V * .5); set a;	d 5
-	p (rand .3 + 1);	a (V * .4); set a;	d 5
-	p (rand .2 + 2.5);	a (V * .3); set a;	d 5
-	p (rand .1 + 4);	a (V * .2); set a
+	p (rand .1 );		@a .125;	d 5
+	p (rand .3 + 1);	@a .1;		d 5
+	p (rand .2 + 2.5);	@a .075;	d 5
+	p (rand .1 + 4);	@a .05
 	a 0; d 20
 }
 
@@ -388,12 +388,12 @@ BombTrig(P V=1 PanX)
 BombDetonation(P V=1 PanX)
 {
 	struct { inline; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
-	Explosion (.3 + rand .3) (V * 1.5) .2
-	Rumble -.9 (V * 3) .96
-	Rattle -.5 V 10 .8 10
-	Debris -.5 (V * 4) 10 .85 20
+	Explosion (.3 + rand .3) 1.5 .2
+	Rumble -.9 3 .96
+	Rattle -.5 1 10 .8 10
+	Debris -.5 4 10 .85 20
 }
 
 
@@ -415,18 +415,18 @@ BombDetonation(P V=1 PanX)
 Teleport(P V=1 PanX)
 {
 	struct { inline; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
-	Tele square 200f 2 (V * .1) 10 50
+	Tele square 200f 2 .1 10 50
 	d 100
-	Tele triangle 2000f 1 (V * .4) 40 150
-	Tele triangle 1500f .6 (V * .1) 100 150
-	Tele square 250f 3 (V * .1) 150 200
-	Tele triangle 150f 3 (V * .04) 200 250
-	Tele sine 30f 1 (V * 2) 50 500
-	Tele sine 50f 2 (V * 1) 15 300
+	Tele triangle 2000f 1 .4 40 150
+	Tele triangle 1500f .6 .1 100 150
+	Tele square 250f 3 .1 150 200
+	Tele triangle 150f 3 .04 200 250
+	Tele sine 30f 1 2 50 500
+	Tele sine 50f 2 1 15 300
 	d 300
-	Tele triangle 800f 1 (V * .05) 100 200
+	Tele triangle 800f 1 .05 100 200
 }
 
 
@@ -501,12 +501,12 @@ wave ReactorHumWave
 .Grenade(P V=1 PanX)
 {
 	struct { inline; panmix }
-	pan PanX
+	pan PanX; vol V; set
 	+tr P
-	Explosion (1.5 + rand .5) (V * .5) .5
-	Explosion (rand .5 - 1) V 1
-	Rattle 0 (V * 1.5) 50 .85 50
-	Debris 0 (V * 4) 40 .9 50
+	Explosion (1.5 + rand .5) .5 .5
+	Explosion (rand .5 - 1) 1 1
+	Rattle 0 1.5 50 .85 50
+	Debris 0 4 40 .9 50
 }
 
 Reactor(P V=1 PanX)
@@ -517,7 +517,7 @@ Reactor(P V=1 PanX)
 		wtosc	o3
 		panmix	pm
 	}
-	pm.vol V; pm.pan PanX
+	pm.pan PanX; pm.vol V; set
 	+P 40f
 	!p1 (P + rand .5)
 	!p2 (P - .7 + rand .5)
