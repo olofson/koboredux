@@ -538,12 +538,7 @@ void _manage::pause(bool p)
 		return;
 	paused = p;
 	if(paused)
-	{
 		sound.g_player_fire(false);
-		sound.ui_play(S_UI_PAUSE);
-	}
-	else
-		sound.ui_play(S_UI_PLAY);
 }
 
 

@@ -375,6 +375,7 @@ void st_game_t::press(gc_targets_t button)
 	  case BTN_SELECT:
 	  case BTN_START:
 	  case BTN_PAUSE:
+		sound.ui_play(S_UI_PAUSE);
 		gsm.push(&st_pause_game);
 		break;
 	  default:
@@ -434,6 +435,7 @@ void st_pause_game_t::press(gc_targets_t button)
 		gsm.change(&st_main_menu);
 		break;
 	  default:
+		sound.ui_play(S_UI_PLAY);
 		pop();
 		break;
 	}
@@ -509,6 +511,7 @@ void st_get_ready_t::press(gc_targets_t button)
 	  case BTN_SELECT:
 	  case BTN_START:
 	  case BTN_PAUSE:
+		sound.ui_play(S_UI_PAUSE);
 		manage.player_ready();
 		gsm.change(&st_pause_game);
 		break;
