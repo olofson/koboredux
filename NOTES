@@ -2,13 +2,9 @@
 TODO:
 -------------------------------------------------------------------------------
 
-* palette PaletteID FilePath
-
 * table TableID [Values...] [Flags...]
 	* Use for color LUTs, window rects etc etc...
 	* Register named flags with each TableID?
-
-* Maybe we need multiple palettes? Or we just hardwire the loader...?
 
 * Why are we using world pixels in the sound API, and not 24:8 coordinates?
 
@@ -46,15 +42,9 @@ TODO:
 ./kobord -audiodriver sdl -maxfps 20 -audiobuffer 1024
 ./kobord -audiodriver sdl -maxfps 20 -audiobuffer 128
 
-* Maybe we should have a fixed target delay for sound effects anyway, so we
-  don't have sounds playing before animations when running on lowlatency JACK
-  setups and the like? 'tsdelay' would be the minimum allowed delay.
-
 * We need to deal with timestamps when the game engine isn't running too!
 	* Maybe UI sound effects and the like shouldn't be timestamped anyway?
 		* Can we create a thin API state for that...?
-
-* What's the deal with the logic in st_options_base_t::select()?
 
 * Original speeds:
 				shift	rnd	max
@@ -81,8 +71,6 @@ TODO:
 		enemy1		4	0	0
 	enemy_m2:
 		enemy2		4	128	192
-
-* Not sure about enemy_m* launching bombs... Instadeath!
 
 * Configurable input mappings:
 	struct gc_mapentry_t
