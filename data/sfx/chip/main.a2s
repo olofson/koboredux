@@ -1,0 +1,200 @@
+def title	"KRChip"
+def version	"1.0.0"
+def description	"Kobo Redux Chip Sound Theme"
+def author	"David Olofson"
+def copyright	"Copyright 2016 David Olofson"
+def license	"GPL"
+def a2sversion	"1.9.1"
+
+
+  //////////////////////////////////
+ // Master section
+//////////////////////////////////
+
+import "master.a2s" as master
+def S_G_MASTER	master.MasterGroup
+def S_G_UI	master.MonoGroup
+def S_G_SFX	master.SubGroup
+def S_G_MUSIC	master.SubGroup
+def S_G_TITLE	master.SubGroup
+
+
+  //////////////////////////////////
+ // Game sound effects
+//////////////////////////////////
+
+// HACK: 'def's shouldn't be needed! Should be:
+//	export import "sfx.a2s"
+import "sfx.a2s" as sfx
+def S_LAUNCH		sfx.S_LAUNCH
+def S_LAUNCH_BULLET1	sfx.S_LAUNCH_BULLET1
+def S_LAUNCH_BULLET2	sfx.S_LAUNCH_BULLET2
+def S_LAUNCH_BULLET3	sfx.S_LAUNCH_BULLET3
+def S_LAUNCH_RING	sfx.S_LAUNCH_RING
+def S_LAUNCH_BOMB	sfx.S_LAUNCH_BOMB
+def S_DAMAGE		sfx.S_DAMAGE
+def S_HIT_ROCK		sfx.S_HIT_ROCK
+def S_EXPLO_NODE	sfx.S_EXPLO_NODE
+def S_EXPLO_ENEMY	sfx.S_EXPLO_ENEMY
+def S_EXPLO_PLAYER	sfx.S_EXPLO_PLAYER
+def S_EXPLO_RING	sfx.S_EXPLO_RING
+def S_EXPLO_ROCK	sfx.S_EXPLO_ROCK
+def S_RUMBLE		sfx.S_RUMBLE
+def S_SHOT		sfx.S_SHOT
+def S_METALLIC		sfx.S_METALLIC
+def S_BOMB_TRIG		sfx.S_BOMB_TRIG
+def S_BOMB_DETO		sfx.S_BOMB_DETO
+def S_BOMB2_TRIG	sfx.S_BOMB2_TRIG
+def S_BOMB2_DETO	sfx.S_BOMB2_DETO
+def S_CORE		sfx.S_CORE
+def S_BIGSPAWN		sfx.S_BIGSPAWN
+def S_ENEMY_M1		sfx.S_ENEMY_M1
+def S_ENEMY_M2		sfx.S_ENEMY_M2
+def S_ENEMY_M3		sfx.S_ENEMY_M3
+def S_ENEMY_M4		sfx.S_ENEMY_M4
+
+
+  //////////////////////////////////
+ // UI sound effects
+//////////////////////////////////
+
+import "uisfx.a2s" as uisfx
+def S_UI_OPEN		uisfx.S_UI_OPEN
+def S_UI_OK		uisfx.S_UI_OK
+def S_UI_MOVE		uisfx.S_UI_MOVE
+def S_UI_TICK		uisfx.S_UI_TICK
+def S_UI_CDTICK		uisfx.S_UI_CDTICK
+def S_UI_GAMEOVER	uisfx.S_UI_GAMEOVER
+def S_UI_READY		uisfx.S_UI_READY
+def S_UI_PLAY		uisfx.S_UI_PLAY
+def S_UI_PAUSE		uisfx.S_UI_PAUSE
+def S_UI_CANCEL		uisfx.S_UI_CANCEL
+def S_UI_ERROR		uisfx.S_UI_ERROR
+def S_UI_LOADER		uisfx.S_UI_LOADER
+def S_UI_NOISE		uisfx.S_UI_NOISE
+
+
+  //////////////////////////////////
+ // Music
+//////////////////////////////////
+
+S_TITLESONG()
+{
+	struct {
+		wtosc o1
+		wtosc o1b
+		wtosc o2
+		wtosc o2b
+		wtosc o3
+		panmix
+	}
+	@vol .4
+
+	o1.w pulse30; o1b.w pulse40
+	o2.w saw; o2b.w saw
+	o3.w noise
+
+	!base (rand 6n quant 1n)
+
+	//Intro
+	o1.p (base - 36n)
+	o1b.p (o1.p + .07n)
+	o1.a .15; o1b.a .15
+	d 1000
+
+	o2.p (base - 12n)
+	o2b.p (o2.p + .1n + 8n)
+	o2.a .2; o2b.a .2; ramp o2.a 4000; ramp o2b.a 4000
+	d 2000
+
+	100 {
+		-o2b.p (1n / 100)
+		d 10
+	}
+	d 2000
+
+	o2.a 0; o2b.a 0
+	o3.p 3; o3.a .1
+	d 2000
+
+	for {
+		// Calculate harmony
+		o1.p (base - 36n)
+		o1b.p (o1.p + .07n)
+		o2.p (base + 3n + (rand 7n quant 4n) - 12n)
+		o2b.p (o2.p + .1n + 7n)
+
+		// 1
+		o3.p (rand .5); @o3.a .5; o3.a 0
+		o1.a .3; o1b.a .3
+		o2.a .2; o2b.a .2
+		d 2000
+
+		// 2
+		o3.p (1 + rand .5); @o3.a .4; o3.a 0
+		o1.a .1; o1b.a .1
+		o2.a .1; o2b.a .1
+		d 2000
+
+		// 3
+		o3.p (2 + rand .5); @o3.a .25; o3.a 0
+		o1.a .2; o1b.a .2
+		o2.a 0; o2b.a 0
+		d 2000
+
+		// 4
+		o3.p (3 + rand .5); @o3.a .2; o3.a 0; ramp o3.a 2000
+		base (rand 6n quant 1n)
+		!nb (base - 36n)
+		200 {
+			+o1.p (nb - o1.p * .02); o1b.p (o1.p + .07n)
+			d 10
+		}
+	}
+
+.stop	vol 0;	d 500
+
+	1() {
+		force stop
+	}
+}
+
+S_INGAMESONG1()
+{
+	struct {
+		wtosc o1
+		wtosc o2
+		wtosc o3
+		panmix
+	}
+	@vol .2
+
+	o1.w noise; o2.w noise; o3.w noise
+	o1.p 0; o2.p 1; o3.p 3
+
+	for {
+		!p1 (rand 1 - .5)
+		!p2 (rand 2)
+		!p3 (rand 2 + 2)
+		o1.a (rand .3); ramp o1.a 3000
+		o2.a (rand .2); ramp o2.a 3000
+		o3.a (rand .1); ramp o3.a 3000
+		30 {
+			+o1.p (p1 - o1.p * .01)
+			+o2.p (p2 - o2.p * .01)
+			+o3.p (p3 - o3.p * .01)
+			d 100
+		}
+	}
+
+.stop	vol 0;	d 500
+
+	1() {
+		force stop
+	}
+}
+
+def S_INGAMESONG2 S_INGAMESONG1
+def S_INGAMESONG3 S_INGAMESONG1
+def S_INGAMESONG4 S_INGAMESONG1
+def S_INGAMESONG5 S_INGAMESONG1

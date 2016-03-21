@@ -1,0 +1,47 @@
+def title	"KRChipMaster"
+def version	"1.0.0"
+def description	"Kobo Redux Chip Sound Theme - Master Section"
+def author	"David Olofson"
+def copyright	"Copyright 2016 David Olofson"
+def license	"GPL"
+def a2sversion	"1.9.1"
+
+def FADETIME	250
+
+MasterGroup()
+{
+	struct {
+		inline 0 2
+		dcblock DCB 2 2
+		waveshaper WS 2 2
+		panmix PM 2 >
+	}
+	DCB.cutoff 10f
+	WS.amount .5
+	PM.vol .5
+	set
+	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
+	3(WSA)	{ WS.amount (WSA * .25); ramp WS.amount FADETIME }
+}
+
+SubGroup()
+{
+	struct {
+		inline 0 2
+		panmix PM 2 >
+	}
+	PM.vol .5
+	set
+	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
+}
+
+MonoGroup()
+{
+	struct {
+		inline 0 1
+		panmix PM 1 >
+	}
+	PM.vol .5
+	set
+	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
+}

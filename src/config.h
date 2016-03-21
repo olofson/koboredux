@@ -62,7 +62,7 @@
 
 // Default and fallback sound themes
 #define	KOBO_LOADER_SFX_THEME		"SFX>>loader"
-#define	KOBO_FALLBACK_SFX_THEME		"SFX>>mono"
+#define	KOBO_FALLBACK_SFX_THEME		"SFX>>chip"
 #define	KOBO_DEFAULT_SFX_THEME		"SFX>>redux"
 
 // Sound banks to load the different sound themes into
