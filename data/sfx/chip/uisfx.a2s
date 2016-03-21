@@ -84,23 +84,24 @@ S_UI_READY()
 {
 	struct { wtosc }
 	tempo 120 32
-	w saw
+	w triangle
 	a .2
-	p -2
+	tr -1
 	15 {
-			td 1
-		+p 4n;	td 1
-		+p 7n;	td 1
-		-p 8n
+		p 0n;	td 1
+		p 4n;	td 1
+		p 7n;	td 1
+		p 4n;	td 1
+		+tr 1n
 	}
+	-tr 1n
 	10 {
 		*a .5
-		-p 6n
 		3 {
-				td 1
-			+p 4n;	td 1
-			+p 7n;	td 1
-			-p 9n
+			p 0n;	td 1
+			p 4n;	td 1
+			p 7n;	td 1
+			p 4n;	td 1
 		}
 	}
 	a 0
@@ -165,7 +166,7 @@ S_UI_CANCEL()
 	struct { wtosc }
 	w triangle
 	5 {
-		p 1; a .15;	d 10
+		p 1; a .25;	d 10
 		p 0; a 0;	d 10
 	}
 }
@@ -175,7 +176,7 @@ S_UI_ERROR()
 	struct { wtosc }
 	w square
 	10 {
-		p 2.5; @a .15;	d 10
+		p 2.5; @a .1;	d 10
 		p 1.5; a 0;	d 10
 	}
 }
@@ -183,7 +184,7 @@ S_UI_ERROR()
 S_UI_LOADER()
 {
 	struct { wtosc }
-	w square; a .005
+	w square; a .02
 	for {
 		if (rand 1 > .5) {
 			p 2400f

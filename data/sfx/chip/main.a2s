@@ -167,7 +167,7 @@ S_INGAMESONG1()
 		wtosc o3
 		panmix
 	}
-	@vol .2
+	@vol .1
 
 	o1.w noise; o2.w noise; o3.w noise
 	o1.p 0; o2.p 1; o3.p 3
@@ -176,7 +176,7 @@ S_INGAMESONG1()
 		!p1 (rand 1 - .5)
 		!p2 (rand 2)
 		!p3 (rand 2 + 2)
-		o1.a (rand .3); ramp o1.a 3000
+		o1.a (rand .4); ramp o1.a 3000
 		o2.a (rand .2); ramp o2.a 3000
 		o3.a (rand .1); ramp o3.a 3000
 		30 {
