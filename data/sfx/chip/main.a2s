@@ -78,18 +78,13 @@ def S_UI_NOISE		uisfx.S_UI_NOISE
  // Music
 //////////////////////////////////
 
-S_TITLESONG()
+.TitleSong()
 {
 	struct {
-		wtosc o1
-		wtosc o1b
-		wtosc o2
-		wtosc o2b
+		wtosc o1;	wtosc o1b
+		wtosc o2;	wtosc o2b
 		wtosc o3
-		panmix
 	}
-	@vol .4
-
 	o1.w pulse30; o1b.w pulse40
 	o2.w saw; o2b.w saw
 	o3.w noise
@@ -97,13 +92,12 @@ S_TITLESONG()
 	!base (rand 6n quant 1n)
 
 	//Intro
-	o1.p (base - 36n)
-	o1b.p (o1.p + .07n)
+	o1.p (base - 36n1); o1b.p (o1.p + 0n2)
 	o1.a .15; o1b.a .15
 	d 1000
 
 	o2.p (base - 12n)
-	o2b.p (o2.p + .1n + 8n)
+	o2b.p (o2.p + 8n05)
 	o2.a .2; o2b.a .2; ramp o2.a 4000; ramp o2b.a 4000
 	d 2000
 
@@ -119,10 +113,9 @@ S_TITLESONG()
 
 	for {
 		// Calculate harmony
-		o1.p (base - 36n)
-		o1b.p (o1.p + .07n)
+		o1.p (base - 36n1); o1b.p (o1.p + 0n2)
 		o2.p (base + 3n + (rand 7n quant 4n) - 12n)
-		o2b.p (o2.p + .1n + 7n)
+		o2b.p (o2.p + 7n05)
 
 		// 1
 		o3.p (rand .5); @o3.a .5; o3.a 0
@@ -145,29 +138,43 @@ S_TITLESONG()
 		// 4
 		o3.p (3 + rand .5); @o3.a .2; o3.a 0; ramp o3.a 2000
 		base (rand 6n quant 1n)
-		!nb (base - 36n)
+		!nb (base - 36n1)
 		200 {
-			+o1.p (nb - o1.p * .02); o1b.p (o1.p + .07n)
+			+o1.p (nb - o1.p * .02); o1b.p (o1.p + 0n2)
 			d 10
 		}
 	}
+}
 
-.stop	vol 0;	d 500
-
+S_TITLESONG()
+{
+	struct {
+		inline 0 1
+		fbdelay 1 2
+		panmix 2 >
+	}
+	fbdelay 900;	fbgain .3
+	ldelay 976;	lgain .2
+	rdelay 1133;	rgain .2
+	vol .4
+	set
+	1:TitleSong
+	end
+.stop	vol 0;	d 1000
+	kill 1
 	1() {
 		force stop
 	}
 }
 
-S_INGAMESONG1()
+
+.IngameSong()
 {
 	struct {
 		wtosc o1
 		wtosc o2
 		wtosc o3
-		panmix
 	}
-	@vol .1
 
 	o1.w noise; o2.w noise; o3.w noise
 	o1.p 0; o2.p 1; o3.p 3
@@ -186,14 +193,28 @@ S_INGAMESONG1()
 			d 100
 		}
 	}
+}
 
-.stop	vol 0;	d 500
-
+S_INGAMESONG1()
+{
+	struct {
+		inline 0 2
+		fbdelay 2 2
+		panmix 2 >
+	}
+	fbdelay 1500; fbgain .5
+	ldelay 1333; lgain .5
+	rdelay 1444; rgain .5
+	vol .1
+	set
+	1:IngameSong
+	end
+.stop	vol 0;	d 1000
+	kill 1
 	1() {
 		force stop
 	}
 }
-
 def S_INGAMESONG2 S_INGAMESONG1
 def S_INGAMESONG3 S_INGAMESONG1
 def S_INGAMESONG4 S_INGAMESONG1
