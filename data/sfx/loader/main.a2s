@@ -7,4 +7,4 @@ def license	"CC BY-NC-ND 3.0"
 def a2sversion	"1.9.1"
 
 import "oajingle-short.a2s" as aoj
-def S_OAJINGLE aoj.Song
+export def S_OAJINGLE aoj.Song

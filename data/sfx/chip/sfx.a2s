@@ -10,7 +10,7 @@ def a2sversion	"1.9.1"
 def FADETIME	100
 
 
-S_LAUNCH(P V=1 PanX)
+export S_LAUNCH(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -31,7 +31,7 @@ S_LAUNCH(P V=1 PanX)
 	}
 }
 
-S_LAUNCH_BULLET1(P V=1 PanX)
+export S_LAUNCH_BULLET1(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -52,7 +52,7 @@ S_LAUNCH_BULLET1(P V=1 PanX)
 	a 0; d 100
 }
 
-S_LAUNCH_BULLET2(P V=1 PanX)
+export S_LAUNCH_BULLET2(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -73,7 +73,7 @@ S_LAUNCH_BULLET2(P V=1 PanX)
 	a 0; d 150
 }
 
-S_LAUNCH_BULLET3(P V=1 PanX)
+export S_LAUNCH_BULLET3(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -95,7 +95,7 @@ S_LAUNCH_BULLET3(P V=1 PanX)
 	a 0; d 150
 }
 
-S_LAUNCH_RING(P V=1 PanX)
+export S_LAUNCH_RING(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -116,7 +116,7 @@ S_LAUNCH_RING(P V=1 PanX)
 	}
 }
 
-S_LAUNCH_BOMB(P V=1 PanX)
+export S_LAUNCH_BOMB(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -146,7 +146,7 @@ S_LAUNCH_BOMB(P V=1 PanX)
 	}
 }
 
-S_DAMAGE(P V=1 PanX)
+export S_DAMAGE(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -174,7 +174,7 @@ S_DAMAGE(P V=1 PanX)
 	a 0;	d 10
 }
 
-S_HIT_ROCK(P V=1 PanX)
+export S_HIT_ROCK(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -200,7 +200,7 @@ S_HIT_ROCK(P V=1 PanX)
 	a 0; d 50
 }
 
-S_EXPLO_NODE(P V=1 PanX)
+export S_EXPLO_NODE(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -236,7 +236,7 @@ S_EXPLO_NODE(P V=1 PanX)
 	a 0;	d 10
 }
 
-S_EXPLO_ENEMY(P V=1 PanX)
+export S_EXPLO_ENEMY(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -262,7 +262,7 @@ S_EXPLO_ENEMY(P V=1 PanX)
 	a 0;	d 10
 }
 
-S_EXPLO_PLAYER(P V=1 PanX)
+export S_EXPLO_PLAYER(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -288,7 +288,7 @@ S_EXPLO_PLAYER(P V=1 PanX)
 	a 0;	d 10
 }
 
-S_EXPLO_RING(P V=1 PanX)
+export S_EXPLO_RING(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -319,7 +319,7 @@ S_EXPLO_RING(P V=1 PanX)
 	}
 }
 
-S_EXPLO_ROCK(P V=1 PanX)
+export S_EXPLO_ROCK(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -347,7 +347,7 @@ S_EXPLO_ROCK(P V=1 PanX)
 	a 0;	d 10
 }
 
-S_RUMBLE(P V=1 PanX)
+export S_RUMBLE(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -372,7 +372,7 @@ S_RUMBLE(P V=1 PanX)
 	d 100
 }
 
-S_SHOT(P V=1 PanX)
+export S_SHOT(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -405,7 +405,7 @@ S_SHOT(P V=1 PanX)
 	}
 }
 
-S_METALLIC(P V=1 PanX)
+export S_METALLIC(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -418,7 +418,7 @@ S_METALLIC(P V=1 PanX)
 	a 0;			d 30
 }
 
-S_BOMB_TRIG(P V=1 PanX)
+export S_BOMB_TRIG(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -442,7 +442,7 @@ S_BOMB_TRIG(P V=1 PanX)
 	}
 }
 
-S_BOMB_DETO(P V=1 PanX)
+export S_BOMB_DETO(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -465,7 +465,7 @@ S_BOMB_DETO(P V=1 PanX)
 	a 0;	d 10
 }
 
-S_BOMB2_TRIG(P V=1 PanX)
+export S_BOMB2_TRIG(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -489,7 +489,7 @@ S_BOMB2_TRIG(P V=1 PanX)
 	}
 }
 
-S_BOMB2_DETO(P V=1 PanX)
+export S_BOMB2_DETO(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -512,7 +512,7 @@ S_BOMB2_DETO(P V=1 PanX)
 	a 0;	d 10
 }
 
-S_CORE(P V=1 PanX)
+export S_CORE(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -602,7 +602,7 @@ S_CORE(P V=1 PanX)
 	}
 }
 
-S_BIGSPAWN(P V=1 PanX)
+export S_BIGSPAWN(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -625,7 +625,7 @@ S_BIGSPAWN(P V=1 PanX)
 	}
 }
 
-S_ENEMY_M1(P V=1 PanX)
+export S_ENEMY_M1(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
@@ -711,6 +711,6 @@ S_ENEMY_M1(P V=1 PanX)
 		ramp FADETIME
 	}
 }
-def S_ENEMY_M2 S_ENEMY_M1
-def S_ENEMY_M3 S_ENEMY_M1
-def S_ENEMY_M4 S_ENEMY_M1
+export def S_ENEMY_M2 S_ENEMY_M1
+export def S_ENEMY_M3 S_ENEMY_M1
+export def S_ENEMY_M4 S_ENEMY_M1

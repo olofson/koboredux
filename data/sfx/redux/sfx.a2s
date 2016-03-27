@@ -14,7 +14,7 @@ def a2sversion	"1.9.1"
 
 def FADETIME	100
 
-.fump(P V)
+fump(P V)
 {
 	struct { wtosc }
 	w sine; p -2; a V
@@ -46,7 +46,7 @@ Launch(P V=1 PanX)
 }
 
 
-.Electro1(V)
+Electro1(V)
 {
 	struct { wtosc }
 	w noise; a V; set a; p 6
@@ -74,7 +74,7 @@ FireElectro(P V=1 PanX)
 }
 
 
-.blopp(pitch V decay rp=1)
+blopp(pitch V decay rp=1)
 {
 	struct { wtosc }
 	w triangle; a (V * .5); !p1 (pitch + rand rp); !p2 (p1 + .3 + rand .5)
@@ -141,7 +141,7 @@ LavaImpact(P V=1 PanX)
 }
 
 
-.Explo0(P V=1 Wave Attack Period=.5)
+Explo0(P V=1 Wave Attack Period=.5)
 {
 	struct { wtosc }
 	+P tr; w Wave; !x 1; a V; -P 3; tr Attack; !DP (Period * .01)
@@ -157,7 +157,7 @@ LavaImpact(P V=1 PanX)
 	}
 }
 
-.Explosion(P V=1 Period=.5)
+Explosion(P V=1 Period=.5)
 {
 	struct { wtosc }
 	+tr P
@@ -170,7 +170,7 @@ LavaImpact(P V=1 PanX)
 	100 { *a .9; d (30 * Period) }
 }
 
-.Rattle(P V=1 Count=20 Decay=.8 Spacing=100)
+Rattle(P V=1 Count=20 Decay=.8 Spacing=100)
 {
 	struct { wtosc }
 	w noise; tr P
@@ -193,7 +193,7 @@ SegmentDeath(P V=1 PanX)
 }
 
 
-.Sweep(Vel Pitch Wave Start Dur Decay)
+Sweep(Vel Pitch Wave Start Dur Decay)
 {
 	struct { wtosc }
 	w Wave; tr Pitch; p Start; a Vel; set a
@@ -228,7 +228,7 @@ MegaDeath(P V=1 PanX)
 }
 
 
-.Rumble(pitch amp decay)
+Rumble(pitch amp decay)
 {
 	struct { wtosc }
 	-pitch 2
@@ -238,7 +238,7 @@ MegaDeath(P V=1 PanX)
 	}
 }
 
-.Debris(P V=1 Count=20 Decay=.8 Spacing=50)
+Debris(P V=1 Count=20 Decay=.8 Spacing=50)
 {
 	struct { wtosc }
 	w triangle
@@ -397,7 +397,7 @@ BombDetonation(P V=1 PanX)
 }
 
 
-.Tele(wv pitch spread vel attack decay)
+Tele(wv pitch spread vel attack decay)
 {
 	struct { wtosc }
 	!env 0
@@ -430,7 +430,7 @@ Teleport(P V=1 PanX)
 }
 
 
-.r1(P V=1)
+r1(P V=1)
 {
 	struct { wtosc }
 	w triangle
@@ -455,7 +455,7 @@ Teleport(P V=1 PanX)
 	}
 }
 
-.RenderReactorTurbine()
+RenderReactorTurbine()
 {
 	def Chorus 50
 	def Spread .03
@@ -473,14 +473,14 @@ wave ReactorTurbineWave
 	RenderReactorTurbine
 }
 
-.h1(P V=1)
+h1(P V=1)
 {
 	struct { wtosc }
 	w square; p P; a V; set
 	sleep
 }
 
-.RenderReactorHum()
+RenderReactorHum()
 {
 	def Chorus 10
 	def Spread .7
@@ -498,7 +498,7 @@ wave ReactorHumWave
 	RenderReactorHum
 }
 
-.Grenade(P V=1 PanX)
+Grenade(P V=1 PanX)
 {
 	struct { inline; panmix }
 	pan PanX; vol V; set
@@ -598,3 +598,31 @@ Reactor(P V=1 PanX)
 		ramp FADETIME
 	}
 }
+
+
+export def S_LAUNCH		Launch
+export def S_LAUNCH_BULLET1	FireElectro
+export def S_LAUNCH_BULLET2	FireElectro
+export def S_LAUNCH_BULLET3	FireElectro
+export def S_LAUNCH_RING	Launch
+export def S_LAUNCH_BOMB	Launch
+export def S_DAMAGE		Impact
+export def S_HIT_ROCK		ImpactGround
+export def S_EXPLO_NODE		SegmentDeath
+export def S_EXPLO_ENEMY	BoomerangDeath
+export def S_EXPLO_PLAYER	KoboDeath
+export def S_EXPLO_RING		LavaImpact
+export def S_EXPLO_ROCK		BoomerangDeath
+export def S_RUMBLE		BaseRumble
+export def S_SHOT		FirePlasma
+export def S_METALLIC		Klank
+export def S_BOMB_TRIG		BombTrig
+export def S_BOMB_DETO		BombDetonation
+export def S_BOMB2_TRIG		BombTrig
+export def S_BOMB2_DETO		BombDetonation
+export def S_CORE		Reactor
+export def S_BIGSPAWN		Teleport
+export def S_ENEMY_M1		Reactor
+export def S_ENEMY_M2		Reactor
+export def S_ENEMY_M3		Reactor
+export def S_ENEMY_M4		Reactor

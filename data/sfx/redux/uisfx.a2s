@@ -6,7 +6,7 @@ def copyright	"Copyright 2015 David Olofson"
 def license	"CC BY-NC-ND 3.0"
 def a2sversion	"1.9.1"
 
-.Rumble(pitch amp decay)
+Rumble(pitch amp decay)
 {
 	struct { wtosc }
 	-pitch 2
@@ -16,7 +16,7 @@ def a2sversion	"1.9.1"
 	}
 }
 
-.Tele(wv pitch spread vel attack decay)
+Tele(wv pitch spread vel attack decay)
 {
 	struct { wtosc }
 	!env 0
@@ -31,7 +31,7 @@ def a2sversion	"1.9.1"
 	}
 }
 
-.Swoop(Vel Pitch Slide Enwarble)
+Swoop(Vel Pitch Slide Enwarble)
 {
 	struct { wtosc }
 	w sine; p Pitch
@@ -51,7 +51,7 @@ def a2sversion	"1.9.1"
 	}
 }
 
-.Electro1(V)
+Electro1(V)
 {
 	struct { wtosc }
 	w noise; a V; set a; p 6
@@ -179,7 +179,7 @@ UIReady()
 	Electro1 .4
 }
 
-.Scratch(Vel Pitch Wave Slide)
+Scratch(Vel Pitch Wave Slide)
 {
 	struct { wtosc }
 	w Wave; p (Pitch - (Slide / 1.5)); a 0
@@ -197,7 +197,7 @@ UIReady()
 		+p (Slide / 2); -a (Vel / 200); d 1
 	}
 }
-.DoScratch(Vel Slide)
+DoScratch(Vel Slide)
 {
 	Scratch (Vel * .15) 4 noise Slide
 	Scratch (Vel * .3) -24n sine Slide
@@ -263,3 +263,18 @@ UILoader()
 		force stop
 	}
 }
+
+
+export def S_UI_OPEN		UIOpen
+export def S_UI_OK		UIOK
+export def S_UI_MOVE		UIMove
+export def S_UI_TICK		UITick
+export def S_UI_CDTICK		UICountdownTick
+export def S_UI_GAMEOVER	UIGameOver
+export def S_UI_READY		UIReady
+export def S_UI_PLAY		UIPlay
+export def S_UI_PAUSE		UIPause
+export def S_UI_CANCEL		UICancel
+export def S_UI_ERROR		UIError
+export def S_UI_LOADER		UILoader
+export def S_UI_NOISE		UINoise

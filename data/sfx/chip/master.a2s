@@ -45,3 +45,9 @@ MonoGroup()
 	set
 	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
 }
+
+export def S_G_MASTER	MasterGroup
+export def S_G_UI	MonoGroup
+export def S_G_SFX	SubGroup
+export def S_G_MUSIC	SubGroup
+export def S_G_TITLE	SubGroup

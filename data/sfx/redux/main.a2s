@@ -11,65 +11,21 @@ def a2sversion	"1.9.1"
  // Master section
 //////////////////////////////////
 
-import "master.a2s" as master
-def S_G_MASTER	master.MasterGroup
-def S_G_UI	master.UIGroup
-def S_G_SFX	master.SFXGroup
-def S_G_MUSIC	master.MusicGroup
-def S_G_TITLE	master.TitleMusicGroup
+export import "master.a2s"
 
 
   //////////////////////////////////
  // Game sound effects
 //////////////////////////////////
 
-import "sfx.a2s" as sfx
-def S_LAUNCH		sfx.Launch
-def S_LAUNCH_BULLET1	sfx.FireElectro
-def S_LAUNCH_BULLET2	sfx.FireElectro
-def S_LAUNCH_BULLET3	sfx.FireElectro
-def S_LAUNCH_RING	sfx.Launch
-def S_LAUNCH_BOMB	sfx.Launch
-def S_DAMAGE		sfx.Impact
-def S_HIT_ROCK		sfx.ImpactGround
-def S_EXPLO_NODE	sfx.SegmentDeath
-def S_EXPLO_ENEMY	sfx.BoomerangDeath
-def S_EXPLO_PLAYER	sfx.KoboDeath
-def S_EXPLO_RING	sfx.LavaImpact
-def S_EXPLO_ROCK	sfx.BoomerangDeath
-def S_RUMBLE		sfx.BaseRumble
-def S_SHOT		sfx.FirePlasma
-def S_METALLIC		sfx.Klank
-def S_BOMB_TRIG		sfx.BombTrig
-def S_BOMB_DETO		sfx.BombDetonation
-def S_BOMB2_TRIG	sfx.BombTrig
-def S_BOMB2_DETO	sfx.BombDetonation
-def S_CORE		sfx.Reactor
-def S_BIGSPAWN		sfx.Teleport
-def S_ENEMY_M1		sfx.Reactor
-def S_ENEMY_M2		sfx.Reactor
-def S_ENEMY_M3		sfx.Reactor
-def S_ENEMY_M4		sfx.Reactor
+export import "sfx.a2s"
 
 
   //////////////////////////////////
  // UI sound effects
 //////////////////////////////////
 
-import "uisfx.a2s" as uisfx
-def S_UI_OPEN		uisfx.UIOpen
-def S_UI_OK		uisfx.UIOK
-def S_UI_MOVE		uisfx.UIMove
-def S_UI_TICK		uisfx.UITick
-def S_UI_CDTICK		uisfx.UICountdownTick
-def S_UI_GAMEOVER	uisfx.UIGameOver
-def S_UI_READY		uisfx.UIReady
-def S_UI_PLAY		uisfx.UIPlay
-def S_UI_PAUSE		uisfx.UIPause
-def S_UI_CANCEL		uisfx.UICancel
-def S_UI_ERROR		uisfx.UIError
-def S_UI_LOADER		uisfx.UILoader
-def S_UI_NOISE		uisfx.UINoise
+export import "uisfx.a2s"
 
 
   //////////////////////////////////
@@ -77,7 +33,7 @@ def S_UI_NOISE		uisfx.UINoise
 //////////////////////////////////
 
 import "k2intro.a2s" as k2i
-S_TITLESONG()
+export S_TITLESONG()
 {
 	1:k2i.Song 0 1 1 0
 	wait 1
@@ -91,8 +47,8 @@ IngameSong()
 	wait 1
 	1() { 1<1 }
 }
-def S_INGAMESONG1	IngameSong
-def S_INGAMESONG2	IngameSong
-def S_INGAMESONG3	IngameSong
-def S_INGAMESONG4	IngameSong
-def S_INGAMESONG5	IngameSong
+export def S_INGAMESONG1	IngameSong
+export def S_INGAMESONG2	IngameSong
+export def S_INGAMESONG3	IngameSong
+export def S_INGAMESONG4	IngameSong
+export def S_INGAMESONG5	IngameSong

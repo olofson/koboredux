@@ -11,74 +11,28 @@ def a2sversion	"1.9.1"
  // Master section
 //////////////////////////////////
 
-import "master.a2s" as master
-def S_G_MASTER	master.MasterGroup
-def S_G_UI	master.MonoGroup
-def S_G_SFX	master.SubGroup
-def S_G_MUSIC	master.SubGroup
-def S_G_TITLE	master.SubGroup
+export import "master.a2s"
 
 
   //////////////////////////////////
  // Game sound effects
 //////////////////////////////////
 
-// HACK: 'def's shouldn't be needed! Should be:
-//	export import "sfx.a2s"
-import "sfx.a2s" as sfx
-def S_LAUNCH		sfx.S_LAUNCH
-def S_LAUNCH_BULLET1	sfx.S_LAUNCH_BULLET1
-def S_LAUNCH_BULLET2	sfx.S_LAUNCH_BULLET2
-def S_LAUNCH_BULLET3	sfx.S_LAUNCH_BULLET3
-def S_LAUNCH_RING	sfx.S_LAUNCH_RING
-def S_LAUNCH_BOMB	sfx.S_LAUNCH_BOMB
-def S_DAMAGE		sfx.S_DAMAGE
-def S_HIT_ROCK		sfx.S_HIT_ROCK
-def S_EXPLO_NODE	sfx.S_EXPLO_NODE
-def S_EXPLO_ENEMY	sfx.S_EXPLO_ENEMY
-def S_EXPLO_PLAYER	sfx.S_EXPLO_PLAYER
-def S_EXPLO_RING	sfx.S_EXPLO_RING
-def S_EXPLO_ROCK	sfx.S_EXPLO_ROCK
-def S_RUMBLE		sfx.S_RUMBLE
-def S_SHOT		sfx.S_SHOT
-def S_METALLIC		sfx.S_METALLIC
-def S_BOMB_TRIG		sfx.S_BOMB_TRIG
-def S_BOMB_DETO		sfx.S_BOMB_DETO
-def S_BOMB2_TRIG	sfx.S_BOMB2_TRIG
-def S_BOMB2_DETO	sfx.S_BOMB2_DETO
-def S_CORE		sfx.S_CORE
-def S_BIGSPAWN		sfx.S_BIGSPAWN
-def S_ENEMY_M1		sfx.S_ENEMY_M1
-def S_ENEMY_M2		sfx.S_ENEMY_M2
-def S_ENEMY_M3		sfx.S_ENEMY_M3
-def S_ENEMY_M4		sfx.S_ENEMY_M4
+export import "sfx.a2s"
 
 
   //////////////////////////////////
  // UI sound effects
 //////////////////////////////////
 
-import "uisfx.a2s" as uisfx
-def S_UI_OPEN		uisfx.S_UI_OPEN
-def S_UI_OK		uisfx.S_UI_OK
-def S_UI_MOVE		uisfx.S_UI_MOVE
-def S_UI_TICK		uisfx.S_UI_TICK
-def S_UI_CDTICK		uisfx.S_UI_CDTICK
-def S_UI_GAMEOVER	uisfx.S_UI_GAMEOVER
-def S_UI_READY		uisfx.S_UI_READY
-def S_UI_PLAY		uisfx.S_UI_PLAY
-def S_UI_PAUSE		uisfx.S_UI_PAUSE
-def S_UI_CANCEL		uisfx.S_UI_CANCEL
-def S_UI_ERROR		uisfx.S_UI_ERROR
-def S_UI_LOADER		uisfx.S_UI_LOADER
-def S_UI_NOISE		uisfx.S_UI_NOISE
+export import "uisfx.a2s"
 
 
   //////////////////////////////////
  // Music
 //////////////////////////////////
 
-.TitleSong()
+TitleSong()
 {
 	struct {
 		wtosc o1;	wtosc o1b
@@ -146,7 +100,7 @@ def S_UI_NOISE		uisfx.S_UI_NOISE
 	}
 }
 
-S_TITLESONG()
+export S_TITLESONG()
 {
 	struct {
 		inline 0 1
@@ -168,7 +122,7 @@ S_TITLESONG()
 }
 
 
-.IngameSong()
+IngameSong()
 {
 	struct {
 		wtosc o1
@@ -195,7 +149,7 @@ S_TITLESONG()
 	}
 }
 
-S_INGAMESONG1()
+export S_INGAMESONG1()
 {
 	struct {
 		inline 0 2
@@ -215,7 +169,7 @@ S_INGAMESONG1()
 		force stop
 	}
 }
-def S_INGAMESONG2 S_INGAMESONG1
-def S_INGAMESONG3 S_INGAMESONG1
-def S_INGAMESONG4 S_INGAMESONG1
-def S_INGAMESONG5 S_INGAMESONG1
+export def S_INGAMESONG2 S_INGAMESONG1
+export def S_INGAMESONG3 S_INGAMESONG1
+export def S_INGAMESONG4 S_INGAMESONG1
+export def S_INGAMESONG5 S_INGAMESONG1

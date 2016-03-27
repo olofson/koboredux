@@ -6,7 +6,7 @@ def copyright	"Copyright 2011-2015 David Olofson"
 def license	"CC BY-NC-ND 3.0"
 def a2sversion	"1.9"
 
-.Flute0(P V=1 Wave)
+Flute0(P V=1 Wave)
 {
 	struct { wtosc }
 	!P0 tr; +P tr; w Wave; p P; a 0; !er .05; !vib 0; !tvib .005; !pf .3
@@ -125,7 +125,7 @@ SpaceFeep(P V=1)
 				td 40
 }
 
-.Str0(P V Attack Decay Detune)
+Str0(P V Attack Decay Detune)
 {
 	struct { wtosc; panmix }
 	pan (Detune * 100)
@@ -171,7 +171,7 @@ OctStrings(P V=1)
 	2(NP) { 1<2 (NP + 1); 2<2 (NP - 1) }
 }
 
-.nb(P V=1 Pan)
+nb(P V=1 Pan)
 {
 	struct { wtosc; panmix }
 	pan Pan; set pan
@@ -193,7 +193,7 @@ NBurst2(P V=1)
 	60 {	*a .9; d 50 }
 }
 
-.sdn(V)
+sdn(V)
 {
 	struct { wtosc }
 	w noise; p 5.5; a V; set a; d 2
@@ -285,7 +285,7 @@ HH2()
 	}
 }
 
-.bdnoise(P V)
+bdnoise(P V)
 {
 	struct { wtosc }
 	w noise; p (P + 4); a (V * .2); set a
@@ -307,7 +307,7 @@ BDrum(P V=1)
 	d 1000
 }
 
-.tn(P V)
+tn(P V)
 {
 	struct { wtosc }
 	w noise; p (P + 6); a (V * .5); set a; d 10
@@ -363,7 +363,7 @@ SoftArp(P V=1 Maj=0)
 	}
 }
 
-.Explo0(P V=1 Wave Attack)
+Explo0(P V=1 Wave Attack)
 {
 	struct { wtosc; panmix }
 	pan (rand 1 - .5); set pan
@@ -402,7 +402,7 @@ ResoBass(P V=1 Reso)
 	}
 }
 
-.rl(p1 v v1 r r1 cnt=16)
+rl(p1 v v1 r r1 cnt=16)
 {
 	-p1 24n
 	!dv ((v1 - v) / cnt)
@@ -476,7 +476,7 @@ Main(L)
 				SoftArp 1 .3 -3n;	td 4
 }
 
-Song(P V=1 L=1)
+export Song(P V=1 L=1)
 {
 	struct {
 		inline 0 *

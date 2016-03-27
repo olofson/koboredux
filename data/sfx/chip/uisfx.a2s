@@ -6,7 +6,7 @@ def copyright	"Copyright 2016 David Olofson"
 def license	"GPL"
 def a2sversion	"1.9.1"
 
-S_UI_OPEN()
+export S_UI_OPEN()
 {
 	struct { wtosc }
 	w triangle
@@ -19,7 +19,7 @@ S_UI_OPEN()
 	a 0; d 100
 }
 
-S_UI_OK()
+export S_UI_OK()
 {
 	struct { wtosc }
 	w triangle
@@ -32,7 +32,7 @@ S_UI_OK()
 	a 0; d 100
 }
 
-S_UI_MOVE()
+export S_UI_MOVE()
 {
 	struct { wtosc }
 	w noise
@@ -42,7 +42,7 @@ S_UI_MOVE()
 	a 0; d 10
 }
 
-S_UI_TICK()
+export S_UI_TICK()
 {
 	struct { wtosc }
 	w square
@@ -51,7 +51,7 @@ S_UI_TICK()
 	@a 0
 }
 
-S_UI_CDTICK(P V=1)
+export S_UI_CDTICK(P V=1)
 {
 	struct { wtosc }
 	+tr P
@@ -67,7 +67,7 @@ S_UI_CDTICK(P V=1)
 	a 0; d 10
 }
 
-S_UI_GAMEOVER()
+export S_UI_GAMEOVER()
 {
 	struct { wtosc }
 	w pulse10
@@ -80,7 +80,7 @@ S_UI_GAMEOVER()
 	a 0; d 10
 }
 
-S_UI_READY()
+export S_UI_READY()
 {
 	struct { wtosc }
 	tempo 120 32
@@ -108,7 +108,7 @@ S_UI_READY()
 	d 20
 }
 
-S_UI_PLAY()
+export S_UI_PLAY()
 {
 	struct { wtosc }
 	tempo 120 16
@@ -134,7 +134,7 @@ S_UI_PLAY()
 	d 20
 }
 
-S_UI_PAUSE()
+export S_UI_PAUSE()
 {
 	struct { wtosc }
 	tempo 120 16
@@ -161,7 +161,7 @@ S_UI_PAUSE()
 	d 20
 }
 
-S_UI_CANCEL()
+export S_UI_CANCEL()
 {
 	struct { wtosc }
 	w triangle
@@ -171,7 +171,7 @@ S_UI_CANCEL()
 	}
 }
 
-S_UI_ERROR()
+export S_UI_ERROR()
 {
 	struct { wtosc }
 	w square
@@ -181,7 +181,7 @@ S_UI_ERROR()
 	}
 }
 
-S_UI_LOADER()
+export S_UI_LOADER()
 {
 	struct { wtosc }
 	w square; a .02
@@ -201,7 +201,7 @@ S_UI_LOADER()
 	}
 }
 
-S_UI_NOISE()
+export S_UI_NOISE()
 {
 	struct { wtosc }
 	w noise; p 4

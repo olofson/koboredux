@@ -69,4 +69,8 @@ MusicGroup()
 	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
 }
 
-def TitleMusicGroup MusicGroup
+export def S_G_MASTER	MasterGroup
+export def S_G_UI	UIGroup
+export def S_G_SFX	SFXGroup
+export def S_G_MUSIC	MusicGroup
+export def S_G_TITLE	MusicGroup
