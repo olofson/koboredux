@@ -127,6 +127,8 @@ void prefs_t::init()
 			desc("Cheat: Extra Firepower");
 	yesno("cheat_startlevel", cheat_startlevel, 0);
 			desc("Cheat: Unlimited Start Level Selector");
+	yesno("cheat_brokentrigger", cheat_brokentrigger, 0);
+			desc("Cheat: Bombs Trigger But Can't Detonate");
 	key("cheat_speed", cheat_speed, 0.0f); desc("Cheat: Game Speed");
 
 	section("Paths");

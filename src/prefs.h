@@ -112,6 +112,7 @@ class prefs_t : public config_parser_t
 	int	cheat_invulnerability;
 	int	cheat_firepower;
 	int	cheat_startlevel;
+	int	cheat_brokentrigger;
 	float	cheat_speed;
 
 	// Returns 'true' if any cheat/test features are enabled
@@ -123,6 +124,7 @@ class prefs_t : public config_parser_t
 				cheat_invulnerability ||
 				cheat_firepower ||
 				cheat_startlevel ||
+				cheat_brokentrigger ||
 				cheat_speed ||
 				cmd_warp;
 	}

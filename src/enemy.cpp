@@ -590,7 +590,7 @@ void KOBO_enemy::move_bomb1()
 		stopsound();
 		c = 0;
 	}
-	if(c < game.bomb_delay)
+	if((c < game.bomb_delay) || prefs->cheat_brokentrigger)
 		return;
 
 	// Detonate!
@@ -663,7 +663,7 @@ void KOBO_enemy::move_bomb2()
 		stopsound();
 		c = 0;
 	}
-	if(c < game.bomb_delay)
+	if((c < game.bomb_delay) || prefs->cheat_brokentrigger)
 		return;
 
 	// Detonate!
