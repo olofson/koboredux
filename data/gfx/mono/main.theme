@@ -120,8 +120,7 @@ sprites B_BLTX_RED "bulletexpl2.png" 32 32 2 CENTER
 sprites B_BLTX_BLUE "bulletexpl2.png" 32 32 2 CENTER
 sprites B_RING "ring.png" 32 32 2 CENTER
 sprites B_RINGEXPL "ringexpl2b.png" 40 40 2 CENTER
-#sprites B_REDBOMB "bomb.png" 24 24 2 CENTER
-#alias B_GREENBOMB B_REDBOMB
+#sprites B_BOMB "bomb.png" 24 24 2 CENTER
 sprites B_BOMBDETO "bombdeto.png" 40 40 2 CENTER
 sprites B_BIGSHIP "bigship.png" 72 72 2 CENTER
 

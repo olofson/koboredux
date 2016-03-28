@@ -400,8 +400,8 @@ void KOBO_screen::help(int t)
 		woverlay->font(B_MEDIUM_FONT);
 // TODO: Short demo of intense battle
 		woverlay->sprite(cx - 90, 90, B_RING, (t / 30) % 16);
-		woverlay->sprite(cx - 70, 110, B_GREENBOMB, (t / 40) % 16);
-		woverlay->sprite(cx - 50, 90, B_REDBOMB, 15 - (t / 40) % 16);
+		woverlay->sprite(cx - 70, 110, B_BOMB, (t / 40) % 16);
+		woverlay->sprite(cx - 50, 90, B_BOMB, 31 - (t / 40) % 16);
 		woverlay->sprite(cx - 30, 110, B_BMR_GREEN, (t / 80) % 16);
 		woverlay->sprite(cx - 10, 90, B_BMR_PURPLE, (t / 70) % 16);
 		woverlay->sprite(cx + 10, 110, B_BMR_PINK, (t / 60) % 16);

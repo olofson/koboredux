@@ -566,8 +566,16 @@ void KOBO_enemy::make_bomb()
 
 void KOBO_enemy::move_bomb1()
 {
-	if(++di > 16)
-		di = 1;
+	if(c)
+	{
+		frame = 32;
+		di = 1 + di % 6;
+	}
+	else
+	{
+		frame = 0;
+		di = 1 + di % 16;
+	}
 
 	int h1 = labs(diffx);
 	int v1 = labs(diffy);
@@ -613,7 +621,7 @@ const KOBO_enemy_kind bomb1 = {
 	&KOBO_enemy::move_bomb1,
 	&KOBO_enemy::kill_default,
 	5,
-	B_GREENBOMB, 0,
+	B_BOMB, 0,
 	LAYER_ENEMIES,
 	0,
 	S_NONE,
@@ -631,8 +639,16 @@ const KOBO_enemy_kind bomb1 = {
 
 void KOBO_enemy::move_bomb2()
 {
-	if(--di < 1)
-		di = 16;
+	if(c)
+	{
+		frame = 32;
+		di = 1 + di % 6;
+	}
+	else
+	{
+		frame = 16;
+		di = 1 + (di + 14) % 16;
+	}
 
 	int h1 = labs(diffx);
 	int v1 = labs(diffy);
@@ -692,7 +708,7 @@ const KOBO_enemy_kind bomb2 = {
 	&KOBO_enemy::move_bomb2,
 	&KOBO_enemy::kill_default,
 	5,
-	B_REDBOMB, 0,
+	B_BOMB, 16,
 	LAYER_ENEMIES,
 	0,
 	S_NONE,

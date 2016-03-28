@@ -74,8 +74,7 @@ sprites B_BLT_BLUE "blue-bullet.png" 8 8 CENTER
 #sprites B_BLTX_BLUE "bulletexpl2.png" 32 32 2 CENTER
 #sprites B_RING "ring.png" 32 32 2 CENTER
 #sprites B_RINGEXPL "ringexpl2b.png" 40 40 2 CENTER
-sprites B_REDBOMB "red-bomb.png" 12 12 CENTER
-sprites B_GREENBOMB "green-bomb.png" 12 12 CENTER
+sprites B_BOMB "bomb.png" 12 12 CENTER
 #sprites B_BOMBDETO "bombdeto.png" 40 40 2 CENTER
 #sprites B_BIGSHIP "bigship.png" 72 72 2 CENTER
 
