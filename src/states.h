@@ -440,6 +440,24 @@ class st_options_game_t : public st_options_base_t
 	config_form_t *oopen()	{ return new game_options_t(gengine); }
 };
 
+/*----------------------------------------------------------
+	More Options
+----------------------------------------------------------*/
+class options_more_t : public menu_base_t
+{
+  public:
+	options_more_t(gfxengine_t *e) : menu_base_t(e) { }
+	void build();
+};
+
+class st_options_more_t : public st_menu_base_t
+{
+  public:
+	st_options_more_t()	{ name = "options_more"; }
+	kobo_form_t *open();
+	void select(int tag);
+};
+
 
 /*----------------------------------------------------------
 	Requesters
@@ -520,6 +538,7 @@ extern st_options_video_t st_options_video;
 extern st_options_audio_t st_options_audio;
 extern st_options_control_t st_options_control;
 extern st_options_game_t st_options_game;
+extern st_options_more_t st_options_more;
 extern st_error_t st_error;
 
 #endif	//_KOBO_STATES_H_

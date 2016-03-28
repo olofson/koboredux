@@ -38,6 +38,7 @@
 #include "sound.h"
 #include "radar.h"
 #include "random.h"
+#include "openurl.h"
 
 
 gamestatemanager_t gsm;
@@ -1548,6 +1549,7 @@ void options_main_t::build()
 	button("System", 5);
 //TODO:	if(prefs->cheats)
 		button("Cheats", 6);
+	button("More", 7);
 	space();
 
 	button("DONE!", 0);
@@ -1583,6 +1585,9 @@ void st_options_main_t::select(int tag)
 		break;
 	  case 6:
 		gsm.push(&st_options_cheat);
+		break;
+	  case 7:
+		gsm.push(&st_options_more);
 		break;
 	}
 }
@@ -1678,6 +1683,56 @@ st_options_audio_t st_options_audio;
 st_options_control_t st_options_control;
 st_options_game_t st_options_game;
 
+/*----------------------------------------------------------
+	More Options
+----------------------------------------------------------*/
+void options_more_t::build()
+{
+	medium();
+	label("More Options");
+
+	xoffs = 0.5;
+	space();
+	big();
+	label("What!?");
+	small();
+	space();
+	label("What do you think this is?");
+	label("Free/Open Source Software...?");
+	space();
+	label("Oh, wait.");
+	big();
+	space();
+	button("It is. :-)", 1);
+	space();
+	button("ACCEPT", 0);
+	button("CANCEL", 0);
+	space();
+	small();
+	help();
+}
+
+kobo_form_t *st_options_more_t::open()
+{
+	options_more_t *m = new options_more_t(gengine);
+	m->open();
+	return m;
+}
+
+void st_options_more_t::select(int tag)
+{
+	switch(tag)
+	{
+	  case 1:
+		gengine->switch_video_mode(KOBO_VIDEOMODE_WINDOWED);
+		kobo_OpenURL("https://github.com/olofson/koboredux");
+		break;
+	}
+}
+
+
+
+st_options_more_t st_options_more;
 
 
 /*----------------------------------------------------------
