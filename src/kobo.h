@@ -48,6 +48,13 @@ extern KOBO_sound	sound;
  //	Globals
 /////////////////////////////////////////////////////////////////////////////
 
+enum kobo_vmswitch_t {
+	KOBO_VIDEOMODE_TOGGLE,
+	KOBO_VIDEOMODE_WINDOWED,
+	KOBO_VIDEOMODE_FULLSCREEN,
+	KOBO_VIDEOMODE_SAFE
+};
+
 class kobo_gfxengine_t : public gfxengine_t
 {
 #ifdef ENABLE_TOUCHSCREEN
@@ -69,11 +76,10 @@ class kobo_gfxengine_t : public gfxengine_t
 	void pre_render();
 	void post_render();
 	void post_loop();
-	void safe_video_mode();
-	void fullscreen_toggle();
 	float timestamp_delay();
   public:
 	kobo_gfxengine_t();
+	void switch_video_mode(kobo_vmswitch_t vms);
 #ifdef ENABLE_TOUCHSCREEN
 	void setup_pointer_margin(int, int);
 #endif
