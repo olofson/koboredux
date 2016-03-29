@@ -70,6 +70,7 @@ class KOBO_myship
 	static void explode();
 	static void handle_controls();
 	static void update_position();
+	static void kill_bolt(int bolt, bool impact);
 	static inline int bolt_frame(int dir, int frame)
 	{
 		const char animtab[8] = { 0, 1, 2, 3, 2, 1, 2, 1 };

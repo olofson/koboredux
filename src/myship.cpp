@@ -99,10 +99,8 @@ void KOBO_myship::off()
 	int i;
 	for(i = 0; i < MAX_BOLTS; i++)
 		if(bolts[i].object)
-		{
 			gengine->free_obj(bolts[i].object);
-			bolts[i].object = NULL;
-		}
+	memset(bolts, 0, sizeof(bolts));
 }
 
 
@@ -142,8 +140,7 @@ void KOBO_myship::explode()
 		return;
 
 	int d = 4096 - (64 - explo_time)*(64 - explo_time);
-	int i;
-	for(i = 0; i < 2; ++i)
+	for(int i = 0; i < 2; ++i)
 	{
 		int dx = (int)(pubrand.get(6)) - 32;
 		int dy = (int)(pubrand.get(6)) - 32;
@@ -306,12 +303,7 @@ void KOBO_myship::move()
 		int dx = labs(WRAPDISTX(CS2PIXEL(bolts[i].x), CS2PIXEL(x)));
 		int dy = labs(WRAPDISTY(CS2PIXEL(bolts[i].y), CS2PIXEL(y)));
 		if(dx >= game.bolt_range || dy >= game.bolt_range)
-		{
-			bolts[i].state = 0;
-			if(bolts[i].object)
-				gengine->free_obj(bolts[i].object);
-			bolts[i].object = NULL;
-		}
+			kill_bolt(i, false);
 	}
 	// NOTE: We can't check bolt/base collisions here, as that would kill
 	//       bolts before core (enemy) collisions are checked!
@@ -373,6 +365,19 @@ void KOBO_myship::health_bonus(int h)
 }
 
 
+void KOBO_myship::kill_bolt(int bolt, bool impact)
+{
+	if(impact)
+		enemies.make(&boltexpl, bolts[bolt].x, bolts[bolt].y);
+	bolts[bolt].state = 0;
+	if(bolts[bolt].object)
+	{
+		gengine->free_obj(bolts[bolt].object);
+		bolts[bolt].object = NULL;
+	}
+}
+
+
 // Check and handle base/bolt collisions
 void KOBO_myship::check_base_bolts()
 {
@@ -386,11 +391,7 @@ void KOBO_myship::check_base_bolts()
 		if(IS_BASE(screen.get_map(x1, y1)))
 		{
 			sound.g_play(S_METALLIC, x1 << 4, y1 << 4);
-			enemies.make(&boltexpl, bolts[i].x, bolts[i].y);
-			bolts[i].state = 0;
-			if(bolts[i].object)
-				gengine->free_obj(bolts[i].object);
-			bolts[i].object = NULL;
+			kill_bolt(i, true);
 		}
 	}
 }
@@ -499,7 +500,7 @@ int KOBO_myship::hit_bolt(int ex, int ey, int hitsize, int health)
 			continue;
 		if(labs(WRAPDISTY(ey, CS2PIXEL(bolts[i].y))) >= hitsize)
 			continue;
-		enemies.make(&boltexpl, bolts[i].x, bolts[i].y);
+		kill_bolt(i, true);
 		dmg += game.bolt_damage;
 		if(dmg >= health)
 			break;

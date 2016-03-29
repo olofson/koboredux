@@ -358,7 +358,7 @@ void KOBO_enemy::render_hit_zone()
 
 void KOBO_enemy::make_bullet1()
 {
-	di = 1 + pubrand.get(3);
+	di = pubrand.get(3);
 	health = 1;
 	shootable = false;
 	physics = false;
@@ -462,7 +462,7 @@ void KOBO_enemy::make_rock()
 {
 	health = game.rock_health;
 	damage = game.rock_damage;
-	di = gamerand.get(5) + 1;
+	di = gamerand.get(5);
 	a = gamerand.get(1) ? 1 : -1;
 	switch(gamerand.get() % 3)
 	{
@@ -517,7 +517,7 @@ void KOBO_enemy::make_ring()
 	detonate_on_contact = true;
 	health = 20;
 	damage = 30;
-	di = 1;
+	di = 0;
 }
 
 void KOBO_enemy::move_ring()
@@ -560,7 +560,7 @@ void KOBO_enemy::make_bomb()
 	physics = false;
 	health = 20;
 	damage = 70;
-	di = 1;
+	di = 0;
 	c = 0;		// Trigger-to-detonation timer
 }
 
@@ -754,7 +754,7 @@ void KOBO_enemy::make_expl()
 		a = 6;
 		break;
 	  case B_BOLT:
-		frame = 80 + 8 * pubrand.get(2);
+		frame = 80 + 4 * pubrand.get(2);
 		di = pubrand.get(2);
 		a = 8;
 		break;

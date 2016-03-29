@@ -1683,6 +1683,7 @@ st_options_audio_t st_options_audio;
 st_options_control_t st_options_control;
 st_options_game_t st_options_game;
 
+
 /*----------------------------------------------------------
 	More Options
 ----------------------------------------------------------*/
@@ -1729,7 +1730,6 @@ void st_options_more_t::select(int tag)
 		break;
 	}
 }
-
 
 
 st_options_more_t st_options_more;
