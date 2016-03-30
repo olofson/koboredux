@@ -250,7 +250,7 @@ void KOBO_myship::move()
 	y &= PIXEL2CS(WORLD_SIZEY) - 1;
 
 	// Fire control
-	if((_state != SHIP_DEAD) && gamecontrol.get_shot())
+	if((_state != SHIP_DEAD) && (gamecontrol.fire() || prefs->always_fire))
 	{
 		int fired = 0;
 		if(tail_reload_timer > 0)
@@ -270,7 +270,7 @@ void KOBO_myship::move()
 	}
 	else
 	{
-		if(!gamecontrol.get_shot())
+		if(!gamecontrol.fire() && !prefs->always_fire)
 			sound.g_player_fire(false);
 		if(nose_reload_timer > 0)
 			--nose_reload_timer;

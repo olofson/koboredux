@@ -200,7 +200,6 @@ void _manage::start_game()
 	init_resources_to_play(true);
 
 	gamecontrol.clear();
-	gamecontrol.repeat(0, 0);
 
 	hi.skill = game.skill;
 	hi.playtime = 0;
@@ -257,7 +256,6 @@ void _manage::init_resources_title()
 	run_intro();
 	gengine->camfilter(0);
 	gengine->force_scroll();
-	gamecontrol.repeat(KOBO_KEY_DELAY, KOBO_KEY_REPEAT);
 	show_bars = 0;
 	set_bars();
 	pxtop->fx(PFX_SCAN, PCOLOR_CORE);

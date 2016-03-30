@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2006, 2009, 2012 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -27,42 +27,27 @@
 #include "myship.h"
 
 
-int gamecontrol_t::afire;
-int gamecontrol_t::r_delay = 250;
-int gamecontrol_t::r_interval = 40;
 int gamecontrol_t::direction = 1;
 int gamecontrol_t::new_direction = 0;
 int gamecontrol_t::latch_timer = 0;
 int gamecontrol_t::movekey_pressed;
 unsigned gamecontrol_t::state[BTN__COUNT];
+unsigned gamecontrol_t::_pressed[BTN__COUNT];
+unsigned gamecontrol_t::_released[BTN__COUNT];
 
 
-void gamecontrol_t::init(int always_fire)
+void gamecontrol_t::init()
 {
-	afire = always_fire;
 	memset(state, 0, sizeof(state));
+	memset(_pressed, 0, sizeof(_pressed));
+	memset(_released, 0, sizeof(_released));
 	movekey_pressed = 0;
-#if 0
-	SDL_EnableKeyRepeat(r_delay, r_interval);
-#endif
 }
 
 
 gamecontrol_t::gamecontrol_t()
 {
-	init(0);
-}
-
-
-void gamecontrol_t::repeat(int delay, int interval)
-{
-	r_delay = delay;
-	r_interval = interval;
-#if 0
-	//Temporary kludge - should apply repeat to
-	//all switch inputs, not just the keyboard!
-	SDL_EnableKeyRepeat(delay, interval);
-#endif
+	init();
 }
 
 
@@ -222,6 +207,7 @@ void gamecontrol_t::pressbtn(gc_targets_t b, gc_sources_t s)
 	if(s < 0 || s > 31)
 		return;
 	state[b] |= 1 << s;
+	_pressed[b] |= 1 << s;
 	gamecontrol_t::change();
 }
 
@@ -233,6 +219,7 @@ void gamecontrol_t::releasebtn(gc_targets_t b, gc_sources_t s)
 	if(s < 0 || s > 31)
 		return;
 	state[b] &= ~(1 << s);
+	_released[b] |= 1 << s;
 	gamecontrol_t::change();
 }
 
@@ -391,7 +378,14 @@ void gamecontrol_t::change()
 }
 
 
-void gamecontrol_t::process()
+void gamecontrol_t::pre_process()
+{
+	memset(_pressed, 0, sizeof(_pressed));
+	memset(_released, 0, sizeof(_released));
+}
+
+
+void gamecontrol_t::post_process()
 {
 	if(latch_timer)
 		if(!--latch_timer)

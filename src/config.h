@@ -81,10 +81,6 @@ enum KOBO_sound_banks {
  */
 #define	KOBO_PIXELFORMAT	SDL_PIXELFORMAT_ARGB8888
 
-/* Key/button repeat timing */
-#define	KOBO_KEY_DELAY		250
-#define	KOBO_KEY_REPEAT		40
-
 /*
  * Fraction of the screen size in which clicks are not considered
  * clicks but movements in that direction (as regarded from the

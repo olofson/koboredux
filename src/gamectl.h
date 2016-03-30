@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001, 2002, 2006, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -84,9 +84,9 @@ enum gc_sources_t
 
 class gamecontrol_t
 {
-	static int r_delay, r_interval;
-	static int afire;
-	static unsigned state[BTN__COUNT];
+	static unsigned state[BTN__COUNT];	// Current state
+	static unsigned _pressed[BTN__COUNT];	// Pressed during this frame
+	static unsigned _released[BTN__COUNT];	// Released during this frame
 	static int direction, new_direction;
 	static int latch_timer;
 	static int movekey_pressed;
@@ -94,9 +94,9 @@ class gamecontrol_t
 	static gc_targets_t mapsrc(SDL_Keysym sym, int &src);
   public:
 	gamecontrol_t();
-	static void init(int always_fire);
-	static void repeat(int delay, int interval);
+	static void init();
 	static void clear();
+	static void pre_process(); // Call before processing input!
 	static gc_targets_t map(SDL_Keysym sym)
 	{
 		int src;
@@ -104,15 +104,21 @@ class gamecontrol_t
 	}
 	static void pressbtn(gc_targets_t b, gc_sources_t s);
 	static void releasebtn(gc_targets_t b, gc_sources_t s);
-	static void process();	// Call every frame!
 	static void press(SDL_Keysym sym);
 	static void release(SDL_Keysym sym);
 	static void mouse_press(int n);
 	static void mouse_release(int n);
 	static void mouse_position(int h, int v);
-	static int dir()	{ return direction; }
-	static int get_shot()	{ return state[BTN_FIRE] || afire; }
-	static int dir_push()	{ return movekey_pressed; }
+	static void post_process(); // Call after processing input!
+	static int dir()			{ return direction; }
+	static int dir_push()			{ return movekey_pressed; }
+	static bool down(gc_targets_t b)	{ return state[b]; }
+	static bool pressed(gc_targets_t b)	{ return _pressed[b]; }
+	static bool released(gc_targets_t b)	{ return _released[b]; }
+	static int fire()
+	{
+		return down(BTN_FIRE) || pressed(BTN_FIRE);
+	}
 };
 
 extern gamecontrol_t gamecontrol;

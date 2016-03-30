@@ -1256,7 +1256,7 @@ int KOBO_main::open()
 	wradar->mode(RM_NOISE);
 	pubrand.init();
 	init_js(prefs);
-	gamecontrol.init(prefs->always_fire);
+	gamecontrol.init();
 	manage.init();
 
 	gsm.push(&st_intro_title);
@@ -1337,7 +1337,7 @@ int KOBO_main::restart_video()
 		gsm.push(&st_error);
 	}
 	screen.init_graphics();
-	gamecontrol.init(prefs->always_fire);
+	gamecontrol.init();
 	log_printf(ULOG, "--- Video restarted.\n");
 
 	// FIXME: We may not always need to reload graphics, but that's a bit
@@ -1418,7 +1418,7 @@ int KOBO_main::run()
 		{
 			close_js();
 			init_js(prefs);
-			gamecontrol.init(prefs->always_fire);
+			gamecontrol.init();
 		}
 		if(global_status & OS_RESTART_LOGGER)
 			open_logging(prefs);
@@ -1733,6 +1733,7 @@ void kobo_gfxengine_t::frame()
 	/*
 	 * Process input
 	 */
+	gamecontrol.pre_process();
 	SDL_Event ev;
 	while(SDL_PollEvent(&ev))
 	{
@@ -2031,7 +2032,7 @@ void kobo_gfxengine_t::frame()
 			break;
 		}
 	}
-	gamecontrol.process();
+	gamecontrol.post_process();
 
 	// Update positional audio listener position
 	sound.g_position(CS2PIXEL(gengine->xoffs(LAYER_BASES)) + WMAIN_W / 2,
