@@ -999,6 +999,14 @@ void KOBO_screen::render_bases(KOBO_map &map, int tileset, int vx, int vy)
 					PIXEL2CS(y * b->h) - yo,
 					tileset, tile);
 		}
+	if(prefs->show_map_border)
+	{
+		wmain->foreground(wmain->map_rgb(0, 100, 200));
+		wmain->fillrect_fxp(PIXEL2CS(MAP_SIZEX * b->w) - vx,
+				0, PIXEL2CS(1), PIXEL2CS(WMAIN_H));
+		wmain->fillrect_fxp(0, PIXEL2CS(MAP_SIZEY * b->h) - vy,
+				PIXEL2CS(WMAIN_W), PIXEL2CS(1));
+	}
 }
 
 

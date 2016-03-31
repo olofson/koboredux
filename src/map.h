@@ -80,7 +80,6 @@ class KOBO_map
 	void clear();
 	void make_maze(int x, int y, int difx, int dify);
 	void convert(unsigned ratio);	// ratio < 64
-	void mark_edges();
 };
 
 #endif	// XKOBO_H_MAP

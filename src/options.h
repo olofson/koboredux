@@ -82,4 +82,11 @@ class cheat_options_t : public config_form_t
 	void build();
 };
 
+class debug_options_t : public config_form_t
+{
+  public:
+	debug_options_t(gfxengine_t *e) : config_form_t(e) { }
+	void build();
+};
+
 #endif 	//_KOBO_OPTIONS_H_

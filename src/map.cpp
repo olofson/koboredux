@@ -42,15 +42,6 @@ void KOBO_map::clear()
 			pos(i, j) = SPACE;
 }
 
-void KOBO_map::mark_edges()
-{
-	int i;
-	for(i = 0; i < MAP_SIZEX; i++)
-		pos(i, 0) = 0;
-	for(i = 0; i < MAP_SIZEY; i++)
-		pos(0, i) = 0;
-}
-
 void KOBO_map::make_maze(int x, int y, int difx, int dify)
 {
 	int i, j;
@@ -229,8 +220,6 @@ void KOBO_map::convert(unsigned ratio)
 			}
 			pos(i, j) = (bits2tile(p) << 8) | p;
 		}
-	if(prefs->show_map_border)
-		mark_edges();
 }
 
 int KOBO_map::test_line(int x1, int y1, int x3, int y3,

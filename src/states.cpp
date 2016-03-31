@@ -168,7 +168,6 @@ void st_introbase_t::post_render()
 }
 
 
-
 /*----------------------------------------------------------
 	st_intro_title
 ----------------------------------------------------------*/
@@ -415,7 +414,6 @@ void st_game_t::post_render()
 
 
 st_game_t st_game;
-
 
 
 /*----------------------------------------------------------
@@ -681,7 +679,6 @@ void st_game_over_t::post_render()
 st_game_over_t st_game_over;
 
 
-
 /*----------------------------------------------------------
 	Menu Base
 ----------------------------------------------------------*/
@@ -863,7 +860,6 @@ void st_menu_base_t::press(gc_targets_t button)
 		break;
 	}
 }
-
 
 
 /*----------------------------------------------------------
@@ -1237,7 +1233,6 @@ void st_error_t::post_render()
 st_error_t st_error;
 
 
-
 /*----------------------------------------------------------
 	st_main_menu
 ----------------------------------------------------------*/
@@ -1529,7 +1524,8 @@ void options_main_t::build()
 	space();
 //TODO:	if(prefs->cheats)
 		button("Cheats", 6);
-	button("More", 7);
+	button("Debug", 7);
+	button("More", 8);
 	space(2);
 	button("DONE!", 0);
 }
@@ -1566,6 +1562,9 @@ void st_options_main_t::select(int tag)
 		gsm.push(&st_options_cheat);
 		break;
 	  case 7:
+		gsm.push(&st_options_debug);
+		break;
+	  case 8:
 		gsm.push(&st_options_more);
 		break;
 	}
@@ -1651,16 +1650,16 @@ void st_options_base_t::escape()
 }
 
 
-
 /*----------------------------------------------------------
 	Options...
 ----------------------------------------------------------*/
-st_options_cheat_t st_options_cheat;
-st_options_system_t st_options_system;
+st_options_game_t st_options_game;
+st_options_control_t st_options_control;
 st_options_video_t st_options_video;
 st_options_audio_t st_options_audio;
-st_options_control_t st_options_control;
-st_options_game_t st_options_game;
+st_options_system_t st_options_system;
+st_options_cheat_t st_options_cheat;
+st_options_debug_t st_options_debug;
 
 
 /*----------------------------------------------------------
@@ -1804,7 +1803,6 @@ void st_ask_exit_t::select(int tag)
 }
 
 st_ask_exit_t st_ask_exit;
-
 
 
 /*----------------------------------------------------------

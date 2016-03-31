@@ -456,7 +456,7 @@ void game_options_t::build()
 
 void cheat_options_t::build()
 {
-	title("Game Options");
+	title("Cheat Options");
 
 	xoffs = 0.6;
 	yesno("Push Move Mode", &prf->cheat_pushmove, 0);
@@ -480,6 +480,33 @@ void cheat_options_t::build()
 		item("150%", 1.5f);
 		item("175%", 1.75f);
 		item("200%", 2.0f);
+
+	xoffs = 0.5;
+	space(2);
+	button("ACCEPT", OS_CLOSE);
+	button("CANCEL", OS_CANCEL);
+	space(2);
+	help();
+}
+
+
+void debug_options_t::build()
+{
+	title("Debug Options");
+
+	xoffs = 0.6;
+	yesno("General Debug Features", &prf->debug, 0);
+	yesno("Show FPS Counter", &prf->show_fps, 0);
+	yesno("Show Map Border", &prf->show_map_border, 0);
+	yesno("Show Coordinates", &prf->show_coordinates, 0);
+	yesno("Show Tile/Sprite Edges", &prf->show_tiles, OS_RELOAD_GRAPHICS);
+	yesno("Show Hit Zones", &prf->show_hit, 0);
+	yesno("Timestamp Debug Output", &prf->tsdebug, 0);
+	yesno("Sound Design Tools", &prf->soundtools, 0);
+	yesno("Force Fallback Graphics theme", &prf->force_fallback_gfxtheme,
+			OS_RELOAD_GRAPHICS);
+	yesno("Force Fallback Sound Theme", &prf->force_fallback_sfxtheme,
+			OS_RELOAD_SOUNDS);
 
 	xoffs = 0.5;
 	space(2);

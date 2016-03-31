@@ -289,7 +289,7 @@ class KOBO_main
 	static int		fps_nextresult;
 	static int		fps_lastresult;
 	static float		*fps_results;
-	static display_t	*dfps;
+	static float		fps_last;
 
 	// Frame rate limiter
 	static float		maxfps_filter;
@@ -321,6 +321,7 @@ class KOBO_main
 	static void save_config(prefs_t *p);
 
 	static void build_screen();
+	static void build_soundtools();
 	static int init_display(prefs_t *p);
 	static void close_display();
 
@@ -364,7 +365,7 @@ int		KOBO_main::fps_starttime = 0;
 int		KOBO_main::fps_nextresult = 0;
 int		KOBO_main::fps_lastresult = 0;
 float		*KOBO_main::fps_results = NULL;
-display_t	*KOBO_main::dfps = NULL;
+float		KOBO_main::fps_last = 0.0f;
 
 float		KOBO_main::maxfps_filter = 0.0f;
 int		KOBO_main::maxfps_begin = 0;
@@ -701,43 +702,36 @@ void KOBO_main::build_screen()
 			LEFTLEDS_W, LEFTLEDS_H);
 	pxright->place(xoffs + RIGHTLEDS_X, yoffs + RIGHTLEDS_Y,
 			RIGHTLEDS_W, RIGHTLEDS_H);
+}
 
-	if(prefs->show_fps)
-	{
-		dfps = new display_t(gengine);
-		dfps->place(0, -9, 48, 18);
-		dfps->color(wdash->map_rgb(0, 0, 0));
-		dfps->font(B_NORMAL_FONT);
-		dfps->caption("FPS");
-	}
 
-	if(prefs->soundtools)
-	{
-		st_hotkeys = new label_t(gengine);
-		st_hotkeys->place(conx, cony + WCONSOLE_H - 19 - 82,
-				WCONSOLE_W, 81);
-		st_hotkeys->color(wdash->map_rgb(16, 16, 16));
-		st_hotkeys->font(B_SMALL_FONT);
-		st_hotkeys->caption(
-				"F1: Reload sounds\n"
-				"CTRL+F1: Audio restart\n"
-				"F2/F3: Next/prev SFX\n"
-				"\r"
-				"F4: Play detached\n"
-				"F5: Play while holding\n"
-				"F6: Start\n"
-				"F7: Stop\n"
-				"F8: Kill all sounds\n"
-				"\r"
-				"F9-F12: Send(2, 0.25-1.0)");
+void KOBO_main::build_soundtools()
+{
+	int conx = xoffs + WCONSOLE_X;
+	int cony = yoffs + WCONSOLE_Y;
 
-		st_symname = new display_t(gengine);
-		st_symname->place(conx, cony + WCONSOLE_H - 19,
-				WCONSOLE_W, 19);
-		st_symname->color(wdash->map_rgb(24, 24, 24));
-		st_symname->font(B_SMALL_FONT);
-		st_symname->caption("SFX Symbol Name");
-	}
+	st_hotkeys = new label_t(gengine);
+	st_hotkeys->place(conx, cony + WCONSOLE_H - 19 - 82, WCONSOLE_W, 81);
+	st_hotkeys->color(wdash->map_rgb(16, 16, 16));
+	st_hotkeys->font(B_SMALL_FONT);
+	st_hotkeys->caption(
+			"F1: Reload sounds\n"
+			"CTRL+F1: Audio restart\n"
+			"F2/F3: Next/prev SFX\n"
+			"\r"
+			"F4: Play detached\n"
+			"F5: Play while holding\n"
+			"F6: Start\n"
+			"F7: Stop\n"
+			"F8: Kill all sounds\n"
+			"\r"
+			"F9-F12: Send(2, 0.25-1.0)");
+
+	st_symname = new display_t(gengine);
+	st_symname->place(conx, cony + WCONSOLE_H - 19, WCONSOLE_W, 19);
+	st_symname->color(wdash->map_rgb(24, 24, 24));
+	st_symname->font(B_SMALL_FONT);
+	st_symname->caption("SFX Symbol Name");
 }
 
 
@@ -916,8 +910,6 @@ void KOBO_main::close_display()
 	pxleft = NULL;
 	delete pxright;
 	pxright = NULL;
-	delete dfps;
-	dfps = NULL;
 	delete st_hotkeys;
 	st_hotkeys = NULL;
 	delete st_symname;
@@ -1408,6 +1400,9 @@ int KOBO_main::run()
 		if(global_status & OS_RESTART_AUDIO)
 			if((res = restart_audio()))
 				return res;
+		if(global_status & OS_RELOAD_SOUNDS)
+			if((res = reload_sounds()))
+				return res;
 		if(global_status & OS_RESTART_VIDEO)
 			if((res = restart_video()))
 				return res;
@@ -1578,6 +1573,8 @@ void kobo_gfxengine_t::st_update_sound_displays()
 	if(!prefs->soundtools)
 		return;
 	log_printf(ULOG, "Selected sound %s\n", sound.symname(st_sound));
+	if(!km.st_symname)
+		km.build_soundtools();
 	km.st_symname->text(sound.symname(st_sound));
 }
 
@@ -2078,6 +2075,12 @@ void kobo_gfxengine_t::post_render()
 
 	if(prefs->soundtools)
 	{
+		// Make sure the GUI is built and visible
+		if(!km.st_symname)
+			km.build_soundtools();
+		km.st_hotkeys->visible(true);
+		km.st_symname->visible(true);
+
 		// Ear (listener position)
 		wmain->sprite(WMAIN_W / 2, WMAIN_H / 2, B_SOUND_ICONS, 1);
 
@@ -2089,6 +2092,12 @@ void kobo_gfxengine_t::post_render()
 		ssx %= PIXEL2CS(WORLD_SIZEX);
 		ssy %= PIXEL2CS(WORLD_SIZEY);
 		wmain->sprite_fxp(ssx, ssy, B_SOUND_ICONS, 0);
+	}
+	else if(km.st_symname)
+	{
+		// Soundtools enabled and then disabled; hide the GUI!
+		km.st_hotkeys->visible(false);
+		km.st_symname->visible(false);
 	}
 
 	gsm.post_render();
@@ -2108,28 +2117,34 @@ void kobo_gfxengine_t::post_render()
 	int tt = nt - km.fps_starttime;
 	if((tt > 1000) && km.fps_count)
 	{
-		float f = km.fps_count * 1000.0 / tt;
-		::screen.fps(f);
+		km.fps_last = km.fps_count * 1000.0 / tt;
+		::screen.fps(km.fps_last);
 		km.fps_count = 0;
 		km.fps_starttime = nt;
 		if(prefs->show_fps)
 		{
-			char buf[20];
-			snprintf(buf, sizeof(buf), "%.1f", f);
-			km.dfps->text(buf);
 			if(!km.fps_results)
 				km.fps_results = (float *)
 						calloc(MAX_FPS_RESULTS,
 						sizeof(float));
 			if(km.fps_results)
 			{
-				km.fps_results[km.fps_nextresult++] = f;
+				km.fps_results[km.fps_nextresult++] =
+						km.fps_last;
 				if(km.fps_nextresult >= MAX_FPS_RESULTS)
 					km.fps_nextresult = 0;
 				if(km.fps_nextresult > km.fps_lastresult)
 					km.fps_lastresult = km.fps_nextresult;
 			}
 		}
+	}
+	if(prefs->show_fps)
+	{
+		char buf[20];
+		snprintf(buf, sizeof(buf), "%.1f FPS", km.fps_last);
+		wdash->font(B_NORMAL_FONT);
+		wdash->string(0, wdash->height() -
+				wdash->fontheight(B_NORMAL_FONT), buf);
 	}
 	++km.fps_count;
 
@@ -2491,7 +2506,7 @@ int main(int argc, char *argv[])
 		prefs->changed = 0;
 	}
 
-	if(prefs->show_fps)
+	if(prefs->show_fps && km.fps_results)
 		km.print_fps_results();
 
 	km.close_logging();
