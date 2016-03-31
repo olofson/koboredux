@@ -909,16 +909,12 @@ void new_player_t::change(int delta)
 
 void new_player_t::build()
 {
-	medium();
 	space(2);
 	label("Use arrows, joystick or keyboard");
 	label("to enter name");
-
-	big();
-	space();
+	space(2);
 	button(name, 1);
-	space();
-
+	space(2);
 	button("Ok", MENU_TAG_OK);
 	button("Cancel", MENU_TAG_CANCEL);
 }
@@ -1253,7 +1249,9 @@ void main_menu_t::buildStartLevel(int profNum)
 	start_level = manage.current_scene();
 	if(start_level > MaxStartLevel)
 		start_level = MaxStartLevel;
+	halign = ALIGN_CENTER;
 	list("Start at Stage", &start_level, 5);
+	halign = ALIGN_DEFAULT;
 	for(int i = 0; i <= MaxStartLevel; ++i)
 	{
 		snprintf(buf, sizeof(buf), "%d", i + 1);
@@ -1277,9 +1275,6 @@ void main_menu_t::build()
 			manage.select_scene(0);
 	}
 
-	halign = ALIGN_CENTER;
-	xoffs = 0.5;
-	big();
 	if(manage.game_in_progress())
 	{
 		space(2);
@@ -1298,9 +1293,7 @@ void main_menu_t::build()
 			list("Player", &prefs->last_profile, 4);
 			for(int i = 0; i < scorefile.numProfiles; ++i)
 				item(scorefile.name(i), i);
-			small();
 			buildStartLevel(prefs->last_profile);
-			big();
 		}
 		else
 			space(2);
@@ -1309,11 +1302,7 @@ void main_menu_t::build()
 		log_printf(WLOG, "Player profiles are disabled!\n");
 		button("Start New Game!", 1);
 		if(prefs->cheat_startlevel)
-		{
-			small();
 			buildStartLevel(-1);
-		}
-		big();
 		space();
 		button("Load Game", 51);
 #endif
@@ -1445,18 +1434,11 @@ st_main_menu_t st_main_menu;
 
 void skill_menu_t::build()
 {
-	halign = ALIGN_CENTER;
-	xoffs = 0.5;
-	medium();
-	label("Select Skill Level");
-	space(1);
-
-	big();
+	title("Select Skill Level");
 	button("Normal", SKILL_NORMAL + 10);
 	button("Hard", SKILL_HARD + 10);
 	button("Insane", SKILL_INSANE + 10);
-	space();
-	small();
+	space(2);
 	switch(skill)
 	{
 	  case SKILL_NORMAL:
@@ -1537,21 +1519,18 @@ st_skill_menu_t st_skill_menu;
 
 void options_main_t::build()
 {
-	medium();
-	label("Options");
+	title("Options");
+	button("Game", 1);
 	space();
-
-	big();
-	button("Game", 4);
-	button("Controls", 3);
-	button("Video", 1);
-	button("Audio", 2);
+	button("Controls", 2);
+	button("Video", 3);
+	button("Audio", 4);
 	button("System", 5);
+	space();
 //TODO:	if(prefs->cheats)
 		button("Cheats", 6);
 	button("More", 7);
-	space();
-
+	space(2);
 	button("DONE!", 0);
 }
 
@@ -1569,16 +1548,16 @@ void st_options_main_t::select(int tag)
 	switch(tag)
 	{
 	  case 1:
-		gsm.push(&st_options_video);
+		gsm.push(&st_options_game);
 		break;
 	  case 2:
-		gsm.push(&st_options_audio);
-		break;
-	  case 3:
 		gsm.push(&st_options_control);
 		break;
+	  case 3:
+		gsm.push(&st_options_video);
+		break;
 	  case 4:
-		gsm.push(&st_options_game);
+		gsm.push(&st_options_audio);
 		break;
 	  case 5:
 		gsm.push(&st_options_system);
@@ -1689,28 +1668,19 @@ st_options_game_t st_options_game;
 ----------------------------------------------------------*/
 void options_more_t::build()
 {
-	medium();
-	label("More Options");
-
-	xoffs = 0.5;
+	title("More Options");
 	space();
-	big();
-	label("What!?");
-	small();
+	font(B_BIG_FONT); label("What!?"); font();
 	space();
 	label("What do you think this is?");
 	label("Free/Open Source Software...?");
 	space();
 	label("Oh, wait.");
-	big();
 	space();
 	button("It is. :-)", 1);
-	space();
+	space(2);
 	button("ACCEPT", 0);
 	button("CANCEL", 0);
-	space();
-	small();
-	help();
 }
 
 kobo_form_t *st_options_more_t::open()
@@ -1740,10 +1710,7 @@ st_options_more_t st_options_more;
 ----------------------------------------------------------*/
 void yesno_menu_t::build()
 {
-	halign = ALIGN_CENTER;
-	xoffs = 0.5;
-	big();
-	space(8);
+	space(-130);
 	button("YES", MENU_TAG_OK);
 	button("NO", MENU_TAG_CANCEL);
 }

@@ -33,7 +33,7 @@ kobo_form_t::kobo_form_t(gfxengine_t *e) : ct_form_t(e)
 	ypos = 0;
 	current_list = NULL;
 	help_bar = NULL;
-	_big = 0;
+	_font = 0;
 	xoffs = 0.5;
 	halign = ALIGN_DEFAULT;
 }
@@ -119,47 +119,29 @@ void kobo_form_t::prev()
 }
 
 
-void kobo_form_t::init_widget(ct_widget_t *w)
+void kobo_form_t::init_widget(ct_widget_t *w, int def_font)
 {
 	current_widget = w;
-	switch(_big)
-	{
-	  case 0:
-		w->place(px(), py() + ypos, width(), LINE_H);
-		w->font(B_NORMAL_FONT);
-		ypos += LINE_H;
-		break;
-	  case 1:
-		w->place(px(), py() + ypos, width(), BIG_LINE_H);
-		w->font(B_BIG_FONT);
-		ypos += BIG_LINE_H;
-		break;
-	  case 2:
-		w->place(px(), py() + ypos, width(), BIG_LINE_H);
-		w->font(B_MEDIUM_FONT);
-		ypos += BIG_LINE_H;
-		break;
-	}
+	w->font(get_font(def_font));
+	w->place(px(), py() + ypos, width(), w->fontheight());
+	ypos += w->fontheight();
 	w->halign(halign);
 	add(w);
 }
 
 
-void kobo_form_t::big()
+void kobo_form_t::font(int bank)
 {
-	_big = 1;
+	_font = bank;
 }
 
 
-void kobo_form_t::medium()
+int kobo_form_t::get_font(int def)
 {
-	_big = 2;
-}
-
-
-void kobo_form_t::small()
-{
-	_big = 0;
+	if(_font)
+		return _font;
+	else
+		return def;
 }
 
 
@@ -168,14 +150,22 @@ void kobo_form_t::begin()
 	clean();
 	ypos = 15;
 	current_list = NULL;
-	small();
+	font();
+}
+
+
+void kobo_form_t::title(const char *cap)
+{
+	ct_label_t *w = new ct_label_t(engine, cap);
+	init_widget(w, B_NORMAL_FONT);
+	space(2);
 }
 
 
 void kobo_form_t::label(const char *cap)
 {
 	ct_label_t *w = new ct_label_t(engine, cap);
-	init_widget(w);
+	init_widget(w, B_MEDIUM_FONT);
 }
 
 
@@ -187,7 +177,7 @@ void kobo_form_t::yesno(const char *cap, int *var, int tag)
 	current_list->tag = tag;
 	current_list->add("Yes", 1);
 	current_list->add("No", 0);
-	init_widget(current_list);
+	init_widget(current_list, B_NORMAL_FONT);
 }
 
 
@@ -199,7 +189,7 @@ void kobo_form_t::onoff(const char *cap, int *var, int tag)
 	current_list->tag = tag;
 	current_list->add("On", 1);
 	current_list->add("Off", 0);
-	init_widget(current_list);
+	init_widget(current_list, B_NORMAL_FONT);
 }
 
 
@@ -210,7 +200,7 @@ void kobo_form_t::spin(const char *cap, int *var, int min, int max,
 	w->offset(xoffs, 0);
 	w->user = var;
 	w->tag = tag;
-	init_widget(w);
+	init_widget(w, B_NORMAL_FONT);
 }
 
 
@@ -221,7 +211,7 @@ void kobo_form_t::list(const char *cap, void *var, int tag)
 	w->user = var;
 	w->tag = tag;
 	current_list = w;
-	init_widget(w);
+	init_widget(w, B_NORMAL_FONT);
 }
 
 
@@ -278,24 +268,23 @@ void kobo_form_t::button(const char *cap, int tag)
 	ct_widget_t *w = new ct_button_t(engine, cap);
 	w->offset(xoffs, 0);
 	w->tag = tag;
-	init_widget(w);
+	init_widget(w, B_BIG_FONT);
 }
 
 
-void kobo_form_t::space(int lines)
+void kobo_form_t::space(float lines)
 {
-	if(_big)
-		ypos += BIG_SPACE_SIZE * lines;
+	if(lines < 0)
+		ypos -= lines;
 	else
-		ypos += SPACE_SIZE * lines;
+		ypos += engine->screen()->fontheight(B_NORMAL_FONT) * lines;
 }
 
 
 void kobo_form_t::help()
 {
 	help_bar = new ct_label_t(engine, "");
-	init_widget(help_bar);
-	help_bar->font(B_SMALL_FONT);
+	init_widget(help_bar, B_SMALL_FONT);
 }
 
 

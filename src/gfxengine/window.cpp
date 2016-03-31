@@ -528,16 +528,20 @@ int window_t::textwidth(const char *txt, int min, int max)
 }
 
 
-int window_t::fontheight()
+int window_t::fontheight(int fnt)
 {
 	if(!engine)
 		return 1;
 
-	SoFont *f = engine->get_font(_font);
+	SoFont *f = engine->get_font(fnt >= 0 ? fnt : _font);
 	if(!f)
 		return 1;
-
+#if 0
 	return (f->FontHeight() * 256) / ys;
+#else
+	// FIXME: Is this still correct with scaled fonts?
+	return f->FontHeight();
+#endif
 }
 
 

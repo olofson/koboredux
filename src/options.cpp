@@ -31,12 +31,9 @@
 
 void system_options_t::build()
 {
-	medium();
-	label("System Options");
+	title("System Options");
 
 	xoffs = 0.55;
-	space();
-	small();
 	yesno("Quick Startup", &prf->quickstart, 0);
 
 	space();
@@ -93,22 +90,17 @@ void system_options_t::build()
 		item("Everything", 5);
 
 	xoffs = 0.5;
-	big();
-	space();
+	space(2);
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL);
-	space();
-	small();
+	space(2);
 	help();
 }
 
 
 void video_options_t::build()
 {
-	medium();
-	label("Video Options");
-	space();
-	small();
+	title("Video Options");
 
 	vmm_Init();
 	if(firstbuild)
@@ -223,12 +215,10 @@ void video_options_t::build()
 #endif
 
 	xoffs = 0.5;
-	big();
-	space();
+	space(2);
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL);
-	space();
-	small();
+	space(2);
 	help();
 }
 
@@ -241,10 +231,8 @@ void video_options_t::close()
 
 void audio_options_t::build()
 {
-	medium();
-	label("Sound Options");
-	small();
-	space();
+	title("Sound Options");
+
 	xoffs = 0.55;
 	yesno("Enable Sound", &prf->sound, OS_RESTART_AUDIO | OS_REBUILD);
 	if(prf->sound)
@@ -352,12 +340,10 @@ void audio_options_t::build()
 	}
 
 	xoffs = 0.5;
-	big();
-	space();
+	space(2);
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL | OS_UPDATE_AUDIO);
-	space();
-	small();
+	space(2);
 	help();
 }
 
@@ -370,10 +356,8 @@ void audio_options_t::prepare_to_apply()
 
 void control_options_t::build()
 {
-	medium();
-	label("Control Options");
-	space();
-	small();
+	title("Control Options");
+
 	xoffs = 0.6;
 	yesno("Always Fire", &prf->always_fire, OS_RESTART_INPUT);
 	space();
@@ -420,22 +404,18 @@ void control_options_t::build()
 	yesno("In-game Mouse Capture", &prf->mousecapture, 0);
 
 	xoffs = 0.5;
-	big();
-	space();
+	space(2);
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL);
-	space();
-	small();
+	space(2);
 	help();
 }
 
 
 void game_options_t::build()
 {
-	medium();
-	label("Game Options");
-	space();
-	small();
+	title("Game Options");
+
 	xoffs = 0.6;
 	yesno("Scrolling Radar", &prf->scrollradar, 0);
 	space();
@@ -466,22 +446,18 @@ void game_options_t::build()
 		item("High", 50);
 
 	xoffs = 0.5;
-	big();
-	space();
+	space(2);
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL | OS_UPDATE_ENGINE);
-	space();
-	small();
+	space(2);
 	help();
 }
 
 
 void cheat_options_t::build()
 {
-	medium();
-	label("Game Options");
-	space();
-	small();
+	title("Game Options");
+
 	xoffs = 0.6;
 	yesno("Push Move Mode", &prf->cheat_pushmove, 0);
 	yesno("Freewheel Mode", &prf->cheat_freewheel, 0);
@@ -506,11 +482,9 @@ void cheat_options_t::build()
 		item("200%", 2.0f);
 
 	xoffs = 0.5;
-	big();
-	space();
+	space(2);
 	button("ACCEPT", OS_CLOSE);
 	button("CANCEL", OS_CANCEL);
-	space();
-	small();
+	space(2);
 	help();
 }

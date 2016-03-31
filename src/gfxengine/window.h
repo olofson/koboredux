@@ -471,7 +471,7 @@ class window_t : public windowbase_t
 			signed char token = 0);
 	int textwidth(const char *txt, int min = 0, int max = 255);
 	int textwidth_fxp(const char *txt, int min = 0, int max = 255);
-	int fontheight();
+	int fontheight(int fnt = -1);
 
 	void point(int _x, int _y);
 	void rectangle(int _x, int _y, int w, int h);

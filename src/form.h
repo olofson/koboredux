@@ -27,12 +27,6 @@
 #include "toolkit.h"
 #include "cfgparse.h"
 
-#define	LINE_H		9
-#define	SPACE_SIZE	7
-
-#define	BIG_LINE_H	18
-#define	BIG_SPACE_SIZE	14
-
 class kobo_form_t : public ct_form_t
 {
 	//Called by build_all().
@@ -43,23 +37,23 @@ class kobo_form_t : public ct_form_t
 	ct_list_t	*current_list;
 	ct_label_t	*help_bar;
 	int		ypos;
-	int		_big;
+	int		_font;
 	float		xoffs;
 	ct_align_t	halign;
-	virtual void init_widget(ct_widget_t *wg);
+	virtual void init_widget(ct_widget_t *wg, int def_font);
 	void update_help();
+	int get_font(int def);
 
 	//Toolkit
-	void big();
-	void medium();
-	void small();
+	void font(int bank = 0);	// Override widget default font
+	void title(const char *cap);
 	void label(const char *cap);
 	void yesno(const char *cap, int *var, int tag = 0);
 	void onoff(const char *cap, int *var, int tag = 0);
 	void spin(const char *cap, int *var, int min, int max,
 			const char *unit, int tag = 0);
 	void button(const char *cap, int tag = 0);
-	void space(int lines = 1);
+	void space(float lines = 1.0f);	// Negative values are "virtual" pixels
 	void help();
 
 	//List tools
