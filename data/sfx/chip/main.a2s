@@ -110,7 +110,7 @@ export S_TITLESONG()
 	fbdelay 900;	fbgain .3
 	ldelay 976;	lgain .2
 	rdelay 1133;	rgain .2
-	vol .4
+	vol .6
 	set
 	1:TitleSong
 	end

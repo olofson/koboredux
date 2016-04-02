@@ -11,7 +11,7 @@ export S_UI_OPEN()
 	struct { wtosc }
 	w triangle
 	p -3
-	a .6
+	a 1
 	10 {
 		+p .1
 		d 10
@@ -24,7 +24,7 @@ export S_UI_OK()
 	struct { wtosc }
 	w triangle
 	p .5
-	a .6
+	a 1
 	15 {
 		-p .3
 		d 10
@@ -36,7 +36,7 @@ export S_UI_MOVE()
 {
 	struct { wtosc }
 	w noise
-	a .05
+	a .1
 	p 2
 	d 100
 	a 0; d 10
@@ -47,7 +47,7 @@ export S_UI_TICK()
 	struct { wtosc }
 	w square
 	p 3
-	@a .05;	d 10
+	@a .1;	d 10
 	@a 0
 }
 
@@ -56,7 +56,7 @@ export S_UI_CDTICK(P V=1)
 	struct { wtosc }
 	+tr P
 	w pulse10
-	a (V * .1); set a
+	a (V * .2); set a
 	p 0; d 10
 	p 1; d 10
 	p 2; d 10
@@ -71,10 +71,10 @@ export S_UI_GAMEOVER()
 {
 	struct { wtosc }
 	w pulse10
-	a .2
+	a .4
 	p 0
-	100 {
-		-p .02
+	200 {
+		-p .015
 		d 10
 	}
 	a 0; d 10
@@ -93,6 +93,7 @@ export S_UI_READY()
 		p 7n;	td 1
 		p 4n;	td 1
 		+tr 1n
+		+a .025
 	}
 	-tr 1n
 	10 {
@@ -113,7 +114,7 @@ export S_UI_PLAY()
 	struct { wtosc }
 	tempo 120 16
 	w saw
-	a .1
+	a .2
 	tr 0
 	3 {
 		p 0;	td 1
@@ -146,9 +147,9 @@ export S_UI_PAUSE()
 		p 7n;	td 1
 		p 4n;	td 1
 		p 0;	td 1
-		+a .025
+		+a .05
 	}
-	a .1
+	a .2
 	3 {
 		-tr 1
 		p 4n;	td 1

@@ -36,40 +36,40 @@ export S_LAUNCH_BULLET1(P V=1 PanX)
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	w pulse1
-	+tr (P - 1.8); p 0
+	+tr (P - 1.1); p 0
 	2 {
-		+a .2
+		+a .15
 		+p .01
 		d 10
 	}
 	3 {
-		-a .1
+		-a .05
 		-p .01
 		d 10
 	}
 	@a .1; w noise; p 7; d 10
 	@a .02
-	a 0; d 100
+	a 0; d 150
 }
 
 export S_LAUNCH_BULLET2(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
-	w pulse1
-	+tr (P - 1.9); p 0
-	3 {
-		+a .2
+	w pulse2
+	+tr (P - 1.6); p 0
+	2 {
+		+a .15
 		+p .01
 		d 10
 	}
-	5 {
-		-a .1
+	4 {
+		-a .025
 		-p .01
 		d 10
 	}
 	@a .15; w noise; p 7.5; d 10
-	@a .03
+	@a .035
 	a 0; d 150
 }
 
@@ -77,21 +77,21 @@ export S_LAUNCH_BULLET3(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
-	w pulse1
+	w pulse4
 	+tr (P - 2); p 0
 	4 {
-		+a .2
+		+a .1
 		+p .01
 		d 10
 	}
 	6 {
-		-a .1
+		-a .05
 		-p .01
 		d 10
 	}
-	@a .3; w noise; p 8; d 10
+	@a .25; w noise; p 8; d 10
 	@a .04; p 7
-	a .05; d 50
+	a .04; d 50
 	a 0; d 150
 }
 
@@ -184,9 +184,9 @@ export S_HIT_ROCK(P V=1 PanX)
 	phase 0
 	@a .5
 	d 10
-	a .3
+	a .5
 	p -3
-	3 {
+	2 {
 		-p .8
 		d 10
 		w triangle
@@ -331,9 +331,9 @@ export S_EXPLO_ROCK(P V=1 PanX)
 		@a (.3 + rand .5)
 		a 0; d (10 + rand 20)
 	}
-	w triangle; a 1; -tr 3
+	w square; a 1; -tr 3; p 4
 	10 {
-		p (rand (a * 2 + 1))
+		-p (.3 + rand .5)
 		*a .9
 		d 10
 	}
@@ -380,7 +380,7 @@ export S_SHOT(P V=1 PanX)
 	+tr P
 
 .retrig
-	@a .1
+	@a .15
 	p 2
 	10 {
 		*p .7
@@ -389,8 +389,9 @@ export S_SHOT(P V=1 PanX)
 	}
 
 	// Recharge (aborted if retrigged)
-	p 0
-	9 {
+	p 1
+	15 {
+		+a .005
 		+p .9; d 10
 		-p .85; d 10
 	}
@@ -459,7 +460,7 @@ export S_BOMB_DETO(P V=1 PanX)
 	p 2
 	a .3
 	while (a > .01) {
-		*a .85
+		*a .93
 		d 10
 	}
 	a 0;	d 10
@@ -506,7 +507,7 @@ export S_BOMB2_DETO(P V=1 PanX)
 	p 1.5
 	a .5
 	while (a > .01) {
-		*a .9
+		*a .93
 		d 10
 	}
 	a 0;	d 10
@@ -537,27 +538,29 @@ export S_CORE(P V=1 PanX)
 	@a .7
 	!ps p
 	p 7
-	5 {
+	3 {
 		-p 1
 		d 10
 	}
 
 	//	Thud
+	p 2
 	w square
-	5 {
+	3 {
 		-p .1
 		d 10
 	}
 	p ps
 
 	//	Over-rev
-	@a .3
-	+p .25
-	!revup (.01 + rand .03)
-	25 {
+	@a (A0 * 2)
+	!revup (.04 + rand .01)
+	50 {
+		+a .005
 		!pd (p2d (p + tr) * pf)
 		+tr .7; +p revup; 	d pd
 		-tr .7; +p revup; 	d pd
+		*revup .95
 	}
 
 	//	Explosion
@@ -567,12 +570,12 @@ export S_CORE(P V=1 PanX)
 		-p .5
 		d 10
 	}
-	a .3
+	a .5
 	w noise
 	p 4
 	while (a > .001) {
-		-p .01
-		*a .9
+		*p .99
+		*a .95
 		d 20
 	}
 	a 0; d 10
