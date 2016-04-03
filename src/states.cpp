@@ -1272,7 +1272,7 @@ void main_menu_t::build()
 	if(manage.game_in_progress())
 	{
 		space(2);
-		button("Return to Game", 0);
+		button("Return to Game", MENU_TAG_OK);
 		space();
 		button("Save Game", 50);
 	}
@@ -1307,7 +1307,7 @@ void main_menu_t::build()
 	if(manage.game_in_progress())
 		button("Abort Current Game", 101);
 	else
-		button("Return to Intro", 0);
+		button("Return to Intro", MENU_TAG_OK);
 	button("Quit Kobo Redux", MENU_TAG_CANCEL);
 }
 
@@ -1399,9 +1399,6 @@ void st_main_menu_t::select(int tag)
 		sound.ui_play(S_UI_TICK);
 		manage.select_scene(menu->start_level);
 		break;
-	  case MENU_TAG_CANCEL:
-		gsm.change(&st_ask_exit);
-		break;
 	  case 50:	// Save Game
 	  case 51:	// Load Game
 		sound.ui_play(S_UI_ERROR);
@@ -1412,9 +1409,14 @@ void st_main_menu_t::select(int tag)
 	  case 101:
 		gsm.change(&st_ask_abort_game);
 		break;
-	  case 0:
+	  case MENU_TAG_OK:
 		if(manage.game_in_progress())
 			gsm.change(&st_pause_game);
+		else
+			gsm.pop();
+		break;
+	  case MENU_TAG_CANCEL:
+		gsm.change(&st_ask_exit);
 		break;
 	}
 }
@@ -1526,7 +1528,7 @@ void options_main_t::build()
 	button("Debug", 7);
 	button("More", 8);
 	space(2);
-	button("DONE!", 0);
+	button("DONE!", MENU_TAG_OK);
 }
 
 kobo_form_t *st_options_main_t::open()
@@ -1565,6 +1567,9 @@ void st_options_main_t::select(int tag)
 		break;
 	  case 8:
 		gsm.push(&st_options_more);
+		break;
+	  case MENU_TAG_OK:
+		gsm.pop();
 		break;
 	}
 }
@@ -1677,8 +1682,8 @@ void options_more_t::build()
 	space();
 	button("It is. :-)", 1);
 	space(2);
-	button("ACCEPT", 0);
-	button("CANCEL", 0);
+	button("ACCEPT", MENU_TAG_OK);
+	button("CANCEL", MENU_TAG_CANCEL);
 }
 
 kobo_form_t *st_options_more_t::open()
@@ -1695,6 +1700,10 @@ void st_options_more_t::select(int tag)
 	  case 1:
 		gengine->switch_video_mode(KOBO_VIDEOMODE_WINDOWED);
 		kobo_OpenURL("https://github.com/olofson/koboredux");
+		break;
+	  case MENU_TAG_OK:
+	  case MENU_TAG_CANCEL:
+		gsm.pop();
 		break;
 	}
 }
