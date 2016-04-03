@@ -987,6 +987,7 @@ void gfxengine_t::run()
 		else
 			_frame_delta_time = ticks_per_frame;
 
+		input(fmod(toframe, 1.0f));
 		pre_advance(fmod(toframe, 1.0f));
 
 		// Advance game logic to match the calculated real time - but
@@ -1211,13 +1212,7 @@ void gfxengine_t::pre_loop()
 }
 
 
-void gfxengine_t::pre_advance(float fractional_frame)
-{
-}
-
-
-// Default frame handler
-void gfxengine_t::frame()
+void gfxengine_t::input(float fractional_frame)
 {
 	SDL_Event ev;
 	while(SDL_PollEvent(&ev))
@@ -1226,6 +1221,17 @@ void gfxengine_t::frame()
 			if(ev.key.keysym.sym == SDLK_ESCAPE)
 				stop();
 	}
+}
+
+
+void gfxengine_t::pre_advance(float fractional_frame)
+{
+}
+
+
+// Default frame handler
+void gfxengine_t::frame()
+{
 }
 
 

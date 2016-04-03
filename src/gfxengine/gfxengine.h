@@ -141,8 +141,14 @@ class gfxengine_t
 	//	pre_loop() is called right before entering the engine main
 	//		loop.
 	//
+	//	input() is called right before advancing the game logic to the
+	//		time of the upcoming video frame, and is intended for
+	//		gathering and processing input events that can affect
+	///		the game logic.
+	//
 	//	pre_advance() is called right before advancing the game logic
-	//		to the time of the upcoming video frame.
+	//		to the time of the upcoming video frame. (Right after
+	//		input().)
 	//
 	//	frame() is called once per control system frame, after the
 	//		control system has executed.
@@ -158,6 +164,7 @@ class gfxengine_t
 	//	post_loop() is called when the engine leaves the main loop.
 	//
 	virtual void pre_loop();
+	virtual void input(float fractional_frame);
 	virtual void pre_advance(float fractional_frame);
 	virtual void frame();
 	virtual void pre_render();

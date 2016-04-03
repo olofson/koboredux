@@ -1543,31 +1543,6 @@ float kobo_gfxengine_t::timestamp_delay()
 }
 
 
-void kobo_gfxengine_t::pre_loop()
-{
-	st_update_sound_displays();
-	sound.timestamp_reset();
-	sound.timestamp_bump(timestamp_delay() +
-			1000.0f / (prefs->maxfps > 60 ? 60 : prefs->maxfps));
-}
-
-
-void kobo_gfxengine_t::post_loop()
-{
-	sound.timestamp_reset();
-}
-
-
-void kobo_gfxengine_t::pre_advance(float fractional_frame)
-{
-	// We need to adjust for the logic time elapsed since the last logic
-	// frame (because logic time is decoupled from rendering frame rate),
-	// and for the desired "buffer" timestamp delay.
-	float ft = fractional_frame * gengine->period();
-	sound.timestamp_nudge(ft - timestamp_delay());
-}
-
-
 void kobo_gfxengine_t::st_update_sound_displays()
 {
 	if(!prefs->soundtools)
@@ -1576,6 +1551,15 @@ void kobo_gfxengine_t::st_update_sound_displays()
 	if(!km.st_symname)
 		km.build_soundtools();
 	km.st_symname->text(sound.symname(st_sound));
+}
+
+
+void kobo_gfxengine_t::pre_loop()
+{
+	st_update_sound_displays();
+	sound.timestamp_reset();
+	sound.timestamp_bump(timestamp_delay() +
+			1000.0f / (prefs->maxfps > 60 ? 60 : prefs->maxfps));
 }
 
 
@@ -1707,30 +1691,109 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 }
 
 
-void kobo_gfxengine_t::frame()
+void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 {
-	sound.frame();
-
-	if(prefs->soundtools && st_handle)
-		sound.g_move(st_handle, st_x, st_y);
-
-	if(!gsm.current())
+	gamecontrol.mouse_position(mouse_x - WMAIN_X - WMAIN_W/2,
+			mouse_y - WMAIN_Y - WMAIN_H/2);
+#ifdef ENABLE_TOUCHSCREEN
+	if(ev.motion.x <= pointer_margin_width_min)
 	{
-		log_printf(CELOG, "INTERNAL ERROR: No gamestate!\n");
-		exit_game = 1;
-		stop();
-		return;
+		gsm.pressbtn(BTN_LEFT);
+		pointer_margin_used = true;
 	}
-	if(exit_game)
+	else if(ev.motion.x >= pointer_margin_width_max)
 	{
-		stop();
-		return;
+		// Upper right corner invokes pause.
+		// Lower right corner invokes exit.
+		// Otherwise it is just 'right'. :)
+		if(ev.motion.y <= pointer_margin_height_min)
+		{
+			gsm.pressbtn(BTN_PAUSE);
+			gamecontrol.pressbtn(BTN_PAUSE, GC_SRC_MOUSE);
+		}
+		else
+			gsm.pressbtn((ev.motion.y >= pointer_margin_height_max
+					? BTN_EXIT : BTN_RIGHT));
+		pointer_margin_used = true;
 	}
+	if(ev.motion.y <= pointer_margin_height_min)
+	{
+		// Handle as 'up' only if it was not in
+		// the 'pause' area. Still handle as
+		// clicked, so 'fire' will not kick in.
+		if(ev.motion.x < pointer_margin_width_max)
+			gsm.pressbtn(BTN_UP);
+		pointer_margin_used = true;
+	}
+	else if(ev.motion.y >= pointer_margin_height_max)
+	{
+		// Handle as 'down' only if it was not
+		// in the 'exit' area. Still handle as
+		// clicked, so 'fire' will not kick in.
+		if(ev.motion.x < pointer_margin_width_max)
+			gsm.pressbtn(BTN_DOWN);
+		pointer_margin_used = true;
+	}
+	if(!pointer_margin_used)
+		gsm.pressbtn(BTN_FIRE);
+#else
+	gsm.pressbtn(BTN_FIRE);
+#endif
+	switch(ev.button.button)
+	{
+	  case SDL_BUTTON_LEFT:
+		mouse_left = 1;
+		break;
+	  case SDL_BUTTON_MIDDLE:
+		mouse_middle = 1;
+		break;
+	  case SDL_BUTTON_RIGHT:
+		mouse_right = 1;
+		break;
+	}
+	if(mouse_left || mouse_middle || mouse_right)
+		gamecontrol.pressbtn(BTN_FIRE, GC_SRC_MOUSE);
+}
 
-	/*
-	 * Process input
-	 */
-	gamecontrol.pre_process();
+
+void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
+{
+	gamecontrol.mouse_position(mouse_x - WMAIN_X - WMAIN_W/2,
+			mouse_y - WMAIN_Y - WMAIN_H/2);
+#ifdef ENABLE_TOUCHSCREEN
+	// Resets all kinds of buttons that might have been activated by
+	// clicking in the pointer margin.
+	if(pointer_margin_used)
+	{
+		gsm.release(BTN_EXIT);
+		gsm.release(BTN_LEFT);
+		gsm.release(BTN_RIGHT);
+		gsm.release(BTN_UP);
+		gsm.release(BTN_DOWN);
+		pointer_margin_used = false;
+	}
+#else
+	gsm.releasebtn(BTN_FIRE);
+#endif
+	switch(ev.button.button)
+	{
+	  case SDL_BUTTON_LEFT:
+		mouse_left = 0;
+		break;
+	  case SDL_BUTTON_MIDDLE:
+		mouse_middle = 0;
+		break;
+	  case SDL_BUTTON_RIGHT:
+		mouse_right = 0;
+		break;
+	}
+	if(!mouse_left && !mouse_middle && !mouse_right)
+		gamecontrol.releasebtn(BTN_FIRE, GC_SRC_MOUSE);
+}
+
+
+void kobo_gfxengine_t::input(float fractional_frame)
+{
 	SDL_Event ev;
 	while(SDL_PollEvent(&ev))
 	{
@@ -1916,120 +1979,51 @@ void kobo_gfxengine_t::frame()
 					km.xoffs;
 			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
 					km.yoffs;
-			gsm.pressbtn(BTN_FIRE);
 			if(prefs->mouse)
-			{
-#ifdef ENABLE_TOUCHSCREEN
-				if(ev.motion.x <= pointer_margin_width_min)
-				{
-					gsm.pressbtn(BTN_LEFT);
-					pointer_margin_used = true;
-				}
-				else if(ev.motion.x >= pointer_margin_width_max)
-				{
-					// Upper right corner invokes pause.
-					// Lower right corner invokes exit.
-					// Otherwise it is just 'right'. :)
-					if(ev.motion.y <= pointer_margin_height_min)
-					{
-						gsm.pressbtn(BTN_PAUSE);
-						gamecontrol.pressbtn(
-								BTN_PAUSE,
-								GC_SRC_MOUSE);
-					}
-					else
-						gsm.pressbtn((ev.motion.y >= pointer_margin_height_max
-							? BTN_EXIT
-							: BTN_RIGHT));
-					pointer_margin_used = true;
-				}
-				if(ev.motion.y <= pointer_margin_height_min)
-				{
-					// Handle as 'up' only if it was not in
-					// the 'pause' area. Still handle as
-					// clicked, so 'fire' will not kick in.
-					if(ev.motion.x < pointer_margin_width_max)
-						gsm.pressbtn(BTN_UP);
-					pointer_margin_used = true;
-				}
-				else if(ev.motion.y >= pointer_margin_height_max)
-				{
-					// Handle as 'down' only if it was not
-					// in the 'exit' area. Still handle as
-					// clicked, so 'fire' will not kick in.
-					if(ev.motion.x < pointer_margin_width_max)
-						gsm.pressbtn(BTN_DOWN);
-					pointer_margin_used = true;
-				}
-				if(!pointer_margin_used)
-					gsm.pressbtn(BTN_FIRE);
-#else
-				gsm.pressbtn(BTN_FIRE);
-#endif
-				gamecontrol.mouse_position(
-						mouse_x - WMAIN_X - WMAIN_W/2,
-						mouse_y - WMAIN_Y - WMAIN_H/2);
-				switch(ev.button.button)
-				{
-				  case SDL_BUTTON_LEFT:
-					mouse_left = 1;
-					break;
-				  case SDL_BUTTON_MIDDLE:
-					mouse_middle = 1;
-					break;
-				  case SDL_BUTTON_RIGHT:
-					mouse_right = 1;
-					break;
-				}
-				gamecontrol.pressbtn(BTN_FIRE, GC_SRC_MOUSE);
-			}
+				mouse_button_down(ev);
 			break;
 		  case SDL_MOUSEBUTTONUP:
 			mouse_x = (int)(ev.motion.x / gengine->xscale()) - km.xoffs;
 			mouse_y = (int)(ev.motion.y / gengine->yscale()) - km.yoffs;
 			if(prefs->mouse)
-			{
-#ifdef ENABLE_TOUCHSCREEN
-				// Resets all kinds of buttons that might have
-				// been activated by clicking in the pointer
-				// margin.
-				if(pointer_margin_used)
-				{
-					gsm.release(BTN_EXIT);
-					gsm.release(BTN_LEFT);
-					gsm.release(BTN_RIGHT);
-					gsm.release(BTN_UP);
-					gsm.release(BTN_DOWN);
-					pointer_margin_used = false;
-				}
-#endif
-				gamecontrol.mouse_position(
-						mouse_x - WMAIN_X - WMAIN_W/2,
-						mouse_y - WMAIN_Y - WMAIN_H/2);
-				switch(ev.button.button)
-				{
-				  case SDL_BUTTON_LEFT:
-					mouse_left = 0;
-					break;
-				  case SDL_BUTTON_MIDDLE:
-					mouse_middle = 0;
-					break;
-				  case SDL_BUTTON_RIGHT:
-					mouse_right = 0;
-					break;
-				}
-			}
-			if(!mouse_left && !mouse_middle && !mouse_right)
-			{
-				if(prefs->mouse)
-					gamecontrol.releasebtn(BTN_FIRE,
-							GC_SRC_MOUSE);
-				gsm.releasebtn(BTN_FIRE);
-			}
+				mouse_button_up(ev);
 			break;
 		}
 	}
 	gamecontrol.post_process();
+
+}
+
+
+void kobo_gfxengine_t::pre_advance(float fractional_frame)
+{
+	// We need to adjust for the logic time elapsed since the last logic
+	// frame (because logic time is decoupled from rendering frame rate),
+	// and for the desired "buffer" timestamp delay.
+	float ft = fractional_frame * gengine->period();
+	sound.timestamp_nudge(ft - timestamp_delay());
+}
+
+
+void kobo_gfxengine_t::frame()
+{
+	sound.frame();
+
+	if(prefs->soundtools && st_handle)
+		sound.g_move(st_handle, st_x, st_y);
+
+	if(!gsm.current())
+	{
+		log_printf(CELOG, "INTERNAL ERROR: No gamestate!\n");
+		exit_game = 1;
+		stop();
+		return;
+	}
+	if(exit_game)
+	{
+		stop();
+		return;
+	}
 
 	// Update positional audio listener position
 	sound.g_position(CS2PIXEL(gengine->xoffs(LAYER_BASES)) + WMAIN_W / 2,
@@ -2044,16 +2038,21 @@ void kobo_gfxengine_t::frame()
 	// Bump audio API timestamp time to match game logic time
 	sound.timestamp_bump(gengine->period());
 
+	// Screenshot "video" at around 10 fps
 	if(prefs->cmd_autoshot && manage.game_in_progress())
 	{
 		static int c = 0;
 		++c;
-		if(c >= 3)
+		if(c >= game.speed / 10)
 		{
 			gengine->screenshot();
 			c = 0;
 		}
 	}
+
+	// Reset pressed()/released() state, to capture events of interest
+	// until the next logic frame.
+	gamecontrol.reset();
 }
 
 
@@ -2182,6 +2181,12 @@ void kobo_gfxengine_t::post_render()
 			km.maxfps_begin = (int)SDL_GetTicks();
 		}
 	}
+}
+
+
+void kobo_gfxengine_t::post_loop()
+{
+	sound.timestamp_reset();
 }
 
 
@@ -2496,10 +2501,8 @@ int main(int argc, char *argv[])
 
 	km.close();
 
-	/* 
-	 * Seems like we got all the way here without crashing,
-	 * so let's save the current configuration! :-)
-	 */
+	// Seems like we got all the way here without crashing, so let's save
+	// the current configuration! :-)
 	if(prefs->changed)
 	{
 		km.save_config(prefs);

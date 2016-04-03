@@ -96,7 +96,6 @@ class gamecontrol_t
 	gamecontrol_t();
 	static void init();
 	static void clear();
-	static void pre_process(); // Call before processing input!
 	static gc_targets_t map(SDL_Keysym sym)
 	{
 		int src;
@@ -119,6 +118,7 @@ class gamecontrol_t
 	{
 		return down(BTN_FIRE) || pressed(BTN_FIRE);
 	}
+	static void reset();	// Reset the pressed()/released() state
 };
 
 extern gamecontrol_t gamecontrol;

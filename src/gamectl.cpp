@@ -378,7 +378,7 @@ void gamecontrol_t::change()
 }
 
 
-void gamecontrol_t::pre_process()
+void gamecontrol_t::reset()
 {
 	memset(_pressed, 0, sizeof(_pressed));
 	memset(_released, 0, sizeof(_released));

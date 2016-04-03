@@ -69,9 +69,12 @@ class kobo_gfxengine_t : public gfxengine_t
 	int st_x;
 	int st_y;
 	void pre_loop();
+	void input(float fractional_frame);
 	void pre_advance(float fractional_frame);
 	void st_update_sound_displays();
 	bool soundtools_event(SDL_Event &ev);
+	void mouse_button_down(SDL_Event &ev);
+	void mouse_button_up(SDL_Event &ev);
 	void frame();
 	void pre_render();
 	void post_render();
