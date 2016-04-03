@@ -104,6 +104,7 @@ int mouse_y = 0;
 int mouse_left = 0;
 int mouse_middle = 0;
 int mouse_right = 0;
+bool mouse_visible = false;
 
 int exit_game = 0;
 
@@ -862,8 +863,6 @@ int KOBO_main::init_display(prefs_t *p)
 	if(!desktopres)
 		if(gengine->open(ENEMY_MAX) < 0)
 			return -1;
-
-	gengine->clear();
 
 	wscreen = new screen_window_t(gengine);
 	wscreen->place(0, 0,
@@ -1691,54 +1690,24 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 }
 
 
-void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
+void kobo_gfxengine_t::mouse_motion(SDL_Event &ev)
 {
+	mouse_x = (int)(ev.motion.x / gengine->xscale()) - km.xoffs;
+	mouse_y = (int)(ev.motion.y / gengine->yscale()) - km.yoffs;
+	mouse_visible = true;
+
+	if(!prefs->mouse)
+		return;
+
 	gamecontrol.mouse_position(mouse_x - WMAIN_X - WMAIN_W/2,
 			mouse_y - WMAIN_Y - WMAIN_H/2);
-#ifdef ENABLE_TOUCHSCREEN
-	if(ev.motion.x <= pointer_margin_width_min)
-	{
-		gsm.pressbtn(BTN_LEFT);
-		pointer_margin_used = true;
-	}
-	else if(ev.motion.x >= pointer_margin_width_max)
-	{
-		// Upper right corner invokes pause.
-		// Lower right corner invokes exit.
-		// Otherwise it is just 'right'. :)
-		if(ev.motion.y <= pointer_margin_height_min)
-		{
-			gsm.pressbtn(BTN_PAUSE);
-			gamecontrol.pressbtn(BTN_PAUSE, GC_SRC_MOUSE);
-		}
-		else
-			gsm.pressbtn((ev.motion.y >= pointer_margin_height_max
-					? BTN_EXIT : BTN_RIGHT));
-		pointer_margin_used = true;
-	}
-	if(ev.motion.y <= pointer_margin_height_min)
-	{
-		// Handle as 'up' only if it was not in
-		// the 'pause' area. Still handle as
-		// clicked, so 'fire' will not kick in.
-		if(ev.motion.x < pointer_margin_width_max)
-			gsm.pressbtn(BTN_UP);
-		pointer_margin_used = true;
-	}
-	else if(ev.motion.y >= pointer_margin_height_max)
-	{
-		// Handle as 'down' only if it was not
-		// in the 'exit' area. Still handle as
-		// clicked, so 'fire' will not kick in.
-		if(ev.motion.x < pointer_margin_width_max)
-			gsm.pressbtn(BTN_DOWN);
-		pointer_margin_used = true;
-	}
-	if(!pointer_margin_used)
-		gsm.pressbtn(BTN_FIRE);
-#else
-	gsm.pressbtn(BTN_FIRE);
-#endif
+}
+
+
+void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
+{
+	mouse_x = (int)(ev.button.x / gengine->xscale()) - km.xoffs;
+	mouse_y = (int)(ev.button.y / gengine->yscale()) - km.yoffs;
 	switch(ev.button.button)
 	{
 	  case SDL_BUTTON_LEFT:
@@ -1751,6 +1720,54 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 		mouse_right = 1;
 		break;
 	}
+
+	if(!prefs->mouse)
+		return;
+
+#ifdef ENABLE_TOUCHSCREEN
+	if(ev.button.x <= pointer_margin_width_min)
+	{
+		gsm.pressbtn(BTN_LEFT);
+		pointer_margin_used = true;
+	}
+	else if(ev.button.x >= pointer_margin_width_max)
+	{
+		// Upper right corner invokes pause.
+		// Lower right corner invokes exit.
+		// Otherwise it is just 'right'. :)
+		if(ev.button.y <= pointer_margin_height_min)
+		{
+			gsm.pressbtn(BTN_PAUSE);
+			gamecontrol.pressbtn(BTN_PAUSE, GC_SRC_MOUSE);
+		}
+		else
+			gsm.pressbtn((ev.button.y >= pointer_margin_height_max
+					? BTN_EXIT : BTN_RIGHT));
+		pointer_margin_used = true;
+	}
+	if(ev.button.y <= pointer_margin_height_min)
+	{
+		// Handle as 'up' only if it was not in
+		// the 'pause' area. Still handle as
+		// clicked, so 'fire' will not kick in.
+		if(ev.button.x < pointer_margin_width_max)
+			gsm.pressbtn(BTN_UP);
+		pointer_margin_used = true;
+	}
+	else if(ev.button.y >= pointer_margin_height_max)
+	{
+		// Handle as 'down' only if it was not
+		// in the 'exit' area. Still handle as
+		// clicked, so 'fire' will not kick in.
+		if(ev.button.x < pointer_margin_width_max)
+			gsm.pressbtn(BTN_DOWN);
+		pointer_margin_used = true;
+	}
+	if(!pointer_margin_used)
+		gsm.pressbtn(BTN_FIRE);
+#else
+	gsm.pressbtn(BTN_FIRE);
+#endif
 	if(mouse_left || mouse_middle || mouse_right)
 		gamecontrol.pressbtn(BTN_FIRE, GC_SRC_MOUSE);
 }
@@ -1758,8 +1775,24 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 
 void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
 {
-	gamecontrol.mouse_position(mouse_x - WMAIN_X - WMAIN_W/2,
-			mouse_y - WMAIN_Y - WMAIN_H/2);
+	mouse_x = (int)(ev.button.x / gengine->xscale()) - km.xoffs;
+	mouse_y = (int)(ev.button.y / gengine->yscale()) - km.yoffs;
+	switch(ev.button.button)
+	{
+	  case SDL_BUTTON_LEFT:
+		mouse_left = 0;
+		break;
+	  case SDL_BUTTON_MIDDLE:
+		mouse_middle = 0;
+		break;
+	  case SDL_BUTTON_RIGHT:
+		mouse_right = 0;
+		break;
+	}
+
+	if(!prefs->mouse)
+		return;
+
 #ifdef ENABLE_TOUCHSCREEN
 	// Resets all kinds of buttons that might have been activated by
 	// clicking in the pointer margin.
@@ -1775,18 +1808,6 @@ void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
 #else
 	gsm.releasebtn(BTN_FIRE);
 #endif
-	switch(ev.button.button)
-	{
-	  case SDL_BUTTON_LEFT:
-		mouse_left = 0;
-		break;
-	  case SDL_BUTTON_MIDDLE:
-		mouse_middle = 0;
-		break;
-	  case SDL_BUTTON_RIGHT:
-		mouse_right = 0;
-		break;
-	}
 	if(!mouse_left && !mouse_middle && !mouse_right)
 		gamecontrol.releasebtn(BTN_FIRE, GC_SRC_MOUSE);
 }
@@ -1877,9 +1898,14 @@ void kobo_gfxengine_t::input(float fractional_frame)
 			  case SDL_WINDOWEVENT_CLOSE:
 				km.brutal_quit();
 				break;
+			  case SDL_WINDOWEVENT_ENTER:
+				mouse_visible = true;
+				break;
+			  case SDL_WINDOWEVENT_LEAVE:
+				mouse_visible = false;
+				// Fall-through!
 			  case SDL_WINDOWEVENT_HIDDEN:
 			  case SDL_WINDOWEVENT_MINIMIZED:
-			  case SDL_WINDOWEVENT_LEAVE:
 			  case SDL_WINDOWEVENT_FOCUS_LOST:
 				// Any type of focus loss should activate
 				// pause mode!
@@ -1965,28 +1991,13 @@ void kobo_gfxengine_t::input(float fractional_frame)
 			}
 			break;
 		  case SDL_MOUSEMOTION:
-			mouse_x = (int)(ev.motion.x / gengine->xscale()) -
-					km.xoffs;
-			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
-					km.yoffs;
-			if(prefs->mouse)
-				gamecontrol.mouse_position(
-						mouse_x - WMAIN_X - WMAIN_W/2,
-						mouse_y - WMAIN_Y - WMAIN_H/2);
+			mouse_motion(ev);
 			break;
 		  case SDL_MOUSEBUTTONDOWN:
-			mouse_x = (int)(ev.motion.x / gengine->xscale()) -
-					km.xoffs;
-			mouse_y = (int)(ev.motion.y / gengine->yscale()) -
-					km.yoffs;
-			if(prefs->mouse)
-				mouse_button_down(ev);
+			mouse_button_down(ev);
 			break;
 		  case SDL_MOUSEBUTTONUP:
-			mouse_x = (int)(ev.motion.x / gengine->xscale()) - km.xoffs;
-			mouse_y = (int)(ev.motion.y / gengine->yscale()) - km.yoffs;
-			if(prefs->mouse)
-				mouse_button_up(ev);
+			mouse_button_up(ev);
 			break;
 		}
 	}
@@ -2058,20 +2069,29 @@ void kobo_gfxengine_t::frame()
 
 void kobo_gfxengine_t::pre_render()
 {
+}
+
+
+void kobo_gfxengine_t::pre_sprite_render()
+{
 	gsm.pre_render();
 	gfxengine->target()->font(B_DEBUG_FONT);
 	gfxengine->show_coordinates(prefs->show_coordinates);
 }
 
 
-void kobo_gfxengine_t::post_render()
+void kobo_gfxengine_t::post_sprite_render()
 {
-	if(prefs->show_hit)
-		enemies.render_hit_zones();
-
 	// HACK: Custom rendering "callback!" The engine should support this...
 	myship.render();
 
+	if(prefs->show_hit)
+		enemies.render_hit_zones();
+}
+
+
+void kobo_gfxengine_t::post_render()
+{
 	if(prefs->soundtools)
 	{
 		// Make sure the GUI is built and visible
@@ -2100,16 +2120,21 @@ void kobo_gfxengine_t::post_render()
 	}
 
 	gsm.post_render();
-#ifdef DEBUG
+
 	if(prefs->debug)
 	{
 		char buf[20];
+
+		// Objects in use
 		snprintf(buf, sizeof(buf), "Obj: %d",
 				gengine->objects_in_use());
 		woverlay->font(B_NORMAL_FONT);
 		woverlay->string(160, 5, buf);
+
+		// Mouse cursor position
+		snprintf(buf, sizeof(buf), "M(%d, %d)", mouse_x, mouse_y);
+		woverlay->string(WMAIN_W - 100, 5, buf);
 	}
-#endif
 
 	// Frame rate counter
 	int nt = (int)SDL_GetTicks();
@@ -2146,6 +2171,10 @@ void kobo_gfxengine_t::post_render()
 				wdash->fontheight(B_NORMAL_FONT), buf);
 	}
 	++km.fps_count;
+
+	// Mouse cursor
+	if(prefs->mouse && mouse_visible)
+		wscreen->sprite(mouse_x, mouse_y, B_CROSSHAIR, 0);
 
 	// Frame rate limiter
 	if(prefs->maxfps)

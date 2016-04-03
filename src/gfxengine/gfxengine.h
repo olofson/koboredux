@@ -144,7 +144,7 @@ class gfxengine_t
 	//	input() is called right before advancing the game logic to the
 	//		time of the upcoming video frame, and is intended for
 	//		gathering and processing input events that can affect
-	///		the game logic.
+	//		the game logic.
 	//
 	//	pre_advance() is called right before advancing the game logic
 	//		to the time of the upcoming video frame. (Right after
@@ -155,11 +155,16 @@ class gfxengine_t
 	//
 	//	pre_render() is called after the engine has advanced to the
 	//		state for the current video frame (interpolated state
-	//		is calculated), before the engine renders all graphics.
+	//		is calculated), before rendering any windows.
 	//
-	//	post_render() is called after the engine has rendered all
-	//		sprites, but before video the sync/flip/update
-	//		operation.
+	//	pre_sprite_render() is called right before sprites are to be
+	//		rendered into the engine output window.
+	//
+	//	post_sprite_render() is called after the engine has rendered
+	//		all sprites in the engine output window.
+	//
+	//	post_render() is called after all windows have been rendered,
+	//		right before video the sync/flip/update operation.
 	//
 	//	post_loop() is called when the engine leaves the main loop.
 	//
@@ -168,6 +173,8 @@ class gfxengine_t
 	virtual void pre_advance(float fractional_frame);
 	virtual void frame();
 	virtual void pre_render();
+	virtual void pre_sprite_render();
+	virtual void post_sprite_render();
 	virtual void post_render();
 	virtual void post_loop();
 
@@ -175,9 +182,6 @@ class gfxengine_t
 	// The members below can safely be called
 	// from within the frame() handler.
 	////////////////////////////////////////////
-
-	// Rendering
-	void clear(Uint32 _color = 0x000000);
 
 	// Screenshots
 	void screenshot();

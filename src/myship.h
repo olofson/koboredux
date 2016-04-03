@@ -63,7 +63,6 @@ class KOBO_myship
 
 	// For the gfxengine connection
 	static cs_obj_t *object;
-	static cs_obj_t *crosshair;
 
 	static int shot_single(int dir, int loffset, int hoffset);
 	static void apply_position();
@@ -100,7 +99,6 @@ class KOBO_myship
 	static void move();
 	static int put();
 	static void render();
-	static void put_crosshair();
 	static int nose_fire();
 	static int tail_fire();
 	static int hit_bolt(int ex, int ey, int hitsize, int health);

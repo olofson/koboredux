@@ -48,14 +48,12 @@ int KOBO_myship::nose_reload_timer;
 int KOBO_myship::tail_reload_timer;
 KOBO_player_bolt KOBO_myship::bolts[MAX_BOLTS];
 cs_obj_t *KOBO_myship::object;
-cs_obj_t *KOBO_myship::crosshair;
 
 
 KOBO_myship::KOBO_myship()
 {
 	memset(bolts, 0, sizeof(bolts));
 	object = NULL;
-	crosshair = NULL;
 }
 
 
@@ -70,9 +68,6 @@ void KOBO_myship::state(KOBO_myship_state s)
 		if(object)
 			gengine->free_obj(object);
 		object = NULL;
-		if(crosshair)
-			gengine->free_obj(crosshair);
-		crosshair = NULL;
 		break;
 	  case SHIP_INVULNERABLE:
 	  case SHIP_NORMAL:
@@ -506,26 +501,6 @@ int KOBO_myship::hit_bolt(int ex, int ey, int hitsize, int health)
 			break;
 	}
 	return dmg;
-}
-
-
-void KOBO_myship::put_crosshair()
-{
-	if(_state == SHIP_DEAD)
-		return;
-
-	if(!crosshair)
-	{
-		crosshair = gengine->get_obj(LAYER_OVERLAY);
-		if(crosshair)
-			cs_obj_show(crosshair);
-	}
-	if(crosshair)
-	{
-		cs_obj_image(crosshair, B_CROSSHAIR, 0);
-		crosshair->point.v.x = PIXEL2CS(mouse_x - WMAIN_X);
-		crosshair->point.v.y = PIXEL2CS(mouse_y - WMAIN_H);
-	}
 }
 
 

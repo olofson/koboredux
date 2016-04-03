@@ -888,23 +888,7 @@ int gfxengine_t::show()
 	fullwin->place(0, 0, (int)(_width / xscale()),
 			(int)(_height / yscale()));
 
-	clear();
-
 	return 0;
-}
-
-
-void gfxengine_t::clear(Uint32 _color)
-{
-	if(!fullwin)
-		return;
-
-	fullwin->background(fullwin->map_rgb(_color));
-	fullwin->clear();
-	present();
-	fullwin->clear();
-	present();
-	fullwin->clear();
 }
 
 
@@ -1240,6 +1224,15 @@ void gfxengine_t::pre_render()
 }
 
 
+void gfxengine_t::pre_sprite_render()
+{
+}
+
+
+void gfxengine_t::post_sprite_render()
+{
+}
+
 void gfxengine_t::post_render()
 {
 }
@@ -1258,10 +1251,15 @@ void gfxengine_t::present()
 	if(!sdlrenderer)
 		return;
 
+	pre_render();
+
+	// Render all windows, engine output window included
 	windowbase_t *w = windows;
 	for(w = windows; w; w = w->next)
 		if(w->visible())
 			w->render(NULL);
+
+	post_render();
 
 	SDL_RenderPresent(sdlrenderer);
 }

@@ -73,10 +73,13 @@ class kobo_gfxengine_t : public gfxengine_t
 	void pre_advance(float fractional_frame);
 	void st_update_sound_displays();
 	bool soundtools_event(SDL_Event &ev);
+	void mouse_motion(SDL_Event &ev);
 	void mouse_button_down(SDL_Event &ev);
 	void mouse_button_up(SDL_Event &ev);
 	void frame();
 	void pre_render();
+	void pre_sprite_render();
+	void post_sprite_render();
 	void post_render();
 	void post_loop();
 	float timestamp_delay();
@@ -129,6 +132,7 @@ extern vledbar_t		*pxright;
 
 extern int mouse_x, mouse_y;
 extern int mouse_left, mouse_middle, mouse_right;
+extern bool mouse_visible;
 
 extern int exit_game;
 

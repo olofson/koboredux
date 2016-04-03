@@ -249,7 +249,6 @@ void gamecontrol_t::mouse_position(int h, int v)
 	  case MMD_OFF:
 		return;
 	  case MMD_CROSSHAIR:
-		myship.put_crosshair();
 		break;
 	  case MMD_RELATIVE:
 		// Insert delta pos sensitivity filter here
@@ -373,8 +372,6 @@ void gamecontrol_t::change()
 		direction = new_direction;
 
 	movekey_pressed = (new_direction != 0);
-	mouse_x = 0;
-	mouse_y = 0;
 }
 
 

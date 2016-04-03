@@ -831,8 +831,8 @@ engine_window_t::engine_window_t(gfxengine_t *e) : window_t(e)
 
 void engine_window_t::refresh(SDL_Rect *r)
 {
-	engine->pre_render();
+	engine->pre_sprite_render();
 	select();
 	cs_engine_render(engine->csengine);
-	engine->post_render();
+	engine->post_sprite_render();
 }
