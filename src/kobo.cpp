@@ -713,7 +713,7 @@ void KOBO_main::build_soundtools()
 	st_hotkeys = new label_t(gengine);
 	st_hotkeys->place(conx, cony + WCONSOLE_H - 19 - 82, WCONSOLE_W, 81);
 	st_hotkeys->color(wdash->map_rgb(16, 16, 16));
-	st_hotkeys->font(B_SMALL_FONT);
+	st_hotkeys->font(B_TOOL_FONT);
 	st_hotkeys->caption(
 			"F1: Reload sounds\n"
 			"CTRL+F1: Audio restart\n"
@@ -730,7 +730,7 @@ void KOBO_main::build_soundtools()
 	st_symname = new display_t(gengine);
 	st_symname->place(conx, cony + WCONSOLE_H - 19, WCONSOLE_W, 19);
 	st_symname->color(wdash->map_rgb(24, 24, 24));
-	st_symname->font(B_SMALL_FONT);
+	st_symname->font(B_TOOL_FONT);
 	st_symname->caption("SFX Symbol Name");
 }
 

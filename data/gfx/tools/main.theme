@@ -8,3 +8,5 @@ message "Loading graphics for tools"
 
 path ""
 sprites B_SOUND_ICONS "soundicons.png" 16 16 CENTER
+sfont B_DEBUG_FONT "microfont2.png" 1 ABSSCALE
+sfont B_TOOL_FONT "microfont3.png"

@@ -143,7 +143,6 @@ message "Loading fonts"
 #------------------------------------------------------------------------------
 
 path "fonts"
-sfont B_DEBUG_FONT "microfont2.png" 1 ABSSCALE
 sfont B_SMALL_FONT "microfont5.png"
 #sfont B_NORMAL_FONT "smallfont.png"
 #sfont B_MEDIUM_FONT "mediumfont.png"
