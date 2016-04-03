@@ -33,25 +33,26 @@ KOBO_ThemeParser::KOBO_ThemeParser()
 }
 
 
+const char *KOBO_ThemeParser::get_path(const char *p)
+{
+	return fmap->get(p, FM_FILE, "GFX>>");
+}
+
+
 const char *KOBO_ThemeParser::fullpath(const char *fp)
 {
-	char tmp[KOBO_TP_MAXLEN];
-
 	// Use absolute paths as is
-	if((fp[0] == '~') || (fp[0] == '/') || strstr(fp, FM_DEREF_TOKEN))
-		return fmap->get(fp);
+	if(!fmap->is_relative(fp))
+		return get_path(fp);
 
-	// An absolute 'path' overrides basepath!
-	if((path[0] == '~') || (path[0] == '/') ||
-			strstr(path, FM_DEREF_TOKEN))
-	{
+	// If 'path' is absolute, that overrides 'basepath'. Otherwise, we
+	// prepend "basepath/path/" to 'fp'.
+	char tmp[KOBO_TP_MAXLEN];
+	if(!fmap->is_relative(path))
 		snprintf(tmp, sizeof(tmp), "%s/%s", path, fp);
-		return fmap->get(tmp);
-	}
-
-	// Relative 'path' and fp; prepend "basepath/path/"
-	snprintf(tmp, sizeof(tmp), "%s/%s/%s", basepath, path, fp);
-	return fmap->get(tmp);
+	else
+		snprintf(tmp, sizeof(tmp), "%s/%s/%s", basepath, path, fp);
+	return get_path(tmp);
 }
 
 
@@ -730,7 +731,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_path()
 {
 	if(!expect(KTK_STRING))
 		return KTK_ERROR;
-	strncpy(path, fmap->sys2unix(sv), sizeof(path));
+	strncpy(path, sv, sizeof(path));
 	log_printf(ULOG, "[Theme Loader] path \"%s\"\n", path);
 	wdash->progress((float)pos / bufsize);
 	return KTK_KW_PATH;
@@ -815,7 +816,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 
 KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 {
-	char *sp = (char *)fmap->get(scriptpath);
+	char *sp = (char *)get_path(scriptpath);
 	if(!sp)
 	{
 		log_printf(ELOG, "[Theme Loader] Couldn't find \"%s\"!\n",
@@ -824,7 +825,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 	}
 
 	// Because this might be a temporary string that may be clobbered by
-	// further extensive use of fmap->get()...
+	// further extensive use of get_path()...
 	sp = strdup(sp);
 
 	basepath[0] = 0;
@@ -875,7 +876,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 		s = strrchr(basepath, '\\');
 	if(s)
 		*s = 0;
-	strncpy(basepath, fmap->sys2unix(basepath), sizeof(basepath));
+	strncpy(basepath, fmap->sys2fm(basepath), sizeof(basepath));
 	log_printf(ULOG, "[Theme Loader] Base path: \"%s\"\n", basepath);
 
 	// Parse theme file

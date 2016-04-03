@@ -43,13 +43,12 @@ fm_object_t::~fm_object_t()
 }
 
 
-/*
- * Delete the 'count' first bytes of a string.
- * Does *not* realloc(), so it's safe to use
- * on static or local (stack) buffers.
- *
- * Returns new length of string.
- */
+
+// Delete the 'count' first bytes of a string. Does *not* realloc(), so it's
+// safe to use on static or local (stack) buffers.
+//
+// Returns new length of string.
+//
 static int strdel(char *str, int count)
 {
 	int len = strlen(str);
@@ -58,17 +57,14 @@ static int strdel(char *str, int count)
 }
 
 
-/*
- * Inserts string 'ins' into 'str', starting at 'pos'.
- * Does *not* realloc(), so it's safe to use
- * on static or local (stack) buffers.
- *
- * Relies on FM_BUFFER_SIZE to prevent buffer overflow!
- * (In fact, it stops at (str + FM_BUFFER_SIZE - 1) to
- * ensure that the result is NULL terminated.)
- *
- * Returns new length of string.
- */
+// Inserts string 'ins' into 'str', starting at 'pos'. Does *not* realloc(),
+// so it's safe to use on static or local (stack) buffers.
+//
+// Relies on FM_BUFFER_SIZE to prevent buffer overflow! (In fact, it stops at
+// (str + FM_BUFFER_SIZE - 1) to ensure that the result is NULL terminated.)
+//
+// Returns new length of string.
+//
 static int strins(char *str, const char *ins, int pos)
 {
 	char *cpy = strdup(str+pos);
@@ -90,10 +86,7 @@ filemapper_t::filemapper_t()
 	objects = NULL;
 	current_obj = NULL;
 
-	/*
-	 * I'll put this here for now.
-	 * Don't know if it's the perfect place...
-	 */
+	// I'll put this here for now. Don't know if it's the perfect place...
 	char *home = (char *)getenv("HOME");
 	if(home)
 		addpath("HOME", home);
@@ -131,9 +124,7 @@ char *filemapper_t::salloc()
 
 void filemapper_t::no_double_slashes(char *buf)
 {
-	/*
-	 * Clean slashes
-	 */
+	// Clean slashes
 	char *c = buf;
 	while(c[0])
 	{
@@ -150,11 +141,9 @@ void filemapper_t::no_double_slashes(char *buf)
 }
 
 
-void filemapper_t::unix_slashes(char *buf)
+void filemapper_t::fm_format(char *buf)
 {
-	/*
-	 * Convert "~/" into "HOME>>".
-	 */
+	// Convert "~/" into "HOME>>".
 	if(strncmp(buf, "~/", 2) == 0)
 	{
 		strdel(buf, 2);
@@ -177,7 +166,7 @@ void filemapper_t::unix_slashes(char *buf)
 }
 
 
-void filemapper_t::sys_slashes(char *buf)
+void filemapper_t::sys_format(char *buf)
 {
 	no_double_slashes(buf);
 
@@ -191,15 +180,15 @@ void filemapper_t::sys_slashes(char *buf)
 		if(buf[i] == '/')
 			buf[i] = '\\';
 #elif defined(MACOS)
-	/* 
-	 * Untested.
-	 */
+	//
+	// >>> Untested! <<<
+	//
 	int len;
 	if(strncmp(buf, "./", 2) == 0)
 		len = strdel(buf, 2);
 	else
 		len = strlen(buf);
-	/* Fix absolute/relative */
+	// Fix absolute/relative
 	if(buf[0] == '/')
 		len = strdel(buf, 1);
 	else
@@ -208,15 +197,11 @@ void filemapper_t::sys_slashes(char *buf)
 		++len;
 		buf[0] = ':';
 	}
-	/* 
-	 * '/' --> ':'
-	 */
+	// '/' --> ':'
 	for(int i = 0; i < len; ++i)
 		if(buf[i] == '/')
 			buf[i] = ':';
-	/* 
-	 * "..:" --> "::"
-	 */
+	// "..:" --> "::"
 	for(int i = 0; i < len; ++i)
 		if(strncmp(buf + i, "..:", 3) == 0)
 		{
@@ -231,7 +216,7 @@ void filemapper_t::sys_slashes(char *buf)
 void filemapper_t::exepath(const char *appname)
 {
 	free(app_path);
-	app_path = strdup(sys2unix(appname));
+	app_path = strdup(sys2fm(appname));
 	if(app_path)
 	{
 		char *c = strrchr(app_path, '/');
@@ -320,14 +305,11 @@ fm_key_t *filemapper_t::getkey(fm_key_t *key, const char *ref)
 }
 
 
-/*
- * Checks if an object exists, and if so, what kind it is.
- */
+// Check if an object exists, and if so, what kind it is.
 int filemapper_t::probe(const char *syspath)
 {
 #ifdef KOBO_HAVE_STAT
 	struct stat st;
-//	log_printf(DLOG, "probe(\"%s\") (with stat())\n", syspath);
 	if(::stat(syspath, &st) == 0)
 	{
 		if(S_ISDIR(st.st_mode))
@@ -337,11 +319,10 @@ int filemapper_t::probe(const char *syspath)
 	}
 #else
 # warning This platform lacks stat(). File/directory probing may be unreliable!
-	// This is wrong and weird, but *does* in fact
-	// work on Linux... where it isn't needed! *heh*
-	// (Opening a dir with "r" will succeed on Linux, BTW...)
+	// This is wrong and weird, but *does* in fact work on Linux... where
+	// it isn't needed! *heh* (Opening a dir with "r" will succeed on
+	// Linux, BTW...)
 	FILE *f = ::fopen(syspath, "r+");
-//	log_printf(DLOG, "probe(\"%s\") (with fopen())\n", syspath);
 	if(f)
 	{
 		::fclose(f);
@@ -355,16 +336,15 @@ int filemapper_t::probe(const char *syspath)
 }
 
 
-/*
- * Create a file for writing, or if it exists, test if it
- * can be opened in write mode.
- *
- * Returns
- *	FM_FILE if the file exists and is writable,
- *	FM_FILE_CREATE if the file had to be created,
- *	FM_DIR if the path leads to a directory, or
- *	FM_ERROR if the object is not a writable file.
- */
+// Create a file for writing, or if it exists, test if it can be opened in
+// write mode.
+//
+// Returns
+//	FM_FILE		if the file exists and is writable,
+//	FM_FILE_CREATE	if the file had to be created,
+//	FM_DIR		if the path leads to a directory, or
+//	FM_ERROR	if the object is not a writable file.
+//
 int filemapper_t::test_file_create(const char *syspath)
 {
 	int exists = (probe(syspath) == FM_FILE);
@@ -374,12 +354,12 @@ int filemapper_t::test_file_create(const char *syspath)
 		fclose(f);
 		if(exists)
 		{
-//			log_printf(DLOG, "  File is writable!\n");
+			log_printf(D3LOG, "  File is writable!\n");
 			return FM_FILE;
 		}
 		else
 		{
-//			log_printf(DLOG, "  File created!\n");
+			log_printf(D3LOG, "  File created!\n");
 			return FM_FILE_CREATE;
 		}
 	}
@@ -387,11 +367,11 @@ int filemapper_t::test_file_create(const char *syspath)
 	{
 		if(errno == EISDIR)
 		{
-//			log_printf(DLOG, "  Is a directory.\n");
+			log_printf(D3LOG, "  Is a directory.\n");
 			return FM_DIR;
 		}
-//		else
-//			log_printf(DLOG, "  Nope.\n");
+		else
+			log_printf(D3LOG, "  Nope.\n");
 	}
 	return FM_ERROR;
 }
@@ -403,19 +383,19 @@ int filemapper_t::test_file_dir_any(const char *syspath, int kind)
 	switch (res)
 	{
 	  case FM_ERROR:
-//		log_printf(DLOG, "  Nope.\n");
+		log_printf(D3LOG, "  Nope.\n");
 		break;
 	  case FM_FILE:
 		if((kind == FM_ANY) || (kind == FM_FILE))
 		{
-//			log_printf(DLOG, "  Found! (File)\n");
+			log_printf(D3LOG, "  Found! (File)\n");
 			return 1;
 		}
 		break;
 	  case FM_DIR:
 		if((kind == FM_ANY) || (kind == FM_DIR))
 		{
-//			log_printf(DLOG, "  Found! (Dir)\n");
+			log_printf(D3LOG, "  Found! (Dir)\n");
 			return 1;
 		}
 		break;
@@ -428,10 +408,10 @@ int filemapper_t::test_file_dir_any(const char *syspath, int kind)
 		switch (kind)
 		{
 		  case FM_FILE:
-//			log_printf(DLOG, "  Not a file.\n");
+			log_printf(D3LOG, "  Not a file.\n");
 			break;
 		  case FM_DIR:
-//			log_printf(DLOG, "  Not a directory.\n");
+			log_printf(D3LOG, "  Not a directory.\n");
 			break;
 		  default:
 			break;
@@ -440,30 +420,27 @@ int filemapper_t::test_file_dir_any(const char *syspath, int kind)
 }
 
 
-char *filemapper_t::sys2unix(const char *syspath)
+char *filemapper_t::sys2fm(const char *syspath)
 {
 	char *buffer = salloc();
 	strncpy(buffer, syspath, FM_BUFFER_SIZE - 1);
 	buffer[FM_BUFFER_SIZE - 1] = 0;
-	unix_slashes(buffer);
+	fm_format(buffer);
 	return buffer;
 }
 
 
-char *filemapper_t::unix2sys(const char *path)
+char *filemapper_t::fm2sys(const char *path)
 {
 	char *buffer = salloc();
 	strncpy(buffer, path, FM_BUFFER_SIZE - 1);
 	buffer[FM_BUFFER_SIZE - 1] = 0;
-	sys_slashes(buffer);
+	sys_format(buffer);
 	return buffer;
 }
 
 
-/*
- * Try the specified operation on a path.
- * The path must be in *system* format.
- */
+// Try the specified operation on a path. The path must be in *system* format.
 int filemapper_t::try_get(const char *path, int kind)
 {
 	if(prefs->debug)
@@ -524,28 +501,23 @@ void filemapper_t::add_object(const char *path, int kind)
 }
 
 
-/*
- * Parse the specified path, recurse through all possible
- * combinations, trying each terminal with try_get().
- *
- * When the 'build' argument is 0, the function returns
- * the first valid hit.
- *
- * 'ref' must be in unix format, but 'result' will be in
- * system format.
- *
- * NEW MODE:
- *	When the 'build' argument is non-zero, all
- *	possible paths are generated and tested. All
- *	valid objects are added to a linked list of
- *	fm_object_t.
- *
- *	Note that in this mode, 'result' is not used
- *	or set! You may pass NULL.
- *
-TODO: Wildcards...
- *	
- */
+// Parse the specified path, recurse through all possible combinations, trying
+// each terminal with try_get().
+//
+// When the 'build' argument is 0, the function returns the first valid hit.
+//
+// 'ref' must be in "internal filemapper format" (Unix-like) format, but
+// 'result' will be in system format.
+//
+// NEW MODE:
+//	When the 'build' argument is non-zero, all possible paths are generated
+//	and tested. All valid objects are added to a linked list of
+//	fm_object_t.
+//
+//	Note that in this mode, 'result' is not used or set! You may pass NULL.
+//
+// TODO: Wildcards...
+//
 int filemapper_t::recurse_get(char *result, const char *ref, int kind,
 		int level, int build)
 {
@@ -555,14 +527,13 @@ int filemapper_t::recurse_get(char *result, const char *ref, int kind,
 	// Check for the ">>" dereferencing token.
 	char *obj = (char *)strstr(ref, FM_DEREF_TOKEN);
 
-	// If there isn't one, the object path will
-	// be tried as is.
+	// If there isn't one, the object path will be tried as is.
 	if(!obj)
 	{
 		int res;
 		snprintf(buffer, FM_BUFFER_SIZE, "%s", ref);
 		buffer[FM_BUFFER_SIZE-1] = 0;
-		sys_slashes(buffer);
+		sys_format(buffer);
 		res = try_get(buffer, kind);
 		if(build && res)
 			add_object(buffer, kind);
@@ -601,7 +572,7 @@ int filemapper_t::recurse_get(char *result, const char *ref, int kind,
 		}
 		else
 		{
-			sys_slashes(buffer);
+			sys_format(buffer);
 			res = try_get(buffer, kind);
 			if(build && res)
 				add_object(buffer, kind);
@@ -616,8 +587,32 @@ int filemapper_t::recurse_get(char *result, const char *ref, int kind,
 }
 
 
-const char *filemapper_t::get(const char *ref, int kind)
+bool filemapper_t::is_relative(const char *path)
 {
+	if(path[0] == '/')
+		return false;
+	if(strncmp(path, "~/", 2) == 0)
+		return false;
+	// "./" is not exactly absolute, but for our purposes, it has to be
+	// considered as such, because we can't prepend any other paths to it!
+	if(strncmp(path, "./", 2) == 0)
+		return false;
+	if(strstr(path, FM_DEREF_TOKEN))
+		return false;
+	return true;
+}
+
+
+const char *filemapper_t::get(const char *ref, int kind, const char *defprefix)
+{
+	// Prefix relative paths, if desired
+	if(defprefix && is_relative(ref))
+	{
+		char ar[FM_BUFFER_SIZE];
+		snprintf(ar, sizeof(ar), "%s%s", defprefix, ref);
+		return get(ar, kind, NULL);
+	}
+
 	char *buffer = salloc();
 	if(recurse_get(buffer, ref, kind, 1, 0))
 	{
@@ -628,9 +623,7 @@ const char *filemapper_t::get(const char *ref, int kind)
 	}
 	else
 	{
-		if(prefs->debug)
-			log_printf(WLOG, "filemapper_t::get(\"%s\") failed!\n",
-				ref);
+		log_printf(WLOG, "filemapper_t::get(\"%s\") failed!\n", ref);
 		return NULL;
 	}
 }
@@ -660,9 +653,7 @@ const char *filemapper_t::get_next()
 	{
 		if(!current_dir)
 		{
-			//
 			// Get next object!
-			//
 			if(!current_obj)
 				return NULL;	//All done.
 
@@ -690,9 +681,7 @@ const char *filemapper_t::get_next()
 			}
 		}
 
-		//
 		// Get first/next dir entry!
-		//
 		struct dirent *d = readdir(current_dir);
 		if(!d)
 		{
@@ -707,7 +696,8 @@ const char *filemapper_t::get_next()
 		char *path = salloc();
 		if(!path)
 		{
-			log_printf(CELOG, "Out of memory in get_next()!\n", path);
+			log_printf(CELOG, "Out of memory in get_next()!\n",
+					path);
 			return NULL;
 		}
 

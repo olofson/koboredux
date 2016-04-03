@@ -98,7 +98,7 @@ bool KOBO_sound::load(unsigned bank, const char *themepath,
 	snprintf(path, sizeof(path), "%s/main.a2s", themepath);
 
 	log_printf(ULOG, "Loading A2S bank \"%s\"\n", path);
-	const char *p = fmap->get(path);
+	const char *p = fmap->get(path, FM_FILE, "SFX>>");
 	if(!p)
 	{
 		log_printf(ELOG, "Couldn't find \"%s\"!\n", path);

@@ -62,6 +62,7 @@ class KOBO_ThemeParser
 	int iv;
 	char basepath[KOBO_TP_MAXLEN];
 	char path[KOBO_TP_MAXLEN];
+	const char *get_path(const char *p);
 	const char *fullpath(const char *fp);
 	int bufget()
 	{

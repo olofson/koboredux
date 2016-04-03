@@ -3,7 +3,7 @@
 	filemap.h - Simple Portable File Path Mapper
 ------------------------------------------------------------
  * Copyright 2001, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -115,8 +115,8 @@ class filemapper_t
 
 	// Various private funcs
 	void no_double_slashes(char *buf);
-	void unix_slashes(char *buf);
-	void sys_slashes(char *buf);
+	void fm_format(char *buf);
+	void sys_format(char *buf);
 	int probe(const char *syspath);
 	int test_file_create(const char *syspath);
 	int test_file_dir_any(const char *syspath, int kind);
@@ -152,7 +152,8 @@ class filemapper_t
 	fm_key_t *getkey(fm_key_t *key = NULL, const char *ref = NULL);
 
 	// Get object path (returns path in system format!)
-	const char *get(const char *ref, int kind = FM_FILE);
+	const char *get(const char *ref, int kind = FM_FILE,
+			const char *defprefix = NULL);
 
 /*
 FIXME: Do these really handle the 'kind' argument properly...?
@@ -176,9 +177,12 @@ FIXME: every file inside each matching dir should be returned.
 	// to stream 'f'. (ref == '*') ==> All classes.
 	void print(FILE *f, const char *ref);
 
+	// Determine if a path (fm Unix-like!) is relative.
+	bool is_relative(const char *path);
+
 	// Translate to and from the internal Unix-like path format
-	char *sys2unix(const char *syspath);
-	char *unix2sys(const char *path);
+	char *sys2fm(const char *syspath);
+	char *fm2sys(const char *path);
 };
 
 #endif

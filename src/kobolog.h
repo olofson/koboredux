@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - Logger definitions
 ------------------------------------------------------------
- * Copyright (C) 2003, 2009 David Olofson
+ * Copyright 2003, 2009 David Olofson
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the

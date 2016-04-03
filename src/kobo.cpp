@@ -242,7 +242,7 @@ static void add_dirs(prefs_t *p)
 	char buf[300];
 	if(p->dir[0])
 	{
-		char *upath = fmap->sys2unix(p->dir);
+		char *upath = fmap->sys2fm(p->dir);
 		snprintf(buf, 300, "%s/sfx", upath);
 		fmap->addpath("SFX", buf, 1);
 		snprintf(buf, 300, "%s/gfx", upath);
@@ -254,13 +254,13 @@ static void add_dirs(prefs_t *p)
 	}
 
 	if(p->sfxdir[0])
-		fmap->addpath("SFX", fmap->sys2unix(p->sfxdir), 1);
+		fmap->addpath("SFX", fmap->sys2fm(p->sfxdir), 1);
 
 	if(p->gfxdir[0])
-		fmap->addpath("GFX", fmap->sys2unix(p->gfxdir), 1);
+		fmap->addpath("GFX", fmap->sys2fm(p->gfxdir), 1);
 
 	if(p->scoredir[0])
-		fmap->addpath("SCORES", fmap->sys2unix(p->scoredir), 1);
+		fmap->addpath("SCORES", fmap->sys2fm(p->scoredir), 1);
 }
 
 
