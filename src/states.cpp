@@ -774,7 +774,7 @@ int st_menu_base_t::translate(int tag, int button)
 	  case BTN_LEFT:
 		return -1;
 	  default:
-		return tag;
+		return tag ? tag : -1;
 	}
 }
 
@@ -805,8 +805,7 @@ void st_menu_base_t::press(gc_targets_t button)
 	  case BTN_START:
 	  case BTN_SELECT:
 		if(form->selected())
-			selection = translate(form->selected()->tag,
-					button);
+			selection = translate(form->selected()->tag, button);
 		else
 			selection = -2;
 		break;
