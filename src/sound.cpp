@@ -770,8 +770,8 @@ void KOBO_sound::g_player_damage(float level)
 {
 	if(!state)
 		return;
-	if(checksound(S_DAMAGE, "KOBO_sound::g_player_damage()"))
-		a2_Play(state, sfx_g, sounds[S_DAMAGE], 0.0f, level);
+	if(checksound(S_PLAYER_DAMAGE, "KOBO_sound::g_player_damage()"))
+		a2_Play(state, sfx_g, sounds[S_PLAYER_DAMAGE], 0.0f, level);
 }
 
 

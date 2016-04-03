@@ -13,10 +13,10 @@ export S_UI_OPEN()
 	p -3
 	a 1
 	10 {
-		+p .1
+		+p .15
 		d 10
 	}
-	a 0; d 100
+	a 0; d 50
 }
 
 export S_UI_OK()
@@ -167,7 +167,7 @@ export S_UI_CANCEL()
 	struct { wtosc }
 	w triangle
 	5 {
-		p 1; a .25;	d 10
+		p 1; a .35;	d 10
 		p 0; a 0;	d 10
 	}
 }
@@ -177,7 +177,7 @@ export S_UI_ERROR()
 	struct { wtosc }
 	w square
 	10 {
-		p 2.5; @a .1;	d 10
+		p 2.5; @a .15;	d 10
 		p 1.5; a 0;	d 10
 	}
 }

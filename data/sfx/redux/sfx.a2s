@@ -92,13 +92,31 @@ Impact(P V=1 PanX)
 	struct { wtosc; inline; panmix }
 	pan PanX; vol V; set
 	+tr P
-	blopp 0 1 .7
-	w square; p (rand .5 + 1); a .3; set a
+	w square; p (rand .5 + 1.5); a .3; set a
 	5 { -p .2; d 1 }
-	w triangle; a 1
+	w triangle; a .5
 	15 { -p .1; d 2 }
 	a 0; d 10
 	w noise; p (rand .5 + 4); a .1; set a; a 0; d 100
+}
+
+
+PlayerDamage(P V=1 PanX)
+{
+	struct { wtosc; inline; panmix }
+	pan PanX; vol V; set
+	+tr P
+	blopp 0 1 .7
+	w square; p (rand .3 + 1.5); a .5; set a
+	5 { -p .4; d 5 }
+	w triangle; a 1
+	12 { -p .1; d 2 }
+	a 0; d 1
+	w noise
+	p (rand .5 + 3)
+	@a .3;	d 10
+	a .05;	d 50
+	a 0;	d 200
 }
 
 
@@ -607,6 +625,8 @@ export def S_LAUNCH_BULLET3	FireElectro
 export def S_LAUNCH_RING	Launch
 export def S_LAUNCH_BOMB	Launch
 export def S_DAMAGE		Impact
+export def S_NO_DAMAGE		Klank
+export def S_PLAYER_DAMAGE	PlayerDamage
 export def S_HIT_ROCK		ImpactGround
 export def S_EXPLO_NODE		SegmentDeath
 export def S_EXPLO_ENEMY	BoomerangDeath
@@ -615,7 +635,6 @@ export def S_EXPLO_RING		LavaImpact
 export def S_EXPLO_ROCK		BoomerangDeath
 export def S_RUMBLE		BaseRumble
 export def S_SHOT		FirePlasma
-export def S_METALLIC		Klank
 export def S_BOMB_TRIG		BombTrig
 export def S_BOMB_DETO		BombDetonation
 export def S_BOMB2_TRIG		BombTrig

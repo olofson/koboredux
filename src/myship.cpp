@@ -385,7 +385,7 @@ void KOBO_myship::check_base_bolts()
 		int y1 = WORLD2MAPY(CS2PIXEL(bolts[i].y));
 		if(IS_BASE(screen.get_map(x1, y1)))
 		{
-			sound.g_play(S_METALLIC, x1 << 4, y1 << 4);
+			sound.g_play(S_NO_DAMAGE, x1 << 4, y1 << 4);
 			kill_bolt(i, true);
 		}
 	}
