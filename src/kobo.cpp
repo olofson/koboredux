@@ -2177,7 +2177,7 @@ void kobo_gfxengine_t::post_render()
 		wscreen->sprite(mouse_x, mouse_y, B_CROSSHAIR, 0);
 
 	// Frame rate limiter
-	if(prefs->maxfps)
+	if(prefs->maxfps && (wdash->mode() != DASHBOARD_LOADING))
 	{
 		if(prefs->maxfps_strict)
 		{

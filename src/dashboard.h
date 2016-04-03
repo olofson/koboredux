@@ -62,6 +62,7 @@ class dashboard_window_t : public window_t
 	dashboard_window_t(gfxengine_t *e);
 	~dashboard_window_t();
 	void mode(dashboard_modes_t m);
+	dashboard_modes_t mode()	{ return _mode; }
 	void fade(float f)
 	{
 		if(f <= 0.0f)
