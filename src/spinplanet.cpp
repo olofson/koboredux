@@ -348,8 +348,8 @@ void spinplanet_t::scale_texture()
 	  case SPINPLANET_DITHER_ORDERED:
 	  case SPINPLANET_DITHER_SKEWED:
 	  case SPINPLANET_DITHER_NOISE:
-	  case SPINPLANET_DITHER_SEMIINTERLACE:
-	  case SPINPLANET_DITHER_INTERLACE:
+	  case SPINPLANET_DITHER_TEMPORAL2:
+	  case SPINPLANET_DITHER_TEMPORAL4:
 		newsource = downscale_8bpp((uint8_t *)source, sourcepitch,
 				msize, msize, msize / newmsize);
 		break;
@@ -463,8 +463,8 @@ void spinplanet_t::dth_prepare()
 	  case SPINPLANET_DITHER_ORDERED:
 	  case SPINPLANET_DITHER_SKEWED:
 	  case SPINPLANET_DITHER_NOISE:
-	  case SPINPLANET_DITHER_SEMIINTERLACE:
-	  case SPINPLANET_DITHER_INTERLACE:
+	  case SPINPLANET_DITHER_TEMPORAL2:
+	  case SPINPLANET_DITHER_TEMPORAL4:
 		if(!(source = grayscale_convert(src, sp,
 				s->surface->w, s->surface->h,
 				dither_brightness, dither_contrast)))
@@ -561,8 +561,8 @@ void spinplanet_t::refresh(SDL_Rect *r)
 		lasty = vy;
 		break;
 	  case SPINPLANET_DITHER_NOISE:
-	  case SPINPLANET_DITHER_SEMIINTERLACE:
-	  case SPINPLANET_DITHER_INTERLACE:
+	  case SPINPLANET_DITHER_TEMPORAL2:
+	  case SPINPLANET_DITHER_TEMPORAL4:
 		// Temporal dithering always at full frame rate!
 		break;
 	}
@@ -617,13 +617,13 @@ void spinplanet_t::refresh(SDL_Rect *r)
 			dth_random((uint8_t *)source, sourcepitch,
 					dst, ld, ldlen, x, y, vx, vy);
 			break;
-		  case SPINPLANET_DITHER_SEMIINTERLACE:
+		  case SPINPLANET_DITHER_TEMPORAL2:
 			x += ditherstate;
 			y += ditherstate;
 			dth_ordered((uint8_t *)source, sourcepitch,
 					dst, ld, ldlen, x, y, vx, vy);
 			break;
-		  case SPINPLANET_DITHER_INTERLACE:
+		  case SPINPLANET_DITHER_TEMPORAL4:
 			x += ditherstate >> 1;
 			y += ditherstate;
 			dth_ordered((uint8_t *)source, sourcepitch,

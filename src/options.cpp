@@ -196,9 +196,9 @@ void video_options_t::build()
 		item("Random", SPINPLANET_DITHER_RANDOM);
 		item("Ordered", SPINPLANET_DITHER_ORDERED);
 		item("Skewed", SPINPLANET_DITHER_SKEWED);
-		item("Noise", SPINPLANET_DITHER_NOISE);
-		item("Semi Interlace", SPINPLANET_DITHER_SEMIINTERLACE);
-		item("Interlace", SPINPLANET_DITHER_INTERLACE);
+		item("Temporal, Noise", SPINPLANET_DITHER_NOISE);
+		item("Temporal, 2 Frames", SPINPLANET_DITHER_TEMPORAL2);
+		item("Temporal, 4 Frames", SPINPLANET_DITHER_TEMPORAL4);
 		item("TrueColor", SPINPLANET_DITHER_TRUECOLOR);
 #if 0
 	space(1);

@@ -42,8 +42,8 @@ enum spinplanet_dither_t
 	SPINPLANET_DITHER_ORDERED,	// 4x4 ordered pattern
 	SPINPLANET_DITHER_SKEWED,	// 4x4 skewed pattern
 	SPINPLANET_DITHER_NOISE,	// Temporal noise dither
-	SPINPLANET_DITHER_SEMIINTERLACE,// 4x4 pattern, two frames
-	SPINPLANET_DITHER_INTERLACE,	// 4x4 pattern, four frames
+	SPINPLANET_DITHER_TEMPORAL2,	// 4x4 pattern, two frames
+	SPINPLANET_DITHER_TEMPORAL4,	// 4x4 pattern, four frames
 	SPINPLANET_DITHER_TRUECOLOR	// Interpolate between palette entries
 };
 
