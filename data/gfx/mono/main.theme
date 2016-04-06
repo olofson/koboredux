@@ -1,5 +1,3 @@
-# TODO: This theme is incomplete, and is also mostly Kobo Deluxe stuff!
-
 message "Kobo Redux Mono Theme"
 message "Copyright 2016 David Olofson"
 message "CC BY-SA 4.0 (http://creativecommons.org/licenses/by-sa/4.0/)"
@@ -23,20 +21,25 @@ message "Loading in-game graphics"
 
 # Palette for realtime rendering and effects
 path ""
-palette P_MAIN "DO64-0.24.gpl"
+palette P_MAIN "HW-ZX-Spectrum.gpl"
+
+# Space backdrop
+path ""
+image B_SPACE "space.png"
 
 # Region 1 (maps 1-10)
 path "region-1"
-#sprites B_R1_TILES "tiles-green.png" 16 16
-#sprites B_R1_TILES_SMALL_SPACE "tiles-green-small-space.png" 12 12
-#sprites B_R1_TILES_TINY_SPACE "tiles-green-tiny-space.png" 8 8
-#sprites B_R1_TILES_TINY_INTERMEDIATE "tiles-green-tiny-intermediate.png" 8 8
-#sprites B_R1_TILES_SMALL_GROUND "tiles-green-small-ground.png" 12 12
-#sprites B_R1_TILES_TINY_GROUND "tiles-green-tiny-ground.png" 8 8
-#image B_R1_PLANET "planet-r1.png" 2 ABSSCALE BILINEAR
-#image B_R1L8_GROUND "ground-r1l8.png"
-#image B_R1L9_GROUND "ground-r1l9.png"
-#image B_R1L10_GROUND "ground-r1l10.png"
+sprites B_R1_TILES "tiles-clean.png" 16 16
+sprites B_R1_TILES_SMALL_SPACE "tiles-small.png" 12 12
+sprites B_R1_TILES_TINY_SPACE "tiles-tiny.png" 8 8
+alias B_R1_TILES_TINY_INTERMEDIATE B_R1_TILES_TINY_SPACE
+alias B_R1_TILES_SMALL_GROUND B_R1_TILES_SMALL_SPACE
+alias B_R1_TILES_TINY_GROUND B_R1_TILES_TINY_INTERMEDIATE
+#image B_R1_PLANET "planet.png" 2 ABSSCALE SCALE2X
+image B_R1_PLANET "planet.png"
+image B_R1L8_GROUND "ground-l8.png"
+image B_R1L9_GROUND "planet.png"
+image B_R1L10_GROUND "ground-l10.png"
 
 # Region 2 (maps 11-20)
 path "region-2"
@@ -95,34 +98,34 @@ alias B_R5L9_GROUND B_R1L9_GROUND FUTURE
 alias B_R5L10_GROUND B_R1L10_GROUND FUTURE
 
 path "sprites"
-#sprites B_PLAYER "player.png" 40 40 2 CENTER
-sprites B_BMR_GREEN "bmr-green.png" 40 40 2 CENTER
-sprites B_BMR_PURPLE "bmr-purple.png" 40 40 2 CENTER
-sprites B_BMR_PINK "bmr-pink.png" 40 40 2 CENTER
-sprites B_FIGHTER "fighter.png" 40 40 2 CENTER
-sprites B_MISSILE1 "missile.png" 40 40 2 CENTER
-sprites B_MISSILE2 "missile2.png" 40 40 2 CENTER
-sprites B_MISSILE3 "missile3.png" 40 40 2 CENTER
-#sprites B_BOLT "orange-bolt.png" 8 8 1 CENTER
-#sprites B_EXPLO1 "explo1.png" 24 24 CENTER
-#alias B_EXPLO3 B_EXPLO1
-#alias B_EXPLO4 B_EXPLO1
-#alias B_EXPLO5 B_EXPLO1
-#sprites B_ROCK1 "rock2.png" 32 32 1 CENTER
-#alias B_ROCK2 B_ROCK1
-#alias B_ROCK3 B_ROCK1
-#sprites B_ROCKEXPL "rockexpl.png" 64 64 1 CENTER
-#sprites B_BLT_GREEN "bullet.png" 8 8 CENTER
-#sprites B_BLT_RED "red-bullet.png" 8 8 CENTER
-#sprites B_BLT_BLUE "blue-bullet.png" 8 8 CENTER
-sprites B_BLTX_GREEN "bulletexpl2.png" 32 32 2 CENTER
-sprites B_BLTX_RED "bulletexpl2.png" 32 32 2 CENTER
-sprites B_BLTX_BLUE "bulletexpl2.png" 32 32 2 CENTER
-sprites B_RING "ring.png" 32 32 2 CENTER
-sprites B_RINGEXPL "ringexpl2b.png" 40 40 2 CENTER
-#sprites B_BOMB "bomb.png" 24 24 2 CENTER
-sprites B_BOMBDETO "bombdeto.png" 40 40 2 CENTER
-sprites B_BIGSHIP "bigship.png" 72 72 2 CENTER
+sprites B_PLAYER "kobo.png" 24 24 CENTER
+sprites B_BMR_GREEN "bmr1.png" 24 24 CENTER
+sprites B_BMR_PURPLE "bmr2.png" 24 24 CENTER
+sprites B_BMR_PINK "bmr3.png" 24 24 CENTER
+sprites B_FIGHTER "fighter.png" 24 24 CENTER
+sprites B_MISSILE1 "missile.png" 16 16 CENTER
+sprites B_MISSILE2 "missile2.png" 16 16 CENTER
+sprites B_MISSILE3 "missile3.png" 16 16 CENTER
+sprites B_BOLT "bolt.png" 8 8 CENTER
+sprites B_EXPLO1 "explo.png" 24 24 CENTER
+alias B_EXPLO3 B_EXPLO1
+alias B_EXPLO4 B_EXPLO1
+alias B_EXPLO5 B_EXPLO1
+sprites B_ROCK1 "rock.png" 32 32 CENTER
+alias B_ROCK2 B_ROCK1
+alias B_ROCK3 B_ROCK1
+sprites B_ROCKEXPL "rockexpl.png" 64 64 CENTER
+sprites B_BLT_GREEN "greenbullet.png" 6 6 CENTER
+sprites B_BLT_RED "redbullet.png" 6 6 CENTER
+sprites B_BLT_BLUE "bluebullet.png" 6 6 CENTER
+sprites B_BLTX_GREEN "greenbulletexpl.png" 16 16 CENTER
+sprites B_BLTX_RED "redbulletexpl.png" 16 16 CENTER
+sprites B_BLTX_BLUE "bluebulletexpl.png" 16 16 CENTER
+sprites B_RING "ring.png" 16 16 CENTER
+sprites B_RINGEXPL "ringexpl.png" 20 20 CENTER
+sprites B_BOMB "bomb.png" 12 12 CENTER
+sprites B_BOMBDETO "bombdeto.png" 20 20 CENTER
+sprites B_BIGSHIP "bigship.png" 32 32 CENTER
 
 
 #------------------------------------------------------------------------------
@@ -130,12 +133,12 @@ message "Loading dashboard graphics"
 #------------------------------------------------------------------------------
 
 path "dashboard"
-#image B_SCREEN "dashboard.png"
-sprites B_CROSSHAIR "crosshair.png" 32 32 1 CENTER
-#sprites B_HLEDS "hleds.png" 8 5
-#sprites B_VLEDS "vleds.png" 5 8
-#sprites B_BLEDS "barleds3.png" 12 4
-#image B_LOGO "logo2h.png"
+image B_SCREEN "dashboard.png"
+sprites B_CROSSHAIR "crosshair.png" 16 16 1 CENTER
+sprites B_HLEDS "hleds.png" 8 5
+sprites B_VLEDS "vleds.png" 5 8
+sprites B_BLEDS "barleds.png" 12 4
+image B_LOGO "logo.png"
 
 
 #------------------------------------------------------------------------------
@@ -143,11 +146,11 @@ message "Loading fonts"
 #------------------------------------------------------------------------------
 
 path "fonts"
-sfont B_SMALL_FONT "microfont5.png"
-#sfont B_NORMAL_FONT "smallfont.png"
-#sfont B_MEDIUM_FONT "mediumfont.png"
-#sfont B_BIG_FONT "bigfont.png"
-sfont B_COUNTER_FONT "counterfont.png" 2
+sfont B_SMALL_FONT "microfont.png"
+sfont B_NORMAL_FONT "smallfont.png"
+alias B_MEDIUM_FONT B_NORMAL_FONT
+sfont B_BIG_FONT "bigfont.png"
+sfont B_COUNTER_FONT "counterfont.png"
 
 
 #------------------------------------------------------------------------------
@@ -157,4 +160,5 @@ message "Loading special FX graphics"
 path "fx"
 sprites B_NOISE "noise.png" 256 1
 sprites B_HITNOISE "hitnoise.png" 256 1
-#image B_FOCUSFX "focusfx.png"
+image B_FOCUSFX "gridfx.png"
+sprites B_SHIELDFX "shieldfx.png" 32 32 CENTER

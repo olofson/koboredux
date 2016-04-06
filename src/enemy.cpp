@@ -754,6 +754,7 @@ void KOBO_enemy::make_expl()
 		break;
 	  case B_BLTX_GREEN:
 	  case B_BLTX_RED:
+	  case B_BLTX_BLUE:
 		a = 6;
 		break;
 	  case B_BOLT:
