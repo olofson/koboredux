@@ -512,7 +512,7 @@ void _manage::run()
 		{
 			put_info();
 			next_scene();
-			init_resources_to_play(true);
+			init_resources_to_play(false);
 		}
 		else
 			run_game();
