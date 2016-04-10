@@ -107,6 +107,7 @@ class KOBO_enemy
 	int	soundhandle;		// Continuous positional sound fx
 	int	soundtimer;		// Positional audio update timer
 	int	bank, frame;		// Current sprite bank and frame
+	int	frames;			// Number of frames in sprite bank
 	int	health;			// Current health
 	int	damage;			// Damage dealt to player at contact
 	int	splash_damage;		// Splash damage dealt on death
@@ -343,6 +344,11 @@ inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 		startsound(ek->sound);
 	(this->*(ek->make)) ();
 	bank = s_get_actual_bank(gengine->get_gfx(), bank);
+	s_bank_t *bnk = s_get_bank(gengine->get_gfx(), bank);
+	if(bnk)
+		frames = bnk->max + 1;
+	else
+		frames = 8;
 	return 0;
 }
 

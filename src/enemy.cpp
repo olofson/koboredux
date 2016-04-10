@@ -154,7 +154,7 @@ inline void KOBO_enemy::move_enemy_template(int quick, int maxspeed)
 		if(v < maxspeed)
 			v += quick;
 	}
-	int ndi = speed2dir(h, v, 16);
+	int ndi = speed2dir(h, v, frames);
 	if(ndi > 0)
 		di = ndi;
 }
@@ -184,7 +184,7 @@ inline void KOBO_enemy::move_enemy_template_2(int quick, int maxspeed)
 		if(v < maxspeed)
 			v += quick;
 	}
-	int ndi = speed2dir(h, v, 16);
+	int ndi = speed2dir(h, v, frames);
 	if(ndi > 0)
 		di = ndi;
 }
@@ -214,7 +214,7 @@ inline void KOBO_enemy::move_enemy_template_3(int quick, int maxspeed)
 		if(v < maxspeed)
 			v += quick;
 	}
-	int ndi = speed2dir(h, v, 16);
+	int ndi = speed2dir(h, v, frames);
 	if(ndi > 0)
 		di = ndi;
 }

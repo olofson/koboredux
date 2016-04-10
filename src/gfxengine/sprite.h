@@ -56,7 +56,6 @@ struct s_bank_t
 	unsigned	alias;	/* > 0 ==> index of actual bank to use */
 	unsigned	w, h;	/* Same size for all sprites in bank! */
 	int		xs, ys;	/* Rendering scale factor (24:8) */
-	unsigned	last;
 	int		max;
 	s_sprite_t	**sprites;
 	int		userflags;
