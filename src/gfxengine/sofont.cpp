@@ -261,6 +261,8 @@ bool SoFont::Load(SDL_Surface *FontSurface)
 	//as it's just used for the blit width calculation.
 	if(i)
 		_Spacing[i - 1] = x - s;
+	else
+		log_printf(WLOG, "SoFont did not detect any spacing info!\n");
 	_Spacing[i] = 0;
 	_CharOffset[i] = 0;
 	_CharPos[i++] = FontSurface->w;
