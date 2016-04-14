@@ -358,7 +358,10 @@ void KOBO_enemy::render_hit_zone()
 
 void KOBO_enemy::make_bullet1()
 {
-	di = pubrand.get(3);
+	if(frames)
+		di = 1 + pubrand.get(8) % frames;
+	else
+		di = 1;
 	health = 1;
 	shootable = false;
 	physics = false;
@@ -383,8 +386,8 @@ void KOBO_enemy::move_bullet()
 {
 	if(mindiff >= ((VIEWLIMIT >> 1) + 32))
 		release();
-	di += pubrand.get(1) + 1;
-	if(di > 8)
+	++di;
+	if(di > frames)
 		di = 1;
 }
 
