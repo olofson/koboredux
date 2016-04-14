@@ -193,6 +193,7 @@ void video_options_t::build()
 	space();
 	list("Planet Dither Style", &prf->planetdither, OS_UPDATE_SCREEN);
 		item("None", SPINPLANET_DITHER_NONE);
+		item("Raw", SPINPLANET_DITHER_RAW);
 		item("Random", SPINPLANET_DITHER_RANDOM);
 		item("Ordered", SPINPLANET_DITHER_ORDERED);
 		item("Skewed", SPINPLANET_DITHER_SKEWED);
