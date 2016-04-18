@@ -1641,7 +1641,7 @@ void KOBO_enemy::make_enemy_m1()
 void KOBO_enemy::move_enemy_m1()
 {
 	this->move_enemy_m(3, 128);
-	if(++di > 16)
+	if(++di > frames)
 		di = 1;
 	if(c-- <= 0)
 	{
@@ -1690,7 +1690,7 @@ void KOBO_enemy::make_enemy_m2()
 void KOBO_enemy::move_enemy_m2()
 {
 	this->move_enemy_m(3, 128);
-	if(++di > 16)
+	if(++di > frames)
 		di = 1;
 	if(c-- <= 0)
 	{
@@ -1738,7 +1738,7 @@ void KOBO_enemy::move_enemy_m3()
 {
 	this->move_enemy_m(3, 128);
 	if(--di < 1)
-		di = 16;
+		di = frames;
 	if(c-- <= 0)
 	{
 		c = 64;
