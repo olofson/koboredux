@@ -57,7 +57,7 @@ void prefs_t::init()
 
 	section("Game");
 	yesno("scrollradar", scrollradar, 1); desc("Scrolling Radar");
-	yesno("filter", filter, 2); desc("Motion Interpolation");
+	key("filter", filter, 2); desc("Logic-to-Video Motion Filter Mode");
 	key("timefilter", timefilter, 50); desc("Time Filter");
 	key("countdown", countdown, 5); desc("Get Ready Countdown");
 	key("stars", stars, 500); desc("Number of Parallax Stars");
