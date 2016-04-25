@@ -207,14 +207,15 @@ void spinplanet_t::set_mode(spinplanet_modes_t md)
 }
 
 
-void spinplanet_t::set_colors(const unsigned char *c, int nc, unsigned pal)
+void spinplanet_t::set_palette(unsigned pal)
 {
+	int nc = engine->palette_size(pal);
 	if(nc > SPINPLANET_MAX_COLORS)
 		nc = SPINPLANET_MAX_COLORS;
 	for(int i = 0; i < nc; ++i)
-		colors[i] = map_rgb(engine->palette(pal, c[i]));
+		colors[i] = map_rgb(engine->palette(pal, i));
 	for(int i = nc; i <= SPINPLANET_MAX_COLORS; ++i)
-		colors[i] = map_rgb(engine->palette(pal, c[nc - 1]));
+		colors[i] = map_rgb(engine->palette(pal, nc - 1));
 	needs_prepare = true;
 }
 

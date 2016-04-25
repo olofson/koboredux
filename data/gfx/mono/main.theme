@@ -2,32 +2,45 @@ message "Kobo Redux Mono Theme"
 message "Copyright 2016 David Olofson"
 message "CC BY-SA 4.0 (http://creativecommons.org/licenses/by-sa/4.0/)"
 
-#------------------------------------------------------------------------------
-# Syntax:
-#	message "Quoted String"
-#	image BankID FilePath [Scale] [Flags...]
-#	sprites BankID FilePath FrameWidth FrameHeight [Scale] [Flags...]
-#	sfont BankID FilePath [Scale] [Flags...]
-#	palette FilePath
-#	fallback FilePath
-#	path FilePath
-#	alias BankID BankID [Flags...]
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// Syntax:
+//	message "Quoted String"
+//	image BankID FilePath [Scale] [Flags...]
+//	sprites BankID FilePath FrameWidth FrameHeight [Scale] [Flags...]
+//	sfont BankID FilePath [Scale] [Flags...]
+//	palette PaletteID FilePath
+//	palette PaletteID <HTMLHexColor>[...]
+//	palette PaletteID SourcePaletteID <Index>[...]
+//	palette PaletteID SourcePaletteID
+//	fallback FilePath
+//	path FilePath
+//	alias BankID BankID [Flags...]
+//-----------------------------------------------------------------------------
 
 
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 message "Loading in-game graphics"
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-# Palette for realtime rendering and effects
+// Palette for realtime rendering and effects
 path ""
 palette P_MAIN "HW-ZX-Spectrum.gpl"
+palette P_MAIN_STARS P_MAIN 1 3 5 7
 
-# Space backdrop
+palette P_PLANET_R1 P_MAIN 0 0  1 1 9 9 5
+palette P_PLANET_R2 P_PLANET_R1
+palette P_PLANET_R3 P_PLANET_R1
+palette P_PLANET_R4 P_PLANET_R1
+palette P_PLANET_R5 P_PLANET_R1
+
+// KOBO_RC_(BACKGROUND BASE NODE CORE   PLAYER[0..7])
+palette P_RADAR P_MAIN 0 4 12 14   15 14 6 4 3 9 1 1
+
+// Space backdrop
 path ""
 image B_SPACE "space.png"
 
-# Region 1 (maps 1-10)
+// Region 1 (maps 1-10)
 path "region-1"
 sprites B_R1_TILES "tiles-clean.png" 16 16
 sprites B_R1_TILES_SMALL_SPACE "tiles-small.png" 12 12
@@ -35,15 +48,13 @@ sprites B_R1_TILES_TINY_SPACE "tiles-tiny.png" 8 8
 alias B_R1_TILES_TINY_INTERMEDIATE B_R1_TILES_TINY_SPACE
 alias B_R1_TILES_SMALL_GROUND B_R1_TILES_SMALL_SPACE
 alias B_R1_TILES_TINY_GROUND B_R1_TILES_TINY_INTERMEDIATE
-#image B_R1_PLANET "planet.png" 2 ABSSCALE SCALE2X
 image B_R1_PLANET "planet.png"
 image B_R1L8_GROUND "ground-l8.png"
 image B_R1L9_GROUND "planet.png"
 image B_R1L10_GROUND "ground-l10.png"
 
-# Region 2 (maps 11-20)
+// Region 2 (maps 11-20)
 path "region-2"
-### TODO ###
 alias B_R2_TILES B_R1_TILES FUTURE
 alias B_R2_TILES_SMALL_SPACE B_R1_TILES_SMALL_SPACE FUTURE
 alias B_R2_TILES_TINY_SPACE B_R1_TILES_TINY_SPACE FUTURE
@@ -55,9 +66,8 @@ alias B_R2L8_GROUND B_R1L8_GROUND FUTURE
 alias B_R2L9_GROUND B_R1L9_GROUND FUTURE
 alias B_R2L10_GROUND B_R1L10_GROUND FUTURE
 
-# Region 3 (maps 21-30)
+// Region 3 (maps 21-30)
 path "region-3"
-### TODO ###
 alias B_R3_TILES B_R1_TILES FUTURE
 alias B_R3_TILES_SMALL_SPACE B_R1_TILES_SMALL_SPACE FUTURE
 alias B_R3_TILES_TINY_SPACE B_R1_TILES_TINY_SPACE FUTURE
@@ -69,9 +79,8 @@ alias B_R3L8_GROUND B_R1L8_GROUND FUTURE
 alias B_R3L9_GROUND B_R1L9_GROUND FUTURE
 alias B_R3L10_GROUND B_R1L10_GROUND FUTURE
 
-# Region 4 (maps 31-40)
+// Region 4 (maps 31-40)
 path "region-4"
-### TODO ###
 alias B_R4_TILES B_R1_TILES FUTURE
 alias B_R4_TILES_SMALL_SPACE B_R1_TILES_SMALL_SPACE FUTURE
 alias B_R4_TILES_TINY_SPACE B_R1_TILES_TINY_SPACE FUTURE
@@ -83,9 +92,8 @@ alias B_R4L8_GROUND B_R1L8_GROUND FUTURE
 alias B_R4L9_GROUND B_R1L9_GROUND FUTURE
 alias B_R4L10_GROUND B_R1L10_GROUND FUTURE
 
-# Region 5 (maps 41-50)
+// Region 5 (maps 41-50)
 path "region-5"
-### TODO ###
 alias B_R5_TILES B_R1_TILES FUTURE
 alias B_R5_TILES_SMALL_SPACE B_R1_TILES_SMALL_SPACE FUTURE
 alias B_R5_TILES_TINY_SPACE B_R1_TILES_TINY_SPACE FUTURE
@@ -128,9 +136,9 @@ sprites B_BOMBDETO "bombdeto.png" 20 20 CENTER
 sprites B_BIGSHIP "bigship.png" 32 32 CENTER
 
 
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 message "Loading dashboard graphics"
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 path "dashboard"
 image B_SCREEN "dashboard.png"
@@ -141,9 +149,9 @@ sprites B_BLEDS "barleds.png" 12 4
 image B_LOGO "logo.png"
 
 
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 message "Loading fonts"
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 path "fonts"
 sfont B_SMALL_FONT "microfont.png"
@@ -153,9 +161,9 @@ sfont B_BIG_FONT "bigfont.png"
 sfont B_COUNTER_FONT "counterfont.png"
 
 
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 message "Loading special FX graphics"
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 path "fx"
 sprites B_NOISE "noise.png" 256 1

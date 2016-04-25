@@ -1,4 +1,4 @@
-# This theme is incomplete, so we load the mono theme first, as fallback!
+// This theme is incomplete, so we load the mono theme first, as fallback!
 fallback "GFX>>mono"
 
 
@@ -7,19 +7,26 @@ message "Copyright 2016 David Olofson"
 message "ALL RIGHTS RESERVED"
 
 
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 message "Loading in-game graphics"
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-# Palette for realtime rendering and effects
+// Palette for realtime rendering and effects
 path ""
 palette P_MAIN "DO64-0.24.gpl"
+palette P_MAIN_STARS P_MAIN 1 52 51 2 47 3 46 4
+palette P_PLANET_R1 P_MAIN 0 1 15 14 13 12 11 10 8 9
+palette P_PLANET_R2 P_PLANET_R1
+palette P_PLANET_R3 P_PLANET_R1
+palette P_PLANET_R4 P_PLANET_R1
+palette P_PLANET_R5 P_PLANET_R1
+palette P_RADAR P_MAIN 0 33 31 29   28 29 30 31 32 33 34 35
 
-# Space backdrop
+// Space backdrop
 path ""
 image B_SPACE "space-test-2.png"
 
-# Region 1 (maps 1-10)
+// Region 1 (maps 1-10)
 path "region-1"
 sprites	B_R1_TILES "tiles-green.png" 16 16
 sprites	B_R1_TILES_SMALL_SPACE "tiles-green-small-space.png" 12 12
@@ -32,31 +39,31 @@ image B_R1L8_GROUND "ground-r1l8.png"
 image B_R1L9_GROUND "ground-r1l9.png"
 image B_R1L10_GROUND "ground-r1l10.png"
 
-# Region 2 (maps 11-20)
+// Region 2 (maps 11-20)
 path "region-2"
-# TODO
+// TODO
 
-# Region 3 (maps 21-30)
+// Region 3 (maps 21-30)
 path "region-3"
-# TODO
+// TODO
 
-# Region 4 (maps 31-40)
+// Region 4 (maps 31-40)
 path "region-4"
-# TODO
+// TODO
 
-# Region 5 (maps 41-50)
+// Region 5 (maps 41-50)
 path "region-5"
-# TODO
+// TODO
 
 path "sprites"
 sprites B_PLAYER "kobo-mk1c.png" 24 24 CENTER
-#sprites B_BMR_GREEN "bmr-green.png" 40 40 2 CENTER
-#sprites B_BMR_PURPLE "bmr-purple.png" 40 40 2 CENTER
-#sprites B_BMR_PINK "bmr-pink.png" 40 40 2 CENTER
-#sprites B_FIGHTER "fighter.png" 40 40 2 CENTER
-#sprites B_MISSILE1 "missile.png" 40 40 2 CENTER
-#sprites B_MISSILE2 "missile2.png" 40 40 2 CENTER
-#sprites B_MISSILE3 "missile3.png" 40 40 2 CENTER
+//sprites B_BMR_GREEN "bmr-green.png" 40 40 2 CENTER
+//sprites B_BMR_PURPLE "bmr-purple.png" 40 40 2 CENTER
+//sprites B_BMR_PINK "bmr-pink.png" 40 40 2 CENTER
+//sprites B_FIGHTER "fighter.png" 40 40 2 CENTER
+//sprites B_MISSILE1 "missile.png" 40 40 2 CENTER
+//sprites B_MISSILE2 "missile2.png" 40 40 2 CENTER
+//sprites B_MISSILE3 "missile3.png" 40 40 2 CENTER
 sprites B_BOLT "orange-bolt-3.png" 8 8 CENTER
 sprites B_EXPLO1 "explo1.png" 24 24 CENTER
 alias B_EXPLO3 B_EXPLO1
@@ -69,47 +76,47 @@ sprites B_ROCKEXPL "rockexpl.png" 64 64 CENTER
 sprites B_BLT_GREEN "bullet.png" 8 8 CENTER
 sprites B_BLT_RED "red-bullet.png" 8 8 CENTER
 sprites B_BLT_BLUE "blue-bullet.png" 8 8 CENTER
-#sprites B_BLTX_GREEN "bulletexpl2.png" 32 32 2 CENTER
-#sprites B_BLTX_RED "bulletexpl2.png" 32 32 2 CENTER
-#sprites B_BLTX_BLUE "bulletexpl2.png" 32 32 2 CENTER
-#sprites B_RING "ring.png" 32 32 2 CENTER
-#sprites B_RINGEXPL "ringexpl2b.png" 40 40 2 CENTER
+//sprites B_BLTX_GREEN "bulletexpl2.png" 32 32 2 CENTER
+//sprites B_BLTX_RED "bulletexpl2.png" 32 32 2 CENTER
+//sprites B_BLTX_BLUE "bulletexpl2.png" 32 32 2 CENTER
+//sprites B_RING "ring.png" 32 32 2 CENTER
+//sprites B_RINGEXPL "ringexpl2b.png" 40 40 2 CENTER
 sprites B_BOMB "bomb.png" 12 12 CENTER
-#sprites B_BOMBDETO "bombdeto.png" 40 40 2 CENTER
-#sprites B_BIGSHIP "bigship.png" 72 72 2 CENTER
+//sprites B_BOMBDETO "bombdeto.png" 40 40 2 CENTER
+//sprites B_BIGSHIP "bigship.png" 72 72 2 CENTER
 
 
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 message "Loading dashboard graphics"
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 path "dashboard"
 image B_SCREEN "dashboard.png"
-#sprites B_CROSSHAIR "crosshair.png" 32 32 1 CENTER
+//sprites B_CROSSHAIR "crosshair.png" 32 32 1 CENTER
 sprites B_HLEDS "hleds.png" 8 5
 sprites B_VLEDS "vleds.png" 5 8
 sprites B_BLEDS "barleds3.png" 12 4
 image B_LOGO "logo2h.png"
 
 
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 message "Loading fonts"
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 path "fonts"
 sfont B_SMALL_FONT "microfont4.png"
 sfont B_NORMAL_FONT "arcadefont.png"
 alias B_MEDIUM_FONT B_NORMAL_FONT
 sfont B_BIG_FONT "bigfont.png"
-#sfont B_COUNTER_FONT "counterfont.png" 2
+//sfont B_COUNTER_FONT "counterfont.png" 2
 
 
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 message "Loading special FX graphics"
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 path "fx"
-#sprites B_NOISE "noise.png" 256 1
-#sprites B_HITNOISE "hitnoise.png" 256 1
+//sprites B_NOISE "noise.png" 256 1
+//sprites B_HITNOISE "hitnoise.png" 256 1
 image B_FOCUSFX "gridfx3.png"
 sprites B_SHIELDFX "shieldfx3.png" 32 32 CENTER

@@ -25,7 +25,7 @@
 #define	_GFXENGINE_H_
 
 #define GFX_BANKS	256
-#define GFX_PALETTES	8
+#define GFX_PALETTES	32
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,6 +112,8 @@ class gfxengine_t
 	void brightness(float bright, float contr);
 	int load_palette(unsigned pal, const char *path);
 	uint32_t palette(unsigned pal, unsigned ind);
+	void set_palette(unsigned pal, unsigned ind, uint32_t color);
+	unsigned palette_size(unsigned pal);
 
 	int loadimage(int bank, const char *name);
 	int loadtiles(int bank, int w, int h, const char *name);

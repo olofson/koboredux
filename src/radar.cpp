@@ -39,10 +39,6 @@ KOBO_radar_map::KOBO_radar_map(gfxengine_t *e) : window_t(e)
 {
 	w = MAP_SIZEX;
 	h = MAP_SIZEY;
-	pixel_core = 0;
-	pixel_launcher = 0;
-	pixel_hard = 0;
-	pixel_bg = 0;
 }
 
 
@@ -53,15 +49,15 @@ void KOBO_radar_map::update(int x, int y, int draw_space)
 	{
 		if(!draw_space)
 			return;
-		foreground(pixel_bg);
+		foreground(colors[KOBO_RC_BACKGROUND]);
 	}
 	else if(a & CORE)
-		foreground(pixel_core);
+		foreground(colors[KOBO_RC_CORE]);
 	else if((a == U_MASK) || (a == R_MASK) || (a == D_MASK) ||
 			(a == L_MASK))
-		foreground(pixel_launcher);
+		foreground(colors[KOBO_RC_NODE]);
 	else if(a & HIT_MASK)
-		foreground(pixel_hard);
+		foreground(colors[KOBO_RC_BASE]);
 	point(x, y);
 }
 
@@ -136,8 +132,12 @@ void KOBO_radar_window::refresh(SDL_Rect *r)
 		else
 			blit(0, 0, wmap);
 		int t = SDL_GetTicks();
-		foreground(map_rgb(engine->palette(KOBO_P_MAIN,
-				28 + t / 100 % 8)));
+		// NOTE:
+		//	This is not the wmap window, so there is at least a
+		//	theoretical possibility that wmap->colors[] is mapped
+		//	for a different pixel format!
+		foreground(map_rgb(engine->palette(KOBO_P_RADAR,
+				KOBO_RC_PLAYER0 + t / 100 % 8)));
 		point((xpos - pxoffs) & (MAP_SIZEX - 1),
 				(ypos - pyoffs) & (MAP_SIZEY - 1));
 		break;
@@ -149,11 +149,9 @@ void KOBO_radar_window::mode(KOBO_radar_modes newmode)
 {
 	if(newmode == RM__REINIT)
 		newmode = _mode;
-	wmap->pixel_core = map_rgb(engine->palette(KOBO_P_MAIN, 29));
-	wmap->pixel_hard = map_rgb(engine->palette(KOBO_P_MAIN, 33));
-	wmap->pixel_launcher = map_rgb(engine->palette(KOBO_P_MAIN, 31));
-	wmap->pixel_bg = map_rgb(engine->palette(KOBO_P_MAIN, 0));
-	wmap->background(wmap->pixel_bg);
+	for(int i = 0; i < KOBO_RC__COUNT; ++i)
+		wmap->colors[i] = map_rgb(engine->palette(KOBO_P_RADAR, i));
+	wmap->background(wmap->colors[KOBO_RC_BACKGROUND]);
 	_mode = newmode;
 	time = SDL_GetTicks();
 	wmap->invalidate();

@@ -43,14 +43,12 @@ KOBO_Starfield::~KOBO_Starfield()
 
 void KOBO_Starfield::init_colors(unsigned pal)
 {
-	const char entries[] = {
-		1,	52,	51,	2,
-		47,	3,	46,	4
-	};
-	for(int i = 0; i < STAR_COLORS; ++i)
-		colors[STAR_COLORS - i - 1] = target->map_rgb(
-				target->get_engine()->palette(pal,
-				entries[i]));
+	ncolors = target->get_engine()->palette_size(pal);
+	if(ncolors > MAX_STAR_COLORS)
+		ncolors = MAX_STAR_COLORS;
+	for(unsigned i = 0; i < ncolors; ++i)
+		colors[ncolors - i - 1] = target->map_rgb(
+				target->get_engine()->palette(pal, i));
 }
 
 
@@ -155,7 +153,7 @@ void KOBO_Starfield::render(int xo, int yo)
 		y += yc;
 
 		// Plot!
-		target->foreground(colors[iz * STAR_COLORS >> 16]);
+		target->foreground(colors[iz * ncolors >> 16]);
 		target->fillrect_fxp(x, y, 256, 256);
 	}
 }

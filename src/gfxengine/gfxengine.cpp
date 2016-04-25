@@ -635,6 +635,7 @@ int gfxengine_t::load_palette(unsigned pal, const char *path)
 	return (palettes[pal] != NULL);
 }
 
+
 uint32_t gfxengine_t::palette(unsigned pal, unsigned ind)
 {
 	if(pal >= GFX_PALETTES)
@@ -642,6 +643,28 @@ uint32_t gfxengine_t::palette(unsigned pal, unsigned ind)
 	if(!palettes[pal])
 		return 0;
 	return gfx_palette_get(palettes[pal], ind);
+}
+
+
+void gfxengine_t::set_palette(unsigned pal, unsigned ind, uint32_t color)
+{
+	if(pal >= GFX_PALETTES)
+		return;
+	if(!palettes[pal])
+		palettes[pal] = gfx_palette_new(ind + 1);
+	if(!palettes[pal])
+		return;
+	gfx_palette_set(palettes[pal], ind, color);
+}
+
+
+unsigned gfxengine_t::palette_size(unsigned pal)
+{
+	if(pal >= GFX_PALETTES)
+		return 0;
+	if(!palettes[pal])
+		return 0;
+	return palettes[pal]->nentries;
 }
 
 

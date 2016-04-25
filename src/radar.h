@@ -36,15 +36,29 @@ enum KOBO_radar_modes
 	RM_INFO		// Scrolling info display
 };
 
+enum KOBO_radar_colors
+{
+	KOBO_RC_BACKGROUND = 0,
+	KOBO_RC_BASE,
+	KOBO_RC_NODE,
+	KOBO_RC_CORE,
+	KOBO_RC_PLAYER0,
+	KOBO_RC_PLAYER1,
+	KOBO_RC_PLAYER2,
+	KOBO_RC_PLAYER3,
+	KOBO_RC_PLAYER4,
+	KOBO_RC_PLAYER5,
+	KOBO_RC_PLAYER6,
+	KOBO_RC_PLAYER7,
+	KOBO_RC__COUNT
+};
+
 // The off-screen map window
 class KOBO_radar_map : public window_t
 {
   public:
 	int w, h;			//Map size (tiles)
-	Uint32 pixel_core;		//Pixel colors
-	Uint32 pixel_launcher;
-	Uint32 pixel_hard;
-	Uint32 pixel_bg;
+	Uint32 colors[KOBO_RC__COUNT];	//Pixel colors
 	KOBO_radar_map(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
 	void update(int x, int y, int draw_space);	//Update one tile

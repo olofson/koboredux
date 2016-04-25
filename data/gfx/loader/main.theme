@@ -2,13 +2,18 @@ message "Olofson Arcade Loader Theme for Kobo Redux"
 message "Copyright 2016 David Olofson"
 message "CC BY-ND 4.0 (http://creativecommons.org/licenses/by-nd/4.0/)"
 
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 message "Loading loading screen graphics"
-#------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 palette P_LOADER "DO64-0.24.gpl"
+palette P_LOADER_NOISE P_LOADER 0 1 35 53 33 54 32 55
+palette P_LOADER_STARS P_LOADER 1 52 51 2 47 3 46 4
+palette P_PROGRESS_BAR P_LOADER 52 51 50
+
 image B_OALOGO "olofsonarcade-do64-ovl.png" CENTER
 image B_OAPLANET "oaplanet-pcb.png" 2 ABSSCALE SCALE2X
+
 sfont B_LOADER_FONT "loaderfont.png"
 alias B_SMALL_FONT B_LOADER_FONT FALLBACK
 alias B_NORMAL_FONT B_LOADER_FONT FALLBACK

@@ -140,7 +140,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		wplanet->set_source(B_OAPLANET, 0);
 		wplanet->set_dither(SPINPLANET_DITHER_RAW, 0, 0);
 		wplanet->set_mode(SPINPLANET_SPIN);
-		jingelstars.set_target(this, KOBO_P_LOADER);
+		jingelstars.set_target(this, KOBO_P_LOADER_STARS);
 		jingelstars.init(1000, 100, psize);
 		break;
 	  default:
@@ -196,12 +196,9 @@ void dashboard_window_t::render_progress()
 {
 	int x, y, w, h;
 	Uint32 colors[3];
-	const char entries[] = {
-		52,	51,	50
-	};
 	for(int i = 0; i < 3; ++i)
-		colors[i] = map_rgb(get_engine()->palette(KOBO_P_LOADER,
-				entries[i]));
+		colors[i] = map_rgb(get_engine()->palette(KOBO_P_PROGRESS_BAR,
+				i));
 
 	x = 0;
 	w = (int)(_percent * 0.01f * width() + 0.5f);
@@ -252,20 +249,13 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 		break;
 	  case DASHBOARD_NOISE:
 	  {
-		const char entries[] = {
-			0,	1,	35,	53,
-			33,	54,	32,	55
-		};
-		int c = entries[0];
+		int c = 0;
 		for(int y = 0; y < height(); ++y)
 		{
 			if(!pubrand.get(2))
-			{
-				int ci = pubrand.get(3) * _fade + 0.5f;
-				c = entries[ci];
-			}
-			foreground(map_rgb(get_engine()->palette(KOBO_P_LOADER,
-					c)));
+				c = pubrand.get(3) * _fade + 0.5f;
+			foreground(map_rgb(get_engine()->palette(
+					KOBO_P_LOADER_NOISE, c)));
 			fillrect(0, y, width(), 1);
 		}
 		break;

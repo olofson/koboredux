@@ -38,6 +38,7 @@ enum KOBO_TP_Tokens
 	KTK_FLAG,	// iv = flag bit mask
 	KTK_STRING,	// sv = nul terminated string
 	KTK_NUMBER,	// rv = value
+	KTK_HEXCOLOR,	// iv = value (NOTE: Unsigned!)
 
 	KTK_KW_MESSAGE,
 	KTK_KW_IMAGE,
@@ -52,7 +53,7 @@ enum KOBO_TP_Tokens
 
 class KOBO_ThemeParser
 {
-	char *buffer;
+	const char *buffer;
 	int bufsize;
 	int pos;
 	int unlex_pos;
@@ -103,6 +104,7 @@ class KOBO_ThemeParser
 		  case KTK_FLAG:	return "FLAG";
 		  case KTK_STRING:	return "STRING";
 		  case KTK_NUMBER:	return "NUMBER";
+		  case KTK_HEXCOLOR:	return "HEXCOLOR";
 		  case KTK_KW_MESSAGE:	return "KW_MESSAGE";
 		  case KTK_KW_IMAGE:	return "KW_IMAGE";
 		  case KTK_KW_SPRITES:	return "KW_SPRITES";
@@ -118,6 +120,7 @@ class KOBO_ThemeParser
 	void skip_white();
 	void skip_to_eoln();
 	KOBO_TP_Tokens lex_number();
+	KOBO_TP_Tokens lex_hexcolor();
 	KOBO_TP_Tokens lex_string();
 	KOBO_TP_Tokens lex_symbol();
 	KOBO_TP_Tokens lex();
@@ -131,14 +134,19 @@ class KOBO_ThemeParser
 	KOBO_TP_Tokens handle_sprites();
 	KOBO_TP_Tokens handle_sfont();
 	KOBO_TP_Tokens handle_palette();
+	KOBO_TP_Tokens handle_palette_gpl(int pal);
+	KOBO_TP_Tokens handle_palette_hex(int pal);
+	KOBO_TP_Tokens handle_palette_index(int pal, int source);
 	KOBO_TP_Tokens handle_fallback();
 	KOBO_TP_Tokens handle_path();
 	KOBO_TP_Tokens handle_alias();
 	KOBO_TP_Tokens parse_line();
+	void init(int flags);
 	KOBO_TP_Tokens parse_theme(const char *scriptpath, int flags = 0);
   public:
 	KOBO_ThemeParser();
-	bool load_theme(const char *themepath, int flags = 0);
+	bool parse(const char *theme, int flags = 0);
+	bool load(const char *themepath, int flags = 0);
 };
 
 #endif // _KOBO_THEMEPARSER_H_

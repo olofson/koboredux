@@ -970,6 +970,7 @@ void KOBO_main::noiseburst()
 int KOBO_main::load_palette()
 {
 	// Hardwired fallback palette, to use before a theme has been loaded
+	KOBO_ThemeParser tp;
 	const char *fn;
 	if(!(fn = fmap->get("GFX>>redux/DO64-0.24.gpl")))
 	{
@@ -982,6 +983,7 @@ int KOBO_main::load_palette()
 		log_printf(ELOG, "Couldn't load fallback palette!\n");
 		return -2;
 	}
+	tp.parse("palette P_LOADER_NOISE P_LOADER 0 1 35 53 33 54 32 55");
 	return 0;
 }
 
@@ -994,7 +996,7 @@ int KOBO_main::load_graphics()
 	gengine->mark_tiles(prefs->show_tiles);
 
 	// Load the Olofson Arcade Loader graphics theme
-	if(!tp.load_theme(KOBO_LOADER_GFX_THEME))
+	if(!tp.load(KOBO_LOADER_GFX_THEME))
 		log_printf(WLOG, "Couldn't load loader graphics theme!\n");
 
 	wdash->show_progress();
@@ -1002,16 +1004,16 @@ int KOBO_main::load_graphics()
 	// Try to load fallback graphics theme, if forced. (Normally, an
 	// incomplete theme should do this itself using 'fallback'!)
 	if(prefs->force_fallback_gfxtheme &&
-			!tp.load_theme(KOBO_FALLBACK_GFX_THEME))
+			!tp.load(KOBO_FALLBACK_GFX_THEME))
 		log_printf(WLOG, "Couldn't load fallback graphics theme!\n");
 
 	// Try to load custom or default graphics theme
-	if(!tp.load_theme(prefs->gfxtheme[0] ? prefs->gfxtheme :
+	if(!tp.load(prefs->gfxtheme[0] ? prefs->gfxtheme :
 			KOBO_DEFAULT_GFX_THEME))
 		log_printf(WLOG, "Couldn't load graphics theme!\n");
 
 	// Try to load graphics theme for authoring tools
-	if(!tp.load_theme(prefs->toolstheme[0] ? prefs->toolstheme :
+	if(!tp.load(prefs->toolstheme[0] ? prefs->toolstheme :
 			KOBO_DEFAULT_TOOLS_THEME))
 		log_printf(WLOG, "Couldn't load tools graphics theme!\n");
 

@@ -167,6 +167,31 @@ enum KOBO_gfxbanks
 extern const char *kobo_gfxbanknames[];
 
 
+#define KOBO_ALLPALETTES		\
+	KOBO_DEFS(LOADER)		\
+	KOBO_DEFS(LOADER_NOISE)		\
+	KOBO_DEFS(LOADER_STARS)		\
+	KOBO_DEFS(PROGRESS_BAR)		\
+	KOBO_DEFS(MAIN)			\
+	KOBO_DEFS(MAIN_STARS)		\
+	KOBO_DEFS(RADAR)		\
+	KOBO_DEFS(PLANET_R1)		\
+	KOBO_DEFS(PLANET_R2)		\
+	KOBO_DEFS(PLANET_R3)		\
+	KOBO_DEFS(PLANET_R4)		\
+	KOBO_DEFS(PLANET_R5)
+
+#define	KOBO_DEFS(x)	KOBO_P_##x,
+enum KOBO_Palettes
+{
+	KOBO_ALLPALETTES
+	KOBO_P__COUNT
+};
+#undef	KOBO_DEFS
+
+extern const char *kobo_palettenames[];
+
+
 enum KOBO_GfxDescFlags
 {
 	// Clamping/wrapping options for filters
@@ -186,14 +211,6 @@ enum KOBO_GfxDescFlags
 	KOBO_NOBRIGHT =		0x0400,	// Disable brightness/contrast filter
 	KOBO_FALLBACK =		0x1000,	// Disable "in use" overwrite warning
 	KOBO_FUTURE =		0x2000	// Allow alias to (still) empty banks
-};
-
-
-// NOTE: tp_keywords[] in themeparser.cpp needs to cover these!
-enum KOBO_Palettes
-{
-	KOBO_P_LOADER,
-	KOBO_P_MAIN
 };
 
 #endif // _KOBO_GRAPHICS_H_

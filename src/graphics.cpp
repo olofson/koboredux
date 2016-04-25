@@ -28,3 +28,11 @@ const char *kobo_gfxbanknames[] =
 	KOBO_ALLGFXBANKS
 };
 #undef	KOBO_DEFS
+
+
+#define	KOBO_DEFS(x)	"P_" #x,
+const char *kobo_palettenames[] =
+{
+	KOBO_ALLPALETTES
+};
+#undef	KOBO_DEFS

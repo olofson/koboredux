@@ -46,7 +46,7 @@ trivially, at least), but we don't really need that here anyway.
 
 #include "window.h"
 
-#define	STAR_COLORS	8
+#define	MAX_STAR_COLORS	256
 
 struct KOBO_Star
 {
@@ -64,7 +64,8 @@ class KOBO_Starfield
 	int pivot;
 	int nstars;
 	KOBO_Star *stars;
-	Uint32 colors[STAR_COLORS];
+	unsigned ncolors;
+	Uint32 colors[MAX_STAR_COLORS];
 	int oxo, oyo;
 	void init_colors(unsigned pal);
   public:

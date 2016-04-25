@@ -2,7 +2,7 @@
 ----------------------------------------------------------------------
 	palette.h - GIMP .gpl palette loader
 ----------------------------------------------------------------------
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015, 2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -33,8 +33,11 @@ typedef struct GFX_palette {
 	uint32_t	*entries;
 } GFX_palette;
 
+GFX_palette *gfx_palette_new(unsigned initsize);
 GFX_palette *gfx_palette_parse(const char *data);
 GFX_palette *gfx_palette_load(const char *path);
+
+void gfx_palette_set(GFX_palette *p, unsigned i, uint32_t color);
 
 static inline uint32_t gfx_palette_get(GFX_palette *p, unsigned i)
 {

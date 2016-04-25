@@ -114,7 +114,7 @@ class spinplanet_t : public stream_window_t
 	virtual ~spinplanet_t();
 	void clear();
 	void set_source(int bank, int frame);
-	void set_colors(const unsigned char *c, int nc, unsigned pal);
+	void set_palette(unsigned pal);
 	void set_size(int size)			{ psize = size; }
 	void set_mode(spinplanet_modes_t md);
 	void set_dither(spinplanet_dither_t dth, int brightness, int contrast);

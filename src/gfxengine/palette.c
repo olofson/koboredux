@@ -2,7 +2,7 @@
 ----------------------------------------------------------------------
 	palette.c - GIMP .gpl palette loader
 ----------------------------------------------------------------------
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015, 2016 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -26,6 +26,24 @@
 #include <string.h>
 
 
+GFX_palette *gfx_palette_new(unsigned initsize)
+{
+	GFX_palette *p = (GFX_palette *)calloc(1, sizeof(GFX_palette));
+	if(!p)
+		return NULL;
+
+	p->nentries = initsize;
+	p->entries = (uint32_t *)calloc(p->nentries, sizeof(uint32_t));
+	if(!p->entries)
+	{
+		free(p);
+		return NULL;
+	}
+
+	return p;
+}
+
+
 /* Find 'tk' in 's'. Return NULL if a NUL terminator is found instead. */
 static const char *read_until(const char *s, char tk)
 {
@@ -36,7 +54,6 @@ static const char *read_until(const char *s, char tk)
 			++s;
 	return s;
 }
-
 
 static const char *parse_header(GFX_palette *p, const char *s)
 {
@@ -87,29 +104,22 @@ GFX_palette *gfx_palette_parse(const char *data)
 {
 	int i;
 	const char *s;
-	GFX_palette *p = (GFX_palette *)calloc(1, sizeof(GFX_palette));
-	if(!p)
-		return NULL;
+	GFX_palette *p;
 
 	/* Count lines and allocate space for the entries */
 	s = data;
+	i = 0;
 	while((s = read_until(s, 10)))
 	{
-		++p->nentries;
+		++i;
 		++s;
 	}
-	if(p->nentries <= 4)
-	{
-		free(p);
+	if(i <= 4)
 		return NULL;
-	}
-	p->nentries -= 4;
-	p->entries = (uint32_t *)calloc(p->nentries, sizeof(uint32_t));
-	if(!p->entries)
-	{
-		free(p);
+	i -= 4;
+	p = gfx_palette_new(i);
+	if(!p)
 		return NULL;
-	}
 
 	if(!(s = parse_header(p, data)))
 	{
@@ -169,6 +179,27 @@ GFX_palette *gfx_palette_load(const char *path)
 
 	free(buf);
 	return p;
+}
+
+
+void gfx_palette_set(GFX_palette *p, unsigned i, uint32_t color)
+{
+	if(i >= p->nentries)
+	{
+		int j;
+		uint32_t *ne = (uint32_t *)realloc(p->entries,
+				(i + 1) * sizeof(uint32_t));
+		if(!ne)
+		{
+			fprintf(stderr, "Palette reallocation failed!\n");
+			return;
+		}
+		p->entries = ne;
+		for(j = p->nentries; j < i; ++j)
+			p->entries[j] = 0;
+		p->nentries = i + 1;
+	}
+	p->entries[i] = color;
 }
 
 

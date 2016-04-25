@@ -138,7 +138,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_number()
 			return KTK_ERROR;
 		}
 		int c = bufget();
-		if(is_white(c) || (c == '\n'))
+		if(is_white(c) || (c == '\n') || !c)
 		{
 			bufunget();
 			break;
@@ -155,6 +155,71 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_number()
 	sv[p++] = 0;
 	rv = atof(sv);
 	return KTK_NUMBER;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::lex_hexcolor()
+{
+	int i = 0;
+	iv = 0;
+	while(1)
+	{
+		int c = bufget();
+		if(is_white(c) || (c == '\n') || !c)
+		{
+			bufunget();
+			break;
+		}
+		if(is_num(c))
+		{
+			iv <<= 4;
+			iv += c - '0';
+			++i;
+			continue;
+		}
+		if((c >= 'a') && (c <= 'f'))
+		{
+			iv <<= 4;
+			iv += c - 'a' + 10;
+			++i;
+			continue;
+		}
+		if((c >= 'A') && (c <= 'F'))
+		{
+			iv <<= 4;
+			iv += c - 'A' + 10;
+			++i;
+			continue;
+		}
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] Unexpected token '%c'\n", c);
+		return KTK_ERROR;
+	}
+	switch(i)
+	{
+	  case 3:
+	  case 4:
+	  {
+		// #RGB, #ARGB - Convert from 4 bit/channel to 8 bit/channel.
+		int a = ((iv >> 12) & 0xf) * 0x11;
+		int r = ((iv >> 8) & 0xf) * 0x11;
+		int g = ((iv >> 4) & 0xf) * 0x11;
+		int b = (iv & 0xf) * 0x11;
+		iv = (a << 24) | (r << 16) | (g << 8) | b;
+		break;
+	  }
+	  case 6:
+	  case 8:
+		// #RRGGBB, #AARRGGBB - No conversion needed!
+		break;
+	  default:
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] Invalid hex color code! "
+				"Expected 3, 4, 6, or 8 digits.\n");
+		return KTK_ERROR;
+	}
+fprintf(stderr, "#%x\n", iv);
+	return KTK_HEXCOLOR;
 }
 
 
@@ -219,9 +284,6 @@ static TP_keywords tp_keywords[] =
 	{ "FALLBACK",		KTK_FLAG,	KOBO_FALLBACK		},
 	{ "FUTURE",		KTK_FLAG,	KOBO_FUTURE		},
 
-	{ "P_LOADER",		KTK_PALETTE,	KOBO_P_LOADER	},
-	{ "P_MAIN",		KTK_PALETTE,	KOBO_P_MAIN	},
-
 	{ NULL, KTK_EOF, 0 }
 };
 
@@ -239,7 +301,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_symbol()
 			return KTK_ERROR;
 		}
 		int c = bufget();
-		if(is_white(c) || (c == '\n'))
+		if(is_white(c) || (c == '\n') || !c)
 		{
 			bufunget();
 			break;
@@ -276,6 +338,14 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_symbol()
 			return KTK_BANK;
 		}
 
+	// Palettes
+	for(int i = 0; i < KOBO_P__COUNT; ++i)
+		if(strcmp(kobo_palettenames[i], sv) == 0)
+		{
+			iv = i;
+			return KTK_PALETTE;
+		}
+
 	char *s = strdup(sv);
 	dump_line();
 	log_printf(ELOG, "[Theme Loader] Unknown symbol '%s'!\n", s);
@@ -295,6 +365,15 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex()
 	  case '\n':
 		return KTK_EOLN;
 	  case '#':
+		return lex_hexcolor();
+	  case '/':
+		c = bufget(); 
+		if(c != '/')
+		{
+			log_printf(ELOG, "[Theme Loader] Expected \"//\" - "
+					" not \"/%c\"\n", c);
+			return KTK_ERROR;
+		}
 		skip_to_eoln();
 		return KTK_EOLN;
 	  case '.':
@@ -373,7 +452,6 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_message()
 	if(!expect(KTK_STRING))
 		return KTK_ERROR;
 	wdash->doing(sv);
-	wdash->progress((float)pos / bufsize);
 	log_printf(ULOG, "[Theme Loader] === %s\n", sv);
 	return KTK_KW_MESSAGE;
 }
@@ -513,7 +591,6 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_image()
 	if(flags & KOBO_CENTER)
 		gengine->set_hotspot(bank, -1, b->w / 2, b->h / 2);
 
-	wdash->progress((float)pos / bufsize);
 	return KTK_KW_IMAGE;
 }
 
@@ -594,7 +671,6 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sprites()
 	if(flags & KOBO_CENTER)
 		gengine->set_hotspot(bank, -1, b->w / 2, b->h / 2);
 
-	wdash->progress((float)pos / bufsize);
 	return KTK_KW_SPRITES;
 }
 
@@ -664,19 +740,12 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_sfont()
 
 	b->userflags = flags;
 
-	wdash->progress((float)pos / bufsize);
 	return KTK_KW_SFONT;
 }
 
 
-KOBO_TP_Tokens KOBO_ThemeParser::handle_palette()
+KOBO_TP_Tokens KOBO_ThemeParser::handle_palette_gpl(int pal)
 {
-	if(!expect(KTK_PALETTE))
-		return KTK_ERROR;
-	int pal = iv;
-
-	if(!expect(KTK_STRING))
-		return KTK_ERROR;
 	const char *fn;
 	if(!(fn = fullpath(sv)))
 	{
@@ -700,8 +769,87 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_palette()
 		return KTK_ERROR;
 	}
 
-	wdash->progress((float)pos / bufsize);
 	return KTK_KW_PALETTE;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::handle_palette_hex(int pal)
+{
+	log_printf(ULOG, "[Theme Loader] palette %d #...\n", pal);
+	for(int i = 0; ; ++i)
+	{
+		KOBO_TP_Tokens tk = lex();
+		switch(tk)
+		{
+		  case KTK_EOLN:
+		  case KTK_EOF:
+			return KTK_KW_PALETTE;
+		  case KTK_HEXCOLOR:
+			gengine->set_palette(pal, i, iv);
+			break;
+		  default:
+			dump_line();
+			log_printf(ELOG, "[Theme Loader] Expected hex color "
+					" code - not '%s'!\n", token_name(tk));
+			return KTK_ERROR;
+		}
+	}
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::handle_palette_index(int pal, int source)
+{
+	log_printf(ULOG, "[Theme Loader] palette %d %d ...\n", pal, source);
+	for(int i = 0; ; ++i)
+	{
+		KOBO_TP_Tokens tk = lex();
+		switch(tk)
+		{
+		  case KTK_EOLN:
+		  case KTK_EOF:
+			if(i)
+				return KTK_KW_PALETTE;
+			// No entries! Make a full clone of 'source'.
+			for(i = gengine->palette_size(source) - 1; i >= 0; --i)
+				gengine->set_palette(pal, i, gengine->palette(
+						source, i));
+			return KTK_KW_PALETTE;
+		  case KTK_NUMBER:
+			gengine->set_palette(pal, i, gengine->palette(source,
+					(uint32_t)rv));
+			break;
+		  default:
+			dump_line();
+			log_printf(ELOG, "[Theme Loader] Expected color index "
+					"- not '%s'!\n", token_name(tk));
+			return KTK_ERROR;
+		}
+	}
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::handle_palette()
+{
+	if(!expect(KTK_PALETTE))
+		return KTK_ERROR;
+	int pal = iv;
+
+	switch(KOBO_TP_Tokens tk = lex())
+	{
+	  case KTK_STRING:
+		return handle_palette_gpl(pal);
+	  case KTK_HEXCOLOR:
+		unlex();
+		return handle_palette_hex(pal);
+	  case KTK_PALETTE:
+		return handle_palette_index(pal, iv);
+	  default:
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] Expected palette file path, "
+				"hex color codes, or another palette - not "
+				"token '%s'!\n", token_name(tk));
+		return KTK_ERROR;
+	}
 }
 
 
@@ -714,14 +862,13 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_fallback()
 	log_printf(ULOG, "[Theme Loader] fallback \"%s\"\n", s);
 
 	KOBO_ThemeParser tp;
-	if(!tp.load_theme(s, KOBO_FALLBACK))
+	if(!tp.load(s, KOBO_FALLBACK))
 	{
 		dump_line();
 		log_printf(WLOG, "[Theme Loader] Couldn't load fallback "
 				"graphics theme \"%s\"!\n", s);
 	}
 
-	wdash->progress((float)pos / bufsize);
 	free(s);
 	return KTK_KW_FALLBACK;
 }
@@ -733,7 +880,6 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_path()
 		return KTK_ERROR;
 	strncpy(path, sv, sizeof(path));
 	log_printf(ULOG, "[Theme Loader] path \"%s\"\n", path);
-	wdash->progress((float)pos / bufsize);
 	return KTK_KW_PATH;
 }
 
@@ -776,7 +922,6 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_alias()
 	}
 	b->userflags = flags;
 
-	wdash->progress((float)pos / bufsize);
 	return KTK_KW_PATH;
 }
 
@@ -814,6 +959,18 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 }
 
 
+void KOBO_ThemeParser::init(int flags)
+{
+	basepath[0] = 0;
+	path[0] = 0;
+	pos = 0;
+	sv[0] = 0;
+	rv = 0.0f;
+	unlex_pos = -1;
+	default_flags = flags;
+}
+
+
 KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 {
 	char *sp = (char *)get_path(scriptpath);
@@ -828,13 +985,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 	// further extensive use of get_path()...
 	sp = strdup(sp);
 
-	basepath[0] = 0;
-	path[0] = 0;
-	pos = 0;
-	sv[0] = 0;
-	rv = 0.0f;
-	unlex_pos = -1;
-	default_flags = flags;
+	init(flags);
 
 	log_printf(ULOG, "[Theme Loader] Loading \"%s\"...\n", sp);
 
@@ -858,12 +1009,12 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 		return KTK_ERROR;
 	}
 	fseek(f, 0, SEEK_SET);
-	size_t sz = fread(buffer, bufsize, 1, f);
+	size_t sz = fread((char *)buffer, bufsize, 1, f);
 	if(sz < 0)
 	{
 		log_printf(ELOG, "[Theme Loader] Couldn't read \"%s\"!\n", sp);
 		fclose(f);
-		free(buffer);
+		free((char *)buffer);
 		free(sp);
 		return KTK_ERROR;
 	}
@@ -882,15 +1033,35 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 	// Parse theme file
 	KOBO_TP_Tokens res;
 	while((res = parse_line()) > KTK_EOF)
-		;
+		wdash->progress((float)pos / bufsize);
 
-	free(buffer);
+	free((char *)buffer);
 	free(sp);
 	return KTK_EOF;
 }
 
 
-bool KOBO_ThemeParser::load_theme(const char *themepath, int flags)
+bool KOBO_ThemeParser::parse(const char *theme, int flags)
+{
+	init(flags);
+	buffer = theme;
+	bufsize = strlen(theme);
+	log_printf(ULOG, "[Theme Loader] Parsing string \"%.40s\"...\n",
+			theme);
+	KOBO_TP_Tokens res;
+	while((res = parse_line()) > KTK_EOF)
+		wdash->progress((float)pos / bufsize);
+	if(res != KTK_ERROR)
+		log_printf(ULOG, "[Theme Loader] String \"%.40s\" parsed!\n",
+				theme);
+	else
+		log_printf(ULOG, "[Theme Loader] String parse of \"%.40s\" "
+				"failed!\n", theme);
+	return (res != KTK_ERROR);
+}
+
+
+bool KOBO_ThemeParser::load(const char *themepath, int flags)
 {
 	char p[KOBO_TP_MAXLEN];
 	char *tp = strdup(themepath);

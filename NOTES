@@ -2,6 +2,17 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* Chop the long tail off the "mono" boomerangs!
+
+* Blue outline on the "mono" shield effect!
+
+* Add "Theme Default" spinplanet dither mode, and let themes specify the
+  preferred dither mode.
+	* Smart handling of incompatible dither modes...?
+
+
+
+
 * table TableID [Values...] [Flags...]
 	* Use for color LUTs, window rects etc etc...
 	* Register named flags with each TableID?
