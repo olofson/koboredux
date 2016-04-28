@@ -169,4 +169,4 @@ path "fx"
 sprites B_NOISE "noise.png" 256 1
 sprites B_HITNOISE "hitnoise.png" 256 1
 image B_FOCUSFX "gridfx.png"
-sprites B_SHIELDFX "shieldfx.png" 32 32 CENTER
+sprites B_SHIELDFX "shieldfx3.png" 32 32 CENTER
