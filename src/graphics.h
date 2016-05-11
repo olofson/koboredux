@@ -192,6 +192,34 @@ enum KOBO_Palettes
 extern const char *kobo_palettenames[];
 
 
+enum KOBO_LogoEffects
+{
+	KOBO_LOGO_FX_SLIDE = 0,
+	KOBO_LOGO_FX_FADE,
+	KOBO_LOGO_FX_ZOOM
+};
+
+
+#define KOBO_ALLTDITEMS			\
+	KOBO_DEFS(LOGO_EFFECT)		\
+	KOBO_DEFS(BACKDROP_COLORMOD)	\
+	KOBO_DEFS(PLANET_DITHERMODE)	\
+	KOBO_DEFS(PLANET_COLORMOD)	\
+	KOBO_DEFS(PLANET_BRIGHTNESS)	\
+	KOBO_DEFS(PLANET_CONTRAST)	\
+	KOBO_DEFS(BASES_COLORMOD)
+
+#define	KOBO_DEFS(x)	KOBO_D_##x,
+enum KOBO_TD_Items
+{
+	KOBO_ALLTDITEMS
+	KOBO_D__COUNT
+};
+#undef	KOBO_DEFS
+
+extern const char *kobo_datanames[];
+
+
 enum KOBO_GfxDescFlags
 {
 	// Clamping/wrapping options for filters

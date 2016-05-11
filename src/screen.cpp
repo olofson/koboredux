@@ -159,26 +159,33 @@ void KOBO_screen::title(int t, float fade, int mode)
 	if(!s || !s->texture)
 		return;
 
-#if 1
-	float mf = (1.0f - fade);
-	float ly = mf * mf * mf * WMAIN_H - 0.5f;
-	if(ly < 0.0f)
-		ly = 0.0f;
-	woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
-			(int)((woverlay->height()  / 2 - (128 - 20) - ly) *
-					256.0f),
-			B_LOGO, 0);
-#elif 1
-	woverlay->alphamod(fade * fade * fade * 255.0f);
-	woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
-			PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
-			B_LOGO, 0);
-	woverlay->alphamod(255);
-#else
-	woverlay->sprite_fxp_scale(PIXEL2CS(woverlay->width() - 320) / 2,
-			PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
-			B_LOGO, 0, 1.0f, fade);
-#endif
+	switch((KOBO_LogoEffects)themedata.get(KOBO_D_LOGO_EFFECT))
+	{
+	  case KOBO_LOGO_FX_SLIDE:
+	  {
+		float mf = (1.0f - fade);
+		float ly = mf * mf * mf * WMAIN_H - 0.5f;
+		if(ly < 0.0f)
+			ly = 0.0f;
+		woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
+				(int)((woverlay->height()  / 2 -
+				(128 - 20) - ly) * 256.0f), B_LOGO, 0);
+		break;
+	  }
+	  case KOBO_LOGO_FX_FADE:
+		woverlay->alphamod(fade * fade * fade * 255.0f);
+		woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
+				PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
+				B_LOGO, 0);
+		woverlay->alphamod(255);
+		break;
+	  case KOBO_LOGO_FX_ZOOM:
+		woverlay->sprite_fxp_scale(
+				PIXEL2CS(woverlay->width() - 320) / 2,
+				PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
+				B_LOGO, 0, 1.0f, fade);
+		break;
+	}
 
 	if(fade > 0.9)
 	{
@@ -566,6 +573,8 @@ void KOBO_screen::init_scene(int sc)
 {
 	wplanet->resetmod();
 	wplanet->blendmode(GFX_BLENDMODE_ALPHA);
+	int cm = 255.0f * themedata.get(KOBO_D_PLANET_COLORMOD, level - 1);
+	wplanet->colormod(cm, cm, cm);
 	if(sc < 0)
 	{
 		// Intro mode
@@ -586,8 +595,6 @@ void KOBO_screen::init_scene(int sc)
 			scene_num = -(sc + 1) % scene_max;
 			restarts = -(sc + 1) / scene_max;
 		}
-		wplanet->colormod(128, 128, 128);
-		wmain->colormod(128, 128, 128);
 	}
 	else
 	{
@@ -596,8 +603,6 @@ void KOBO_screen::init_scene(int sc)
 		scene_num = sc % scene_max;
 		restarts = sc / scene_max;
 		radar_mode = RM_RADAR;
-		wplanet->colormod(128, 128, 128);
-		wmain->colormod(255, 255, 255);
 	}
 	region = scene_num / 10 % 5;
 	level = scene_num % 10 + 1;
@@ -920,12 +925,19 @@ void KOBO_screen::init_background()
 		wplanet->set_size(psize);
 		wplanet->set_source(B_R1_PLANET + region, 0);
 		wplanet->set_palette(KOBO_P_PLANET_R1 + region);
-		wplanet->set_dither((spinplanet_dither_t)prefs->planetdither,
-				level * 2 - 95, -100 - level * 2);
+		spinplanet_dither_t dth = (prefs->planetdither >= 0) ?
+				(spinplanet_dither_t)prefs->planetdither :
+				(spinplanet_dither_t)themedata.get(
+				KOBO_D_PLANET_DITHERMODE);
+		wplanet->set_dither(dth, themedata.get(
+				KOBO_D_PLANET_BRIGHTNESS, level - 1),
+				themedata.get(KOBO_D_PLANET_CONTRAST,
+				level - 1));
 	}
 
 	wbackdrop->resetmod();
-	wbackdrop->colormod(128, 128, 128);
+	int cm = 255.0f * themedata.get(KOBO_D_BACKDROP_COLORMOD, level - 1);
+	wbackdrop->colormod(cm, cm, cm);
 	if(backdrop)
 	{
 		wbackdrop->image(backdrop);
@@ -1007,6 +1019,8 @@ void KOBO_screen::render_bases(KOBO_map &map, int tileset, int vx, int vy)
 
 void KOBO_screen::render_background()
 {
+	int cm;
+
 	if(do_noise && (noise_fade >= 1.0f))
 		return;
 
@@ -1032,11 +1046,12 @@ void KOBO_screen::render_background()
 
 	// Render parallax level (upcoming) bases
 	wmain->resetmod();
-	wmain->colormod(128, 128, 128);	// HalfBrite!
 	for(int m = KOBO_BG_MAP_LEVELS - 1; m >= 0; --m)
 	{
 		if(level + m >= 10)
 			continue;
+		cm = 255.0f * themedata.get(KOBO_D_BASES_COLORMOD, m);
+		wmain->colormod(cm, cm, cm);
 		int tiles = region;
 		if(bg_altitude > 100)
 			switch(m)
@@ -1060,10 +1075,8 @@ void KOBO_screen::render_background()
 	}
 
 	// Render the bases of the current level
-	if(show_title)
-		wmain->colormod(128, 128, 128);
-	else
-		wmain->colormod(255, 255, 255);
+	cm = 255.0f * themedata.get(KOBO_D_BASES_COLORMOD, show_title ? 3 : 2);
+	wmain->colormod(cm, cm, cm);
 	render_bases(map, B_R1_TILES + region, vx, vy);
 }
 

@@ -69,6 +69,7 @@
 	Singletons
 ----------------------------------------------------------*/
 KOBO_sound		sound;
+KOBO_ThemeData		themedata;
 
 
 /*----------------------------------------------------------
@@ -970,7 +971,7 @@ void KOBO_main::noiseburst()
 int KOBO_main::load_palette()
 {
 	// Hardwired fallback palette, to use before a theme has been loaded
-	KOBO_ThemeParser tp;
+	KOBO_ThemeParser tp(themedata);
 	const char *fn;
 	if(!(fn = fmap->get("GFX>>redux/DO64-0.24.gpl")))
 	{
@@ -990,7 +991,7 @@ int KOBO_main::load_palette()
 
 int KOBO_main::load_graphics()
 {
-	KOBO_ThemeParser tp;
+	KOBO_ThemeParser tp(themedata);
 
 	gengine->reset_filters();
 	gengine->mark_tiles(prefs->show_tiles);

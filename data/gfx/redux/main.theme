@@ -22,6 +22,17 @@ palette P_PLANET_R4 P_PLANET_R1
 palette P_PLANET_R5 P_PLANET_R1
 palette P_RADAR P_MAIN 0 33 31 29   28 29 30 31 32 33 34 35
 
+// Title logo effect
+set D_LOGO_EFFECT LOGO_FX_SLIDE
+
+// Rendering parameters
+set D_BACKDROP_COLORMOD .5
+set D_PLANET_DITHERMODE NOISE
+set D_PLANET_COLORMOD .5
+set D_PLANET_BRIGHTNESS	-93  -91  -89  -87  -85  -83  -81
+set D_PLANET_CONTRAST	-102 -104 -106 -108 -110 -112 -114
+set D_BASES_COLORMOD	.5 .5 1 .5	// far/near/current/current_title
+
 // Space backdrop
 path ""
 image B_SPACE "space-test-2.png"

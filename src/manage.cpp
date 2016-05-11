@@ -92,8 +92,6 @@ void _manage::run_noise()
 			noise_timer = 0;
 		screen.noise(noise_timer);
 		float t = (float)noise_timer / noise_duration;
-		wmain->background(wmain->map_rgb(wmain->fadergb(0xff0000,
-				(int)(t * noise_level * 64))));
 		screen.set_noise(B_HITNOISE, t * noise_level,
 				t * noise_level, 0.0f);
 		return;
@@ -106,11 +104,8 @@ void _manage::run_noise()
 			noise_timer = 0;
 		float t = (float)noise_timer / noise_duration;
 		float a = t * 2.0f * M_PI;
-		wmain->background(wmain->map_rgb(wmain->fadergb(0x00ff99,
-				(int)(sin(a * 0.5f) * 0.3f * 64))));
 		screen.set_noise(B_NOISE, 1.0f - t,
-				sin(a * 0.5f) * 0.3f,
-				0.3f + t * 0.5f);
+				sin(a * 0.5f) * 0.3f, 0.3f + t * 0.5f);
 		return;
 	}
 

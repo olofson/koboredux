@@ -28,8 +28,105 @@
 #include <string.h>
 
 
-KOBO_ThemeParser::KOBO_ThemeParser()
+  /////////////////////////////////////////////////////////////////////////////
+ //	Keywords and constants
+/////////////////////////////////////////////////////////////////////////////
+
+struct TP_keywords
 {
+	const char	*kw;
+	KOBO_TP_Tokens	token;
+	int		value;
+};
+
+
+static TP_keywords tp_keywords[] =
+{
+	{ "message",	KTK_KW_MESSAGE,		0	},
+	{ "image",	KTK_KW_IMAGE,		0	},
+	{ "sprites",	KTK_KW_SPRITES,		0	},
+	{ "sfont",	KTK_KW_SFONT,		0	},
+	{ "palette",	KTK_KW_PALETTE,		0	},
+	{ "fallback",	KTK_KW_FALLBACK,	0	},
+	{ "path",	KTK_KW_PATH,		0	},
+	{ "alias",	KTK_KW_ALIAS,		0	},
+	{ "set",	KTK_KW_SET,		0	},
+
+	{ "CLAMP",		KTK_FLAG,	KOBO_CLAMP		},
+	{ "CLAMP_OPAQUE",	KTK_FLAG,	KOBO_CLAMP_OPAQUE	},
+	{ "WRAP",		KTK_FLAG,	KOBO_WRAP		},
+	{ "ABSSCALE",		KTK_FLAG,	KOBO_ABSSCALE		},
+	{ "NEAREST",		KTK_FLAG,	KOBO_NEAREST		},
+	{ "BILINEAR",		KTK_FLAG,	KOBO_BILINEAR		},
+	{ "SCALE2X",		KTK_FLAG,	KOBO_SCALE2X		},
+	{ "NOALPHA",		KTK_FLAG,	KOBO_NOALPHA		},
+	{ "CENTER",		KTK_FLAG,	KOBO_CENTER		},
+	{ "NOBRIGHT",		KTK_FLAG,	KOBO_NOBRIGHT		},
+	{ "FALLBACK",		KTK_FLAG,	KOBO_FALLBACK		},
+	{ "FUTURE",		KTK_FLAG,	KOBO_FUTURE		},
+
+	{ "RAW",	KTK_NUMBER,	SPINPLANET_DITHER_RAW		},
+	{ "NONE",	KTK_NUMBER,	SPINPLANET_DITHER_NONE		},
+	{ "RANDOM",	KTK_NUMBER,	SPINPLANET_DITHER_RANDOM	},
+	{ "ORDERED",	KTK_NUMBER,	SPINPLANET_DITHER_ORDERED	},
+	{ "SKEWED",	KTK_NUMBER,	SPINPLANET_DITHER_SKEWED	},
+	{ "NOISE",	KTK_NUMBER,	SPINPLANET_DITHER_NOISE		},
+	{ "TEMPORAL2",	KTK_NUMBER,	SPINPLANET_DITHER_TEMPORAL2	},
+	{ "TEMPORAL4",	KTK_NUMBER,	SPINPLANET_DITHER_TEMPORAL4	},
+	{ "TRUECOLOR",	KTK_NUMBER,	SPINPLANET_DITHER_TRUECOLOR	},
+
+	{ "LOGO_FX_SLIDE",	KTK_NUMBER,	KOBO_LOGO_FX_SLIDE	},
+	{ "LOGO_FX_FADE",	KTK_NUMBER,	KOBO_LOGO_FX_FADE	},
+	{ "LOGO_FX_ZOOM",	KTK_NUMBER,	KOBO_LOGO_FX_ZOOM	},
+
+	{ NULL, KTK_EOF, 0 }
+};
+
+
+  /////////////////////////////////////////////////////////////////////////////
+ //	KOBO_ThemeData
+/////////////////////////////////////////////////////////////////////////////
+
+
+KOBO_ThemeData::KOBO_ThemeData()
+{
+	memset(sizes, 0, sizeof(sizes));
+	memset(items, 0, sizeof(items));
+}
+
+
+KOBO_ThemeData::~KOBO_ThemeData()
+{
+	for(int i = 0; i < KOBO_D__COUNT; ++i)
+		free(items[i]);
+}
+
+
+bool KOBO_ThemeData::set(KOBO_TD_Items item, unsigned index, double value)
+{
+	if(index >= sizes[item])
+	{
+		double *ni = (double *)realloc(items[item],
+				(index + 1) * sizeof(double));
+		if(!ni)
+			return false;
+		items[item] = ni;
+		for(unsigned i = sizes[item]; i < index; ++i)
+			items[item][i] = 0.0f;
+		sizes[item] = index + 1;
+	}
+	items[item][index] = value;
+	return true;
+}
+
+
+  /////////////////////////////////////////////////////////////////////////////
+ //	KOBO_ThemeParser
+/////////////////////////////////////////////////////////////////////////////
+
+KOBO_ThemeParser::KOBO_ThemeParser(KOBO_ThemeData &td)
+{
+	themedata = &td;
 }
 
 
@@ -252,42 +349,6 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_string()
 }
 
 
-struct TP_keywords
-{
-	const char	*kw;
-	KOBO_TP_Tokens	token;
-	int		value;
-};
-
-
-static TP_keywords tp_keywords[] =
-{
-	{ "message",	KTK_KW_MESSAGE,		0	},
-	{ "image",	KTK_KW_IMAGE,		0	},
-	{ "sprites",	KTK_KW_SPRITES,		0	},
-	{ "sfont",	KTK_KW_SFONT,		0	},
-	{ "palette",	KTK_KW_PALETTE,		0	},
-	{ "fallback",	KTK_KW_FALLBACK,	0	},
-	{ "path",	KTK_KW_PATH,		0	},
-	{ "alias",	KTK_KW_ALIAS,		0	},
-
-	{ "CLAMP",		KTK_FLAG,	KOBO_CLAMP		},
-	{ "CLAMP_OPAQUE",	KTK_FLAG,	KOBO_CLAMP_OPAQUE	},
-	{ "WRAP",		KTK_FLAG,	KOBO_WRAP		},
-	{ "ABSSCALE",		KTK_FLAG,	KOBO_ABSSCALE		},
-	{ "NEAREST",		KTK_FLAG,	KOBO_NEAREST		},
-	{ "BILINEAR",		KTK_FLAG,	KOBO_BILINEAR		},
-	{ "SCALE2X",		KTK_FLAG,	KOBO_SCALE2X		},
-	{ "NOALPHA",		KTK_FLAG,	KOBO_NOALPHA		},
-	{ "CENTER",		KTK_FLAG,	KOBO_CENTER		},
-	{ "NOBRIGHT",		KTK_FLAG,	KOBO_NOBRIGHT		},
-	{ "FALLBACK",		KTK_FLAG,	KOBO_FALLBACK		},
-	{ "FUTURE",		KTK_FLAG,	KOBO_FUTURE		},
-
-	{ NULL, KTK_EOF, 0 }
-};
-
-
 KOBO_TP_Tokens KOBO_ThemeParser::lex_symbol()
 {
 	int p = 0;
@@ -326,7 +387,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_symbol()
 	for(int i = 0; tp_keywords[i].kw; ++i)
 		if(strcmp(tp_keywords[i].kw, sv) == 0)
 		{
-			iv = tp_keywords[i].value;
+			rv = iv = tp_keywords[i].value;
 			return tp_keywords[i].token;
 		}
 
@@ -344,6 +405,14 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_symbol()
 		{
 			iv = i;
 			return KTK_PALETTE;
+		}
+
+	// ThemeData items (values/arrays)
+	for(int i = 0; i < KOBO_D__COUNT; ++i)
+		if(strcmp(kobo_datanames[i], sv) == 0)
+		{
+			iv = i;
+			return KTK_THEMEDATA;
 		}
 
 	char *s = strdup(sv);
@@ -861,7 +930,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_fallback()
 
 	log_printf(ULOG, "[Theme Loader] fallback \"%s\"\n", s);
 
-	KOBO_ThemeParser tp;
+	KOBO_ThemeParser tp(*themedata);
 	if(!tp.load(s, KOBO_FALLBACK))
 	{
 		dump_line();
@@ -926,6 +995,41 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_alias()
 }
 
 
+KOBO_TP_Tokens KOBO_ThemeParser::handle_set()
+{
+	if(!expect(KTK_THEMEDATA))
+		return KTK_ERROR;
+	int td = iv;
+	log_printf(ULOG, "[Theme Loader] set %s ...\n", kobo_datanames[td]);
+	for(int i = 0; ; ++i)
+	{
+		KOBO_TP_Tokens tk = lex();
+		switch(tk)
+		{
+		  case KTK_EOLN:
+		  case KTK_EOF:
+			if(!i)
+			{
+				dump_line();
+				log_printf(ELOG, "[Theme Loader] Expected at "
+						" least one value!\n");
+				return KTK_ERROR;
+			}
+			return KTK_KW_SET;
+		  case KTK_NUMBER:
+			themedata->set((KOBO_TD_Items)td, i, rv);
+			break;
+		  default:
+			dump_line();
+			log_printf(ELOG, "[Theme Loader] Expected color index "
+					"- not '%s'!\n", token_name(tk));
+			return KTK_ERROR;
+		}
+	}
+	return KTK_KW_SET;
+}
+
+
 KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 {
 	switch(KOBO_TP_Tokens tk = lex())
@@ -950,6 +1054,8 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 		return handle_path();
 	  case KTK_KW_ALIAS:
 		return handle_alias();
+	  case KTK_KW_SET:
+		return handle_set();
 	  default:
 		dump_line();
 		log_printf(ELOG, "[Theme Loader] Unexpected token '%s'!\n",

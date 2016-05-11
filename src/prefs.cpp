@@ -96,7 +96,7 @@ void prefs_t::init()
 	yesno("alpha", alpha, 1); desc("Use Alpha Blending");
 	key("brightness", brightness, 100); desc("Brightness");
 	key("contrast", contrast, 100); desc("Contrast");
-	key("planetdither", planetdither, 5); desc("Planet Dither Style");
+	key("planetdither", planetdither, -1); desc("Planet Dither Style");
 
 	section("Debug");
 	yesno("debug", debug, 0); desc("Enable Debug Features");

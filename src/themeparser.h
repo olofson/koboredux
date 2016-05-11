@@ -27,6 +27,29 @@
 #define	KOBO_TP_MAXLEN	256
 
 
+class KOBO_ThemeData
+{
+	unsigned sizes[KOBO_D__COUNT];
+	double *items[KOBO_D__COUNT];
+  public:
+	KOBO_ThemeData();
+	~KOBO_ThemeData();
+	bool set(KOBO_TD_Items item, unsigned index, double value);
+	bool set(KOBO_TD_Items item, double value)
+	{
+		return set(item, 0, value);
+	}
+	double get(KOBO_TD_Items item, unsigned index = 0)
+	{
+		if(!sizes[item])
+			return 0.0f;
+		if(index >= sizes[item])
+			index = sizes[item] - 1;
+		return items[item][index];
+	}
+};
+
+
 enum KOBO_TP_Tokens
 {
 	KTK_ERROR = -1,
@@ -39,6 +62,7 @@ enum KOBO_TP_Tokens
 	KTK_STRING,	// sv = nul terminated string
 	KTK_NUMBER,	// rv = value
 	KTK_HEXCOLOR,	// iv = value (NOTE: Unsigned!)
+	KTK_THEMEDATA,	// iv = ThemeData item index
 
 	KTK_KW_MESSAGE,
 	KTK_KW_IMAGE,
@@ -47,12 +71,14 @@ enum KOBO_TP_Tokens
 	KTK_KW_PALETTE,
 	KTK_KW_FALLBACK,
 	KTK_KW_PATH,
-	KTK_KW_ALIAS
+	KTK_KW_ALIAS,
+	KTK_KW_SET
 };
 
 
 class KOBO_ThemeParser
 {
+	KOBO_ThemeData *themedata;
 	const char *buffer;
 	int bufsize;
 	int pos;
@@ -105,6 +131,7 @@ class KOBO_ThemeParser
 		  case KTK_STRING:	return "STRING";
 		  case KTK_NUMBER:	return "NUMBER";
 		  case KTK_HEXCOLOR:	return "HEXCOLOR";
+		  case KTK_THEMEDATA:	return "THEMEDATA";
 		  case KTK_KW_MESSAGE:	return "KW_MESSAGE";
 		  case KTK_KW_IMAGE:	return "KW_IMAGE";
 		  case KTK_KW_SPRITES:	return "KW_SPRITES";
@@ -113,6 +140,7 @@ class KOBO_ThemeParser
 		  case KTK_KW_FALLBACK:	return "KW_FALLBACK";
 		  case KTK_KW_PATH:	return "KW_PATH";
 		  case KTK_KW_ALIAS:	return "KW_ALIAS";
+		  case KTK_KW_SET:	return "KW_SET";
 		}
 		return "<unknown>";
 	}
@@ -140,11 +168,12 @@ class KOBO_ThemeParser
 	KOBO_TP_Tokens handle_fallback();
 	KOBO_TP_Tokens handle_path();
 	KOBO_TP_Tokens handle_alias();
+	KOBO_TP_Tokens handle_set();
 	KOBO_TP_Tokens parse_line();
 	void init(int flags);
 	KOBO_TP_Tokens parse_theme(const char *scriptpath, int flags = 0);
   public:
-	KOBO_ThemeParser();
+	KOBO_ThemeParser(KOBO_ThemeData &td);
 	bool parse(const char *theme, int flags = 0);
 	bool load(const char *themepath, int flags = 0);
 };

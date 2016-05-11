@@ -33,6 +33,17 @@ palette P_PLANET_R3 P_PLANET_R1
 palette P_PLANET_R4 P_PLANET_R1
 palette P_PLANET_R5 P_PLANET_R1
 
+// Title logo effect
+set D_LOGO_EFFECT LOGO_FX_SLIDE
+
+// Rendering parameters
+set D_BACKDROP_COLORMOD .25 .25 .25 .25 .25 .25 .25	.5 .5 .5
+set D_PLANET_DITHERMODE RAW
+set D_PLANET_COLORMOD .5
+set D_PLANET_BRIGHTNESS	-93  -91  -89  -87  -85  -83  -81
+set D_PLANET_CONTRAST	-102 -104 -106 -108 -110 -112 -114
+set D_BASES_COLORMOD	1 1 1 .5	// far/near/current/current_title
+
 // KOBO_RC_(BACKGROUND BASE NODE CORE   PLAYER[0..7])
 palette P_RADAR P_MAIN 0 4 12 14   15 14 6 4 3 9 1 1
 

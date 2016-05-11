@@ -36,3 +36,10 @@ const char *kobo_palettenames[] =
 	KOBO_ALLPALETTES
 };
 #undef	KOBO_DEFS
+
+#define	KOBO_DEFS(x)	"D_" #x,
+const char *kobo_datanames[] =
+{
+	KOBO_ALLTDITEMS
+};
+#undef	KOBO_DEFS

@@ -2,17 +2,6 @@
 TODO:
 -------------------------------------------------------------------------------
 
-* Add "Theme Default" spinplanet dither mode, and let themes specify the
-  preferred dither mode.
-	* Smart handling of incompatible dither modes...?
-
-
-
-
-* table TableID [Values...] [Flags...]
-	* Use for color LUTs, window rects etc etc...
-	* Register named flags with each TableID?
-
 * Why are we using world pixels in the sound API, and not 24:8 coordinates?
 
 * cfg-all builds shared Win32 only, and won't work if MXE is installed without

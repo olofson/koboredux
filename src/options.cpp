@@ -192,6 +192,7 @@ void video_options_t::build()
 	yesno("Vertical Retrace Sync", &prf->vsync, OS_RESTART_VIDEO);
 	space();
 	list("Planet Dither Style", &prf->planetdither, OS_UPDATE_SCREEN);
+		item("Theme Default", -1);
 		item("None", SPINPLANET_DITHER_NONE);
 		item("Raw", SPINPLANET_DITHER_RAW);
 		item("Random", SPINPLANET_DITHER_RANDOM);
