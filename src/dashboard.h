@@ -57,7 +57,9 @@ class dashboard_window_t : public window_t
 	dashboard_modes_t	_mode;
 	float			_fade;
 	KOBO_Starfield		jingelstars;
+	Uint32			last_update;
 	void render_progress();
+	void update(bool force);
   public:
 	dashboard_window_t(gfxengine_t *e);
 	~dashboard_window_t();

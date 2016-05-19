@@ -80,12 +80,24 @@ dashboard_window_t::dashboard_window_t(gfxengine_t *e) : window_t(e)
 	_percent = 0.0f;
 	_mode = DASHBOARD_BLACK;
 	_fade = 1.0f;
+	last_update = SDL_GetTicks();
 }
 
 
 dashboard_window_t::~dashboard_window_t()
 {
 	free(_msg);
+}
+
+
+void dashboard_window_t::update(bool force)
+{
+	// Cap progress updates at ~60 fps, in case retrace sync is enabled!
+	if(force || SDL_TICKS_PASSED(SDL_GetTicks(), last_update + 16))
+	{
+		gengine->present();
+		last_update = SDL_GetTicks();
+	}
 }
 
 
@@ -153,7 +165,7 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	  case DASHBOARD_OFF:
 		break;
 	  default:
-		gengine->present();
+		update(true);
 		break;
 	}
 }
@@ -163,7 +175,7 @@ void dashboard_window_t::doing(const char *msg)
 {
 	free(_msg);
 	_msg = strdup(msg);
-	gengine->present();
+	update(false);
 }
 
 
@@ -181,14 +193,14 @@ void dashboard_window_t::show_progress()
 void dashboard_window_t::progress(float done)
 {
 	_percent = done * 100.0f;
-	gengine->present();
+	update(false);
 }
 
 
 void dashboard_window_t::progress_done()
 {
 	_percent = 100.0f;
-	gengine->present();
+	update(true);
 }
 
 
