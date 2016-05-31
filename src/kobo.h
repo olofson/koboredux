@@ -112,7 +112,8 @@ extern prefs_t			*prefs;
 
 extern screen_window_t		*wscreen;
 extern dashboard_window_t	*wdash;
-extern shieldbar_t		*wshield;
+extern shieldbar_t		*whealth;
+extern shieldbar_t		*wcharge;
 extern KOBO_radar_map		*wmap;
 extern KOBO_radar_window	*wradar;
 

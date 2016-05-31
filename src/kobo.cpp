@@ -81,7 +81,8 @@ kobo_gfxengine_t	*gengine = NULL;
 
 screen_window_t		*wscreen = NULL;
 dashboard_window_t	*wdash = NULL;
-shieldbar_t		*wshield = NULL;
+shieldbar_t		*whealth = NULL;
+shieldbar_t		*wcharge = NULL;
 KOBO_radar_map		*wmap = NULL;
 KOBO_radar_window	*wradar = NULL;
 
@@ -669,10 +670,15 @@ void KOBO_main::build_screen()
 	dlevel->caption("LEVEL");
 	dlevel->text("00");
 
-	// Shield bar
-	wshield->place(xoffs + WSHIELD_X, yoffs + WSHIELD_Y,
-			WSHIELD_W, WSHIELD_H);
-	wshield->set_leds(B_BLEDS);
+	// Ship health bar
+	whealth->place(xoffs + WHEALTH_X, yoffs + WHEALTH_Y,
+			WHEALTH_W, WHEALTH_H);
+	whealth->set_leds(B_BLEDS);
+
+	// Weapon charge bar
+	wcharge->place(xoffs + WCHARGE_X, yoffs + WCHARGE_Y,
+			WCHARGE_W, WCHARGE_H);
+	wcharge->set_leds(B_BLEDS);
 
 	// Scrolling backdrop
 	wbackdrop->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
@@ -875,7 +881,8 @@ int KOBO_main::init_display(prefs_t *p)
 			dh - gh - (int)(yoffs * gengine->yscale() + 0.5f));
 
 	wdash = new dashboard_window_t(gengine);
-	wshield = new shieldbar_t(gengine);
+	whealth = new shieldbar_t(gengine);
+	wcharge = new shieldbar_t(gengine);
 	wbackdrop = new backdrop_t(gengine);
 	wplanet = new spinplanet_t(gengine);
 	wmain = new engine_window_t(gengine);
@@ -936,8 +943,10 @@ void KOBO_main::close_display()
 	wplanet = NULL;
 	delete woverlay;
 	wbackdrop = NULL;
-	delete wshield;
-	wshield = NULL;
+	delete wcharge;
+	wcharge = NULL;
+	delete whealth;
+	whealth = NULL;
 	delete wdash;
 	wdash = NULL;
 	delete wscreen;

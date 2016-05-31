@@ -22,6 +22,7 @@
  */
 
 #include "kobo.h"
+#include "kobolog.h"
 #include "screen.h"
 #include "myship.h"
 #include "enemies.h"
@@ -33,6 +34,7 @@
 KOBO_myship_state KOBO_myship::_state;
 int KOBO_myship::di;
 int KOBO_myship::fdi;
+int KOBO_myship::latched_dir;
 int KOBO_myship::dframes;
 int KOBO_myship::x;
 int KOBO_myship::y;
@@ -42,6 +44,8 @@ int KOBO_myship::ax;
 int KOBO_myship::ay;
 int KOBO_myship::hitsize;
 int KOBO_myship::_health;
+int KOBO_myship::_charge;
+int KOBO_myship::fire_time;
 int KOBO_myship::health_time;
 int KOBO_myship::explo_time;
 int KOBO_myship::nose_reload_timer;
@@ -54,6 +58,7 @@ KOBO_myship::KOBO_myship()
 {
 	memset(bolts, 0, sizeof(bolts));
 	object = NULL;
+	init(true);
 }
 
 
@@ -64,7 +69,6 @@ void KOBO_myship::state(KOBO_myship_state s)
 	switch (s)
 	{
 	  case SHIP_DEAD:
-		sound.g_player_fire(false);
 		if(object)
 			gengine->free_obj(object);
 		object = NULL;
@@ -99,24 +103,30 @@ void KOBO_myship::off()
 }
 
 
-int KOBO_myship::init()
+int KOBO_myship::init(bool newship)
 {
-	nose_reload_timer = 0;
-	tail_reload_timer = 0;
-	x = PIXEL2CS(WORLD_SIZEX >> 1);
-	y = PIXEL2CS((WORLD_SIZEY >> 2) * 3);
-	vx = vy = 0;
-	ax = ay = 0;
 	di = 1;
-	state(SHIP_NORMAL);
-
 	if(s_bank_t *b = s_get_bank(gengine->get_gfx(), B_PLAYER))
 		dframes = b->max + 1;
 	else
 		dframes = 8;
 	fdi = ((di - 1) * dframes << 8) / 8;
 
-	apply_position();
+	x = PIXEL2CS(WORLD_SIZEX >> 1);
+	y = PIXEL2CS((WORLD_SIZEY >> 2) * 3);
+	vx = vy = 0;
+	ax = ay = 0;
+
+	hitsize = HIT_MYSHIP_NORMAL;
+
+	if(newship)
+	{
+		_charge = game.initial_charge;
+		_health = game.health;
+	}
+
+	fire_time = health_time = explo_time = 0;
+	nose_reload_timer = tail_reload_timer = 0;
 
 	int i;
 	for(i = 0; i < MAX_BOLTS; i++)
@@ -124,7 +134,9 @@ int KOBO_myship::init()
 			gengine->free_obj(bolts[i].object);
 	memset(bolts, 0, sizeof(bolts));
 
-	hitsize = HIT_MYSHIP_NORMAL;
+	state(SHIP_NORMAL);
+	apply_position();
+
 	return 0;
 }
 
@@ -190,11 +202,63 @@ void KOBO_myship::handle_controls()
 }
 
 
+void KOBO_myship::fire_control()
+{
+	// Weapon charge capacitor charging
+	float prevc = _charge;
+	_charge += game.charge_rate;
+	if(_charge > game.charge)
+		_charge = game.charge;
+
+	if(gamecontrol.fire())
+	{
+		if(!fire_time)
+			latched_dir = di;
+		++fire_time;
+		int fired = 0;
+		if(tail_reload_timer > 0)
+			--tail_reload_timer;
+		else
+		{
+			tail_fire();
+			fired = 1;
+		}
+		if(nose_reload_timer > 0)
+			--nose_reload_timer;
+		else
+		{
+			nose_fire();
+			fired = 1;
+		}
+		if(fired)
+		{
+			_charge -= game.bolt_drain;
+			if(_charge < 0)
+				_charge = 0;
+			sound.g_player_fire();
+		}
+	}
+	else
+	{
+		if(fire_time && (fire_time <= prefs->fire_tap_time))
+			charged_fire();
+		else if(ceil(_charge * .25f) != ceil(prevc * .25f))
+			sound.g_player_charge((float)_charge / game.charge);
+		fire_time = 0;
+		if(nose_reload_timer > 0)
+			--nose_reload_timer;
+		if(tail_reload_timer > 0)
+			--tail_reload_timer;
+	}
+}
+
+
 void KOBO_myship::move()
 {
 	int i;
 	di = gamecontrol.dir();
 
+	// Health regeneration/overcharge fade
 	if(++health_time >= game.health_fade)
 	{
 		health_time = 0;
@@ -236,6 +300,7 @@ void KOBO_myship::move()
 		explo_time = 0;
 		break;
 	  case SHIP_DEAD:
+		_charge = 0;
 		explode();
 		break;
 	}
@@ -245,33 +310,8 @@ void KOBO_myship::move()
 	y &= PIXEL2CS(WORLD_SIZEY) - 1;
 
 	// Fire control
-	if((_state != SHIP_DEAD) && (gamecontrol.fire() || prefs->always_fire))
-	{
-		int fired = 0;
-		if(tail_reload_timer > 0)
-			--tail_reload_timer;
-		else if(!tail_fire())
-			fired = 1;	// Ok!
-		else
-			fired = 2;	// Overheat!
-		if(nose_reload_timer > 0)
-			--nose_reload_timer;
-		else if(!nose_fire())
-			fired = 1;	// Ok!
-		else
-			fired = 2;	// Overheat!
-		if(fired)
-			sound.g_player_fire(true);
-	}
-	else
-	{
-		if(!gamecontrol.fire() && !prefs->always_fire)
-			sound.g_player_fire(false);
-		if(nose_reload_timer > 0)
-			--nose_reload_timer;
-		if(tail_reload_timer > 0)
-			--tail_reload_timer;
-	}
+	if(_state != SHIP_DEAD)
+		fire_control();
 
 	// Bolts
 	for(i = 0; i < MAX_BOLTS; i++)
@@ -331,7 +371,8 @@ void KOBO_myship::hit(int dmg)
 			++_health;
 	}
 	else
-		printf("INVULNERABLE: Ignored %d damage to player.\n", dmg);
+		log_printf(ULOG, "INVULNERABLE: Ignored %d damage to "
+				"player.\n", dmg);
 
 	if(dmg < game.health / 2)
 		sound.g_player_damage((float)dmg / game.health * 2.0f);
@@ -467,7 +508,8 @@ void KOBO_myship::update_position()
 #ifdef DEBUG
 	if(IS_BASE(screen.get_map(WORLD2MAPX(CS2PIXEL(x)),
 			WORLD2MAPY(CS2PIXEL(y)))))
-		printf("!!! Bounce calculation failed at (%x, %x)\n", x, y);
+		log_printf(WLOG, "Bounce calculation failed at (%x, %x)\n",
+				x, y);
 #endif
 
 	if(contact)
@@ -574,13 +616,16 @@ void KOBO_myship::render()
 }
 
 
-int KOBO_myship::shot_single(int dir, int loffset, int hoffset)
+void KOBO_myship::shot_single(int dir, int loffset, int hoffset)
 {
 	int i;
 	for(i = 0; i < MAX_BOLTS && bolts[i].state; i++)
 		;
 	if(i >= MAX_BOLTS)
-		return 1;
+	{
+		log_printf(WLOG, "Out of player bolts!\n");
+		return;
+	}
 	bolts[i].state = 1;
 	bolts[i].dir = dir;
 	int sdi = sin(M_PI * (dir - 1) / 4) * 256.0f;
@@ -598,25 +643,30 @@ int KOBO_myship::shot_single(int dir, int loffset, int hoffset)
 		cs_obj_show(bolts[i].object);
 		cs_obj_hide(bolts[i].object);
 	}
-	return 0;
 }
 
 
-int KOBO_myship::nose_fire()
+void KOBO_myship::nose_fire()
 {
-	if(shot_single(di, 14, 0))
-		return 1;
+	shot_single(di, 14, 0);
 	nose_reload_timer = game.noseloadtime;
-	return 0;
 }
 
 
-int KOBO_myship::tail_fire()
+void KOBO_myship::tail_fire()
 {
-	if(shot_single((di + 3) % 8 + 1, 12, 0))
-		return 1;
+	shot_single((di + 3) % 8 + 1, 12, 0);
 	tail_reload_timer = game.tailloadtime;
-	return 0;
+}
+
+
+void KOBO_myship::charged_fire()
+{
+	int power = _charge > game.charge_limit ? game.charge_limit : _charge;
+	_charge -= power;
+	sound.g_player_charged_fire((float)power / game.charge_limit);
+	while(power--)
+		shot_single(latched_dir, 14 + power / 5, pubrand.get(3) - 4);
 }
 
 

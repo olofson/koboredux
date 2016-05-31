@@ -124,7 +124,8 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	wbackdrop->visible(main);
 	wplanet->visible(main);
 	wmain->visible(main);
-	wshield->visible(main);
+	whealth->visible(main);
+	wcharge->visible(main);
 	wradar->visible(main);
 	dhigh->visible(score);
 	dscore->visible(score);

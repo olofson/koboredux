@@ -52,6 +52,7 @@ int _manage::game_seed;
 int _manage::scene_num;
 int _manage::score;
 float _manage::disp_health;
+float _manage::disp_charge;
 int _manage::score_changed = 1;
 int _manage::flash_score_count = 0;
 int _manage::scroll_jump = 0;
@@ -73,7 +74,8 @@ int _manage::cam_lead_yf = 0;
 
 void _manage::set_bars()
 {
-	wshield->enable(show_bars);
+	whealth->enable(show_bars);
+	wcharge->enable(show_bars);
 }
 
 
@@ -187,7 +189,8 @@ void _manage::start_game()
 
 	game.set(GAME_SINGLE, (skill_levels_t)scorefile.profile()->skill);
 
-	disp_health = 0;
+	disp_health = 0.0f;
+	disp_charge = 0.0f;
 	score = 0;
 	flash_score_count = 0;
 	gengine->period(game.speed);
@@ -241,13 +244,13 @@ void _manage::init_resources_title()
 	gamerand.init();
 	enemies.init();
 	enemies.is_intro = 1;
-	myship.init();
+	myship.init(true);
 	myship.off();
 	screen.prepare();
 	screen.generate_fixed_enemies();
 	put_info();
 	put_score();
-	put_health(1);
+	put_player_stats();
 	run_intro();
 	gengine->camfilter(0);
 	gengine->force_scroll();
@@ -272,9 +275,7 @@ void _manage::init_resources_to_play(bool newship)
 	gamerand.init();
 	game_seed = gamerand.get_seed();
 	enemies.init();
-	myship.init();
-	if(newship)
-		myship.health(game.health);
+	myship.init(newship);
 	rest_cores = screen.prepare();
 	scroll_jump = 1;
 	screen.generate_fixed_enemies();
@@ -283,7 +284,7 @@ void _manage::init_resources_to_play(bool newship)
 	gengine->camfilter(KOBO_CAM_FILTER);
 	show_bars = 1;
 	set_bars();
-	put_health(1);
+	put_player_stats();
 	myship.put();
 	gengine->scroll(myship.get_csx() - PIXEL2CS(WMAIN_W / 2),
 			myship.get_csy() - PIXEL2CS(WMAIN_H / 2));
@@ -299,7 +300,7 @@ void _manage::init_resources_to_play(bool newship)
 }
 
 
-void _manage::put_health(int force)
+void _manage::put_player_stats()
 {
 	int h = myship.health();
 	if(h > disp_health)
@@ -314,10 +315,23 @@ void _manage::put_health(int force)
 		if(disp_health < h)
 			disp_health = h;
 	}
-	wshield->value((float)disp_health / game.health);
-	wshield->marker((float)myship.regen_next() / game.health);
-	if(force)
-		wshield->invalidate();
+	whealth->value((float)disp_health / game.health);
+	whealth->marker((float)myship.regen_next() / game.health);
+
+	h = myship.charge();
+	if(h > disp_charge)
+	{
+		disp_charge += (float)game.charge * .05;
+		if(disp_charge > h)
+			disp_charge = h;
+	}
+	else if(h < disp_charge)
+	{
+		disp_charge -= (float)game.charge * .1;
+		if(disp_charge < h)
+			disp_charge = h;
+	}
+	wcharge->value((float)disp_charge / game.charge);
 }
 
 
@@ -407,7 +421,7 @@ void _manage::run_intro()
 	++hi.playtime;
 	enemies.put();
 
-	put_health();
+	put_player_stats();
 	put_score();
 
 	run_noise();
@@ -417,6 +431,7 @@ void _manage::run_intro()
 
 void _manage::update()
 {
+	put_player_stats();
 	myship.put();
 	enemies.put();
 	put_score();
@@ -467,7 +482,6 @@ void _manage::update()
 
 void _manage::run_game()
 {
-	put_health();
 	myship.move();
 	enemies.move();
 	myship.check_base_bolts();
@@ -480,7 +494,6 @@ void _manage::run()
 {
 	if(paused)
 	{
-		put_health();
 		update();
 		return;
 	}
@@ -493,7 +506,6 @@ void _manage::run()
 		run_intro();
 		break;
 	  case GS_GETREADY:
-		put_health();
 		update();
 		break;
 	  case GS_PLAYING:
@@ -530,8 +542,6 @@ void _manage::pause(bool p)
 	if(p == paused)
 		return;
 	paused = p;
-	if(paused)
-		sound.g_player_fire(false);
 }
 
 
@@ -588,7 +598,7 @@ void _manage::add_score(int sc)
 void _manage::reenter()
 {
 	screen.init_background();
-	put_health(1);
+	put_player_stats();
 	put_info();
 	put_score();
 	set_bars();

@@ -5,7 +5,7 @@
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2002 Jeremy Sheeley
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015-2016 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -70,9 +70,10 @@ class _manage
 	static int scene_num;
 	static int score;
 	static float disp_health;
+	static float disp_charge;
 	static int flash_score_count;
 	static int score_changed;
-	static void put_health(int force = 0);
+	static void put_player_stats();
 	static void put_info();
 	static void put_score();
 	static void flash_score();

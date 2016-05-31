@@ -38,7 +38,7 @@
 #define ENEMY_MAX		2048
 
 // Max number of player bolts in... space at once
-#define MAX_BOLTS		40
+#define MAX_BOLTS		150
 
 // In XKobo, WSIZE was used where VIEWLIMIT is used now; in the game logic
 // code. The original value was 224.
@@ -120,7 +120,7 @@ class game_t
 	int	top_speed;	// Maximum speed when pushing stick
 	int	cruise_speed;	// Speed with stick in neutral
 	int	max_health;	// Maximum health (boost)
-	int	health;		// Initial health
+	int	health;		// Initial/full health
 	int	regen_step;	// Health regeneration step
 	int	health_fade;	// Health fade period (logic frames/unit)
 	int	ram_damage;	// Damage player inflicts when colliding with
@@ -134,12 +134,18 @@ class game_t
 	int	bolt_range;	// Max distance player bolts can travel
 	int	noseloadtime;	// logic frames per nose shot
 	int	tailloadtime;	// logic frames per tail shot
+	int	initial_charge;	// Initial boost capacitor charge
+	int	charge;		// Initial/full charge
+	int	charge_rate;	// Boost capacitor charge rate
+	int	charge_limit;	// Maximum power of one charged shot
+	int	bolt_drain;	// Normal bolt capacitor drain
 
 	// Enemies
 	int	rock_health;
 	int	rock_damage;
 	int	core_health;
 	int	node_health;
+	int	enemy_m_health;
 	int	bomb_delay;	// Bomb trigger-to-detonation delay
 
 	game_t();

@@ -48,11 +48,12 @@ void prefs_t::init()
 	key("joystick_index", joystick_index, 0); desc("Joystick Number");
 	yesno("mouse", mouse, 0); desc("Enable Mouse");
 	key("mousemode", mousemode, MMD_CROSSHAIR); desc("Mouse Control Mode");
+	key("fire_tap_time", fire_tap_time, 2);
+			desc("Charge Release Tap Time");
 	yesno("broken_numdia", broken_numdia, 0);
 			desc("Broken NumPad Diagonals");
 	key("dia_emphasis", dia_emphasis, 1);
 			desc("Diagonals Emphasis Filter");
-	yesno("always_fire", always_fire, 0); desc("Always Fire");
 	yesno("mousecapture", mousecapture, 1); desc("In-game Mouse Capture");
 
 	section("Game");

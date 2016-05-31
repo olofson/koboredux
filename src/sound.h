@@ -136,6 +136,7 @@ class KOBO_sound
 	static void init_mixdown();
 	static bool checksound(int wid, const char *where);
 	static void update_music(bool newsong);
+	static void start_player_gun();
 
 	static inline float pref2vol(int v)
 	{
@@ -222,7 +223,9 @@ class KOBO_sound
 	static void g_play0(unsigned wid, int vol = 65536, int pitch = 60<<16);
 
 	// Various sound effects
-	static void g_player_fire(bool on);
+	static void g_player_fire();
+	static void g_player_charge(float charge);
+	static void g_player_charged_fire(float charge);
 	static void g_player_damage(float level = 1.0f);
 	static void g_player_explo_start();
 

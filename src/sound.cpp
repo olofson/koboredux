@@ -740,29 +740,51 @@ void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
 }
 
 
-void KOBO_sound::g_player_fire(bool on)
+void KOBO_sound::start_player_gun()
+{
+	if(!checksound(S_SHOT, "KOBO_sound::start_player_gun()"))
+		return;
+	gunhandle = a2_Start(state, sfx_g, sounds[S_SHOT], 0.0f,
+			(prefs->cannonloud << 14) / 6553600.0f);
+	if(gunhandle < 0)
+	{
+		log_printf(WLOG, "Couldn't start player gun sound! (%s)\n",
+				a2_ErrorString((A2_errors)-gunhandle));
+		gunhandle = 0;
+	}
+}
+
+
+void KOBO_sound::g_player_fire()
 {
 	if(!state)
 		return;
+	if(!gunhandle)
+		start_player_gun();
 	if(gunhandle)
-	{
-		if(on)
-			a2_Send(state, gunhandle, 2);
-	}
-	else if(on)
-	{
-		if(!checksound(S_SHOT, "KOBO_sound::g_player_fire()"))
-			return;
-		gunhandle = a2_Start(state, sfx_g, sounds[S_SHOT], 0.0f,
-				(prefs->cannonloud << 14) / 6553600.0f);
-		if(gunhandle < 0)
-		{
-			log_printf(WLOG, "Couldn't start player fire sound!"
-					" (%s)\n", a2_ErrorString(
-					(A2_errors)-gunhandle));
-			gunhandle = 0;
-		}
-	}
+		a2_Send(state, gunhandle, 2);
+}
+
+
+void KOBO_sound::g_player_charge(float charge)
+{
+	if(!state)
+		return;
+	if(!gunhandle)
+		start_player_gun();
+	if(gunhandle)
+		a2_Send(state, gunhandle, 3, charge);
+}
+
+
+void KOBO_sound::g_player_charged_fire(float charge)
+{
+	if(!state)
+		return;
+	if(!gunhandle)
+		start_player_gun();
+	if(gunhandle)
+		a2_Send(state, gunhandle, 4, charge);
 }
 
 

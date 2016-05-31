@@ -206,13 +206,18 @@ static inline int kobo_wrapdist(int a, int b, int w)
 
 #define WCONSOLE_X		8
 #define WCONSOLE_Y		52
-#define WCONSOLE_W		116
+#define WCONSOLE_W		104	//116
 #define WCONSOLE_H		256
 
-#define WSHIELD_X		130
-#define WSHIELD_Y		80
-#define WSHIELD_W		12
-#define WSHIELD_H		200
+#define WHEALTH_X		130
+#define WHEALTH_Y		80
+#define WHEALTH_W		12
+#define WHEALTH_H		200
+
+#define WCHARGE_X		117
+#define WCHARGE_Y		80
+#define WCHARGE_W		12
+#define WCHARGE_H		200
 
 #define WRADAR_X		504
 #define WRADAR_Y		52

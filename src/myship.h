@@ -49,12 +49,15 @@ class KOBO_myship
 	static KOBO_myship_state _state;
 	static int di;		// Direction (1: N, 2: NE, 3: W etc)
 	static int fdi;		// Filtered direction (sprite frames, 24:8)
+	static int latched_dir;	// Latched direction for charged fire
 	static int dframes;	// Number of sprite rotation frames
 	static int x, y;	// Position
 	static int vx, vy;	// Velocity
 	static int ax, ay;	// Acceleration
 	static int hitsize;
 	static int _health;
+	static int _charge;	// Weapon boost capacitor charge
+	static int fire_time;	// Frames fire button has been down
 	static int health_time;
 	static int explo_time;
 	static int nose_reload_timer;
@@ -64,9 +67,10 @@ class KOBO_myship
 	// For the gfxengine connection
 	static cs_obj_t *object;
 
-	static int shot_single(int dir, int loffset, int hoffset);
+	static void shot_single(int dir, int loffset, int hoffset);
 	static void apply_position();
 	static void explode();
+	static void fire_control();
 	static void handle_controls();
 	static void update_position();
 	static void kill_bolt(int bolt, bool impact);
@@ -94,24 +98,25 @@ class KOBO_myship
 		vx += ix;
 		vy += iy;
 	}
-	static int init();
+	static int init(bool newship);
 	static void off();
 	static void move();
 	static int put();
 	static void render();
-	static int nose_fire();
-	static int tail_fire();
+	static void nose_fire();
+	static void tail_fire();
+	static void charged_fire();
 	static int hit_bolt(int ex, int ey, int hitsize, int health);
 	static void check_base_bolts();
 	static void hit(int dmg);
 	static int health()		{ return _health; }
-	static void health(int h)	{ _health = h; }
 	static void health_bonus(int h);
 	static int regen_next()
 	{
 		return (_health + game.regen_step - 1) /
 				game.regen_step * game.regen_step;
 	}
+	static int charge()		{ return _charge; }
 	static void set_position(int px, int py);
 	static int alive()		{ return _state != SHIP_DEAD; }
 	static bool in_range(int px, int py, int range, int &dist);

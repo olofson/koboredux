@@ -1635,7 +1635,7 @@ const KOBO_enemy_kind enemy7 = {
 void KOBO_enemy::make_enemy_m1()
 {
 	di = 1;
-	health = 1000;		// Originally 26 hits
+	health = game.enemy_m_health;	// Originally 26 hits
 	c = gamerand.get() & 15;
 }
 
@@ -1684,7 +1684,7 @@ const KOBO_enemy_kind enemy_m1 = {
 void KOBO_enemy::make_enemy_m2()
 {
 	di = 1;
-	health = 1000;
+	health = game.enemy_m_health;
 	c = gamerand.get() & 15;
 }
 
@@ -1731,7 +1731,7 @@ const KOBO_enemy_kind enemy_m2 = {
 void KOBO_enemy::make_enemy_m3()
 {
 	di = 1;
-	health = 1000;
+	health = game.enemy_m_health;
 	c = gamerand.get() & 15;
 }
 
@@ -1778,7 +1778,7 @@ const KOBO_enemy_kind enemy_m3 = {
 void KOBO_enemy::make_enemy_m4()
 {
 	di = 1;
-	health = 1000;
+	health = game.enemy_m_health;
 	c = gamerand.get() & 15;
 }
 

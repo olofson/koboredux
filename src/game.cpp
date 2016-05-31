@@ -64,18 +64,25 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		noseloadtime = tailloadtime = 0;
 	else
 		noseloadtime = tailloadtime = 1;
+	initial_charge = 0;
+	charge = 100;
+	charge_rate = 1;
+	charge_limit = 50;
+	bolt_drain = 2;
+	bolt_drain = 2;
 
 	switch(skill)
 	{
 	  case SKILL_NORMAL:
 		ram_damage = 100;
 		bolt_damage = 40;
-		rock_health = 1000;
+		rock_health = 3000;
 		rock_damage = 40;
 		crash_damage = 30;
 		splash_damage_multiplier = 2;
-		core_health = 100;
+		core_health = 1000;
 		node_health = 40;
+		enemy_m_health = 3000;
 		core_destroyed_health_bonus = 25;
 		stage_cleared_health_bonus = 25;
 		bomb_delay = 10;
@@ -83,12 +90,13 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	  case SKILL_HARD:
 		ram_damage = 50;
 		bolt_damage = 30;
-		rock_health = 2000;
+		rock_health = 5000;
 		rock_damage = 60;
 		crash_damage = 40;
 		splash_damage_multiplier = 3;
-		core_health = 150;
+		core_health = 1500;
 		node_health = 50;
+		enemy_m_health = 4000;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 25;
 		bomb_delay = 5;
@@ -101,8 +109,9 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		rock_damage = 80;
 		crash_damage = 50;
 		splash_damage_multiplier = 5;
-		core_health = 200;
+		core_health = 2000;
 		node_health = 60;
+		enemy_m_health = 5000;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 10;
 		bomb_delay = 2;

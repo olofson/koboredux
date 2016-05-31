@@ -328,12 +328,38 @@ BaseRumble(P V=1 PanX)
 }
 
 
+ChargeBlipp(P V=1 PanX Charge=1)
+{
+	struct { wtosc; panmix }
+	pan PanX; vol V; set
+	a .3; w triangle; p (Charge * 2 + 1); d 2
+	5 {
+		*a .9; -p .1; d 1
+	}
+	a 0; d 15
+}
+
+FireCharged(P V=1 PanX Charge=1)
+{
+	struct { wtosc; panmix }
+	pan PanX; vol V; set
+	+tr (P - 4)
+	a (Charge + 1); set a; w triangle; p (4 + Charge)
+	20 {
+		d 5; *p .96; +p (rand .1)
+	}
+	while (a > .05) {
+		d 5; *p .98; +p (rand .01); -a .01
+	}
+	a 0; d 100
+}
+
 FirePlasma(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	+tr P
-
+	sleep
 .retrig
 	// Fire!
 	a .1; set a; w noise; p 5; d 10
@@ -359,6 +385,14 @@ FirePlasma(P V=1 PanX)
 
 	2() {
 		force retrig
+	}
+
+	3(Ch) {
+		ChargeBlipp P V PanX Ch
+	}
+
+	4(Ch) {
+		FireCharged P V PanX Ch
 	}
 }
 

@@ -406,12 +406,38 @@ export S_RUMBLE(P V=1 PanX)
 	d 100
 }
 
+ChargeBlipp(P V=1 PanX Charge=1)
+{
+	struct { wtosc; panmix }
+	pan PanX; vol V; set
+	a .2; w saw; p (Charge * 2); d 2
+	*a .5; -p .5; d 5
+	a 0; d 10
+}
+
+FireCharged(P V=1 PanX Charge=1)
+{
+	struct { wtosc; panmix }
+	pan PanX; vol V; set
+	+tr (P - 4)
+	a (Charge * .5 + .5); set a; w saw; p (5 + Charge)
+	20 {
+		d 5; *p .96; +p (rand .1)
+	}
+	while (a > .05) {
+		d 5; *p .98; +p (rand .01); -a .01
+	}
+	a 0; d 100
+}
+
 export S_SHOT(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	w saw
 	+tr P
+
+	sleep	// Hold here until we start firing!
 
 .retrig
 	@a .15
@@ -437,6 +463,14 @@ export S_SHOT(P V=1 PanX)
 
 	2() {
 		force retrig
+	}
+
+	3(Ch) {
+		ChargeBlipp P V PanX Ch
+	}
+
+	4(Ch) {
+		FireCharged P V PanX Ch
 	}
 }
 
@@ -725,6 +759,9 @@ export S_ENEMY_M1(P V=1 PanX)
 	// Damage
 	2(Dmg) {
 		damage_amount (Dmg * .5 + .5)
+		if (damage_amount > 2) {
+			damage_amount 2
+		}
 		force damage
 	}
 

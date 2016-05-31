@@ -2,6 +2,9 @@
 TODO:
 -------------------------------------------------------------------------------
 
+* Enemy M damage response sound effect needs some clamping! Goes supersonic
+  when hit by proper charged fire.
+
 * Why are we using world pixels in the sound API, and not 24:8 coordinates?
 
 * cfg-all builds shared Win32 only, and won't work if MXE is installed without
