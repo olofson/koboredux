@@ -1,11 +1,5 @@
--------------------------------------------------------------------------------
-TODO:
--------------------------------------------------------------------------------
-
-* Enemy M damage response sound effect needs some clamping! Goes supersonic
-  when hit by proper charged fire.
-
-* Why are we using world pixels in the sound API, and not 24:8 coordinates?
+BUGS
+====
 
 * cfg-all builds shared Win32 only, and won't work if MXE is installed without
   that! Detect? Try both?
@@ -24,10 +18,124 @@ TODO:
 	  timestamping. (Hack this using the new timestamping API, until we have
 	  a proper API for that.)
 
-* Maybe we should have a fixed target delay for sound effects anyway, so we
-  don't have sounds playing before animations when running on lowlatency JACK
-  setups and the like? 'tsdelay' would be the minimum allowed delay.
+* How do we create the scores dir with correct permissions with CMake?
+	* Are we even supposed to bother with this? Non-portable...
 
+
+FEATURES
+========
+
+* Maybe a bit of blur as well, when downscaling spinplanet textures...? (The
+  original texture is scaled up at load time specifically to serve as a very
+  low resolution "interpolation.")
+	* NOTE: RAW and NONE textures should not be blurred unconditionally,
+	        as that would add extra colors! (RAW ones aren't even scaled,
+	        so no problem there.)
+
+* Skewed dithering without breaking the 50% checkerboard pattern...?
+
+* 90/180/270° sprite rotation!
+
+* Implement color and alpha modulation for all window draw calls!
+
+
+
+GAMEPLAY
+========
+
+* Not sure about this whole idea of balancing the skill levels through shields
+  and damage... It just makes the harder skill levels slow and boring, as you
+  have to play defensive and attack over and over!
+	* Might not be as much of an issue with Charged Firing. Tougher enemies
+	  just call for more effective use of this new weapon!
+
+* Bosses with complex collision zones, so they need to be shot from particular
+  directions to take damage - a bit like mobile bases.
+
+* Enemy/core/... indicator subsystem:
+	* Since all objects are updated every game logic frame, it's probably
+	  most efficient if the relevant ones report to the indicators
+	  themselves.
+	* We need something to report to. Shouldn't mess directly with the LED
+	  bars from game logic code.
+
+
+ARTWORK
+=======
+
+* More contrast and/or detail in the backgrounds? More traditional hand drawn
+  pixel art style?
+
+
+REFACTORING
+===========
+
+* Why are we using world pixels in the sound API, and not 24:8 coordinates?
+
+* Maybe we should have a fixed target delay for sound effects, so we don't
+  have sounds playing before animations when running on lowlatency JACK setups
+  and the like? 'tsdelay' would be the minimum allowed delay.
+
+* We need to deal with timestamps when the game engine isn't running too!
+	* Maybe UI sound effects and the like shouldn't be timestamped anyway?
+		* Can we create a thin API state for that...?
+
+* Implement a wrapping scroll offset in stream_window_t, so we can use it for
+  the radar! Or maybe we can just use the current offscreen window like that?
+
+* Should window_t manage SDL renderer state? Probably, because the window_t
+  rendering API gives the impression of keeping state per window.
+	* Well, it pretty much does already - and there isn't much state in an
+	  SDL renderer anyway.
+
+* Remove all load time image filters?
+	* ...or just turn them into a stand-alone library operating on raw
+	  32bpp buffers or something? It's just too messy to use as it is.
+		* If we go for EEL, we just implement each theme as a script
+		  that performs all loading and processing.
+	* Actually, we're using some of them again, to preprocess the spinning
+	  planet texture, instead of storing a huge, blurry texture on disk.
+
+
+OPTIMIZATIONS
+=============
+
+* Don't lock the entire spinplanet buffer unless we need to!
+	* Resize the window? Calls for clearing the border around it.
+
+* Double buffered stream window! (For reduced spinplanet frame rate on very
+  low end hardware.)
+
+* Do we really need z coordinates for the rotating starfield? They're all
+  fixed anyway.
+
+* Double buffered stream window! (For reduced spinplanet frame rate on very
+  low end hardware.)
+
+* Do we really need z coordinates for the rotating starfield? They're all
+  fixed anyway.
+
+* Double buffered stream window! (For reduced spinplanet frame rate on very
+  low end hardware.)
+
+* Do we really need z coordinates for the rotating starfield? They're all
+  fixed anyway.
+
+* Problem with offscreen windows: They can only share textures with the screen
+  when using render targets! The software fallback renderers need their own
+  textures.
+	* Can't remember why I felt the need to comment on this, but these are
+	  the main problems:
+		* Engine managed sprites/textures won't work as is, as they all
+		  belong to the display render target.
+		* Even if the engine would support this, it would have to make
+		  copies of the textures used with each offscreen window.
+
+
+NOTES
+=====
+
+* Some handy command lines for audio engine testing:
 ./kobord -audiodriver sdl -maxfps 0 -audiobuffer 8192
 ./kobord -audiodriver sdl -maxfps 0 -audiobuffer 1024
 ./kobord -audiodriver sdl -maxfps 0 -audiobuffer 128
@@ -41,11 +149,7 @@ TODO:
 ./kobord -audiodriver sdl -maxfps 20 -audiobuffer 1024
 ./kobord -audiodriver sdl -maxfps 20 -audiobuffer 128
 
-* We need to deal with timestamps when the game engine isn't running too!
-	* Maybe UI sound effects and the like shouldn't be timestamped anyway?
-		* Can we create a thin API state for that...?
-
-* Original speeds:
+* Original XKobo speeds:
 				shift	rnd	max
 	cannon:
 		greenbullet	6	32	0
@@ -71,89 +175,13 @@ TODO:
 	enemy_m2:
 		enemy2		4	128	192
 
-* Configurable input mappings:
-	struct gc_mapentry_t
-	{
-		gc_mapentry_t	*next;
-		gc_targets_t	target;
-		SDL_Keycode	sources[];
-	};
-  However, we should cover joystick buttons and whatnot as well...
-
-* Maybe a bit of blur as well, when downscaling spinplanet textures...? (The
-  original texture is scaled up at load time specifically to serve as a very
-  low resolution "interpolation.")
-	* NOTE: RAW and NONE textures should not be blurred unconditionally,
-	        as that would add extra colors! (RAW ones aren't even scaled,
-	        so no problem there.)
-
-* More contrast and/or detail in the backgrounds? More traditional hand drawn
-  pixel art style?
-
-* Skewed dithering without breaking the 50% checkerboard pattern...?
-
-* Not sure about this whole idea of balancing the skill levels through shields
-  and damage... It just makes the harder skill levels slow and boring, as you
-  have to play defensive and attack over and over!
-
-* Don't lock the entire spinplanet buffer unless we need to!
-	* Resize the window? Calls for clearing the border around it.
-
-* Bosses with complex collision zones, so they need to be shot from particular
-  directions to take damage - a bit like mobile bases.
-
-* 90/180/270° sprite rotation!
-
-* Double buffered stream window! (For reduced spinplanet frame rate on very
-  low end hardware.)
-
-* Do we really need z coordinates for the rotating starfield? They're all
-  fixed anyway.
-
-* Implement a wrapping scroll offset in stream_window_t, so we can use it for
-  the radar! Or maybe we can just use the current offscreen window like that?
-
-* Implement offscreen windows as a subclass? Cleaner and faster, probably.
-
-* Implement color and alpha modulation for all window draw calls!
-
-* Enemy/core/... indicator subsystem:
-	* Since all objects are updated every game logic frame, it's probably
-	  most efficient if the relevant ones report to the indicators
-	  themselves.
-	* We need something to report to. Shouldn't mess directly with the LED
-	  bars from game logic code.
-
-* Should window_t manage SDL renderer state? Probably, because the window_t
-  rendering API gives the impression of keeping state per window.
-	* Well, it pretty much does already - and there isn't much state in an
-	  SDL renderer anyway.
-
-* Problem with offscreen windows: They can only share textures with the screen
-  when using render targets! The software fallback renderers need their own
-  textures.
-
-* window_t::colorkey() and window_t::alpha() need to be ported to the rendering
-  API.
-
-* Remove all load time image filters?
-	* ...or just turn them into a stand-alone library operating on raw
-	  32bpp buffers or something? It's just too messy to use as it is.
-		* If we go for EEL, we just implement each theme as a script
-		  that performs all loading and processing.
-
-Kobo DL install on Ubuntu:
+* File locations of a Kobo DL install on Ubuntu:
 	/usr/share/kobo-deluxe/
 		gfx/
 		sfx/
 	/var/games/kobo-deluxe/scores/
 
-	* How do we create the scores dir with correct permissions with CMake?
-		* Are we even supposed to bother with this? Non-portable...
-
--------------------------------------------------------------------------------
-
-MetaRetroScreenFX:
+* MetaRetroScreenFX:
 	"Retro display effects implemented on virtual retro hardware."
 	* Opaque 8 bpp monochrome "surface" object
 		* Size determined on creation
@@ -183,5 +211,3 @@ MetaRetroScreenFX:
 			* Source position (x, y)
 			* Destination (pointer to top-left pixel)
 			* Destination pitch (bytes per row)
-
--------------------------------------------------------------------------------
