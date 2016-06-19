@@ -32,10 +32,10 @@ export import "uisfx.a2s"
  // Music
 //////////////////////////////////
 
-import "k2intro.a2s" as k2i
+import "krdtitle.a2s" as krdt
 export S_TITLESONG()
 {
-	1:k2i.Song 0 1 1 0
+	1:krdt.Song 0 1 1
 	wait 1
 	1() { 1<1 }
 }

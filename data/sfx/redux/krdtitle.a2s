@@ -1,8 +1,8 @@
-def title	"Kobo II Intro + Title Song"
-def version	"1.1"
-def description	"(Slightly edited mono conversion)"
+def title	"Kobo Redux Title Song"
+def version	"1.2"
+def description	"Adapted version of the original Kobo II WIP theme."
 def author	"David Olofson"
-def copyright	"Copyright 2011-2013 David Olofson"
+def copyright	"Copyright 2011-2013, 2016 David Olofson"
 def license	"CC BY-NC-ND 3.0"
 def a2sversion	"1.9"
 
@@ -534,7 +534,8 @@ ResoOut(P V=1)
 
 EvilSyncBass(P V=1 Drive)
 {
-	struct { wtosc }
+	struct { wtosc; panmix }
+	pan .3
 	+P tr; tr 0; p P
 	*V .6
 	!per (p2d P * .5)
@@ -1011,17 +1012,34 @@ BassR()
 	kill
 }
 
-LongIntro()
+IntroDrone(P=0)
 {
-	BassI;				td 6
-	Perc1;	SoftArp -2 1;		td 32
-		SoftArp -1 .8 -1n;	td 32
+	struct { inline 0 *; panmix * > }
+	tr P
+	vol .05; set vol
+	Strings -3 1; OctStrings -3 .5; ResoIn 1; EvilSyncBass -3 .3 2
+	vol .6;							td 32
+	vol 0;							td 2
+	kill
 }
 
-ShortIntro()
+Intro()
 {
-	Perc1Fill;	td 1
-	PreTheme;	td 4
+	IntroDrone
+	Explosion -1 .7;					td 16
+	Cymbal -3 .2;						td 16
+	1<1; 2<1
+}
+
+LoopOutro(P)
+{
+	IntroDrone P
+	ResoOut; Explosion 0 .5; LowCymbal -1 .2; SoftArp2 -1 1 2n; td (32 - 5)
+}
+
+Outro()
+{
+	ResoOut; Explosion 0 .5; LowCymbal -1 .2; SoftArp2 -1 1 2n; td 32
 }
 
 Theme()
@@ -1073,48 +1091,45 @@ Inter2()
 	PreTheme;							td 4
 }
 
-Outro()
-{
-	ResoOut; Explosion 0 .5; LowCymbal -1 .2; SoftArp2 -1 1 2n; td 32
-}
-
-Main(L I)
+Main(L)
 {
 	tempo 94 4
 	!Tr0 tr; !Tr 2n
-	if I	// Intro?
-	{
-		LongIntro; td 65
-	}
-	ifz (I - 2)	// Intro only?
-	{
-		end
-	}
-.rep
-	tr (Tr0 + Tr - 2n)
-	ShortIntro;			td 5
-	Theme;				td 128
-	PostTheme;			td 128
-	Inter;				td 128
 
-	Rise;				td 16
-	+tr 4n
-	Theme;				td 128
-	PostTheme2;			td 128
-	-tr 4n
+	Intro;					td (32 - 5)
 
-	Inter2;				td 128
-	Theme;				td 128
-	PostTheme;			td 128
-	Outro;				td 32
-					td 16
-	+Tr (rand 2n quant 1n + 1n); %Tr 4n
-	if L {	// Loop?
-		jump rep
+	while L {
+		tr (Tr0 + Tr - 2n)
+
+		Perc1Fill;			td 1
+		PreTheme;			td 4
+
+		Theme;				td 128
+		PostTheme;			td 128
+		Inter;				td 128
+
+		Rise;				td 16
+		+tr 4n
+		Theme;				td 128
+		PostTheme2;			td 128
+		-tr 4n
+
+		Inter2;				td 128
+		Theme;				td 128
+		PostTheme;			td 128
+
+		if L {
+			// Determine key of next play!
+			+Tr (rand 2n quant 1n + 1n); %Tr 4n
+			LoopOutro (Tr0 + Tr - 2n);	td (32 - 5)
+		} else {
+			Outro;			td 32
+						td 16
+		}
 	}
 }
 
-export Song(P V=1 L=1 I=1)
+export Song(P V=1 L=1)
 {
 	struct {
 		inline 0 *
@@ -1128,7 +1143,7 @@ export Song(P V=1 L=1 I=1)
 	// Transposition + volume - no fade-in
 	+tr P; vol (V * .4); set vol
 
-	1:Main L I
+	1:Main L
 	wait 1
 	end
 .stop
