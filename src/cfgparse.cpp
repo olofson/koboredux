@@ -504,6 +504,19 @@ void config_parser_t::set_defaults()
 }
 
 
+bool config_parser_t::key_is_known(const char *_name)
+{
+	cfg_key_t *k = keys;
+	while(k)
+	{
+		if(k->test(_name))
+			return true;
+		k = k->next;
+	}
+	return false;
+}
+
+
 /*
  * "Uuuh, a leetle icky finite state machine parser... :-D"
  * (Actually a very nice and simple way of coding this kind
@@ -557,6 +570,7 @@ int config_parser_t::read_config(char ***cv, FILE *f)
 
 	char *v = (*cv)[0];
 	scanstate_t state = SS_BLANK;
+	bool first_word = false;
 	int arg = 1;
 	int start_arg = 0;
 	while(*v)
@@ -576,6 +590,8 @@ int config_parser_t::read_config(char ***cv, FILE *f)
 				start_arg = 1;
 				state = SS_WORD;
 			}
+			else if((*v == 10) || (*v == 13))
+				first_word = true;
 			break;
 		  case SS_QUOTE:
 			if(*v == '"')
@@ -589,6 +605,17 @@ int config_parser_t::read_config(char ***cv, FILE *f)
 			{
 				*v = 0;
 				state = SS_BLANK;
+				if(first_word && !key_is_known((*cv)[arg - 1]))
+				{
+					log_printf(WLOG, "WARNING: Ignoring "
+							"unknown key '%s'.\n",
+							(*cv)[arg - 1]);
+					// Pretend it's a comment, in order to
+					// skip to the next line!
+					state = SS_COMMENT;
+					--arg;
+				}
+				first_word = false;
 			}
 			break;
 		  case SS_COMMENT:

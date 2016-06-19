@@ -165,6 +165,7 @@ class config_parser_t
 	cfg_key_t	**table;	// For symbol table API
 	cfg_string_t	retbuf;		// For symbol table API
 	void print_switch(FILE *f, const char *base, int flag);
+	bool key_is_known(const char *_name);
 	int read_config(char ***cv, FILE *f);
 	void add(cfg_key_t *_key);
 	bool _redefined(void *var);
