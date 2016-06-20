@@ -130,10 +130,9 @@ class prefs_t : public config_parser_t
 	}
 
 	// File paths
-	cfg_string_t	dir;		//Path to root of game directory
-	cfg_string_t	gfxdir;		//Path to gfx/
-	cfg_string_t	sfxdir;		//Path to sfx/
-	cfg_string_t	scoredir;	//Path to scores/
+	cfg_string_t	data;
+	cfg_string_t	themes;
+	cfg_string_t	scores;
 
 	// "Hidden" stuff ("to remember until next startup")
 	int	last_profile;		//Last used player profile

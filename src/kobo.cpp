@@ -192,78 +192,63 @@ static void main_cleanup()
 }
 
 
+// Hardwired paths
 static void setup_dirs(char *xpath)
 {
 	fmap->exepath(xpath);
 
+	// Installed data path
 	fmap->addpath("DATA", KOBO_DATADIR);
 
-	/*
-	 * Graphics data
-	 */
-	/* Current dir; from within the build tree */
-	fmap->addpath("GFX", "./data/gfx");
-	/* Real data dir */
-	fmap->addpath("GFX", "DATA>>gfx");
-	/* Current dir */
-	fmap->addpath("GFX", "./gfx");
+	// Sound and graphics theme paths
+	fmap->addpath("THEMES", "DATA>>");	// Install data dir
+	fmap->addpath("THEMES", KOBO_USERDIR);	// User dir
+	fmap->addpath("THEMES", "./data");	// Build dir (development)
 
-	/*
-	 * Sound data
-	 */
-	/* Current dir; from within the build tree */
-	fmap->addpath("SFX", "./data/sfx");
-	/* Real data dir */
-	fmap->addpath("SFX", "DATA>>sfx");
-	/* Current dir */
-	fmap->addpath("SFX", "./sfx");
+	// Directory layout within a theme directory
+	fmap->addpath("GFX", "THEMES>>gfx");
+	fmap->addpath("SFX", "THEMES>>sfx");
 
-	/*
-	 * Score files (user and global)
-	 */
+	// Score files (user and global)
 	fmap->addpath("SCORES", KOBO_SCOREDIR);
-	/* 'scores' in current dir (For importing scores, perhaps...) */
-// (Disabled for now, since filemapper_t can't tell
-// when it hits the same dir more than once...)
-//	fmap->addpath("SCORES", "./scores");
 
-	/*
-	 * Configuration files
-	 */
-	fmap->addpath("CONFIG", KOBO_CONFIGDIR);
+	// Configuration files
+	fmap->addpath("CONFIG", KOBO_USERDIR);
 #ifdef KOBO_SYSCONFDIR
-	/* System local */
+	// System local
 	fmap->addpath("CONFIG", KOBO_SYSCONFDIR);
 #endif
-	/* In current dir (last resort) */
+	// In current dir (last resort)
 	fmap->addpath("CONFIG", "./");
 }
 
 
+// Additional paths from the config
 static void add_dirs(prefs_t *p)
 {
-	char buf[300];
-	if(p->dir[0])
+	if(p->data[0])
 	{
-		char *upath = fmap->sys2fm(p->dir);
-		snprintf(buf, 300, "%s/sfx", upath);
-		fmap->addpath("SFX", buf, 1);
-		snprintf(buf, 300, "%s/gfx", upath);
-		fmap->addpath("GFX", buf, 1);
-		snprintf(buf, 300, "%s/scores", upath);
-		fmap->addpath("SCORES", buf, 1);
-		snprintf(buf, 300, "%s", upath);
-		fmap->addpath("CONFIG", buf, 0);
+		char *pth = fmap->sys2fm(p->data);
+		log_printf(ULOG, "Adding alternate data path \"%s\" (%s)\n",
+				p->data, pth);
+		fmap->addpath("DATA", pth, 1);
 	}
 
-	if(p->sfxdir[0])
-		fmap->addpath("SFX", fmap->sys2fm(p->sfxdir), 1);
+	if(p->themes[0])
+	{
+		char *pth = fmap->sys2fm(p->themes);
+		log_printf(ULOG, "Adding alternate themes path \"%s\" (%s)\n",
+				p->themes, pth);
+		fmap->addpath("THEMES", pth, 1);
+	}
 
-	if(p->gfxdir[0])
-		fmap->addpath("GFX", fmap->sys2fm(p->gfxdir), 1);
-
-	if(p->scoredir[0])
-		fmap->addpath("SCORES", fmap->sys2fm(p->scoredir), 1);
+	if(p->scores[0])
+	{
+		char *pth = fmap->sys2fm(p->scores);
+		log_printf(ULOG, "Adding alternate scores path \"%s\" (%s)\n",
+				p->scores, pth);
+		fmap->addpath("SCORES", pth, 1);
+	}
 }
 
 
@@ -982,7 +967,7 @@ int KOBO_main::load_palette()
 	// Hardwired fallback palette, to use before a theme has been loaded
 	KOBO_ThemeParser tp(themedata);
 	const char *fn;
-	if(!(fn = fmap->get("GFX>>redux/DO64-0.24.gpl")))
+	if(!(fn = fmap->get("GFX>>loader/DO64-0.24.gpl")))
 	{
 		log_printf(ELOG, "Couldn't find fallback palette!\n");
 		return -1;
@@ -1006,6 +991,8 @@ int KOBO_main::load_graphics()
 	gengine->mark_tiles(prefs->show_tiles);
 
 	// Load the Olofson Arcade Loader graphics theme
+	log_printf(ULOG, "Loading loader graphics theme '%s'...\n",
+			KOBO_LOADER_GFX_THEME);
 	if(!tp.load(KOBO_LOADER_GFX_THEME))
 		log_printf(WLOG, "Couldn't load loader graphics theme!\n");
 
@@ -1013,18 +1000,34 @@ int KOBO_main::load_graphics()
 
 	// Try to load fallback graphics theme, if forced. (Normally, an
 	// incomplete theme should do this itself using 'fallback'!)
-	if(prefs->force_fallback_gfxtheme &&
-			!tp.load(KOBO_FALLBACK_GFX_THEME))
-		log_printf(WLOG, "Couldn't load fallback graphics theme!\n");
+	if(prefs->force_fallback_gfxtheme)
+	{
+		log_printf(ULOG, "Loading fallback graphics theme '%s' "
+				"(forced)...\n", KOBO_FALLBACK_GFX_THEME);
+		if(!tp.load(KOBO_FALLBACK_GFX_THEME))
+			log_printf(WLOG, "Couldn't load fallback graphics "
+					"theme!\n");
+	}
 
 	// Try to load custom or default graphics theme
-	if(!tp.load(prefs->gfxtheme[0] ? prefs->gfxtheme :
-			KOBO_DEFAULT_GFX_THEME))
-		log_printf(WLOG, "Couldn't load graphics theme!\n");
+	const char *th = prefs->gfxtheme[0] ? prefs->gfxtheme :
+			KOBO_DEFAULT_GFX_THEME;
+	log_printf(ULOG, "Loading graphics theme '%s'...\n", th);
+	if(!tp.load(th))
+	{
+		log_printf(WLOG, "Couldn't load graphics theme '%s'!\n", th);
+		log_printf(ULOG, "Loading fallback graphics theme '%s'...\n",
+				KOBO_FALLBACK_GFX_THEME);
+		if(!tp.load(KOBO_FALLBACK_GFX_THEME))
+			log_printf(WLOG, "Couldn't load fallback graphics "
+					"theme!\n");
+	}
 
 	// Try to load graphics theme for authoring tools
-	if(!tp.load(prefs->toolstheme[0] ? prefs->toolstheme :
-			KOBO_DEFAULT_TOOLS_THEME))
+	th = prefs->toolstheme[0] ? prefs->toolstheme :
+			KOBO_DEFAULT_TOOLS_THEME;
+	log_printf(ULOG, "Loading tools graphics theme '%s'...\n", th);
+	if(!tp.load(th))
 		log_printf(WLOG, "Couldn't load tools graphics theme!\n");
 
 	screen.init_graphics();
@@ -1062,12 +1065,32 @@ int KOBO_main::load_sounds(bool progress)
 	if(progress)
 		wdash->progress(0.33f);	// FIXME
 	if(prefs->force_fallback_sfxtheme)
-		sound.load(KOBO_SB_FALLBACK, KOBO_FALLBACK_SFX_THEME,
-				progress_cb);
+	{
+		log_printf(ULOG, "Loading fallback sfx theme '%s' "
+				"(forced)...\n", KOBO_FALLBACK_SFX_THEME);
+		if(!sound.load(KOBO_SB_FALLBACK, KOBO_FALLBACK_SFX_THEME,
+				progress_cb))
+			log_printf(ELOG, "Couldn't load fallback sfx "
+					"theme!\n");
+	}
 	if(progress)
 		wdash->progress(0.67f);	// FIXME
-	sound.load(KOBO_SB_MAIN, prefs->sfxtheme[0] ? prefs->sfxtheme :
-			KOBO_DEFAULT_SFX_THEME, progress_cb);
+	const char *th = prefs->sfxtheme[0] ? prefs->sfxtheme :
+			KOBO_DEFAULT_SFX_THEME;
+	log_printf(ULOG, "Loading sfx theme '%s'...\n", th);
+	if(!sound.load(KOBO_SB_MAIN, th, progress_cb) &&
+			!prefs->force_fallback_sfxtheme)
+	{
+		log_printf(ELOG, "Couldn't load sfx theme '%s'!\n", th);
+		// If we haven't already loaded the fallback theme, load it if
+		// loading the intended theme fails!
+		log_printf(ULOG, "Loading falback sfx theme '%s'...\n",
+				KOBO_FALLBACK_SFX_THEME);
+		if(!sound.load(KOBO_SB_FALLBACK, KOBO_FALLBACK_SFX_THEME,
+				progress_cb))
+			log_printf(ELOG, "Couldn't load fallback sfx "
+					"theme!\n");
+	}
 	if(progress)
 		wdash->progress(1.0f);	// FIXME
 	return 0;
@@ -1127,17 +1150,17 @@ void KOBO_main::close_js()
 
 void KOBO_main::load_config(prefs_t *p)
 {
-	FILE *f = fmap->fopen(KOBO_CONFIGDIR "/" KOBO_CONFIGFILE, "r");
+	FILE *f = fmap->fopen(KOBO_USERDIR "/" KOBO_CONFIGFILE, "r");
 	if(f)
 	{
-		log_puts(VLOG, "Loading personal configuration from: "\
-				KOBO_CONFIGDIR "/" KOBO_CONFIGFILE);
+		log_puts(VLOG, "Loading personal configuration from: "
+				KOBO_USERDIR "/" KOBO_CONFIGFILE);
 		p->read(f);
 		fclose(f);
 	}
-#ifdef USE_SYSCONF
+#ifdef KOBO_SYSCONFDIR
 	/*
-	 * On Unixen, where they have SYSCONF_DIR (usually /etc) try to get
+	 * On Unixen, where they have SYSCONFDIR (usually /etc) try to get
 	 * the default configuration from a file stored there before
 	 * giving up.
 	 *
@@ -1147,21 +1170,22 @@ void KOBO_main::load_config(prefs_t *p)
 	 */
 	else
 	{
+		log_puts(VLOG, "Personal configuration not found. Trying "
+				"system default-config.");
 		f = fmap->fopen(KOBO_SYSCONFDIR "/koboredux/default-config",
 				"r");
 		if(f)
 		{
-			log_puts(VLOG, "Loading configuration defaults from: "\
+			log_puts(VLOG, "Loading configuration defaults from: "
 					KOBO_SYSCONFDIR
 					"/koboredux/default-config");
 			p->read(f);
 			fclose(f);
 		}
 		else
-			log_puts(VLOG, "Using built-in configuration defaults.");
+			log_puts(VLOG, "System default-config not found. "
+					"Using built-in defaults.");
 	}
-#else
-	log_puts(VLOG, "Using built-in configuration defaults.");
 #endif
 }
 
@@ -1169,6 +1193,10 @@ void KOBO_main::load_config(prefs_t *p)
 void KOBO_main::save_config(prefs_t *p)
 {
 	FILE *f;
+#ifndef WIN32
+	// Try to create config/userdata directory, if it doesn't exist!
+	fmap->get(KOBO_USERDIR, FM_DIR_CREATE);
+#endif
 #if defined(HAVE_GETEGID) && defined(HAVE_SETGID)
 	gid_t oldgid = getegid();
 	if(setgid(getgid()) != 0)
@@ -1178,7 +1206,7 @@ void KOBO_main::save_config(prefs_t *p)
 		return;
 	}
 #endif
-	f = fmap->fopen(KOBO_CONFIGDIR "/" KOBO_CONFIGFILE, "w");
+	f = fmap->fopen(KOBO_USERDIR "/" KOBO_CONFIGFILE, "w");
 	if(f)
 	{
 		p->write(f);

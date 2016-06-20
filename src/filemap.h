@@ -119,6 +119,7 @@ class filemapper_t
 	void sys_format(char *buf);
 	int probe(const char *syspath);
 	int test_file_create(const char *syspath);
+	int test_dir_create(const char *syspath);
 	int test_file_dir_any(const char *syspath, int kind);
 	int try_get(const char *path, int kind);
 	void add_object(const char *path, int kind);
@@ -170,8 +171,7 @@ FIXME: every file inside each matching dir should be returned.
 
 	// Open/create file/dir.
 	FILE *fopen(const char *ref, const char *mode);
-	DIR *opendir(const char *ref);
-	int mkdir(const char *ref, int perm);
+	int mkdir(const char *ref);
 
 	// Print out all registered paths of class 'ref'
 	// to stream 'f'. (ref == '*') ==> All classes.

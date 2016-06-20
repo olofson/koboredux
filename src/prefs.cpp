@@ -133,10 +133,9 @@ void prefs_t::init()
 	key("cheat_speed", cheat_speed, 0.0f); desc("Cheat: Game Speed");
 
 	section("Paths");
-	key("files", dir, ""); desc("Game Root Path");
-	key("gfx", gfxdir, ""); desc("Graphics Data Path");
-	key("sfx", sfxdir, ""); desc("Sound Data Path");
-	key("scores", scoredir, ""); desc("Score File Path");
+	key("data", data, ""); desc("Alternate Data Path");
+	key("themes", themes, ""); desc("Alternate Themes Path");
+	key("scores", scores, ""); desc("Alternate Scores Path");
 
 	section("Temporary variables");
 	key("last_profile", last_profile, 0);

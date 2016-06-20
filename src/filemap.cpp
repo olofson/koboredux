@@ -377,6 +377,20 @@ int filemapper_t::test_file_create(const char *syspath)
 }
 
 
+int filemapper_t::test_dir_create(const char *syspath)
+{
+#ifdef WIN32
+	return FM_ERROR;	// Not implemented!
+#else
+	if(probe(syspath) == FM_DIR)
+		return FM_DIR;		// Already exists.
+	if(::mkdir(syspath, 0775))
+		return FM_ERROR;	// Could not create!
+	return FM_DIR_CREATE;		// Created!
+#endif
+}
+
+
 int filemapper_t::test_file_dir_any(const char *syspath, int kind)
 {
 	int res = probe(syspath);
@@ -458,6 +472,16 @@ int filemapper_t::try_get(const char *path, int kind)
 		{
 		  case FM_FILE:
 		  case FM_FILE_CREATE:
+			return 1;
+		  default:
+			break;
+		}
+		break;
+	  case FM_DIR_CREATE:
+		switch (test_dir_create(path))
+		{
+		  case FM_DIR:
+		  case FM_DIR_CREATE:
 			return 1;
 		  default:
 			break;
@@ -770,20 +794,27 @@ FILE *filemapper_t::fopen(const char *ref, const char *mode)
 }
 
 
-DIR *filemapper_t::opendir(const char *ref)
+int filemapper_t::mkdir(const char *ref)
 {
-	const char *path = get(ref, FM_DIR);
-	if(path)
-		return ::opendir(path);
-	else
-		return NULL;
-}
-
-
-int filemapper_t::mkdir(const char *ref, int perm)
-{
-	log_printf(ELOG, "filemapper_t::mkdir() not yet implemented!\n");
+#ifdef WIN32
+	log_printf(ELOG, "filemapper_t::mkdir() not implemented on this "
+			"platform!\n");
 	return -1;
+#else
+	if(get(ref, FM_DIR))
+		return 0;	// Already exists!
+	const char *path = get(ref, FM_DIR_CREATE);
+	if(!path)
+	{
+		log_printf(ELOG, "filemapper_t::mkdir() Could not create "
+				" directory \"%s\"! (%s)\n", path,
+				strerror(errno));
+		return -1;
+	}
+	log_printf(ELOG, "filemapper_t::mkdir() Created  directory \"%s\".\n",
+		path);
+	return 0;
+#endif
 }
 
 
