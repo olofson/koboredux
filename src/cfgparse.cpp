@@ -29,7 +29,7 @@
 
 #include "cfgparse.h"
 
-#define	MAX_CONFIG_LINES	1024
+#define	MAX_CONFIG_WORDS	1024
 
 
 /*----------------------------------------------------------
@@ -532,7 +532,7 @@ enum scanstate_t
 
 int config_parser_t::read_config(char ***cv, FILE *f)
 {
-	*cv = (char **)calloc(MAX_CONFIG_LINES, sizeof(char *));
+	*cv = (char **)calloc(MAX_CONFIG_WORDS, sizeof(char *));
 	if(!*cv)
 		return -1;
 
@@ -568,71 +568,83 @@ int config_parser_t::read_config(char ***cv, FILE *f)
 	}
 	(*cv)[0][len] = 0;
 
-	char *v = (*cv)[0];
 	scanstate_t state = SS_BLANK;
 	bool first_word = false;
 	int arg = 1;
-	int start_arg = 0;
+	char *v = (*cv)[0];
 	while(*v)
 	{
 		switch(state)
 		{
 		  case SS_BLANK:
+		  {
+			char *grab = NULL;
 			if(*v == '"')
 			{
-				start_arg = 1;
 				state = SS_QUOTE;
+				grab = v + 1;
 			}
 			else if(*v == '#')
 				state = SS_COMMENT;
 			else if(*v > ' ')
 			{
-				start_arg = 1;
 				state = SS_WORD;
+				grab = v;
 			}
 			else if((*v == 10) || (*v == 13))
 				first_word = true;
+			if(grab)
+			{
+				if(arg >= MAX_CONFIG_WORDS)
+				{
+					log_printf(ELOG, "ERROR: Too long "
+							"config file!\n");
+					rewind(f);
+					free(*cv);
+					*cv = NULL;
+					return -5;
+				}
+				(*cv)[arg] = grab;
+			}
 			break;
+		  }
 		  case SS_QUOTE:
 			if(*v == '"')
 			{
 				*v = 0;
+				++arg;
 				state = SS_BLANK;
 			}
 			break;
 		  case SS_WORD:
-			if(*v <= ' ')
+		  {
+			if(*v > ' ')
+				break;
+			char save = *v;
+			*v = 0;
+			if(first_word && !key_is_known((*cv)[arg]))
 			{
-				*v = 0;
-				state = SS_BLANK;
-				if(first_word && !key_is_known((*cv)[arg - 1]))
-				{
-					log_printf(WLOG, "WARNING: Ignoring "
-							"unknown key '%s'.\n",
-							(*cv)[arg - 1]);
-					// Pretend it's a comment, in order to
-					// skip to the next line!
-					state = SS_COMMENT;
-					--arg;
-				}
+				log_printf(WLOG, "WARNING: Ignoring key "
+						"'%s'.\n", (*cv)[arg]);
+				// Pretend it's a comment, in order to
+				// skip to the next line!
+				*v = save;
+				state = SS_COMMENT;
 				first_word = false;
+				continue;
 			}
+			++arg;
+			state = SS_BLANK;
+			first_word = false;
 			break;
+		  }
 		  case SS_COMMENT:
 			if((*v == 10) || (*v == 13))
-				state = SS_BLANK;
-			break;
-		}
-		if(start_arg)
-		{
-			if(arg < MAX_CONFIG_LINES)
 			{
-				if(state == SS_QUOTE)
-					(*cv)[arg++] = v+1;
-				else
-					(*cv)[arg++] = v;
+				state = SS_BLANK;
+				continue;
 			}
-			start_arg = 0;
+			break;
 		}
 		++v;
 	}
@@ -668,8 +680,9 @@ int config_parser_t::parse(int argc, char *argv[])
 				}
 				else if(grabbed < 0)
 				{
-					log_printf(ELOG, "ERROR: Too few parameters to"
-							" argument '%s'!\n",
+					log_printf(ELOG, "ERROR: Too few "
+							"parameters to "
+							"argument '%s'!\n",
 							k->name);
 					return -2;
 				}
@@ -678,8 +691,8 @@ int config_parser_t::parse(int argc, char *argv[])
 		}
 		if(!grabbed)
 		{
-			log_printf(ELOG, "ERROR: Unknown argument"
-					" '%s'!\n", argv[i]);
+			log_printf(ELOG, "ERROR: Unknown argument '%s'!\n",
+					argv[i]);
 			return -3;
 		}
 		i += grabbed;
