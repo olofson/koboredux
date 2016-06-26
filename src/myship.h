@@ -74,15 +74,6 @@ class KOBO_myship
 	static void handle_controls();
 	static void update_position();
 	static void kill_bolt(int bolt, bool impact);
-	static inline int bolt_frame(int dir, int frame)
-	{
-		const char animtab[8] = { 0, 1, 2, 3, 2, 1, 2, 1 };
-		if(frame < 4)
-			return (dir - 1) * 4 + frame;
-		else
-			return 32 + ((dir - 1) & 3) * 8 +
-					animtab[(frame - 4) & 7];
-	}
   public:
 	KOBO_myship();
 	static void state(KOBO_myship_state s);
@@ -120,6 +111,15 @@ class KOBO_myship
 	static void set_position(int px, int py);
 	static int alive()		{ return _state != SHIP_DEAD; }
 	static bool in_range(int px, int py, int range, int &dist);
+	static inline int bolt_frame(int dir, int frame)
+	{
+		const char animtab[8] = { 0, 1, 2, 3, 2, 1, 2, 1 };
+		if(frame < 4)
+			return (dir - 1) * 4 + frame;
+		else
+			return 32 + ((dir - 1) & 3) * 8 +
+					animtab[(frame - 4) & 7];
+	}
 };
 
 extern KOBO_myship myship;

@@ -361,16 +361,17 @@ void KOBO_screen::help(int t)
 		if(t > 5700)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
+		woverlay->sprite(cx, 105, B_PLAYER, 8);
 		int i;
 		int txo = t * cx / 8 / 15 % (cx / 8);
 		for(i = 0; i < 8; ++i)
 		{
-			woverlay->sprite(cx - cx * i / 8 - txo, 105,
-					B_BOLT, 16 + (t / 30 + i) % 4);
-			woverlay->sprite(cx + cx * i / 8 + txo, 105,
-					B_BOLT, 16 + (t / 30 + i) % 4);
+			int st = (cx * i / 8 + txo) / 5;
+			woverlay->sprite(cx - 12 - cx * i / 8 - txo, 105,
+					B_BOLT, myship.bolt_frame(7, st));
+			woverlay->sprite(cx + 14 + cx * i / 8 + txo, 105,
+					B_BOLT, myship.bolt_frame(3, st));
 		}
-		woverlay->sprite(cx, 105, B_PLAYER, 8);
 		woverlay->center(140,
 				"Use any SHIFT or CONTROL keys to fire.");
 	}
@@ -439,7 +440,7 @@ void KOBO_screen::help(int t)
 		woverlay->sprite(cx - 60, 120, B_ROCK1, (t / 45) % 32);
 		woverlay->sprite(cx - 20, 115, B_ROCK2, (t / 40) % 32);
 		woverlay->sprite(cx + 20, 125, B_ROCK3, (t / 35) % 32);
-		woverlay->sprite(cx + 60, 120, B_BIGSHIP, (t / 40) % 16);
+		woverlay->sprite(cx + 60, 120, B_BIGSHIP, (t / 40) % 13);
 		woverlay->center(140, "...or take many hits to destroy.");
 	}
 }
