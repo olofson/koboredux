@@ -615,6 +615,13 @@ bool filemapper_t::is_relative(const char *path)
 {
 	if(path[0] == '/')
 		return false;
+#ifdef WIN32
+	// To be entirely correct, this should also look for a directory
+	// separator after the colon, but we can't do much about paths
+	// depending on the per-drive CD anyway.
+	if(path[0] && (path[1] == ':'))
+		return false;
+#endif
 	if(strncmp(path, "~/", 2) == 0)
 		return false;
 	// "./" is not exactly absolute, but for our purposes, it has to be

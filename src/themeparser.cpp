@@ -147,8 +147,10 @@ const char *KOBO_ThemeParser::fullpath(const char *fp)
 	char tmp[KOBO_TP_MAXLEN];
 	if(!fmap->is_relative(path))
 		snprintf(tmp, sizeof(tmp), "%s/%s", path, fp);
-	else
+	else if(path[0])
 		snprintf(tmp, sizeof(tmp), "%s/%s/%s", basepath, path, fp);
+	else
+		snprintf(tmp, sizeof(tmp), "%s/%s", basepath, fp);
 	return get_path(tmp);
 }
 
@@ -1079,6 +1081,18 @@ void KOBO_ThemeParser::init(int flags)
 
 KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 {
+	log_printf(ULOG, "[Theme Loader] Loading \"%s\"...\n", scriptpath);
+
+	init(flags);
+
+	// Grab base path for relative file paths
+	strncpy(basepath, scriptpath, sizeof(basepath));
+	char *s = strrchr(basepath, '/');
+	if(s)
+		*s = 0;
+	log_printf(ULOG, "[Theme Loader] Base path: \"%s\"\n", basepath);
+
+	// See if we can actually find this theme...
 	char *sp = (char *)get_path(scriptpath);
 	if(!sp)
 	{
@@ -1086,14 +1100,11 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 				scriptpath);
 		return KTK_ERROR;
 	}
+	log_printf(ULOG, "[Theme Loader] Theme file: \"%s\"\n", sp);
 
 	// Because this might be a temporary string that may be clobbered by
 	// further extensive use of get_path()...
 	sp = strdup(sp);
-
-	init(flags);
-
-	log_printf(ULOG, "[Theme Loader] Loading \"%s\"...\n", sp);
 
 	// Load theme file
 	FILE *f = fopen(sp, "r");
@@ -1125,16 +1136,6 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 		return KTK_ERROR;
 	}
 	fclose(f);
-
-	// Grab base path for relative file paths
-	strncpy(basepath, sp, sizeof(basepath));
-	char *s = strrchr(basepath, '/');
-	if(!s)
-		s = strrchr(basepath, '\\');
-	if(s)
-		*s = 0;
-	strncpy(basepath, fmap->sys2fm(basepath), sizeof(basepath));
-	log_printf(ULOG, "[Theme Loader] Base path: \"%s\"\n", basepath);
 
 	// Parse theme file
 	KOBO_TP_Tokens res;
