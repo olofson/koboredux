@@ -1,6 +1,8 @@
 BUGS
 ====
 
+* Radar was broken by the themable layout!
+
 * cfg-all builds shared Win32 only, and won't work if MXE is installed without
   that! Detect? Try both?
 

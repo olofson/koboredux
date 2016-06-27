@@ -19,6 +19,21 @@ message "CC BY-SA 4.0 (http://creativecommons.org/licenses/by-sa/4.0/)"
 
 
 //-----------------------------------------------------------------------------
+message "Defining dashboard layout"
+//-----------------------------------------------------------------------------
+
+set D_DASH_MAIN		152	12	336	336		// x y w h
+set D_DASH_CONSOLE	8	52	104	256
+set D_DASH_HEALTH	130	80	12	200
+set D_DASH_CHARGE	117	80	12	200
+set D_DASH_RADAR	504	52	128	256
+set D_DASH_TOPLEDS	152	4	336	5
+set D_DASH_BOTTOMLEDS	152	351	336	5
+set D_DASH_LEFTLEDS	144	12	5	336
+set D_DASH_RIGHTLEDS	491	12	5	336
+
+
+//-----------------------------------------------------------------------------
 message "Loading in-game graphics"
 //-----------------------------------------------------------------------------
 

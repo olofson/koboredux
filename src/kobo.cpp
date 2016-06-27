@@ -131,15 +131,17 @@ void backdrop_t::refresh(SDL_Rect *r)
 	// Remove centering, and handle reverse scrolling
 	int vx = gengine->xoffs(LAYER_BASES);
 	int vy = gengine->yoffs(LAYER_BASES);
+	int mw = DASHW(MAIN);
+	int mh = DASHH(MAIN);
 	if(_reverse)
 	{
-		vx += PIXEL2CS(WMAIN_W / 2);
-		vy += PIXEL2CS(WMAIN_H / 2);
+		vx += PIXEL2CS(mw / 2);
+		vy += PIXEL2CS(mh / 2);
 	}
 	else
 	{
-		vx = 2 * PIXEL2CS(WORLD_SIZEX) - vx - PIXEL2CS(WMAIN_W / 2);
-		vy = 2 * PIXEL2CS(WORLD_SIZEY) - vy - PIXEL2CS(WMAIN_H / 2);
+		vx = 2 * PIXEL2CS(WORLD_SIZEX) - vx - PIXEL2CS(mw / 2);
+		vy = 2 * PIXEL2CS(WORLD_SIZEY) - vy - PIXEL2CS(mh / 2);
 	}
 
 	// If the backdrop aspect ration differs from that of the may, assume
@@ -154,8 +156,8 @@ void backdrop_t::refresh(SDL_Rect *r)
 		vx *= floor(1.0f / a);
 
 	// Scale and center so all layers align when the player is at (0, 0)
-	int xo = vx * b->w / WORLD_SIZEX + PIXEL2CS(WMAIN_W / 2);
-	int yo = vy * b->h / WORLD_SIZEY + PIXEL2CS(WMAIN_H / 2);
+	int xo = vx * b->w / WORLD_SIZEX + PIXEL2CS(mw / 2);
+	int yo = vy * b->h / WORLD_SIZEY + PIXEL2CS(mh / 2);
 	int bw = b->w << 8;
 	int bh = b->h << 8;
 	int x = xo % bw;
@@ -308,7 +310,7 @@ class KOBO_main
 	static void load_config(prefs_t *p);
 	static void save_config(prefs_t *p);
 
-	static void build_screen();
+	static void init_dash_layout();
 	static void build_soundtools();
 	static int init_display(prefs_t *p);
 	static void close_display();
@@ -623,60 +625,62 @@ int KOBO_main::open_logging(prefs_t *p)
 }
 
 
-void KOBO_main::build_screen()
+void KOBO_main::init_dash_layout()
 {
 	// Dashboard framework
 	wdash->place(xoffs, yoffs, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Console window
-	int conx = xoffs + WCONSOLE_X;
-	int cony = yoffs + WCONSOLE_Y;
-	dhigh->place(conx, cony, WCONSOLE_W, 18);
+	int conx = xoffs + DASHX(CONSOLE);
+	int cony = yoffs + DASHY(CONSOLE);
+	int conw = DASHW(CONSOLE);
+	dhigh->place(conx, cony, conw, 18);
 	dhigh->font(B_NORMAL_FONT);
 	dhigh->caption("HIGHSCORE");
 	dhigh->text("000000000");
 
-	dscore->place(conx, cony + 24, WCONSOLE_W, 18);
+	dscore->place(conx, cony + 24, conw, 18);
 	dscore->font(B_NORMAL_FONT);
 	dscore->caption("SCORE");
 	dscore->text("000000000");
 
-	dstage->place(conx, cony + 88, WCONSOLE_W / 3, 18);
+	dstage->place(conx, cony + 88, conw / 3, 18);
 	dstage->font(B_NORMAL_FONT);
 	dstage->caption("STAGE");
 	dstage->text("000");
-	dregion->place(conx + WCONSOLE_W / 3, cony + 88, WCONSOLE_W / 3, 18);
+	dregion->place(conx + conw / 3, cony + 88, conw / 3, 18);
 	dregion->font(B_NORMAL_FONT);
 	dregion->caption("REGION");
 	dregion->text("0");
-	dlevel->place(conx + 2 * WCONSOLE_W / 3, cony + 88,
-			WCONSOLE_W / 3, 18);
+	dlevel->place(conx + 2 * conw / 3, cony + 88, conw / 3, 18);
 	dlevel->font(B_NORMAL_FONT);
 	dlevel->caption("LEVEL");
 	dlevel->text("00");
 
 	// Ship health bar
-	whealth->place(xoffs + WHEALTH_X, yoffs + WHEALTH_Y,
-			WHEALTH_W, WHEALTH_H);
+	whealth->place(xoffs + DASHX(HEALTH), yoffs + DASHY(HEALTH),
+			DASHW(HEALTH), DASHH(HEALTH));
 	whealth->set_leds(B_BLEDS);
 
 	// Weapon charge bar
-	wcharge->place(xoffs + WCHARGE_X, yoffs + WCHARGE_Y,
-			WCHARGE_W, WCHARGE_H);
+	wcharge->place(xoffs + DASHX(CHARGE), yoffs + DASHY(CHARGE),
+			DASHW(CHARGE), DASHH(CHARGE));
 	wcharge->set_leds(B_BLEDS);
 
 	// Scrolling backdrop
-	wbackdrop->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
+	wbackdrop->place(xoffs + DASHX(MAIN), yoffs + DASHY(MAIN),
+			DASHW(MAIN), DASHH(MAIN));
 
-	// Spinning planet backdrop
-	wplanet->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
+	// Spinning planet backdrop (placed by dashboard_window_t::mode())
 	wplanet->track_layer(LAYER_PLANET);
 
 	// Main playfield layer
-	wmain->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
+	wmain->place(xoffs + DASHX(MAIN), yoffs + DASHY(MAIN),
+			DASHW(MAIN), DASHH(MAIN));
 
 	// Playfield overlay
-	woverlay->place(xoffs + WMAIN_X, yoffs + WMAIN_Y, WMAIN_W, WMAIN_H);
+	woverlay->place(xoffs + DASHX(MAIN), yoffs + DASHY(MAIN),
+			DASHW(MAIN), DASHH(MAIN));
 
 	// Set up the map at 1 physical pixel per tile
 	wmap->offscreen();
@@ -684,27 +688,29 @@ void KOBO_main::build_screen()
 	wmap->place(0, 0, MAP_SIZEX, MAP_SIZEY);
 
 	// Have the radar window scale up to 2x2 "native" pixels per tile
-	wradar->place(xoffs + WRADAR_X, yoffs + WRADAR_Y, WRADAR_W, WRADAR_H);
+	wradar->place(xoffs + DASHX(RADAR), yoffs + DASHY(RADAR),
+			DASHW(RADAR), DASHH(RADAR));
 	wradar->scale(-2.0f, -2.0f);
 
-	pxtop->place(xoffs + TOPLEDS_X, yoffs + TOPLEDS_Y,
-			TOPLEDS_W, TOPLEDS_H);
-	pxbottom->place(xoffs + BOTTOMLEDS_X, yoffs + BOTTOMLEDS_Y,
-			BOTTOMLEDS_W, BOTTOMLEDS_H);
-	pxleft->place(xoffs + LEFTLEDS_X, yoffs + LEFTLEDS_Y,
-			LEFTLEDS_W, LEFTLEDS_H);
-	pxright->place(xoffs + RIGHTLEDS_X, yoffs + RIGHTLEDS_Y,
-			RIGHTLEDS_W, RIGHTLEDS_H);
+	pxtop->place(xoffs + DASHX(TOPLEDS), yoffs + DASHY(TOPLEDS),
+			DASHW(TOPLEDS), DASHH(TOPLEDS));
+	pxbottom->place(xoffs + DASHX(BOTTOMLEDS), yoffs + DASHY(BOTTOMLEDS),
+			DASHW(BOTTOMLEDS), DASHH(BOTTOMLEDS));
+	pxleft->place(xoffs + DASHX(LEFTLEDS), yoffs + DASHY(LEFTLEDS),
+			DASHW(LEFTLEDS), DASHH(LEFTLEDS));
+	pxright->place(xoffs + DASHX(RIGHTLEDS), yoffs + DASHY(RIGHTLEDS),
+			DASHW(RIGHTLEDS), DASHH(RIGHTLEDS));
 }
 
 
 void KOBO_main::build_soundtools()
 {
-	int conx = xoffs + WCONSOLE_X;
-	int cony = yoffs + WCONSOLE_Y;
+	int conx = xoffs + DASHX(CONSOLE);
+	int cony = yoffs + DASHY(CONSOLE);
 
 	st_hotkeys = new label_t(gengine);
-	st_hotkeys->place(conx, cony + WCONSOLE_H - 19 - 82, WCONSOLE_W, 81);
+	st_hotkeys->place(conx, cony + DASHH(CONSOLE) - 19 - 82,
+			DASHW(CONSOLE), 81);
 	st_hotkeys->color(wdash->map_rgb(16, 16, 16));
 	st_hotkeys->font(B_TOOL_FONT);
 	st_hotkeys->caption(
@@ -721,7 +727,8 @@ void KOBO_main::build_soundtools()
 			"F9-F12: Send(2, 0.25-1.0)");
 
 	st_symname = new display_t(gengine);
-	st_symname->place(conx, cony + WCONSOLE_H - 19, WCONSOLE_W, 19);
+	st_symname->place(conx, cony + DASHH(CONSOLE) - 19,
+			DASHW(CONSOLE), 19);
 	st_symname->color(wdash->map_rgb(24, 24, 24));
 	st_symname->font(B_TOOL_FONT);
 	st_symname->caption("SFX Symbol Name");
@@ -884,8 +891,7 @@ int KOBO_main::init_display(prefs_t *p)
 	pxleft = new vledbar_t(gengine);
 	pxright = new vledbar_t(gengine);
 
-	build_screen();
-
+	init_dash_layout();
 	wdash->mode(DASHBOARD_BLACK);
 
 	return 0;
@@ -1283,6 +1289,7 @@ int KOBO_main::open()
 		noiseburst();
 	}
 
+	init_dash_layout();
 	ct_engine.render_highlight = kobo_render_highlight;
 	wradar->mode(RM_NOISE);
 	pubrand.init();
@@ -1367,6 +1374,7 @@ int KOBO_main::restart_video()
 				"Try different settings.");
 		gsm.push(&st_error);
 	}
+	init_dash_layout();
 	screen.init_graphics();
 	gamecontrol.init();
 	log_printf(ULOG, "--- Video restarted.\n");
@@ -1739,8 +1747,8 @@ void kobo_gfxengine_t::mouse_motion(SDL_Event &ev)
 	if(!prefs->mouse)
 		return;
 
-	gamecontrol.mouse_position(mouse_x - WMAIN_X - WMAIN_W/2,
-			mouse_y - WMAIN_Y - WMAIN_H/2);
+	gamecontrol.mouse_position(mouse_x - DASHX(MAIN) - DASHW(MAIN) / 2,
+			mouse_y - DASHY(MAIN) - DASHH(MAIN) / 2);
 }
 
 
@@ -2077,8 +2085,10 @@ void kobo_gfxengine_t::frame()
 	}
 
 	// Update positional audio listener position
-	sound.g_position(CS2PIXEL(gengine->xoffs(LAYER_BASES)) + WMAIN_W / 2,
-			CS2PIXEL(gengine->yoffs(LAYER_BASES)) + WMAIN_H / 2);
+	sound.g_position(CS2PIXEL(gengine->xoffs(LAYER_BASES)) +
+			DASHW(MAIN) / 2,
+			CS2PIXEL(gengine->yoffs(LAYER_BASES)) +
+			DASHH(MAIN) / 2);
 
 	// Run the game engine for one frame
 	manage.run();
@@ -2141,7 +2151,8 @@ void kobo_gfxengine_t::post_render()
 		km.st_symname->visible(true);
 
 		// Ear (listener position)
-		wmain->sprite(WMAIN_W / 2, WMAIN_H / 2, B_SOUND_ICONS, 1);
+		wmain->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,
+				B_SOUND_ICONS, 1);
 
 		// Speaker (sound source position)
 		int ssx = PIXEL2CS(st_x) - gengine->xoffs(LAYER_BASES);
@@ -2173,7 +2184,7 @@ void kobo_gfxengine_t::post_render()
 
 		// Mouse cursor position
 		snprintf(buf, sizeof(buf), "M(%d, %d)", mouse_x, mouse_y);
-		woverlay->string(WMAIN_W - 100, 5, buf);
+		woverlay->string(DASHW(MAIN) - 100, 5, buf);
 	}
 
 	// Frame rate counter

@@ -73,7 +73,7 @@ void kobo_basestate_t::post_render()
 		snprintf(buf, sizeof(buf), "(%d, %d)",
 				CS2PIXEL(gengine->xoffs(LAYER_BASES)),
 				CS2PIXEL(gengine->yoffs(LAYER_BASES)));
-		woverlay->string(4, WMAIN_H - 10, buf);
+		woverlay->string(4, DASHH(MAIN) - 10, buf);
 	}
 }
 

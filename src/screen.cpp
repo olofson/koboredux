@@ -53,12 +53,12 @@ float KOBO_screen::_fps = 40;
 float KOBO_screen::scroller_speed = SCROLLER_SPEED;
 float KOBO_screen::target_speed = SCROLLER_SPEED;
 int KOBO_screen::noise_y = 0;
-int KOBO_screen::noise_h = WMAIN_H;
+int KOBO_screen::noise_h = 100;
 int KOBO_screen::noise_source = B_NOISE;
 float KOBO_screen::noise_fade = 0.0f;
 float KOBO_screen::noise_bright = 0.0f;
 float KOBO_screen::noise_depth = 0.0f;
-int KOBO_screen::highlight_y = WMAIN_H / 2;
+int KOBO_screen::highlight_y = 0;
 int KOBO_screen::highlight_h = 0;
 int KOBO_screen::hi_sc[10];
 int KOBO_screen::hi_st[10];
@@ -83,6 +83,8 @@ void KOBO_screen::init_maps()
 void KOBO_screen::init_graphics()
 {
 	stars.set_target(wmain, KOBO_P_MAIN_STARS);
+	noise_h = DASHH(MAIN);
+	highlight_y = DASHH(MAIN) / 2;
 }
 
 
@@ -164,7 +166,7 @@ void KOBO_screen::title(int t, float fade, int mode)
 	  case KOBO_LOGO_FX_SLIDE:
 	  {
 		float mf = (1.0f - fade);
-		float ly = mf * mf * mf * WMAIN_H - 0.5f;
+		float ly = mf * mf * mf * DASHH(MAIN) - 0.5f;
 		if(ly < 0.0f)
 			ly = 0.0f;
 		woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
@@ -538,7 +540,7 @@ void KOBO_screen::scroller()
 			"         <WRAP>         ";
 // FIXME: Nasty static state variables...
 	static const char *stp = scrolltext;
-	static int pos = PIXEL2CS(SCREEN_WIDTH);
+	static int pos = PIXEL2CS((int)SCREEN_WIDTH);
 	static int t = 0;
 	int nt = (int)SDL_GetTicks();
 	int dt = nt - t;
@@ -563,7 +565,7 @@ void KOBO_screen::scroller()
 		if(*stp == 0)
 		{
 			// Wrap!
-			pos = PIXEL2CS(SCREEN_WIDTH);
+			pos = PIXEL2CS((int)SCREEN_WIDTH);
 			stp = scrolltext;
 		}
 	}
@@ -740,7 +742,8 @@ void KOBO_screen::render_noise()
 			fy += step + pubrand.get(8) * rstep)
 	{
 		int xo = PIXEL2CS(pubrand.get(NOISE_SIZEX_LOG2));
-		int xmax = ((WMAIN_W + CS2PIXEL(xo)) >> NOISE_SIZEX_LOG2) + 1;
+		int xmax = (((int)DASHW(MAIN) + CS2PIXEL(xo)) >>
+				NOISE_SIZEX_LOG2) + 1;
 		dnp += pubrand.get(3) - 4 + pubrand.get(1);
 		np += dnp;
 		if(np > 255)
@@ -763,7 +766,7 @@ void KOBO_screen::set_noise(int source, float fade, float bright, float depth)
 {
 	noise_source = source;
 	noise_y = 0;
-	noise_h = WMAIN_H;
+	noise_h = DASHH(MAIN);
 	noise_fade = fade;
 	noise_bright = bright;
 	noise_depth = depth;
@@ -962,16 +965,16 @@ void KOBO_screen::render_bases(KOBO_map &map, int tileset, int vx, int vy)
 		return;
 
 	// Undo centering
-	vx += PIXEL2CS(WMAIN_W / 2);
-	vy += PIXEL2CS(WMAIN_H / 2);
+	vx += PIXEL2CS((int)DASHW(MAIN) / 2);
+	vy += PIXEL2CS((int)DASHH(MAIN) / 2);
 
 	// Convert to the correct tile size
 	vx = vx * b->w / TILE_SIZE;
 	vy = vy * b->h / TILE_SIZE;
 
 	// Redo centering
-	vx -= PIXEL2CS(WMAIN_W / 2);
-	vy -= PIXEL2CS(WMAIN_H / 2);
+	vx -= PIXEL2CS((int)DASHW(MAIN) / 2);
+	vy -= PIXEL2CS((int)DASHH(MAIN) / 2);
 
 	// Re-wrap, because the code below can't handle negative values
 	vx = (vx + PIXEL2CS(MAP_SIZEX * b->w)) % PIXEL2CS(MAP_SIZEX * b->w);
@@ -983,8 +986,8 @@ void KOBO_screen::render_bases(KOBO_map &map, int tileset, int vx, int vy)
 	int my = CS2PIXEL(vy / b->h);
 	int xo = (vx + PIXEL2CS(MAP_SIZEX * b->w)) % PIXEL2CS(b->w);
 	int yo = (vy + PIXEL2CS(MAP_SIZEY * b->h)) % PIXEL2CS(b->h);
-	int ymax = ((WMAIN_H + CS2PIXEL(yo)) / b->w) + 1;
-	int xmax = ((WMAIN_W + CS2PIXEL(xo)) / b->h) + 1;
+	int ymax = ((DASHH(MAIN) + CS2PIXEL(yo)) / b->w) + 1;
+	int xmax = ((DASHW(MAIN) + CS2PIXEL(xo)) / b->h) + 1;
 	int frame = manage.game_time();
 	for(int y = 0; y < ymax; ++y)
 		for(int x = 0; x < xmax; ++x)
@@ -1011,9 +1014,9 @@ void KOBO_screen::render_bases(KOBO_map &map, int tileset, int vx, int vy)
 	{
 		wmain->foreground(wmain->map_rgb(0, 100, 200));
 		wmain->fillrect_fxp(PIXEL2CS(MAP_SIZEX * b->w) - vx,
-				0, PIXEL2CS(1), PIXEL2CS(WMAIN_H));
+				0, PIXEL2CS(1), PIXEL2CS((int)DASHH(MAIN)));
 		wmain->fillrect_fxp(0, PIXEL2CS(MAP_SIZEY * b->h) - vy,
-				PIXEL2CS(WMAIN_W), PIXEL2CS(1));
+				PIXEL2CS((int)DASHW(MAIN)), PIXEL2CS(1));
 	}
 }
 

@@ -44,6 +44,11 @@
 extern KOBO_sound	sound;
 extern KOBO_ThemeData	themedata;
 
+#define	DASHX(x)	(themedata.get(KOBO_D_DASH_##x, 0))
+#define	DASHY(x)	(themedata.get(KOBO_D_DASH_##x, 1))
+#define	DASHW(x)	(themedata.get(KOBO_D_DASH_##x, 2))
+#define	DASHH(x)	(themedata.get(KOBO_D_DASH_##x, 3))
+
 
   /////////////////////////////////////////////////////////////////////////////
  //	Globals

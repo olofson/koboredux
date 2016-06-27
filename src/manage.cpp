@@ -286,8 +286,8 @@ void _manage::init_resources_to_play(bool newship)
 	set_bars();
 	put_player_stats();
 	myship.put();
-	gengine->scroll(myship.get_csx() - PIXEL2CS(WMAIN_W / 2),
-			myship.get_csy() - PIXEL2CS(WMAIN_H / 2));
+	gengine->scroll(myship.get_csx() - PIXEL2CS((int)DASHW(MAIN) / 2),
+			myship.get_csy() - PIXEL2CS((int)DASHH(MAIN) / 2));
 	gengine->force_scroll();
 	pxtop->fx(PFX_OFF);
 	pxbottom->fx(PFX_OFF);
@@ -413,10 +413,10 @@ void _manage::run_intro()
 	intro_x &= WORLD_SIZEX - 1;
 	intro_y &= WORLD_SIZEY - 1;
 	float w = intro_y * M_PI * 2.0f * 3.0f / WORLD_SIZEX;
-	myship.set_position(intro_x + WMAIN_W / 2 +
-			(int)(WMAIN_W * 0.3f * sin(w)),
-			intro_y + WMAIN_H / 2 +
-			(int)(WMAIN_H * 0.3f * cos(w)));
+	myship.set_position(intro_x + DASHW(MAIN) / 2 +
+			(int)(DASHW(MAIN) * 0.3f * sin(w)),
+			intro_y + DASHH(MAIN) / 2 +
+			(int)(DASHH(MAIN) * 0.3f * cos(w)));
 	enemies.move_intro();
 	++hi.playtime;
 	enemies.put();
@@ -467,9 +467,9 @@ void _manage::update()
 	cam_lead_yf += (cam_lead_y - cam_lead_yf) * KOBO_CAM_LEAD_FILTER >> 8;
 
 	gengine->scroll(myship.get_csx() + cam_lead_xf -
-			PIXEL2CS(WMAIN_W / 2),
+			PIXEL2CS((int)DASHW(MAIN) / 2),
 			myship.get_csy() + cam_lead_yf -
-			PIXEL2CS(WMAIN_H / 2));
+			PIXEL2CS((int)DASHH(MAIN) / 2));
 	if(scroll_jump)
 	{
 		gengine->force_scroll();
