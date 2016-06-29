@@ -1021,9 +1021,16 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_set()
 		  case KTK_NUMBER:
 			themedata->set((KOBO_TD_Items)td, i, rv);
 			break;
+		  case KTK_BANK:
+		  case KTK_PALETTE:
+		  case KTK_FLAG:
+		  case KTK_HEXCOLOR:
+		  case KTK_THEMEDATA:
+			themedata->set((KOBO_TD_Items)td, i, iv);
+			break;
 		  default:
 			dump_line();
-			log_printf(ELOG, "[Theme Loader] Expected color index "
+			log_printf(ELOG, "[Theme Loader] Expected value "
 					"- not '%s'!\n", token_name(tk));
 			return KTK_ERROR;
 		}

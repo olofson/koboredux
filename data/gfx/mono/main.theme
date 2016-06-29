@@ -22,15 +22,24 @@ message "CC BY-SA 4.0 (http://creativecommons.org/licenses/by-sa/4.0/)"
 message "Defining dashboard layout"
 //-----------------------------------------------------------------------------
 
-set D_DASH_MAIN		152	12	336	336		// x y w h
+// set THEMEDATA x y w h <rel>
+
+set D_DASH_MAIN		140	12	336	336
 set D_DASH_CONSOLE	8	52	104	256
-set D_DASH_HEALTH	130	80	12	200
-set D_DASH_CHARGE	117	80	12	200
+set D_DASH_HEALTH	118	80	12	200
+set D_DASH_CHARGE	486	80	12	200
 set D_DASH_RADAR	504	52	128	256
-set D_DASH_TOPLEDS	152	4	336	5
-set D_DASH_BOTTOMLEDS	152	351	336	5
-set D_DASH_LEFTLEDS	144	12	5	336
-set D_DASH_RIGHTLEDS	491	12	5	336
+set D_DASH_TOPLEDS	140	4	336	5
+set D_DASH_BOTTOMLEDS	140	351	336	5
+set D_DASH_LEFTLEDS	132	12	5	336
+set D_DASH_RIGHTLEDS	479	12	5	336
+
+// Positions of elements inside D_DASH_CONSOLE
+set D_DASH_HIGH		0	8	104	18	D_DASH_CONSOLE
+set D_DASH_SCORE	0	32	104	18	D_DASH_CONSOLE
+set D_DASH_STAGE	0	88	104	18	D_DASH_CONSOLE
+set D_DASH_REGION	0	112	104	18	D_DASH_CONSOLE
+set D_DASH_LEVEL	0	136	104	18	D_DASH_CONSOLE
 
 
 //-----------------------------------------------------------------------------
@@ -167,11 +176,12 @@ message "Loading dashboard graphics"
 //-----------------------------------------------------------------------------
 
 path "dashboard"
-image B_SCREEN "dashboard.png"
+image B_SCREEN "dashboard-v2.png"
 sprites B_CROSSHAIR "crosshair.png" 16 16 1 CENTER
 sprites B_HLEDS "hleds.png" 8 5
 sprites B_VLEDS "vleds.png" 5 8
-sprites B_BLEDS "barleds.png" 12 4
+sprites B_HEALTHLEDS "barleds2.png" 12 4
+sprites B_CHARGELEDS "chargeleds2.png" 12 4
 image B_LOGO "logo.png"
 
 

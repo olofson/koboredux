@@ -351,7 +351,7 @@ void _manage::put_info()
 	dregion->text(s);
 	dregion->on();
 
-	snprintf(s, 16, "%2d", scene_num % 10 + 1);
+	snprintf(s, 16, "%d", scene_num % 10 + 1);
 	dlevel->text(s);
 	dlevel->on();
 

@@ -47,6 +47,14 @@ class KOBO_ThemeData
 			index = sizes[item] - 1;
 		return items[item][index];
 	}
+	bool defined(KOBO_TD_Items item, unsigned index = 0)
+	{
+		if(!sizes[item])
+			return false;
+		if(index >= sizes[item])
+			return false;
+		return true;
+	}
 };
 
 

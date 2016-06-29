@@ -144,9 +144,10 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		if(_mode == DASHBOARD_LOADING)
 			break;
 	  case DASHBOARD_LOADING:
-		wplanet->place(wdash->px() + DASHX(LOADER_PLANET),
-				wdash->py() + DASHY(LOADER_PLANET),
-				DASHW(LOADER_PLANET), DASHH(LOADER_PLANET));
+		km.place(wplanet, KOBO_D_DASH_LOADER_PLANET);
+//		wplanet->place(wdash->px() + DASHX(LOADER_PLANET),
+//				wdash->py() + DASHY(LOADER_PLANET),
+//				DASHW(LOADER_PLANET), DASHH(LOADER_PLANET));
 		wplanet->resetmod();
 		wplanet->colormod(128, 128, 128);
 		wplanet->track_speed(1.0f, 1.0f);
@@ -160,9 +161,10 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		jingelstars.init(1000, 100, psize);
 		break;
 	  default:
-		wplanet->place(wdash->px() + DASHX(MAIN),
-				wdash->py() + DASHY(MAIN),
-				DASHW(MAIN), DASHH(MAIN));
+		km.place(wplanet, KOBO_D_DASH_MAIN);
+//		wplanet->place(wdash->px() + DASHX(MAIN),
+//				wdash->py() + DASHY(MAIN),
+//				DASHW(MAIN), DASHH(MAIN));
 		break;
 	}
 

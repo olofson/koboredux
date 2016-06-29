@@ -254,89 +254,6 @@ static void add_dirs(prefs_t *p)
 }
 
 
-/*----------------------------------------------------------
-	The main object
-----------------------------------------------------------*/
-class KOBO_main
-{
-  public:
-	static SDL_Joystick	*joystick;
-	static int		js_lr;
-	static int		js_ud;
-	static int		js_fire;
-	static int		js_start;
-
-	static FILE		*logfile;
-
-	static Uint32		esc_tick;
-	static int		esc_count;
-	static int		esc_hammering_trigs;
-	static int		exit_game_fast;
-
-	// Frame rate counter
-	static int		fps_count;
-	static int		fps_starttime;
-	static int		fps_nextresult;
-	static int		fps_lastresult;
-	static float		*fps_results;
-	static float		fps_last;
-
-	// Frame rate limiter
-	static float		maxfps_filter;
-	static int		maxfps_begin;
-
-	// Dashboard offset ("native" 640x360 pixels)
-	static int		xoffs;
-	static int		yoffs;
-
-	// Backup in case we screw up we can't get back up
-	static prefs_t		safe_prefs;
-
-	// Sound design tools
-	static label_t		*st_hotkeys;
-	static display_t	*st_symname;
-
-	static int restart_audio();
-	static int restart_video();
-	static int reload_sounds();
-	static int reload_graphics();
-
-	static int open();
-	static void close();
-	static int run();
-
-	static int open_logging(prefs_t *p);
-	static void close_logging();
-	static void load_config(prefs_t *p);
-	static void save_config(prefs_t *p);
-
-	static void init_dash_layout();
-	static void build_soundtools();
-	static int init_display(prefs_t *p);
-	static void close_display();
-
-	static void noiseburst();
-	static void show_progress(prefs_t *p);
-	static void progress();
-	static void doing(const char *msg);
-	static int load_palette();
-	static int load_graphics();
-	static int load_sounds(bool progress = true);
-
-	static int init_js(prefs_t *p);
-	static void close_js();
-
-	static bool escape_hammering();
-	static bool escape_hammering_quit();
-	static bool quit_requested();
-	static bool skip_requested();
-	static void brutal_quit(bool force = false);
-	static void pause_game();
-
-	static void print_fps_results();
-};
-
-
 SDL_Joystick	*KOBO_main::joystick = NULL;
 int		KOBO_main::js_lr = DEFAULT_JOY_LR;
 int		KOBO_main::js_ud = DEFAULT_JOY_UD;
@@ -369,7 +286,7 @@ label_t		*KOBO_main::st_hotkeys = NULL;
 display_t	*KOBO_main::st_symname = NULL;
 
 
-static KOBO_main km;
+KOBO_main km;
 
 
 void KOBO_main::print_fps_results()
@@ -625,62 +542,70 @@ int KOBO_main::open_logging(prefs_t *p)
 }
 
 
+void KOBO_main::place(windowbase_t *w, KOBO_TD_Items td)
+{
+	int x = xoffs + themedata.get(td, 0);
+	int y = yoffs + themedata.get(td, 1);
+	if(themedata.defined(td, 4))
+	{
+		KOBO_TD_Items rel_to = (KOBO_TD_Items)themedata.get(td, 4);
+		x += themedata.get(rel_to, 0);
+		y += themedata.get(rel_to, 1);
+	}
+	w->place(x, y, themedata.get(td, 2), themedata.get(td, 3));
+}
+
+
 void KOBO_main::init_dash_layout()
 {
 	// Dashboard framework
 	wdash->place(xoffs, yoffs, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Console window
-	int conx = xoffs + DASHX(CONSOLE);
-	int cony = yoffs + DASHY(CONSOLE);
-	int conw = DASHW(CONSOLE);
-	dhigh->place(conx, cony, conw, 18);
+	place(dhigh, KOBO_D_DASH_HIGH);
 	dhigh->font(B_NORMAL_FONT);
 	dhigh->caption("HIGHSCORE");
 	dhigh->text("000000000");
 
-	dscore->place(conx, cony + 24, conw, 18);
+	place(dscore, KOBO_D_DASH_SCORE);
 	dscore->font(B_NORMAL_FONT);
 	dscore->caption("SCORE");
 	dscore->text("000000000");
 
-	dstage->place(conx, cony + 88, conw / 3, 18);
+	place(dstage, KOBO_D_DASH_STAGE);
 	dstage->font(B_NORMAL_FONT);
 	dstage->caption("STAGE");
 	dstage->text("000");
-	dregion->place(conx + conw / 3, cony + 88, conw / 3, 18);
+
+	place(dregion, KOBO_D_DASH_REGION);
 	dregion->font(B_NORMAL_FONT);
 	dregion->caption("REGION");
 	dregion->text("0");
-	dlevel->place(conx + 2 * conw / 3, cony + 88, conw / 3, 18);
+
+	place(dlevel, KOBO_D_DASH_LEVEL);
 	dlevel->font(B_NORMAL_FONT);
 	dlevel->caption("LEVEL");
 	dlevel->text("00");
 
 	// Ship health bar
-	whealth->place(xoffs + DASHX(HEALTH), yoffs + DASHY(HEALTH),
-			DASHW(HEALTH), DASHH(HEALTH));
-	whealth->set_leds(B_BLEDS);
+	place(whealth, KOBO_D_DASH_HEALTH);
+	whealth->set_leds(B_HEALTHLEDS);
 
 	// Weapon charge bar
-	wcharge->place(xoffs + DASHX(CHARGE), yoffs + DASHY(CHARGE),
-			DASHW(CHARGE), DASHH(CHARGE));
-	wcharge->set_leds(B_BLEDS);
+	place(wcharge, KOBO_D_DASH_CHARGE);
+	wcharge->set_leds(B_CHARGELEDS);
 
 	// Scrolling backdrop
-	wbackdrop->place(xoffs + DASHX(MAIN), yoffs + DASHY(MAIN),
-			DASHW(MAIN), DASHH(MAIN));
+	place(wbackdrop, KOBO_D_DASH_MAIN);
 
 	// Spinning planet backdrop (placed by dashboard_window_t::mode())
 	wplanet->track_layer(LAYER_PLANET);
 
 	// Main playfield layer
-	wmain->place(xoffs + DASHX(MAIN), yoffs + DASHY(MAIN),
-			DASHW(MAIN), DASHH(MAIN));
+	place(wmain, KOBO_D_DASH_MAIN);
 
 	// Playfield overlay
-	woverlay->place(xoffs + DASHX(MAIN), yoffs + DASHY(MAIN),
-			DASHW(MAIN), DASHH(MAIN));
+	place(woverlay, KOBO_D_DASH_MAIN);
 
 	// Set up the map at 1 physical pixel per tile
 	wmap->offscreen();
@@ -688,29 +613,21 @@ void KOBO_main::init_dash_layout()
 	wmap->place(0, 0, MAP_SIZEX, MAP_SIZEY);
 
 	// Have the radar window scale up to 2x2 "native" pixels per tile
-	wradar->place(xoffs + DASHX(RADAR), yoffs + DASHY(RADAR),
-			DASHW(RADAR), DASHH(RADAR));
+	place(wradar, KOBO_D_DASH_RADAR);
 	wradar->scale(-2.0f, -2.0f);
 
-	pxtop->place(xoffs + DASHX(TOPLEDS), yoffs + DASHY(TOPLEDS),
-			DASHW(TOPLEDS), DASHH(TOPLEDS));
-	pxbottom->place(xoffs + DASHX(BOTTOMLEDS), yoffs + DASHY(BOTTOMLEDS),
-			DASHW(BOTTOMLEDS), DASHH(BOTTOMLEDS));
-	pxleft->place(xoffs + DASHX(LEFTLEDS), yoffs + DASHY(LEFTLEDS),
-			DASHW(LEFTLEDS), DASHH(LEFTLEDS));
-	pxright->place(xoffs + DASHX(RIGHTLEDS), yoffs + DASHY(RIGHTLEDS),
-			DASHW(RIGHTLEDS), DASHH(RIGHTLEDS));
+	// Indicator LEDs around the playfield window
+	place(pxtop, KOBO_D_DASH_TOPLEDS);
+	place(pxbottom, KOBO_D_DASH_BOTTOMLEDS);
+	place(pxleft, KOBO_D_DASH_LEFTLEDS);
+	place(pxright, KOBO_D_DASH_RIGHTLEDS);
 }
 
 
 void KOBO_main::build_soundtools()
 {
-	int conx = xoffs + DASHX(CONSOLE);
-	int cony = yoffs + DASHY(CONSOLE);
-
 	st_hotkeys = new label_t(gengine);
-	st_hotkeys->place(conx, cony + DASHH(CONSOLE) - 19 - 82,
-			DASHW(CONSOLE), 81);
+	place(st_hotkeys, KOBO_D_SOUNDTOOLS_HOTKEYS);
 	st_hotkeys->color(wdash->map_rgb(16, 16, 16));
 	st_hotkeys->font(B_TOOL_FONT);
 	st_hotkeys->caption(
@@ -727,8 +644,7 @@ void KOBO_main::build_soundtools()
 			"F9-F12: Send(2, 0.25-1.0)");
 
 	st_symname = new display_t(gengine);
-	st_symname->place(conx, cony + DASHH(CONSOLE) - 19,
-			DASHW(CONSOLE), 19);
+	place(st_symname, KOBO_D_SOUNDTOOLS_SYMNAME);
 	st_symname->color(wdash->map_rgb(24, 24, 24));
 	st_symname->font(B_TOOL_FONT);
 	st_symname->caption("SFX Symbol Name");

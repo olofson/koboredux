@@ -38,22 +38,6 @@
 #include "themeparser.h"
 
 
-  /////////////////////////////////////////////////////////////////////////////
- //	Singletons
-/////////////////////////////////////////////////////////////////////////////
-extern KOBO_sound	sound;
-extern KOBO_ThemeData	themedata;
-
-#define	DASHX(x)	(themedata.get(KOBO_D_DASH_##x, 0))
-#define	DASHY(x)	(themedata.get(KOBO_D_DASH_##x, 1))
-#define	DASHW(x)	(themedata.get(KOBO_D_DASH_##x, 2))
-#define	DASHH(x)	(themedata.get(KOBO_D_DASH_##x, 3))
-
-
-  /////////////////////////////////////////////////////////////////////////////
- //	Globals
-/////////////////////////////////////////////////////////////////////////////
-
 enum kobo_vmswitch_t {
 	KOBO_VIDEOMODE_TOGGLE,
 	KOBO_VIDEOMODE_WINDOWED,
@@ -110,6 +94,107 @@ class backdrop_t : public window_t
 	void refresh(SDL_Rect *r);
 };
 
+
+class KOBO_main
+{
+  public:
+	static SDL_Joystick	*joystick;
+	static int		js_lr;
+	static int		js_ud;
+	static int		js_fire;
+	static int		js_start;
+
+	static FILE		*logfile;
+
+	static Uint32		esc_tick;
+	static int		esc_count;
+	static int		esc_hammering_trigs;
+	static int		exit_game_fast;
+
+	// Frame rate counter
+	static int		fps_count;
+	static int		fps_starttime;
+	static int		fps_nextresult;
+	static int		fps_lastresult;
+	static float		*fps_results;
+	static float		fps_last;
+
+	// Frame rate limiter
+	static float		maxfps_filter;
+	static int		maxfps_begin;
+
+	// Dashboard offset ("native" 640x360 pixels)
+	static int		xoffs;
+	static int		yoffs;
+
+	// Backup in case we screw up we can't get back up
+	static prefs_t		safe_prefs;
+
+	// Sound design tools
+	static label_t		*st_hotkeys;
+	static display_t	*st_symname;
+
+	static int restart_audio();
+	static int restart_video();
+	static int reload_sounds();
+	static int reload_graphics();
+
+	static int open();
+	static void close();
+	static int run();
+
+	static int open_logging(prefs_t *p);
+	static void close_logging();
+	static void load_config(prefs_t *p);
+	static void save_config(prefs_t *p);
+
+	static void init_dash_layout();
+	static void build_soundtools();
+	static int init_display(prefs_t *p);
+	static void close_display();
+
+	static void noiseburst();
+	static void show_progress(prefs_t *p);
+	static void progress();
+	static void doing(const char *msg);
+	static int load_palette();
+	static int load_graphics();
+	static int load_sounds(bool progress = true);
+
+	static int init_js(prefs_t *p);
+	static void close_js();
+
+	static bool escape_hammering();
+	static bool escape_hammering_quit();
+	static bool quit_requested();
+	static bool skip_requested();
+	static void brutal_quit(bool force = false);
+	static void pause_game();
+
+	static void print_fps_results();
+
+	static void place(windowbase_t *w, KOBO_TD_Items td);
+};
+
+
+  /////////////////////////////////////////////////////////////////////////////
+ //	Singletons
+/////////////////////////////////////////////////////////////////////////////
+
+extern KOBO_sound	sound;
+extern KOBO_ThemeData	themedata;
+extern KOBO_main	km;
+
+#define THD(x, y)	(themedata.get(KOBO_D_##x, (y)))
+#define	DASHX(x)	THD(DASH_##x, 0)
+#define	DASHY(x)	THD(DASH_##x, 1)
+#define	DASHW(x)	THD(DASH_##x, 2)
+#define	DASHH(x)	THD(DASH_##x, 3)
+
+
+  /////////////////////////////////////////////////////////////////////////////
+ //	Globals
+/////////////////////////////////////////////////////////////////////////////
 
 extern kobo_gfxengine_t		*gengine;
 extern filemapper_t		*fmap;
