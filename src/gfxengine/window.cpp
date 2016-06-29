@@ -107,10 +107,10 @@ void windowbase_t::visible(int vis)
 
 void windowbase_t::place(int left, int top, int sizex, int sizey)
 {
-	int x2 = ((left + sizex) * xs + 128) >> 8;
-	int y2 = ((top + sizey) * ys + 128) >> 8;
-	phys_rect.x = (left * xs + 128) >> 8;
-	phys_rect.y = (top * ys + 128) >> 8;
+	int x2 = ((left + sizex) * engine->xs + 128) >> 8;
+	int y2 = ((top + sizey) * engine->ys + 128) >> 8;
+	phys_rect.x = (left * engine->xs + 128) >> 8;
+	phys_rect.y = (top * engine->ys + 128) >> 8;
 	phys_rect.w = x2 - phys_rect.x;
 	phys_rect.h = y2 - phys_rect.y;
 }
@@ -270,8 +270,13 @@ void window_t::visible(int vis)
 void window_t::place(int left, int top, int sizex, int sizey)
 {
 	if(_offscreen)
-		left = top = 0;
-	windowbase_t::place(left, top, sizex, sizey);
+	{
+		phys_rect.x = phys_rect.y = 0;
+		phys_rect.w = (sizex * xs + 128) >> 8;
+		phys_rect.h = (sizey * ys + 128) >> 8;
+	}
+	else
+		windowbase_t::place(left, top, sizex, sizey);
 }
 
 
