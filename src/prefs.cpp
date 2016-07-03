@@ -149,10 +149,11 @@ void prefs_t::init()
 	command("hiscores", cmd_hiscores); desc("List High Scores");
 	command("highscores", cmd_hiscores); desc("List High Scores");
 	command("override", cmd_override); desc("Ignore Configuration File");
-	command("autoshot", cmd_autoshot); desc("Ingame screenshots/movie");
 	command("help", cmd_help); desc("Print usage info and exit");
 	command("options_man", cmd_options_man);
 			desc("Print options for 'man'");
+	key("autoshot", cmd_autoshot, 0, false);
+			desc("Ingame screenshots/movie");
 	key("warp", cmd_warp, 0, false); desc("Warp To Stage");
 }
 

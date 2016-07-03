@@ -285,6 +285,8 @@ prefs_t		KOBO_main::safe_prefs;
 label_t		*KOBO_main::st_hotkeys = NULL;
 display_t	*KOBO_main::st_symname = NULL;
 
+int		KOBO_main::ss_frames = 0;
+int		KOBO_main::ss_last_frame = 0;
 
 KOBO_main km;
 
@@ -2015,15 +2017,14 @@ void kobo_gfxengine_t::frame()
 	// Bump audio API timestamp time to match game logic time
 	sound.timestamp_bump(gengine->period());
 
-	// Screenshot "video" at around 10 fps
-	if(prefs->cmd_autoshot && manage.game_in_progress())
+	// Screenshot video - "every Nth logic frame" rates
+	if((prefs->cmd_autoshot < 5) && manage.game_in_progress())
 	{
-		static int c = 0;
-		++c;
-		if(c >= game.speed / 10)
+		++km.ss_frames;
+		if(km.ss_frames >= prefs->cmd_autoshot)
 		{
 			gengine->screenshot();
-			c = 0;
+			km.ss_frames = 0;
 		}
 	}
 
@@ -2142,6 +2143,16 @@ void kobo_gfxengine_t::post_render()
 	// Mouse cursor
 	if(prefs->mouse && mouse_visible)
 		wscreen->sprite(mouse_x, mouse_y, B_CROSSHAIR, 0);
+
+	// Screenshot video - high frame rates
+	if((prefs->cmd_autoshot >= 5) && manage.game_in_progress())
+	{
+		if(nt - km.ss_last_frame >= 1000 / prefs->cmd_autoshot)
+		{
+			gengine->screenshot();
+			km.ss_last_frame = nt;
+		}
+	}
 
 	// Frame rate limiter
 	if(prefs->maxfps && (wdash->mode() != DASHBOARD_LOADING))

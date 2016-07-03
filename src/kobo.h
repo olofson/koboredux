@@ -134,6 +134,10 @@ class KOBO_main
 	static label_t		*st_hotkeys;
 	static display_t	*st_symname;
 
+	// Screenshot video
+	static int ss_frames;
+	static int ss_last_frame;
+
 	static int restart_audio();
 	static int restart_video();
 	static int reload_sounds();
