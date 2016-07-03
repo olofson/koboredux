@@ -2147,7 +2147,9 @@ void kobo_gfxengine_t::post_render()
 	// Screenshot video - high frame rates
 	if((prefs->cmd_autoshot >= 5) && manage.game_in_progress())
 	{
-		if(nt - km.ss_last_frame >= 1000 / prefs->cmd_autoshot)
+		if((prefs->cmd_autoshot == 999) ||
+				(nt - km.ss_last_frame >=
+				1000 / prefs->cmd_autoshot))
 		{
 			gengine->screenshot();
 			km.ss_last_frame = nt;
