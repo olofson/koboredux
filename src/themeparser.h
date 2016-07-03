@@ -23,6 +23,7 @@
 #define _KOBO_THEMEPARSER_H_
 
 #include "graphics.h"
+#include <math.h>
 
 #define	KOBO_TP_MAXLEN	256
 
@@ -46,6 +47,16 @@ class KOBO_ThemeData
 		if(index >= sizes[item])
 			index = sizes[item] - 1;
 		return items[item][index];
+	}
+	double lerp(KOBO_TD_Items item, double index)
+	{
+		int ii = floor(index);
+		float w = fmod(index, 1.0f);
+		return get(item, ii) * (1.0f - w) + get(item, ii + 1) * w;
+	}
+	int length(KOBO_TD_Items item)
+	{
+		return sizes[item];
 	}
 	bool defined(KOBO_TD_Items item, unsigned index = 0)
 	{

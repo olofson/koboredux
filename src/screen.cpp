@@ -773,9 +773,6 @@ void KOBO_screen::set_noise(int source, float fade, float bright, float depth)
 }
 
 
-#define	FOCUSGRID_REP_HORIZON	33
-#define	FOCUSGRID_REP_NEAR	103
-
 void KOBO_screen::render_highlight()
 {
 	if(!highlight_h)
@@ -832,12 +829,14 @@ void KOBO_screen::render_highlight()
 	{
 		int i = b->h * ty / h;
 		float xo = fmod(t * 0.001f, 1.0f);
-		SDL_SetTextureAlphaMod(s->texture, 255 * sin(M_PI * ty / h));
+		SDL_SetTextureAlphaMod(s->texture, 255 * themedata.lerp(
+				KOBO_D_FOCUSFX_ALPHA, (float)ty / h *
+				(themedata.length(KOBO_D_FOCUSFX_ALPHA) - 1)));
 		for(int x = 0; ; ++x)
 		{
 			SDL_Rect sr, dr;
-			int xop = xo * (FOCUSGRID_REP_HORIZON * (h - ty) / h +
-					FOCUSGRID_REP_NEAR * ty / h);
+			int xop = xo * (THD(FOCUSFX_GRID, 0) * (h - ty) / h +
+					THD(FOCUSFX_GRID, 1) * ty / h);
 			sr.x = 0;
 			sr.y = i;
 			sr.w = b->w;
