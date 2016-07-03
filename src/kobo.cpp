@@ -2018,7 +2018,8 @@ void kobo_gfxengine_t::frame()
 	sound.timestamp_bump(gengine->period());
 
 	// Screenshot video - "every Nth logic frame" rates
-	if((prefs->cmd_autoshot < 5) && manage.game_in_progress())
+	if(prefs->cmd_autoshot && (prefs->cmd_autoshot < 5) &&
+			manage.game_in_progress())
 	{
 		++km.ss_frames;
 		if(km.ss_frames >= prefs->cmd_autoshot)
