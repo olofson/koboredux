@@ -182,7 +182,7 @@ sprites B_HLEDS "hleds.png" 8 5
 sprites B_VLEDS "vleds.png" 5 8
 sprites B_HEALTHLEDS "barleds2.png" 12 4
 sprites B_CHARGELEDS "chargeleds2.png" 12 4
-image B_LOGO "logo.png"
+sprites B_LOGO "logo.png" 320 128
 
 
 //-----------------------------------------------------------------------------

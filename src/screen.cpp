@@ -161,6 +161,16 @@ void KOBO_screen::title(int t, float fade, int mode)
 	if(!s || !s->texture)
 		return;
 
+	int frame = 0;
+	if(b->max >= 1)
+	{
+		frame = 1;
+		if(fade > 0.9)
+			frame = 0;
+		else if(fade > 0.8 && fmod(fade, .04) > .03)
+			frame = 0;
+	}
+
 	switch((KOBO_LogoEffects)themedata.get(KOBO_D_LOGO_EFFECT))
 	{
 	  case KOBO_LOGO_FX_SLIDE:
@@ -171,21 +181,21 @@ void KOBO_screen::title(int t, float fade, int mode)
 			ly = 0.0f;
 		woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
 				(int)((woverlay->height()  / 2 -
-				(128 - 20) - ly) * 256.0f), B_LOGO, 0);
+				(128 - 20) - ly) * 256.0f), B_LOGO, frame);
 		break;
 	  }
 	  case KOBO_LOGO_FX_FADE:
 		woverlay->alphamod(fade * fade * fade * 255.0f);
 		woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 320) / 2,
 				PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
-				B_LOGO, 0);
+				B_LOGO, frame);
 		woverlay->alphamod(255);
 		break;
 	  case KOBO_LOGO_FX_ZOOM:
 		woverlay->sprite_fxp_scale(
 				PIXEL2CS(woverlay->width() - 320) / 2,
 				PIXEL2CS(woverlay->height() / 2 - (128 - 20)),
-				B_LOGO, 0, 1.0f, fade);
+				B_LOGO, frame, 1.0f, fade);
 		break;
 	}
 
