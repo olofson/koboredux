@@ -1786,7 +1786,7 @@ void KOBO_enemy::move_enemy_m4()
 {
 	this->move_enemy_m(2, 96);
 	if(--di < 1)
-		di = 16;
+		di = frames;
 	static const KOBO_enemy_kind *shot[8] = {
 		&enemy1, &enemy2, &bomb2, &ring, &enemy1, &enemy2, &ring,
 		&enemy1
