@@ -1,0 +1,151 @@
+////////////////////////////////////////////////////////////////
+// render-sprites.eel - Render all rotated Kobo Redux sprites
+// Copyright 2016 David Olofson
+////////////////////////////////////////////////////////////////
+
+import eelium.tipe as tipe;
+
+constant DSTPATH = "../../../data/gfx/mono/";
+
+static defaults = {
+	.verbose		true,
+	.scale			.125,
+	.tilew			16,
+	.tileh			16,
+	.filtermode		"dominant",
+	.frames			64,
+	.columns		8,
+	.palette		DSTPATH + "HW-ZX-Spectrum.gpl"
+};
+
+static sprites = [
+	{
+		// "Big ship"
+		.output		DSTPATH + "sprites/bigship.png",
+		.palette	[0x000000, 0xffffff],
+		.dither_tint	0x333333,
+		.tilew		48,
+		.tileh		48,
+		.frames		32,
+		.sources	[
+			{
+				// 0
+				.source	"sprites/bigship-src.png",
+				.tilew	256,
+				.tileh	256,
+
+			},
+			{
+				// 1
+				.source	[0, 8],
+				.tilew	128,
+				.tileh	128
+			},
+			{
+				// 2
+				.source	0,
+				.tilew	0,
+				.tiles	[
+					[0, 256, 256, 384, 384]
+				]
+			},
+			{
+				// 3
+				.source	[0, 11],
+				.tilew	128,
+				.tileh	128
+			},
+			{
+				// 4
+				.source	[0, 7],
+				.tilew	128,
+				.tileh	128
+			}
+		],
+		.layers		[
+			{
+				// Lower body
+				.source		2,
+				.frame		0
+			},
+			{
+				// Lower body detail
+				.sxoffset	128,
+				.syoffset	0,
+				.rotation	[360, 0],
+				.source		1,
+				.frame		0,
+				.clones		10
+			},
+			{
+				// Upper body
+				.frame		0
+			},
+			{
+				// Spinner cluster shadows
+				.blendmode	"multiply",
+				.clampcolor	0xffffffff,
+				.xoffset	16,
+				.yoffset	16,
+				.sxoffset	128,
+				.syoffset	0,
+				.rotation	[0, 360],
+				.rotationoffset	45,
+				.source		4,
+				.frame		0,
+				.clones		4
+			},
+			{
+				// Spinner clusters
+				.sxoffset	128,
+				.syoffset	0,
+				.rotation	[0, 360],
+				.rotationoffset	45,
+				.source		3,
+				.frame		0,
+				.clones		4
+			},
+			{
+				// Spinner shadow
+				.blendmode	"multiply",
+				.clampcolor	0xffffffff,
+				.xoffset	16,
+				.yoffset	16,
+				.rotation	[0, 90],
+				.frame		1
+			},
+			{
+				// Core
+				.frame		4
+			},
+			{
+				// Spinner
+				.rotation	[0, 90],
+				.frame		2
+			}
+		]
+	}
+];
+
+export function main<args>
+{
+	local draft = false;
+	if specified args[1]
+		if args[1] == "-d"
+			draft = true;
+
+	local e = tipe.Engine();
+	for local i = 0, sizeof sprites - 1
+	{
+		local params = clone defaults;
+		params.+ sprites[i];
+		if draft
+			params.filtermode = "nearest";
+		e:Reset();
+		e:SetParams(params);
+		e:Log("[ Sprite sheet ", i + 1, "/", sizeof sprites, " ]\n\n");
+		e:Process();
+		e:Log("\n");
+	}
+	return 0;
+}

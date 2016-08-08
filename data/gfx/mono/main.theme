@@ -168,7 +168,7 @@ sprites B_RING "ring.png" 16 16 CENTER
 sprites B_RINGEXPL "ringexpl.png" 20 20 CENTER
 sprites B_BOMB "bomb.png" 12 12 CENTER
 sprites B_BOMBDETO "bombdeto.png" 20 20 CENTER
-sprites B_BIGSHIP "bigship.png" 32 32 CENTER
+sprites B_BIGSHIP "bigship.png" 48 48 CENTER
 
 
 //-----------------------------------------------------------------------------
