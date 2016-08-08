@@ -84,6 +84,7 @@ class KOBO_screen
 	static void init_background();
 	static void init_scene(int sc);
 	static int prepare();
+	static void generate_wave(const KOBO_enemy_set *wave);
 	static void generate_fixed_enemies();
 	static inline int get_map(int x, int y)
 	{

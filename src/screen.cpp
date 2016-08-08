@@ -681,7 +681,7 @@ int KOBO_screen::prepare()
 }
 
 
-void KOBO_screen::generate_fixed_enemies()
+void KOBO_screen::generate_wave(const KOBO_enemy_set *wave)
 {
 	static int sint[16] =
 			{ 0, 12, 23, 30, 32, 30, 23, 12, 0, -12, -23, -30,
@@ -689,39 +689,48 @@ void KOBO_screen::generate_fixed_enemies()
 	static int cost[16] =
 			{ 32, 30, 23, 12, 0, -12, -23, -30, -32, -30, -23,
 				-12, 0, 12, 23, 30 };
-	const KOBO_scene *s = &scenes[scene_num];
-	if(generate_count < s->enemy_max)
+	for(int j = 0; j < wave->num; j++)
 	{
-		int j;
-		for(j = 0; j < s->enemy[generate_count].num; j++)
-		{
-			int sp = s->enemy[generate_count].speed;
-			int x, y, h, v, t;
-			x = gamerand.get() % (WORLD_SIZEX - VIEWLIMIT * 2);
-			y = gamerand.get() % (WORLD_SIZEY - VIEWLIMIT * 2);
-			x -= (WORLD_SIZEX / 2 - VIEWLIMIT);
-			y -= (WORLD_SIZEY / 2 - VIEWLIMIT);
-			if(x < 0)
-				x -= VIEWLIMIT;
-			else
-				x += VIEWLIMIT;
-			if(y < 0)
-				y -= VIEWLIMIT;
-			else
-				y += VIEWLIMIT;
-			x += myship.get_x();
-			y += myship.get_y();
-
-			t = gamerand.get(4);
-			h = PIXEL2CS(sp * sint[t]) / 64;
-			v = PIXEL2CS(sp * cost[t]) / 64;
-			enemies.make(s->enemy[generate_count].kind,
-					PIXEL2CS(x), PIXEL2CS(y), h, v);
-		}
-		generate_count++;
+		int sp = wave->speed;
+		int x, y, h, v, t;
+		x = gamerand.get() % (WORLD_SIZEX - VIEWLIMIT * 2);
+		y = gamerand.get() % (WORLD_SIZEY - VIEWLIMIT * 2);
+		x -= (WORLD_SIZEX / 2 - VIEWLIMIT);
+		y -= (WORLD_SIZEY / 2 - VIEWLIMIT);
+		if(x < 0)
+			x -= VIEWLIMIT;
+		else
+			x += VIEWLIMIT;
+		if(y < 0)
+			y -= VIEWLIMIT;
+		else
+			y += VIEWLIMIT;
+		x += myship.get_x();
+		y += myship.get_y();
+		t = gamerand.get(4);
+		h = PIXEL2CS(sp * sint[t]) / 64;
+		v = PIXEL2CS(sp * cost[t]) / 64;
+		enemies.make(wave->kind, PIXEL2CS(x), PIXEL2CS(y), h, v);
 	}
-	if(generate_count >= s->enemy_max)
-		generate_count = 0;
+}
+
+
+void KOBO_screen::generate_fixed_enemies()
+{
+	const KOBO_scene *s = &scenes[scene_num];
+	if(s->enemy_max < 0)
+	{
+		for(int i = 0; i < -s->enemy_max; ++i)
+			generate_wave(&s->enemy[i]);
+	}
+	else
+	{
+		if(generate_count >= s->enemy_max)
+			generate_count = 0;
+		generate_wave(&s->enemy[generate_count]);
+		if(generate_count < s->enemy_max)
+			generate_count++;
+	}
 }
 
 
