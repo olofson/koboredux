@@ -526,7 +526,7 @@ void KOBO_enemy::make_ring()
 void KOBO_enemy::move_ring()
 {
 	di += 1 + pubrand.get(1);
-	if(di > 16)
+	if(di > frames)
 		di = 1;
 }
 
