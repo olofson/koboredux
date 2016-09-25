@@ -227,6 +227,7 @@ void _manage::player_ready()
 
 void _manage::next_scene()
 {
+	sound.g_kill_all();
 	scene_num++;
 	if(scene_num >= GIGA - 1)
 		scene_num = GIGA - 2;
