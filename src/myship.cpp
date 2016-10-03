@@ -648,14 +648,14 @@ void KOBO_myship::shot_single(int dir, int loffset, int hoffset)
 
 void KOBO_myship::nose_fire()
 {
-	shot_single(di, 14, 0);
+	shot_single(di, 15, 0);
 	nose_reload_timer = game.noseloadtime;
 }
 
 
 void KOBO_myship::tail_fire()
 {
-	shot_single((di + 3) % 8 + 1, 12, 0);
+	shot_single((di + 3) % 8 + 1, 15, 0);
 	tail_reload_timer = game.tailloadtime;
 }
 
@@ -666,7 +666,7 @@ void KOBO_myship::charged_fire()
 	_charge -= power;
 	sound.g_player_charged_fire((float)power / game.charge_limit);
 	while(power--)
-		shot_single(latched_dir, 14 + power / 5, pubrand.get(3) - 4);
+		shot_single(latched_dir, 15 + power / 5, pubrand.get(3) - 4);
 }
 
 

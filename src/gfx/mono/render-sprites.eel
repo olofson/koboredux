@@ -124,18 +124,129 @@ static sprites = [
 				.frame		2
 			}
 		]
+	},
+
+	{
+		// Kobo Mark 3 Small - Mono Edition
+		.output		DSTPATH + "sprites/kobo-mk3s.png",
+		.palette	[0x000000/*, 0xaaaaaa*/, 0x00ffff],
+		.tilew		24,
+		.tileh		24,
+		.sources	[
+			{
+				// 0: Full sheet; no tiling
+				.source	"sprites/kobo-mk3s-src.png",
+				.tilew	0
+
+			},
+			{
+				// 1: Engine
+				.source	[0, 0, 0, 256, 256],
+				.tilew	64,
+				.tileh	128
+			},
+			{
+				// 2: Cannon
+				.source	[0, 320, 128, 64, 192],
+				.tilew	64,
+				.tileh	192
+			},
+			{
+				// 3: Wing
+				.source	[0, 0, 128 + 192, 384, 192],
+				.tilew	192,
+				.tileh	192
+			},
+			{
+				// 4: Fuselage
+				.source	[0, 0, 128 + 192 + 192, 384, 2 * 192],
+				.tilew	128,
+				.tileh	192
+			}
+		],
+		.layers		[
+			{
+				// Left engine
+				.sxoffset	-56,
+				.syoffset	-16,
+				.rotation	[0, 360],
+				.source		1,
+				.frame		[0, 1, 1, 2, 2, 3, 3, 4,
+						 4, 5, 5, 6, 6, 7, 7, 0]
+			},
+			{
+				// Right engine
+				.sxoffset	56,
+				.syoffset	-16,
+				.rotation	[0, 360],
+				.source		1,
+				.frame		[0, 1, 1, 2, 2, 3, 3, 4,
+						 4, 5, 5, 6, 6, 7, 7, 0]
+			},
+			{
+				// Fuselage shadow onto engines
+				.blendmode	"multiply",
+				.clampcolor	0xffffffff,
+				.xoffset	16,
+				.yoffset	16,
+				.rotation	[0, 360],
+				.source		4,
+				.frame		1
+			},
+			{
+				// Wing shadow
+				.blendmode	"multiply",
+				.clampcolor	0xffffffff,
+				.xoffset	8,
+				.yoffset	8,
+				.rotation	[0, 360],
+				.source		3,
+				.frame		1
+			},
+			{
+				// Wing
+				.rotation	[0, 360],
+				.source		3
+			},
+			{
+				// Cannon
+				.rotation	[0, 360],
+				.source		2
+			},
+			{
+				// Fuselage shadow onto wing
+				.blendmode	"multiply",
+				.clampcolor	0xffffffff,
+				.xoffset	8,
+				.yoffset	8,
+				.rotation	[0, 360],
+				.source		4,
+				.frame		1
+			},
+			{
+				// Fuselage
+				.rotation	[0, 360],
+				.source		4
+			}
+		]
 	}
+
 ];
 
 export function main<args>
 {
 	local draft = false;
-	if specified args[1]
-		if args[1] == "-d"
+	local first = 0;
+	local last = sizeof sprites - 1;
+	for local a = 1, arguments - 1
+		switch args[a]
+		  case "-d"
 			draft = true;
+		  default
+			first, last = -(integer)(args[a]) - 1;
 
 	local e = tipe.Engine();
-	for local i = 0, sizeof sprites - 1
+	for local i = first, last
 	{
 		local params = clone defaults;
 		params.+ sprites[i];

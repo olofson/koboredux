@@ -1568,7 +1568,7 @@ const KOBO_enemy_kind enemy6 = {
 	&KOBO_enemy::make_enemy,
 	&KOBO_enemy::move_enemy6,
 	&KOBO_enemy::kill_default,
-	6,
+	10,
 	B_BMR_PURPLE, 0,
 	LAYER_ENEMIES,
 	0,

@@ -35,7 +35,8 @@ const KOBO_scene scenes[] = {
 		},
 # else
 		1,{
-			{&enemy_m4,  5, 5},
+//			{&enemy_m4,  5, 5},
+			{&enemy6,  100, 10},
 		},
 # endif
 		1,{

@@ -141,7 +141,7 @@ alias B_R5L9_GROUND B_R1L9_GROUND FUTURE
 alias B_R5L10_GROUND B_R1L10_GROUND FUTURE
 
 path "sprites"
-sprites B_PLAYER "kobo.png" 24 24 CENTER
+sprites B_PLAYER "kobo-mk3s.png" 24 24 CENTER
 sprites B_BMR_GREEN "bmr1.png" 24 24 CENTER
 sprites B_BMR_PURPLE "bmr2.png" 24 24 CENTER
 sprites B_BMR_PINK "bmr3.png" 24 24 CENTER
