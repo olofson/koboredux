@@ -267,10 +267,14 @@ void audio_options_t::build()
 		}
 
 		list("Sample Rate", &prf->samplerate, OS_RESTART_AUDIO);
-			item("22050 Hz", 22050);
+			item("8 kHz", 8000);
+			item("16 kHz", 16000);
+			item("22.05 kHz", 22050);
+			item("32 kHz", 32000);
 			item("44.1 kHz", 44100);
 			item("48 kHz", 48000);
 			item("96 kHz", 96000);
+			item("88.2 kHz", 88200);
 			item("192 kHz", 192000);
 		list("Sound Latency", &prf->latency, OS_RESTART_AUDIO);
 		{
