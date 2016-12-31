@@ -37,7 +37,8 @@ TitleSong()
 	struct {
 		wtosc o1;	wtosc o1b
 		wtosc o2;	wtosc o2b
-		wtosc o3
+		env o3e;	wtosc o3
+		wire o3e.out o3.a
 	}
 	o1.w pulse30; o1b.w pulse40
 	o2.w saw; o2b.w saw
@@ -46,23 +47,19 @@ TitleSong()
 	!base (rand 6n quant 1n)
 
 	//Intro
-	o1.p (base - 36n1); o1b.p (o1.p + 0n2)
+	o1.p (base - 36n1); o1b.p (o1.p + 0n2); set
 	o1.a .15; o1b.a .15
 	d 1000
 
-	o2.p (base - 12n)
-	o2b.p (o2.p + 8n05)
+	o2.p (base - 12n); o2b.p (o2.p + 8n05); set
 	o2.a .2; o2b.a .2; ramp o2.a 4000; ramp o2b.a 4000
 	d 2000
 
-	100 {
-		-o2b.p (1n / 100)
-		d 10
-	}
-	d 2000
+	-o2b.p 1n; ramp o2b.p 1000
+	d 3000
 
 	o2.a 0; o2b.a 0
-	o3.p 3; o3.a .1
+	@o3.p 3; o3e.mode o3e.IEXP3
 	d 2000
 
 	for {
@@ -70,27 +67,32 @@ TitleSong()
 		o1.p (base - 36n1); o1b.p (o1.p + 0n2)
 		o2.p (base + 3n + (rand 7n quant 4n) - 12n)
 		o2b.p (o2.p + 7n05)
+		set
 
 		// 1
-		o3.p (rand .5); @o3.a .5; o3.a 0
+		@o3.p (rand .5)
+		@o3e.target .6; o3e.target 0; ramp o3e.target 4000
 		o1.a .3; o1b.a .3
 		o2.a .2; o2b.a .2
 		d 2000
 
 		// 2
-		o3.p (1 + rand .5); @o3.a .4; o3.a 0
+		@o3.p (1 + rand .5)
+		@o3e.target .5; o3e.target 0; ramp o3e.target 4000
 		o1.a .1; o1b.a .1
 		o2.a .1; o2b.a .1
 		d 2000
 
 		// 3
-		o3.p (2 + rand .5); @o3.a .25; o3.a 0
+		@o3.p (2 + rand .5)
+		@o3e.target .3; o3e.target 0; ramp o3e.target 4000
 		o1.a .2; o1b.a .2
 		o2.a 0; o2b.a 0
 		d 2000
 
 		// 4
-		o3.p (3 + rand .5); @o3.a .2; o3.a 0; ramp o3.a 2000
+		@o3.p (3 + rand .5)
+		@o3e.target .25; o3e.target 0; ramp o3e.target 4000
 		base (rand 6n quant 1n)
 		!nb (base - 36n1)
 		200 {
@@ -131,21 +133,12 @@ IngameSong()
 	}
 
 	o1.w noise; o2.w noise; o3.w noise
-	o1.p 0; o2.p 1; o3.p 3
+	o1.p 0; o2.p 1; o3.p 3; set
 
 	for {
-		!p1 (rand 1 - .5)
-		!p2 (rand 2)
-		!p3 (rand 2 + 2)
-		o1.a (rand .4); ramp o1.a 3000
-		o2.a (rand .2); ramp o2.a 3000
-		o3.a (rand .1); ramp o3.a 3000
-		30 {
-			+o1.p (p1 - o1.p * .01)
-			+o2.p (p2 - o2.p * .01)
-			+o3.p (p3 - o3.p * .01)
-			d 100
-		}
+		o1.p (rand 1 - .5); o2.p (rand 2); o3.p (rand 2 + 2)
+		o1.a (rand .4); o2.a (rand .2); o3.a (rand .1)
+		d 3000
 	}
 }
 

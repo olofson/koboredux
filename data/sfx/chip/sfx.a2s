@@ -15,19 +15,12 @@ export S_LAUNCH(P V=1 PanX)
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	w noise
-	+tr (P + 2); p 0
-	10 {
-		+a .02
-		+p .1
-		d 10
-	}
+	+tr (P + 2); @p 0
+	+a .2; +p 1;		d 100
 	5 {
 		*a .25
-		p 1
-		20 {
-			+p .01
-			d 10
-		}
+		@p 1
+		+p .2;			d 200
 	}
 }
 
@@ -36,20 +29,11 @@ export S_LAUNCH_BULLET1(P V=1 PanX)
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	w pulse1
-	+tr (P - 1.1); p 0
-	2 {
-		+a .15
-		+p .01
-		d 10
-	}
-	3 {
-		-a .05
-		-p .01
-		d 10
-	}
-	@a .1; w noise; p 7; d 10
-	@a .02
-	a 0; d 150
+	+tr (P - 1.1); @p 0
+	+a .3; +p .02;		d 20
+	-a .15; -p .03;		d 30
+	@a .1; w noise; p 7;	d 10
+	@a .02;	a 0;		d 150
 }
 
 export S_LAUNCH_BULLET2(P V=1 PanX)
@@ -57,20 +41,11 @@ export S_LAUNCH_BULLET2(P V=1 PanX)
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	w pulse2
-	+tr (P - 1.6); p 0
-	2 {
-		+a .15
-		+p .01
-		d 10
-	}
-	4 {
-		-a .025
-		-p .01
-		d 10
-	}
-	@a .15; w noise; p 7.5; d 10
-	@a .035
-	a 0; d 150
+	+tr (P - 1.6); @p 0
+	+a .3; +p .02;		d 20
+	-a .1; -p .04;		d 40
+	@a .15; w noise; p 7.5;	d 10
+	@a .035; a 0;		d 150
 }
 
 export S_LAUNCH_BULLET3(P V=1 PanX)
@@ -78,21 +53,12 @@ export S_LAUNCH_BULLET3(P V=1 PanX)
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	w pulse4
-	+tr (P - 2); p 0
-	4 {
-		+a .1
-		+p .01
-		d 10
-	}
-	6 {
-		-a .05
-		-p .01
-		d 10
-	}
-	@a .25; w noise; p 8; d 10
-	@a .04; p 7
-	a .04; d 50
-	a 0; d 150
+	+tr (P - 2); @p 0
+	+a .4; +p .04;		d 40
+	-a .3; -p .06;		d 60
+	@a .25; w noise; p 8;	d 10
+	@a .04; p 7; a .04;	d 50
+	a 0;			d 150
 }
 
 export S_LAUNCH_RING(P V=1 PanX)
@@ -100,19 +66,12 @@ export S_LAUNCH_RING(P V=1 PanX)
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	w triangle
-	+tr (P - 1); p 0
-	10 {
-		+a .1
-		+p .2
-		d 10
-	}
+	+tr (P - 1); @p 0
+	+a 1; +p 2;		d 100
 	5 {
 		*a .25
-		p 1
-		10 {
-			+p .1
-			d 10
-		}
+		@p 1
+		+p 1;			d 100
 	}
 }
 
@@ -122,27 +81,17 @@ export S_LAUNCH_BOMB(P V=1 PanX)
 	pan PanX; vol V; set
 	w triangle
 	+tr P
-	p 2
 	@a .2
-	3 {
-		-p .7; d 20
-	}
-	@a .1
-	w noise; p 7; d 20
-	w triangle; p -2.5; a 1
-	10 {
-		+p .2; d 10
-	}
-	@a .05
-	w noise; p 3; d 20
-	w triangle; p -2.5; a 1
+	@p 2; -p 2.1;		d 60
+	w noise; @a .1; @p 7;	d 20
+	w triangle; @p -2.5; a 1
+	+p 2;			d 100
+	w noise; @a .05; @p 3;	d 20
+	w triangle; @p -2.5; a 1
 	5 {
 		*a .25
-		p -1
-		10 {
-			-p .1
-			d 20
-		}
+		@p -1
+		-p 1;			d 200
 	}
 }
 
@@ -155,20 +104,14 @@ export S_DAMAGE(P V=1 PanX)
 	d rand 50
 	phase 0
 	@a .4
-	p .5
-	3 {
-		-p .7
-		*a .7
-		d 10
-	}
-	@a .1
-	p (rand .3);		d 10
-	a 0; p (2 + rand .3);	d 10
-	w noise
-	p 3
-	a .1;	d 10
-	a .05;	d 50
-	a 0;	d 150
+	@p .5
+	-p 2.1; a .2;		d 30
+	@a .1; @p (rand .3);	d 10
+	a 0; @p (2 + rand .3);	d 10
+	w noise; @p 3
+	a .1;			d 10
+	a .05;			d 50
+	a 0;			d 150
 }
 
 export S_NO_DAMAGE(P V=1 PanX)
@@ -177,9 +120,9 @@ export S_NO_DAMAGE(P V=1 PanX)
 	pan PanX; vol V; set
 	w square
 	+tr P
-	@a .1;	p (1 + rand .3);	d 5
-	a .03;	p (rand .5 - 1);	d 10
-	a 0;	p (3 + rand .3);	d 30
+	@a .1; @p (1 + rand .3);	d 5
+	a .03; @p (rand .5 - 1);	d 10
+	a 0; @p (3 + rand .3);		d 30
 }
 
 export S_PLAYER_DAMAGE(P V=1 PanX)
@@ -191,21 +134,13 @@ export S_PLAYER_DAMAGE(P V=1 PanX)
 	d rand 50
 	phase 0
 	@a 1
-	3 {
-		-p 1
-		*a .8
-		d 10
-	}
-	2 {
-		-p .3
-		d 10
-	}
-	a 0;	d 10
-	w noise
-	p 2.3
-	a .5;	d 10
-	a .2;	d 50
-	a 0;	d 200
+	-p 3; *a .5;	d 30
+	-p .6;		d 20
+	a 0;		d 10
+	w noise; @p 2.3
+	a .5;		d 10
+	a .2;		d 50
+	a 0;		d 200
 }
 
 export S_HIT_ROCK(P V=1 PanX)
@@ -216,22 +151,14 @@ export S_HIT_ROCK(P V=1 PanX)
 	+tr (P + 3 + rand .5)
 	d rand 50
 	phase 0
-	@a .5
-	d 10
-	a .5
-	p -3
-	2 {
-		-p .8
-		d 10
-		w triangle
-	}
-	a 0; d 10
+	@a .5;			d 10
+	a .5; @p -3; -p .8;	d 10
+	w triangle; -p .8;	d 10
+	a 0;			d 10
 
-	p 6
-	a .1; d 10
-	p (rand .5 - 1)
-	w noise
-	a 0; d 50
+	@p 6; a .1;		d 10
+	w noise; @p (rand .5 - 1)
+	a 0;			d 50
 }
 
 export S_EXPLO_NODE(P V=1 PanX)
@@ -241,33 +168,22 @@ export S_EXPLO_NODE(P V=1 PanX)
 	w square
 	+tr P
 	@a .5
-	p (1 + rand .5)
-	5 {
-		-p .7
-		d 10
-	}
-	p (rand .3)
+	@p (1 + rand .5)
+	-p 3.5;			d 50
+	@p (rand .3)
 	5 {
 		w noise
-		-p .2
-		*a .9
-		d 10
+		-p .2;	*a .9;		d 10
 		w square
-		-p .2
-		*a .9
-		d 10
+		-p .2;	*a .9;		d 10
 	}
-	while (a > .01) {
+	while a > .01 {
 		w noise
-		-p .02
-		*a .95
-		d 10
+		-p .02;	*a .95;		d 10
 		w square
-		-p .02
-		*a .95
-		d 10
+		-p .02;	*a .95;		d 10
 	}
-	a 0;	d 10
+	a 0;			d 10
 }
 
 export S_EXPLO_ENEMY(P V=1 PanX)
@@ -276,24 +192,14 @@ export S_EXPLO_ENEMY(P V=1 PanX)
 	pan PanX; vol V; set
 	w square
 	+tr P
-	@a .7
-	p .5
-	3 {
-		-p .5
-		d 10
+	@a .7; @p .5
+	-p 1.5;			d 30
+	w noise; @p 3
+	-p 2.1; *a .5;		d 70
+	while a > .01 {
+		*a .9;			d 10
 	}
-	w noise
-	p 3
-	7 {
-		-p .3
-		*a .9
-		d 10
-	}
-	while (a > .01) {
-		*a .9
-		d 10
-	}
-	a 0;	d 10
+	a 0;			d 10
 }
 
 export S_EXPLO_PLAYER(P V=1 PanX)
@@ -303,23 +209,20 @@ export S_EXPLO_PLAYER(P V=1 PanX)
 	w square
 	+tr P
 	@a .5
-	p 2
-	10 {
-		-p .5
-		d 10
-	}
-	p 2
+	@p 2
+	-p 5;			d 100
+	@p 2
 	5 {
-		-tr .2; p (rand .5)
+		-tr .2; @p (rand .5)
 		*a .95
 		d 10
 	}
-	while (a > .001) {
-		-tr .01; p (rand 1)
+	while a > .001 {
+		-tr .01; @p (rand 1)
 		*a .98
 		d 10
 	}
-	a 0;	d 10
+	a 0;			d 10
 }
 
 export S_EXPLO_RING(P V=1 PanX)
@@ -327,17 +230,13 @@ export S_EXPLO_RING(P V=1 PanX)
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	w noise
-	+tr (P - 1); p 3
+	+tr (P - 1); @p 3
 	a .5
-	5 {
-		-a .1
-		+p .7
-		d 10
-	}
+	a 0; +p .7;		d 50
 	a .5
 	5 {
 		*a .25
-		p 1
+		@p 1
 		10 {
 			!tr0 tr
 			if (rand 1 > .5) {
@@ -346,8 +245,7 @@ export S_EXPLO_RING(P V=1 PanX)
 				w noise
 				+tr 2
 			}
-			+p .1
-			d 10
+			+p .1; set p;		d 10
 			tr tr0
 		}
 	}
@@ -359,26 +257,24 @@ export S_EXPLO_ROCK(P V=1 PanX)
 	pan PanX; vol V; set
 	w noise
 	+tr P
-	p 3
+	@p 3
 	3 {
-		p (rand 3)
+		@p (rand 3)
 		@a (.3 + rand .5)
-		a 0; d (10 + rand 20)
+		a 0
+		d (10 + rand 20)
 	}
-	w square; a 1; -tr 3; p 4
+	w square; a 1; -tr 3; @p 4
 	10 {
 		-p (.3 + rand .5)
 		*a .9
 		d 10
 	}
-	w noise
-	a .3
-	p 4
-	20 {
-		*a .8
-		d 10
-	}
-	a 0;	d 10
+	w noise; @a 0; @p 4
+	a .3; 			d 100
+	*a .25;			d 200
+	*a .25;			d 400
+	a 0;			d 800
 }
 
 export S_RUMBLE(P V=1 PanX)
@@ -389,14 +285,14 @@ export S_RUMBLE(P V=1 PanX)
 	+tr P
 	@a .2
 	3 {
-		p (rand .5)
+		@p (rand .5)
 		-tr .7
 		d 10
 	}
 	w triangle
 	a 1
 	20 {
-		p (rand 1)
+		@p (rand 1)
 		-tr .01
 		-a .05
 		d 20
@@ -410,22 +306,28 @@ ChargeBlipp(P V=1 PanX Charge=1)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
-	a .2; w saw; p (Charge * 2); d 2
-	*a .5; -p .5; d 5
-	a 0; d 10
+	a .2; w saw; @p (Charge * 2);	d 2
+	*a .5; -p .5;			d 5
+	a 0;				d 10
 }
 
 FireCharged(P V=1 PanX Charge=1)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
-	+tr (P - 4)
-	a (Charge * .5 + .5); set a; w saw; p (5 + Charge)
+	!tr0 (tr + P - 4)
+	tr tr0
+	a (Charge * .5 + .5); set a; w saw; @p (5 + Charge)
 	20 {
-		d 5; *p .96; +p (rand .1)
+		tr (tr0 + rand 1 - .5)
+		*p .96
+		d 5
 	}
-	while (a > .05) {
-		d 5; *p .98; +p (rand .01); -a .01
+	while a > .05 {
+		tr (tr0 + rand 1 - .5)
+		*p .98
+		-a .01
+		d 5
 	}
 	a 0; d 100
 }
@@ -441,23 +343,19 @@ export S_SHOT(P V=1 PanX)
 
 .retrig
 	@a .15
-	p 2
-	10 {
-		*p .7
-		*a .8
-		d 10
-	}
+	@p 2
+	*p .03; *a .1; d 100
 
 	// Recharge (aborted if retrigged)
-	p 1
+	@p 1
 	15 {
 		+a .005
-		+p .9; d 10
-		-p .85; d 10
+		+p .9;		d 10
+		-p .85;		d 10
 	}
 	20 {
-		+p .7; d 10
-		-p .65; d 10
+		+p .7;		d 10
+		-p .65;		d 10
 	}
 	a 0; d 10
 
@@ -483,8 +381,8 @@ export S_BOMB_TRIG(P V=1 PanX)
 	!playing 1
 	while playing {
 		3 {
-			p 40n;	d 10
-			p 45n;	d 10
+			@p 40n;		d 10
+			@p 45n;		d 10
 		}
 	}
 	1() {
@@ -506,19 +404,13 @@ export S_BOMB_DETO(P V=1 PanX)
 	w square
 	+tr P
 	@a .5
-	p 2
-	7 {
-		-p .7
-		d 10
+	@p 2
+	-p 4.9;		d 70
+	w noise; @p 2; @a .3
+	while a > .01 {
+		*a .93;		d 10
 	}
-	w noise
-	p 2
-	a .3
-	while (a > .01) {
-		*a .93
-		d 10
-	}
-	a 0;	d 10
+	a 0;		d 100
 }
 
 export S_BOMB2_TRIG(P V=1 PanX)
@@ -530,8 +422,8 @@ export S_BOMB2_TRIG(P V=1 PanX)
 	!playing 1
 	while playing {
 		3 {
-			p 38n;	d 10
-			p 47n;	d 10
+			@p 38n;		d 10
+			@p 47n;		d 10
 		}
 	}
 	1() {
@@ -553,19 +445,14 @@ export S_BOMB2_DETO(P V=1 PanX)
 	w square
 	+tr P
 	@a .7
-	p 2.5
-	7 {
-		-p .8
-		d 10
-	}
-	w noise
-	p 1.5
-	a .5
-	while (a > .01) {
+	@p 2.5
+	-p 5.6;		d 70
+	w noise; @p 1.5; @a .5
+	while a > .01 {
 		*a .93
 		d 10
 	}
-	a 0;	d 10
+	a 0;	d 100
 }
 
 export S_CORE(P V=1 PanX)
@@ -583,29 +470,22 @@ export S_CORE(P V=1 PanX)
 	while running {
 		!pd (p2d (p + tr) * pf)
 		+a (A0 - a * .1)
-		+tr .7;	*p .98;		d pd
-		-tr .7;	*p .98;		d pd
+		+tr .7; *p .98; set p;		d pd
+		-tr .7; *p .98; set p;		d pd
 	}
 
 	// Destruction!
+	!ps p	// (Save)
+
 	//	Breakage
-	w noise
-	@a .7
-	!ps p
-	p 7
-	3 {
-		-p 1
-		d 10
-	}
+	w noise; @a .7;	@p 7
+	-p 3;		d 30
 
 	//	Thud
-	p 2
-	w square
-	3 {
-		-p .1
-		d 10
-	}
-	p ps
+	w square; @p 2
+	-p .3;		d 30
+
+	p ps	// (Restore)
 
 	//	Over-rev
 	@a (A0 * 2)
@@ -613,22 +493,17 @@ export S_CORE(P V=1 PanX)
 	50 {
 		+a .005
 		!pd (p2d (p + tr) * pf)
-		+tr .7; +p revup; 	d pd
-		-tr .7; +p revup; 	d pd
+		+tr .7; +p revup; set p;	d pd
+		-tr .7; +p revup; set p;	d pd
 		*revup .95
 	}
 
 	//	Explosion
 	@a 1
-	p 3
-	5 {
-		-p .5
-		d 10
-	}
-	a .5
-	w noise
-	p 4
-	while (a > .001) {
+	@p 3
+	-p 2.5;		d 50
+	w noise; a .5; @p 4
+	while a > .001 {
 		*p .99
 		*a .95
 		d 20
@@ -665,22 +540,13 @@ export S_BIGSPAWN(P V=1 PanX)
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
 	w pulse10
-	+tr (P - 3); p 0
-	10 {
-		+a .1
-		+p .01
-		d 10
-	}
-	10 {
-		-a .1
-		-p .01
-		d 10
-	}
-	@a .5; w noise; p 6; d 10
-	@a .1; p 8
-	50 {
-		*a .8; d 10
-	}
+	+tr (P - 3); @p 0
+	+a 1; +p .1;		d 100
+	-a 1; -p .1;		d 100
+	@a .5; w noise; @p 6;	d 10
+	@a .1; @p 8
+	*a .25;			d 100
+	a 0;			d 100
 }
 
 export S_ENEMY_M1(P V=1 PanX)
@@ -703,53 +569,36 @@ export S_ENEMY_M1(P V=1 PanX)
 	for {
 		!pd (p2d (p + tr) * pf)
 		+a (A0 - a * .1)
-		+tr 1;	*p .99;		d pd
-		-tr 1;	*p .99;		d pd
+		+tr 1; *p .99; set p;	d pd
+		-tr 1; *p .99; set p;	d pd
 	}
 
 .damage
 	!ps p
 	tr (tr0 + TR)
-	p (2 + damage_amount)
+	@p (2 + damage_amount)
 	a damage_amount
-	5 {
-		-p .5
-		d 10
-	}
-	a A0
-	d 10
-	p (damage_amount + ps)
-	if (p > 2) {
-		p 2
-	}
+	-p 2.5;			d 50
+	a A0;			d 10
+	@p (damage_amount + ps)
+	if (p > 2) p 2
 	jump resume
 
 .death
 	w square
 	tr tr0
 	@a .7
-	p 2
-	5 {
-		-p .5
-		d 10
-	}
-	10 {
-		-p .1
-		d 10
-	}
-	w noise
-	p -2
-	10 {
-		+p .2
-		d 10
-	}
+	@p 2
+	-p 2.5;			d 50
+	-p 1;			d 100
+	w noise; @p -2
+	+p 2;			d 100
 	15 {
 		-p .05
 		*a .8
 		d 100
 	}
-	a 0
-	d 10
+	a 0;			d 100
 
 	// Stop
 	1() {

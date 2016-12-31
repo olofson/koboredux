@@ -9,7 +9,7 @@ def a2sversion	"1.9"
 Flute0(P V=1 Wave)
 {
 	struct { wtosc }
-	!P0 tr; +P tr; w Wave; p P; a 0; !er .05; !vib 0; !tvib .005; !pf .3
+	!P0 tr; +P tr; w Wave; @p P; a 0; !er .05; !vib 0; !tvib .005; !pf .3
 .rt	wg (V + a - .001) {
 		tr (vib * 6 + rand .01)
 		12 {	-tr vib; +p (P - p * pf); +a (V - a * er); d 5 }
@@ -45,7 +45,7 @@ Feep(P V=1 C=2)
 	lp .5; bp .5; hp .1; q .05
 	cutoff (P - 1); !tp (P + C)
 	!pp (rand 3 - 1.5)
-	!P0 tr; +P tr; w pulse1; p P; a 0; !er .05; !vib 0; !tvib .005
+	!P0 tr; +P tr; w pulse1; @p P; a 0; !er .05; !vib 0; !tvib .005
 .rt	while ((V + a) > .001) {
 		tr (vib * 6 + rand .01)
 		12 {
@@ -131,7 +131,7 @@ Str0(P V Attack Decay Detune)
 	pan (Detune * 100)
 	w saw; a 0; !Ta (V * .1); phase (rand 1)
 	+P Detune
-	p P; !er (Attack * .1)
+	@p P; !er (Attack * .1)
 .rt	wg (V + a - .001) {
 		+p (P - p * .4 + rand .02 - .01)
 		+a (Ta - a * er); Ta (V * rand .2)
@@ -175,7 +175,7 @@ nb(P V=1 Pan)
 {
 	struct { wtosc; panmix }
 	pan Pan; set pan
-	w noise; p (P + 6); a (V * .8); set a
+	w noise; @p (P + 6); a (V * .8); set a
 	50 {	*a .99; *p .96; d 2 }
 	40 {	*a .92; -p .01; d 50 }
 }
@@ -188,7 +188,7 @@ NBurst(P V=1)
 NBurst2(P V=1)
 {
 	struct { wtosc }
-	w noise; p (P + 3.5); a V; set a; *a .5; d 10
+	w noise; @p (P + 3.5); a V; set a; *a .5; d 10
 	-p 2
 	60 {	*a .9; d 50 }
 }
@@ -196,7 +196,7 @@ NBurst2(P V=1)
 sdn(V)
 {
 	struct { wtosc }
-	w noise; p 5.5; a V; set a; d 2
+	w noise; @p 5.5; a V; set a; d 2
 	p 5; *a .4; d 20
 	*a .2; d 100
 	100 {
@@ -209,7 +209,7 @@ SDrum(P V=1)
 {
 	struct { wtosc }
 	sdn V
-	w square; p (P + 2); a V; set a
+	w square; p (P + 2); a V; set
 	10 {	-p .2; d 1 }
 	d 5
 	-p .2; d 5
@@ -225,7 +225,7 @@ SDrum(P V=1)
 HHClosed(P V=1)
 {
 	struct { wtosc }
-	w square; a (V * .2); set a; p 6
+	w square; a (V * .2); p 6; set a
 	3 {	d 1; -p .5 }
 	200 {	p (rand 1.5 + 4.5); *a .95; d .5 }
 }
@@ -233,7 +233,7 @@ HHClosed(P V=1)
 HHOpen(P V=1)
 {
 	struct { wtosc }
-	w square; a (V * .2); set a; p 6
+	w square; a (V * .2); p 6; set
 	3 {	d 1; -p .5 }
 	600 {	p (rand 1.5 + 4.5); *a .993; d .5 }
 }
@@ -288,7 +288,7 @@ HH2()
 bdnoise(P V)
 {
 	struct { wtosc }
-	w noise; p (P + 4); a (V * .2); set a
+	w noise; p (P + 4); a (V * .2); set
 	20 {	*a .95; -p .1; d 3 }
 	a 0; d 1000
 }
@@ -296,7 +296,7 @@ BDrum(P V=1)
 {
 	struct { wtosc }
 	bdnoise P V
-	w sine; p (P + 4); a V; set a
+	w sine; p (P + 4); a V; set
 	5 {	-p .9; d 1 }
 	d 10
 	5 {	-p .2; d 2 }
@@ -310,7 +310,7 @@ BDrum(P V=1)
 tn(P V)
 {
 	struct { wtosc }
-	w noise; p (P + 6); a (V * .5); set a; d 10
+	w noise; p (P + 6); a (V * .5); set; d 10
 	-p 2
 	100 {	-p .07; *a .8; d 10 }
 }
@@ -318,7 +318,7 @@ Tom(P V=1)
 {
 	struct { wtosc }
 	tn P V
-	w saw; p (P + 3); a V; set a
+	w saw; p (P + 3); a V; set
 	10 {	-p .35; d 1 }
 	w triangle
 	7 {
@@ -339,7 +339,7 @@ SoftArp(P V=1 Maj=0)
 	sa0(PP VV)
 	{
 		pan (rand 1 - .5); set pan
-		a VV; p PP;	td .01
+		a VV; @p PP;	td .01
 		*a .25;		td .49
 	}
 	w triangle; a V; +tr P; !aa a
@@ -368,8 +368,8 @@ Explo0(P V=1 Wave Attack)
 	struct { wtosc; panmix }
 	pan (rand 1 - .5); set pan
 	+P tr; w Wave; !x 1.5; a V; -P 3; tr Attack; !D 1
-	200 {	*tr .98; p (P + rand x); +x .01; d D; +D .005 }
-	800 {	*tr .98; p (P + rand x); -x .0025; *a .999; d D; +D .005 }
+	200 {	*tr .98; @p (P + rand x); +x .01; d D; +D .005 }
+	800 {	*tr .98; @p (P + rand x); -x .0025; *a .999; d D; +D .005 }
 	tr P
 	800 {	rand p x; *a .995; d 2.5 }
 }
@@ -385,19 +385,19 @@ Explosion(P V=1)
 ResoBass(P V=1 Reso)
 {
 	struct { wtosc }
-	p (P + 2); w square; a (V * .2); set a
+	p (P + 2); w square; a (V * .2); set
 	a 0; d 5
 	+Reso (P + 1.5); w sine
 	P p2d (P + tr)
 	10 {
-		phase 0; p Reso; a V; set a
+		phase 0; p Reso; a V; set
 		a 0; d P
 		-Reso 1n
 		*V .8
 	}
 	!i (500 / P); !mv (1 - (1 / (.1 * i)))
 	i {
-		phase 0; p Reso; a V; set a; a 0; d P
+		phase 0; p Reso; a V; set; a 0; d P
 		-Reso .1n; *V mv
 	}
 }
@@ -419,20 +419,20 @@ ResoIn(P V=1)
 EvilSyncBass(P V=1 Drive)
 {
 	struct { wtosc }
-	+P tr; tr 0; p P
+	+P tr; tr 0; @p P
 	*V .6
 	!per (p2d P * .5)
 	a V; set a
-	p 5; w noise; phase 0; d 2
-	p (P + 2); w square; d per
-	w saw; p (P + .5 + Drive)
+	@p 5; w noise; phase 0; d 2
+	@p (P + 2); w square; d per
+	w saw; @p (P + .5 + Drive)
 	!ma .99; !dp .01
 	wg (a - .01) {
-		+p dp; w saw; phase 0; d per
+		+p dp; set p; w saw; phase 0; d per
 		*a ma; w square; d per
 	}
-	a 0; set a
-	1() { *a .5; *ma .85; +p 1; /per 4; *<1 }
+	@a 0
+	1() { *a .5; *ma .85; +p 1; set p; /per 4; *<1 }
 }
 
 Drone(P V=1)

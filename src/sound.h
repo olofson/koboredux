@@ -113,7 +113,7 @@ class KOBO_sound
 	static unsigned	rumble;
 
 	// Audiality 2 interface
-	static A2_state *state;
+	static A2_interface *iface;
 	static A2_handle rootvoice;	// Engine root voice
 	static A2_handle master_g;	// Master group
 	static A2_handle ui_g;		// UI sfx group
