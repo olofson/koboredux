@@ -865,7 +865,7 @@ void KOBO_main::close_display()
 
 void KOBO_main::noiseburst()
 {
-	if(prefs->quickstart)
+	if(prefs->quickstart || prefs->cmd_warp)
 		return;
 
 	sound.ui_noise(S_UI_LOADER);
@@ -1188,7 +1188,7 @@ int KOBO_main::open()
 	load_palette();
 	noiseburst();
 
-	if(!prefs->quickstart)
+	if(!(prefs->quickstart || prefs->cmd_warp))
 		sound.jingle(S_OAJINGLE);
 	int jtime = SDL_GetTicks() + 5000;
 
@@ -1198,7 +1198,7 @@ int KOBO_main::open()
 	wdash->progress_done();
 	wdash->mode(DASHBOARD_JINGLE);
 
-	if(!prefs->quickstart)
+	if(!(prefs->quickstart || prefs->cmd_warp))
 	{
 		while(!SDL_TICKS_PASSED(SDL_GetTicks(), jtime) &&
 				!skip_requested())
