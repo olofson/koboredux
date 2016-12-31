@@ -71,6 +71,7 @@ void prefs_t::init()
 	key("samplerate", samplerate, 48000); desc("Sample Rate");
 	key("latency", latency, 20); desc("Sound Latency");
 	key("audiobuffer", audiobuffer, 0); desc("Custom Audio Buffer Size");
+	yesno("audiots", audiots, 1); desc("Timestamp Audio Events");
 	key("tsdelay", tsdelay, 5); desc("Timestamp Delay");
 
 	key("sfxtheme", sfxtheme, ""); desc("Sound Theme");

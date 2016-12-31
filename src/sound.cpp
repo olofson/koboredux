@@ -374,7 +374,8 @@ int KOBO_sound::open()
 	}
 
 	A2_config *cfg = a2_OpenConfig(prefs->samplerate, bufsize, 2,
-			A2_REALTIME | A2_TIMESTAMP | A2_STATECLOSE);
+			A2_REALTIME | A2_AUTOCLOSE |
+			(prefs->audiots ? A2_TIMESTAMP : 0));
 	if(!cfg)
 	{
 		log_printf(ELOG, "Couldn't create audio configuration;"

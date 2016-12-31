@@ -300,6 +300,7 @@ void audio_options_t::build()
 				item(buf, i);
 			}
 		}
+		yesno("Use Timestamps", &prf->audiots, OS_RESTART_AUDIO);
 
 		space();
 
