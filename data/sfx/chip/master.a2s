@@ -2,7 +2,7 @@ def title	"KRChipMaster"
 def version	"1.0.0"
 def description	"Kobo Redux Chip Sound Theme - Master Section"
 def author	"David Olofson"
-def copyright	"Copyright 2016 David Olofson"
+def copyright	"Copyright 2016-2017 David Olofson"
 def license	"GPL"
 def a2sversion	"1.9.1"
 
@@ -20,8 +20,16 @@ MasterGroup()
 	WS.amount .5
 	PM.vol .5
 	set
-	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
-	3(WSA)	{ WS.amount (WSA * .25); ramp WS.amount FADETIME }
+	2(V Dur=FADETIME)
+	{
+		PM.vol V
+		ramp PM.vol Dur
+	}
+	3(WSA Dur=FADETIME)
+	{
+		WS.amount (WSA * .25)
+		ramp WS.amount Dur
+	}
 }
 
 SubGroup()
@@ -32,7 +40,11 @@ SubGroup()
 	}
 	PM.vol .5
 	set
-	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
+	2(V Dur=FADETIME)
+	{
+		PM.vol V
+		ramp PM.vol Dur
+	}
 }
 
 MonoGroup()
@@ -43,7 +55,11 @@ MonoGroup()
 	}
 	PM.vol .5
 	set
-	2(V)	{ PM.vol V; ramp PM.vol FADETIME }
+	2(V Dur=FADETIME)
+	{
+		PM.vol V
+		ramp PM.vol Dur
+	}
 }
 
 export def S_G_MASTER	MasterGroup

@@ -3,7 +3,7 @@
    Kobo Deluxe - Wrapper for Sound Control
 ------------------------------------------------------------
  * Copyright 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -38,11 +38,7 @@ unsigned KOBO_sound::rumble = 0;
 
 A2_interface *KOBO_sound::iface = NULL;
 A2_handle KOBO_sound::rootvoice = 0;
-A2_handle KOBO_sound::master_g = 0;
-A2_handle KOBO_sound::ui_g = 0;
-A2_handle KOBO_sound::sfx_g = 0;
-A2_handle KOBO_sound::music_g = 0;
-A2_handle KOBO_sound::title_g = 0;
+A2_handle KOBO_sound::groups[KOBO_MG__COUNT] = { 0, 0, 0, 0, 0 };
 int KOBO_sound::current_noise = 0;
 A2_handle KOBO_sound::noisehandle = 0;
 A2_handle KOBO_sound::musichandle = 0;
@@ -55,6 +51,14 @@ float KOBO_sound::buffer_latency = 0.0f;
 int KOBO_sound::current_song = 0;
 bool KOBO_sound::music_is_ingame = false;
 
+// S_* sounds normally running on the respective groups
+static const int group_programs[KOBO_MG__COUNT] = {
+	S_G_MASTER,
+	S_G_UI,
+	S_G_SFX,
+	S_G_MUSIC,
+	S_G_TITLE
+};
 
 #define	KOBO_DEFS(x)	"S_" #x,
 static const char *kobo_soundnames[] =
@@ -144,42 +148,14 @@ bool KOBO_sound::load(unsigned bank, const char *themepath,
 			a2_Kill(iface, gunhandle);
 			gunhandle = 0;
 			break;
-		  case S_G_MASTER:
-			if(master_g > 0)
-			{
-				a2_Kill(iface, master_g);
-				master_g = 0;
-			}
-			break;
-		  case S_G_UI:
-			if(ui_g > 0)
-			{
-				a2_Kill(iface, ui_g);
-				ui_g = 0;
-			}
-			break;
-		  case S_G_SFX:
-			if(sfx_g > 0)
-			{
-				a2_Kill(iface, sfx_g);
-				sfx_g = 0;
-			}
-			break;
-		  case S_G_MUSIC:
-			if(music_g > 0)
-			{
-				a2_Kill(iface, music_g);
-				music_g = 0;
-			}
-			break;
-		  case S_G_TITLE:
-			if(title_g > 0)
-			{
-				a2_Kill(iface, title_g);
-				title_g = 0;
-			}
-			break;
 		}
+		for(int j = 0; j < KOBO_MG__COUNT; ++j)
+			if(i == group_programs[j])
+				if(groups[j] > 0)
+				{
+					a2_Kill(iface, groups[j]);
+					groups[j] = 0;
+				}
 	}
 
 	if(prefs->soundtools)
@@ -196,7 +172,7 @@ bool KOBO_sound::load(unsigned bank, const char *themepath,
 						kobo_soundnames[i], i);
 	}
 
-	init_mixdown();
+	init_mixer_group(KOBO_MG_ALL);
 	prefschange();
 
 	if(prog)
@@ -249,87 +225,43 @@ void KOBO_sound::unload(int bank)
 			  case S_SHOT:
 				gunhandle = 0;
 				break;
-			  case S_G_MASTER:
-				master_g = 0;
-				break;
-			  case S_G_UI:
-				ui_g = 0;
-				break;
-			  case S_G_SFX:
-				sfx_g = 0;
-				break;
-			  case S_G_MUSIC:
-				music_g = 0;
-				break;
-			  case S_G_TITLE:
-				title_g = 0;
-				break;
 			}
+			for(int j = 0; j < KOBO_MG__COUNT; ++j)
+				if(i == group_programs[j])
+					if(groups[j] > 0)
+						groups[j] = 0;
 			sounds[i] = 0;
 		}
 }
 
 
-void KOBO_sound::init_mixdown()
+void KOBO_sound::init_mixer_group(KOBO_mixer_group grp)
 {
-	if(master_g <= 0)
+	A2_handle parent;
+
+	if(grp == KOBO_MG_ALL)
 	{
-		master_g = a2_Start(iface, rootvoice, sounds[S_G_MASTER]);
-		if(master_g < 0)
-		{
-			log_printf(WLOG, "Couldn't create master mixer group!"
-					" (%s)\n",
-					a2_ErrorString((A2_errors)-master_g));
-			master_g = a2_NewGroup(iface, rootvoice);
-		}
+		for(int j = 0; j < KOBO_MG__COUNT; ++j)
+			init_mixer_group((KOBO_mixer_group)j);
+		return;
 	}
 
-	if(ui_g <= 0)
-	{
-		ui_g = a2_Start(iface, master_g, sounds[S_G_UI]);
-		if(ui_g < 0)
-		{
-			log_printf(WLOG, "Couldn't create UI mixer group!"
-					" (%s)\n",
-					a2_ErrorString((A2_errors)-ui_g));
-			ui_g = a2_NewGroup(iface, master_g);
-		}
-	}
+	if(groups[grp] > 0)
+		return;		// Already up!
 
-	if(sfx_g <= 0)
-	{
-		sfx_g = a2_Start(iface, master_g, sounds[S_G_SFX]);
-		if(sfx_g < 0)
-		{
-			log_printf(WLOG, "Couldn't create SFX mixer group!"
-					" (%s)\n",
-					a2_ErrorString((A2_errors)-sfx_g));
-			sfx_g = a2_NewGroup(iface, master_g);
-		}
-	}
+	if(grp == KOBO_MG_MASTER)
+		parent = rootvoice;
+	else
+		parent = groups[KOBO_MG_MASTER];
+	if(parent <= 0)
+		return;		// No parent group!
 
-	if(music_g <= 0)
+	groups[grp] = a2_Start(iface, parent, sounds[group_programs[grp]]);
+	if(groups[grp] < 0)
 	{
-		music_g = a2_Start(iface, master_g, sounds[S_G_MUSIC]);
-		if(music_g < 0)
-		{
-			log_printf(WLOG, "Couldn't create music mixer group!"
-					" (%s)\n",
-					a2_ErrorString((A2_errors)-music_g));
-			music_g = a2_NewGroup(iface, master_g);
-		}
-	}
-
-	if(title_g <= 0)
-	{
-		title_g = a2_Start(iface, master_g, sounds[S_G_TITLE]);
-		if(title_g < 0)
-		{
-			log_printf(WLOG, "Couldn't create music mixer group!"
-					" (%s)\n",
-					a2_ErrorString((A2_errors)-title_g));
-			title_g = a2_NewGroup(iface, master_g);
-		}
+		log_printf(WLOG, "Couldn't create mixer group %d! (%s)\n",
+				grp, a2_ErrorString((A2_errors)-groups[grp]));
+		groups[grp] = a2_NewGroup(iface, parent);
 	}
 }
 
@@ -338,12 +270,16 @@ void KOBO_sound::prefschange()
 {
 	if(!iface)
 		return;
-	a2_Send(iface, master_g, 3, (float)prefs->vol_boost);
-	a2_Send(iface, master_g, 2, pref2vol(prefs->volume));
-	a2_Send(iface, sfx_g, 2, pref2vol(prefs->sfx_vol));
-	a2_Send(iface, ui_g, 2, pref2vol(prefs->ui_vol));
-	a2_Send(iface, music_g, 2, pref2vol(prefs->music_vol));
-	a2_Send(iface, title_g, 2, pref2vol(prefs->title_vol));
+
+	a2_Send(iface, groups[KOBO_MG_MASTER], 3, (float)prefs->vol_boost);
+	a2_Send(iface, groups[KOBO_MG_MASTER], 2, pref2vol(prefs->volume));
+
+	a2_Send(iface, groups[KOBO_MG_SFX], 2, pref2vol(prefs->sfx_vol));
+
+	a2_Send(iface, groups[KOBO_MG_UI], 2, pref2vol(prefs->ui_vol));
+
+	a2_Send(iface, groups[KOBO_MG_MUSIC], 2, pref2vol(prefs->music_vol));
+	a2_Send(iface, groups[KOBO_MG_TITLE], 2, pref2vol(prefs->title_vol));
 	update_music(false);
 }
 
@@ -424,11 +360,8 @@ void KOBO_sound::close()
 		iface = NULL;
 	}
 	rootvoice = 0;
-	master_g = 0;
-	ui_g = 0;
-	sfx_g = 0;
-	music_g = 0;
-	title_g = 0;
+	for(int j = 0; j < KOBO_MG__COUNT; ++j)
+		groups[j] = 0;
 	buffer_latency = 0.0f;
 }
 
@@ -530,8 +463,8 @@ void KOBO_sound::update_music(bool newsong)
 	// Start the song that's supposed to be playing
 	if(checksound(current_song, "KOBO_sound::music()"))
 	{
-		musichandle = a2_Start(iface,
-				music_is_ingame ? music_g : title_g,
+		musichandle = a2_Start(iface, groups[music_is_ingame ?
+				KOBO_MG_MUSIC : KOBO_MG_TITLE],
 				sounds[current_song]);
 		if(musichandle < 0)
 		{
@@ -558,7 +491,8 @@ void KOBO_sound::jingle(int sng)
 	if(!iface)
 		return;
 	if(checksound(sng, "KOBO_sound::jingle()"))
-		a2_Play(iface, master_g, sounds[sng], 0.0f, 0.5f);
+		a2_Play(iface, groups[KOBO_MG_MASTER],
+				sounds[sng], 0.0f, 0.5f);
 }
 
 
@@ -605,7 +539,8 @@ void KOBO_sound::ui_play(unsigned wid, int vol, int pitch, int pan)
 	}
 	if(!sounds[wid])
 		return;
-	a2_Play(iface, ui_g, sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
+	a2_Play(iface, groups[KOBO_MG_UI],
+			sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
 			vol / 65536.0f, pan / 65536.0f);
 }
 
@@ -689,7 +624,7 @@ void KOBO_sound::g_play(unsigned wid, int x, int y)
 	if(!eval_pos(x, y, &vol, &pan))
 		return;	// We don't start "short" sounds that are out of range!
 
-	a2_Play(iface, sfx_g, sounds[wid], 0.0f, vol, pan);
+	a2_Play(iface, groups[KOBO_MG_SFX], sounds[wid], 0.0f, vol, pan);
 }
 
 
@@ -702,7 +637,8 @@ int KOBO_sound::g_start(unsigned wid, int x, int y)
 
 	float vol, pan;
 	eval_pos(x, y, &vol, &pan);
-	return a2_Start(iface, sfx_g, sounds[wid], 0.0f, vol, pan);
+	return a2_Start(iface, groups[KOBO_MG_SFX],
+			sounds[wid], 0.0f, vol, pan);
 }
 
 void KOBO_sound::g_move(int h, int x, int y)
@@ -736,7 +672,8 @@ void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
 		return;
 	if(!checksound(wid, "KOBO_sound::g_play0()"))
 		return;
-	a2_Play(iface, sfx_g, sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
+	a2_Play(iface, groups[KOBO_MG_SFX], sounds[wid],
+			(pitch / 65536.0f - 60.0f)  / 12.0f,
 			vol / 65536.0f);
 }
 
@@ -745,7 +682,7 @@ void KOBO_sound::start_player_gun()
 {
 	if(!checksound(S_SHOT, "KOBO_sound::start_player_gun()"))
 		return;
-	gunhandle = a2_Start(iface, sfx_g, sounds[S_SHOT], 0.0f,
+	gunhandle = a2_Start(iface, groups[KOBO_MG_SFX], sounds[S_SHOT], 0.0f,
 			(prefs->cannonloud << 14) / 6553600.0f);
 	if(gunhandle < 0)
 	{
@@ -794,7 +731,8 @@ void KOBO_sound::g_player_damage(float level)
 	if(!iface)
 		return;
 	if(checksound(S_PLAYER_DAMAGE, "KOBO_sound::g_player_damage()"))
-		a2_Play(iface, sfx_g, sounds[S_PLAYER_DAMAGE], 0.0f, level);
+		a2_Play(iface, groups[KOBO_MG_SFX], sounds[S_PLAYER_DAMAGE],
+				0.0f, level);
 }
 
 
@@ -804,25 +742,28 @@ void KOBO_sound::g_player_explo_start()
 	if(!iface)
 		return;
 	if(checksound(S_EXPLO_PLAYER, "KOBO_sound::g_player_explo_start()"))
-		a2_Play(iface, sfx_g, sounds[S_EXPLO_PLAYER]);
+		a2_Play(iface, groups[KOBO_MG_SFX], sounds[S_EXPLO_PLAYER]);
 }
 
 
-void KOBO_sound::g_kill_all()
+void KOBO_sound::g_new_scene()
 {
 	if(!iface)
 		return;
 
-	// Fade out...
-	a2_Send(iface, sfx_g, 2, 0);
-
-	A2_timestamp t = a2_TimestampBump(iface, a2_ms2Timestamp(iface, 150));
-
-	// Kill all sounds, and restore volume
-	a2_KillSub(iface, sfx_g);
-	a2_Send(iface, sfx_g, 2, pref2vol(prefs->sfx_vol));
-
+	// Fade out, then kill the current SFX group
+	a2_Send(iface, groups[KOBO_MG_SFX], 2, 0, KOBO_SFX_XFADE_TIME);
+	A2_timestamp t = a2_TimestampBump(iface, a2_ms2Timestamp(iface,
+			KOBO_SFX_XFADE_TIME));
+	a2_Kill(iface, groups[KOBO_MG_SFX]);
 	a2_TimestampSet(iface, t);
+	groups[KOBO_MG_SFX] = 0;
+
+	// Replace the SFX group with a new instance, and fade that in
+	init_mixer_group(KOBO_MG_SFX);
+	a2_Send(iface, groups[KOBO_MG_SFX], 2, 0, 0);
+	a2_Send(iface, groups[KOBO_MG_SFX], 2, pref2vol(prefs->sfx_vol),
+			KOBO_SFX_XFADE_TIME);
 
 	gunhandle = 0;	// This one gets killed too, so we'll need a new one!
 }
@@ -853,7 +794,7 @@ void KOBO_sound::ui_noise(int h)
 		noisehandle = 0;
 	}
 	if(h)
-		noisehandle = a2_Start(iface, ui_g, sounds[h]);
+		noisehandle = a2_Start(iface, groups[KOBO_MG_UI], sounds[h]);
 	current_noise = h;
 }
 

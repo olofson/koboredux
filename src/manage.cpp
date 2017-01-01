@@ -5,7 +5,7 @@
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2002 Jeremy Sheeley
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -227,7 +227,7 @@ void _manage::player_ready()
 
 void _manage::next_scene()
 {
-	sound.g_kill_all();
+	sound.g_new_scene();
 	scene_num++;
 	if(scene_num >= GIGA - 1)
 		scene_num = GIGA - 2;
@@ -532,7 +532,7 @@ void _manage::run()
 void _manage::abort_game()
 {
 	gamestate = GS_NONE;
-	sound.g_kill_all();
+	sound.g_new_scene();
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_TITLE);
 }

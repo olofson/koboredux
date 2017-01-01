@@ -1607,7 +1607,7 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 		  case SDLK_F8:		// Kill all sounds
 			if(ev.key.repeat)
 				return true;
-			sound.g_kill_all();
+			sound.g_new_scene();
 			return true;
 		  case SDLK_F9:		// Deal 25% damage
 			sound.g_control(st_handle, 2, .25f);

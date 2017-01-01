@@ -3,7 +3,7 @@
    Kobo Deluxe - Wrapper for Sound Control
 ------------------------------------------------------------
  * Copyright 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -29,8 +29,21 @@
 // Bank slots, for keeping track of multiple themes
 #define	KOBO_SOUND_BANKS	8
 
+// Crossfade time when switching to a new ingame SFX group with g_new_scene()
+#define KOBO_SFX_XFADE_TIME	1000
+
 #include "config.h"
 #include "audiality2.h"
+
+enum KOBO_mixer_group {
+	KOBO_MG_ALL = -1,
+	KOBO_MG_MASTER = 0,
+	KOBO_MG_UI,
+	KOBO_MG_SFX,
+	KOBO_MG_MUSIC,
+	KOBO_MG_TITLE,
+	KOBO_MG__COUNT
+};
 
 // Sound effects, songs and other program handles
 #define KOBO_ALLSOUNDS			\
@@ -115,11 +128,7 @@ class KOBO_sound
 	// Audiality 2 interface
 	static A2_interface *iface;
 	static A2_handle rootvoice;	// Engine root voice
-	static A2_handle master_g;	// Master group
-	static A2_handle ui_g;		// UI sfx group
-	static A2_handle sfx_g;		// Ingame sfx group
-	static A2_handle music_g;	// Ingame music group
-	static A2_handle title_g;	// Title music group
+	static A2_handle groups[KOBO_MG__COUNT];
 	static int current_noise;	// Index of current noise playing, or 0
 	static A2_handle noisehandle;	// Transition noise effect
 	static A2_handle gunhandle;	// Currently playing player gun sound
@@ -133,7 +142,7 @@ class KOBO_sound
 	static A2_handle musichandle;	// A2 handle
 	static bool music_is_ingame;	// Title or ingame group?
 
-	static void init_mixdown();
+	static void init_mixer_group(KOBO_mixer_group grp);
 	static bool checksound(int wid, const char *where);
 	static void update_music(bool newsong);
 	static void start_player_gun();
@@ -229,8 +238,8 @@ class KOBO_sound
 	static void g_player_damage(float level = 1.0f);
 	static void g_player_explo_start();
 
-	// Quickly fade out and kill all in-game sound effects
-	static void g_kill_all();
+	// Crossfade to a new ingame sfx group, then kill the old group
+	static void g_new_scene();
 
 	/*--------------------------------------------------
 		UI sound effects
