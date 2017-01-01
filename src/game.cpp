@@ -3,7 +3,7 @@
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
  * Copyright 2002, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -85,7 +85,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		enemy_m_health = 3000;
 		core_destroyed_health_bonus = 25;
 		stage_cleared_health_bonus = 25;
-		bomb_delay = 10;
+		bomb_delay = 8;
 		break;
 	  case SKILL_HARD:
 		ram_damage = 50;
