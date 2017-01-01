@@ -6,7 +6,7 @@
  * Copyright 2001-2003, 2005-2007, 2009, 2011 David Olofson
  * Copyright 2005 Erik Auerswald
  * Copyright 2008 Robert Schuster
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -2389,7 +2389,7 @@ static void put_copyright()
 	"  Copyright 2002 Jeremy Sheeley\n"
 	"  Copyright 2005 Erik Auerswald\n"
 	"  Copyright 2008 Robert Schuster\n"
-	"  Copyright 1999-2009, 2015-2016 David Olofson\n"
+	"  Copyright 1999-2009, 2015-2017 David Olofson\n"
 	"\n");
 }
 

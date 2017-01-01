@@ -5,7 +5,7 @@
  * Copyright 1995, 1996, Akira Higuchi
  * Copyright 2001-2003, 2009 David Olofson
  * Copyright 2008 Robert Schuster
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -25,7 +25,7 @@
 #ifndef _KOBO_CONFIG_H_
 #define _KOBO_CONFIG_H_
 
-#define	KOBO_COPYRIGHT	"Copyright 2016 Olofson Arcade. All rights reserved."
+#define	KOBO_COPYRIGHT	"Copyright 2017 Olofson Arcade. All rights reserved."
  
 #include "buildconfig.h"
 
