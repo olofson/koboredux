@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 2001-2003, 2006-2007, 2009 David Olofson
  * Copyright 2005 Erik Auerswald
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -35,45 +35,6 @@ void system_options_t::build()
 
 	xoffs = 0.55;
 	yesno("Quick Startup", &prf->quickstart, 0);
-
-	space();
-	list("Maximum Frame Rate", &prf->maxfps, OS_REBUILD);
-	{
-		char buf[10];
-		item("OFF", 0);
-		for(int i = 1; i < 25; i += 1)
-		{
-			snprintf((char *)&buf, sizeof(buf),
-					"%d Hz", i);
-			item(buf, i);
-		}
-		for(int i = 25; i < 100; i += 5)
-		{
-			snprintf((char *)&buf, sizeof(buf),
-					"%d Hz", i);
-			item(buf, i);
-		}
-		for(int i = 100; i <= 200; i += 10)
-		{
-			snprintf((char *)&buf, sizeof(buf),
-					"%d Hz", i);
-			item(buf, i);
-		}
-	}
-	if(prf->maxfps)
-		yesno("Strictly Regulated", &prf->maxfps_strict, 0);
-
-	space();
-	list("Time Filter", &prf->timefilter, OS_UPDATE_ENGINE);
-		item("Off", 100);
-		item("Fast", 75);
-		item("Normal", 50);
-		item("Slow", 10);
-		item("Logic/Video Lock", 0);
-	list("Motion Filter", &prf->filter, OS_UPDATE_ENGINE);
-		item("None", 0);
-		item("Interpolation", 1);
-		item("Extrapolation", 2);
 
 	space();
 	yesno("Log Messages to File", &prf->logfile, OS_RESTART_LOGGER);
@@ -191,30 +152,43 @@ void video_options_t::build()
 	space();
 	yesno("Vertical Retrace Sync", &prf->vsync, OS_RESTART_VIDEO);
 	space();
-	list("Planet Dither Style", &prf->planetdither, OS_UPDATE_SCREEN);
-		item("Theme Default", -1);
-		item("None", SPINPLANET_DITHER_NONE);
-		item("Raw", SPINPLANET_DITHER_RAW);
-		item("Random", SPINPLANET_DITHER_RANDOM);
-		item("Ordered", SPINPLANET_DITHER_ORDERED);
-		item("Skewed", SPINPLANET_DITHER_SKEWED);
-		item("Temporal, Noise", SPINPLANET_DITHER_NOISE);
-		item("Temporal, 2 Frames", SPINPLANET_DITHER_TEMPORAL2);
-		item("Temporal, 4 Frames", SPINPLANET_DITHER_TEMPORAL4);
-		item("TrueColor", SPINPLANET_DITHER_TRUECOLOR);
-#if 0
-	space(1);
-	list("Scale Mode", &prf->scalemode, OS_RELOAD_GRAPHICS);
-		item("Nearest", GFX_SCALE_NEAREST);
-		item("Bilinear", GFX_SCALE_BILINEAR);
-		item("Scale2x", GFX_SCALE_SCALE2X);
-		item("Diamond2x", GFX_SCALE_DIAMOND);
-	yesno("Alpha Blending", &prf->alpha, OS_RELOAD_GRAPHICS);
-	list("Brightness", &prf->brightness, OS_RELOAD_GRAPHICS);
-		perc_list(50, 150, 10);
-	list("Contrast", &prf->contrast, OS_RELOAD_GRAPHICS);
-		perc_list(50, 150, 10);
-#endif
+	list("Maximum Frame Rate", &prf->maxfps, OS_REBUILD);
+	{
+		char buf[10];
+		item("OFF", 0);
+		for(int i = 1; i < 25; i += 1)
+		{
+			snprintf((char *)&buf, sizeof(buf),
+					"%d Hz", i);
+			item(buf, i);
+		}
+		for(int i = 25; i < 100; i += 5)
+		{
+			snprintf((char *)&buf, sizeof(buf),
+					"%d Hz", i);
+			item(buf, i);
+		}
+		for(int i = 100; i <= 200; i += 10)
+		{
+			snprintf((char *)&buf, sizeof(buf),
+					"%d Hz", i);
+			item(buf, i);
+		}
+	}
+	if(prf->maxfps)
+		yesno("Strictly Regulated", &prf->maxfps_strict, 0);
+
+	space();
+	list("Time Filter", &prf->timefilter, OS_UPDATE_ENGINE);
+		item("Off", 100);
+		item("Fast", 75);
+		item("Normal", 50);
+		item("Slow", 10);
+		item("Logic/Video Lock", 0);
+	list("Motion Filter", &prf->filter, OS_UPDATE_ENGINE);
+		item("None", 0);
+		item("Interpolation", 1);
+		item("Extrapolation", 2);
 
 	xoffs = 0.5;
 	space(2);
@@ -228,6 +202,66 @@ void video_options_t::close()
 {
 	vmm_Close();
 	config_form_t::close();
+}
+
+
+void controls_options_t::build()
+{
+	title("Controls");
+
+	xoffs = 0.57;
+	yesno("Use Mouse", &prf->mouse, OS_RESTART_INPUT | OS_REBUILD);
+	if(prf->mouse)
+	{
+		list("Mouse Control Mode", &prf->mousemode, OS_RESTART_INPUT);
+			item("Disabled", MMD_OFF);
+			item("Crosshair", MMD_CROSSHAIR);
+	}
+	space();
+	yesno("In-game Mouse Capture", &prf->mousecapture, 0);
+	space();
+	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
+		label("Could not initialize joysticks!");
+	else
+	{
+		prf->number_of_joysticks = SDL_NumJoysticks();
+		yesno("Use Joystick", &prf->joystick,
+				OS_RESTART_INPUT | OS_REBUILD);
+		if(prf->joystick)
+		{
+			if(prf->number_of_joysticks)
+			{
+				list("Joystick Number", &prf->joystick_index,
+						OS_RESTART_INPUT);
+					enum_list(0, prf->number_of_joysticks
+							- 1);
+			}
+			else
+				label("No Joysticks Found!");
+		}
+	}
+	space();
+	list("Charge Release Tap Time", &prf->fire_tap_time, 0);
+		item("1 frame", 1);
+		item("2 frames", 2);
+		item("3 frames", 3);
+		item("4 frames", 4);
+		item("5 frames", 5);
+	yesno("Broken NumPad Diagonals", &prf->broken_numdia, 0);
+	list("Diagonals Emphasis Filter", &prf->dia_emphasis, 0);
+		item("OFF", 0);
+		item("1 frame", 1);
+		item("2 frames", 2);
+		item("3 frames", 3);
+		item("4 frames", 4);
+		item("5 frames", 5);
+
+	xoffs = 0.5;
+	space(2);
+	button("ACCEPT", OS_CLOSE);
+	button("CANCEL", OS_CANCEL);
+	space(2);
+	help();
 }
 
 
@@ -361,63 +395,54 @@ void audio_options_t::prepare_to_apply()
 }
 
 
-void control_options_t::build()
+void interface_options_t::build()
 {
-	title("Control Options");
+	title("Interface");
 
-	xoffs = 0.6;
-	list("Charge Release Tap Time", &prf->fire_tap_time, 0);
-		item("1 frame", 1);
-		item("2 frames", 2);
-		item("3 frames", 3);
-		item("4 frames", 4);
-		item("5 frames", 5);
-	yesno("Broken NumPad Diagonals", &prf->broken_numdia, 0);
-	list("Diagonals Emphasis Filter", &prf->dia_emphasis, 0);
-		item("OFF", 0);
-		item("1 frame", 1);
-		item("2 frames", 2);
-		item("3 frames", 3);
-		item("4 frames", 4);
-		item("5 frames", 5);
+	xoffs = 0.55;
+	yesno("Scrolling Radar", &prf->scrollradar, 0);
 	space();
-
-	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
-		label("Could not initialize joysticks!");
-	else
-	{
-		prf->number_of_joysticks = SDL_NumJoysticks();
-		yesno("Use Joystick", &prf->joystick,
-				OS_RESTART_INPUT | OS_REBUILD);
-		if(prf->joystick)
-		{
-			if(prf->number_of_joysticks)
-			{
-				list("Joystick Number", &prf->joystick_index,
-						OS_RESTART_INPUT);
-					enum_list(0, prf->number_of_joysticks
-							- 1);
-			}
-			else
-				label("No Joysticks Found!");
-		}
-	}
+	list("Starfield Density", &prf->stars, 0);
+		item("Minimal", 50);
+		item("Low", 250);
+		item("Normal", 500);
+		item("High", 1000);
+		item("Massive", 2500);
+		item("Insane", 8000);
+	list("Planet Dither Style", &prf->planetdither, OS_UPDATE_SCREEN);
+		item("Theme Default", -1);
+		item("None", SPINPLANET_DITHER_NONE);
+		item("Raw", SPINPLANET_DITHER_RAW);
+		item("Random", SPINPLANET_DITHER_RANDOM);
+		item("Ordered", SPINPLANET_DITHER_ORDERED);
+		item("Skewed", SPINPLANET_DITHER_SKEWED);
+		item("Temporal, Noise", SPINPLANET_DITHER_NOISE);
+		item("Temporal, 2 Frames", SPINPLANET_DITHER_TEMPORAL2);
+		item("Temporal, 4 Frames", SPINPLANET_DITHER_TEMPORAL4);
+		item("TrueColor", SPINPLANET_DITHER_TRUECOLOR);
+#if 0
+	space(1);
+	list("Scale Mode", &prf->scalemode, OS_RELOAD_GRAPHICS);
+		item("Nearest", GFX_SCALE_NEAREST);
+		item("Bilinear", GFX_SCALE_BILINEAR);
+		item("Scale2x", GFX_SCALE_SCALE2X);
+		item("Diamond2x", GFX_SCALE_DIAMOND);
+	yesno("Alpha Blending", &prf->alpha, OS_RELOAD_GRAPHICS);
+	list("Brightness", &prf->brightness, OS_RELOAD_GRAPHICS);
+		perc_list(50, 150, 10);
+	list("Contrast", &prf->contrast, OS_RELOAD_GRAPHICS);
+		perc_list(50, 150, 10);
+#endif
 	space();
-
-	yesno("Use Mouse", &prf->mouse, OS_RESTART_INPUT | OS_REBUILD);
-	if(prf->mouse)
-	{
-		list("Mouse Control Mode", &prf->mousemode, OS_RESTART_INPUT);
-			item("Disabled", MMD_OFF);
-			item("Crosshair", MMD_CROSSHAIR);
-	}
-	space();
-	yesno("In-game Mouse Capture", &prf->mousecapture, 0);
+	list("Cannon Sound Suppression", &prf->cannonloud, 0);
+		item("Off", 200);
+		item("Low", 100);
+		item("High", 50);
 
 	xoffs = 0.5;
 	space(2);
 	button("ACCEPT", OS_CLOSE);
-	button("CANCEL", OS_CANCEL);
+	button("CANCEL", OS_CANCEL | OS_UPDATE_ENGINE);
 	space(2);
 	help();
 }
@@ -427,9 +452,7 @@ void game_options_t::build()
 {
 	title("Game Options");
 
-	xoffs = 0.6;
-	yesno("Scrolling Radar", &prf->scrollradar, 0);
-	space();
+	xoffs = 0.55;
 	list("Get Ready Countdown", &prf->countdown, 0);
 		item("Quick Start", 0);
 		item("1 second", 1);
@@ -442,19 +465,6 @@ void game_options_t::build()
 		item("8 seconds", 8);
 		item("9 seconds", 9);
 		item("Wait Forever", 10);
-	space();
-	list("Starfield Density", &prf->stars, 0);
-		item("Minimal", 50);
-		item("Low", 250);
-		item("Normal", 500);
-		item("High", 1000);
-		item("Massive", 2500);
-		item("Insane", 8000);
-	space();
-	list("Cannon Sound Suppression", &prf->cannonloud, 0);
-		item("Off", 200);
-		item("Low", 100);
-		item("High", 50);
 
 	xoffs = 0.5;
 	space(2);

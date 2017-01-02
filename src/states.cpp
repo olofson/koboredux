@@ -5,7 +5,7 @@
  * Copyright 2001-2003 David Olofson
  * Copyright 2002 Jeremy Sheeley
  * Copyright 2005-2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -1517,16 +1517,19 @@ void options_main_t::build()
 {
 	title("Options");
 	button("Game", 1);
-	space();
 	button("Controls", 2);
-	button("Video", 3);
-	button("Audio", 4);
-	button("System", 5);
+	button("Interface", 3);
 	space();
+	button("Video", 10);
+	button("Audio", 11);
+	button("System", 12);
+	space();
+	font(B_NORMAL_FONT);
 //TODO:	if(prefs->cheats)
-		button("Cheats", 6);
-	button("Debug", 7);
-	button("More", 8);
+		button("Cheats", 20);
+	button("Debug", 21);
+	button("More", 22);
+	font();
 	space(2);
 	button("DONE!", MENU_TAG_OK);
 }
@@ -1548,26 +1551,32 @@ void st_options_main_t::select(int tag)
 		gsm.push(&st_options_game);
 		break;
 	  case 2:
-		gsm.push(&st_options_control);
+		gsm.push(&st_options_controls);
 		break;
 	  case 3:
+		gsm.push(&st_options_interface);
+		break;
+
+	  case 10:
 		gsm.push(&st_options_video);
 		break;
-	  case 4:
+	  case 11:
 		gsm.push(&st_options_audio);
 		break;
-	  case 5:
+	  case 12:
 		gsm.push(&st_options_system);
 		break;
-	  case 6:
+
+	  case 20:
 		gsm.push(&st_options_cheat);
 		break;
-	  case 7:
+	  case 21:
 		gsm.push(&st_options_debug);
 		break;
-	  case 8:
+	  case 22:
 		gsm.push(&st_options_more);
 		break;
+
 	  case MENU_TAG_OK:
 		gsm.pop();
 		break;
@@ -1657,11 +1666,12 @@ void st_options_base_t::escape()
 /*----------------------------------------------------------
 	Options...
 ----------------------------------------------------------*/
-st_options_game_t st_options_game;
-st_options_control_t st_options_control;
-st_options_video_t st_options_video;
-st_options_audio_t st_options_audio;
 st_options_system_t st_options_system;
+st_options_video_t st_options_video;
+st_options_controls_t st_options_controls;
+st_options_audio_t st_options_audio;
+st_options_interface_t st_options_interface;
+st_options_game_t st_options_game;
 st_options_cheat_t st_options_cheat;
 st_options_debug_t st_options_debug;
 

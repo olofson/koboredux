@@ -37,44 +37,7 @@ class prefs_t : public config_parser_t
 	int	logverbosity;
 	int	quickstart;	//Skip jingle, loader noise effects etc
 
-	// Input options
-	int	joystick;
-	int	joystick_index;		//which joystick to use
-	int	mouse;
-	int	mousemode;
-	int	fire_tap_time;
-	int	broken_numdia;
-	int	dia_emphasis;
-	int	mousecapture;
-
-	// Game options
-	int	filter;		//Use motion filtering
-	int	timefilter;	//Delta time filter
-	int	scrollradar;	//Scrolling radar
-	int	countdown;	//"Get Ready" countdown
-	int	stars;		//Number of parallax stars
-	int	cannonloud;	//Cannon loudness
-
-	// Sound: System
-	cfg_string_t	audiodriver;	//Name/options for a2_NewDriver()
-	int	sound;		//Enable sound
-	int	music;		//Enable music
-	int	samplerate;
-	int	latency;	//Audio latency in ms
-	int	audiobuffer;	//Custom audio buffer size (sample frames)
-	int	audiots;	//A2_TIMESTAMP
-	int	tsdelay;	//Timestamp delay in ms
-
-	// Sound: Mixer
-	cfg_string_t	sfxtheme;	//Path to sound theme file
-	int	volume;		//Digital master volume
-	int	vol_boost;	//Master volume boost
-	int	ui_vol;		//User interface volume
-	int	sfx_vol;	//Sound effects volume
-	int	music_vol;	//Music volume
-	int	title_vol;	//Title music volume
-
-	// Video settings
+	// Video
 	int	fullscreen;	//Use fullscreen mode
 	int	width;		//Screen/window width
 	int	height;		//Screen/window height
@@ -84,16 +47,53 @@ class prefs_t : public config_parser_t
 	int	doublebuf;	//Use double buffering
 	int	videomode;	//New video mode codes
 	int	vsync;		//Vertical (retrace) sync
+	int	filter;		//Use motion filtering
+	int	timefilter;	//Delta time filter
 
-	// Graphics settings
+	// Controls
+	int	joystick;
+	int	joystick_index;	//which joystick to use
+	int	mouse;
+	int	mousemode;
+	int	fire_tap_time;
+	int	broken_numdia;
+	int	dia_emphasis;
+	int	mousecapture;
+
+	// Audio
+	cfg_string_t	audiodriver;	//Name/options for a2_NewDriver()
+	int	sound;		//Enable sound
+	int	music;		//Enable music
+	int	samplerate;
+	int	latency;	//Audio latency in ms
+	int	audiobuffer;	//Custom audio buffer size (sample frames)
+	int	audiots;	//A2_TIMESTAMP
+	int	tsdelay;	//Timestamp delay in ms
+
+	// Sound
+	cfg_string_t	sfxtheme;	//Path to sound theme file
+	int	volume;		//Digital master volume
+	int	vol_boost;	//Master volume boost
+	int	ui_vol;		//User interface volume
+	int	sfx_vol;	//Sound effects volume
+	int	music_vol;	//Music volume
+	int	title_vol;	//Title music volume
+
+	// Interface
 	cfg_string_t	gfxtheme;	//Path to graphics theme file
+	int	scrollradar;	//Scrolling radar
+	int	stars;		//Number of parallax stars
+	int	cannonloud;	//Cannon loudness
 	int	scalemode;	//Scaling filter mode
 	int	alpha;		//Alpha blending
 	int	brightness;	//Graphics brightness
 	int	contrast;	//Graphics contrast
 	int	planetdither;	//Spinning planet dither style
 
-	// Debug features
+	// Game
+	int	countdown;	//"Get Ready" countdown
+
+	// Debug
 	int	debug;
 	int	show_fps;
 	int	force_fallback_gfxtheme; // Force load fallback graphics theme
@@ -106,7 +106,7 @@ class prefs_t : public config_parser_t
 	int	soundtools;
 	cfg_string_t	toolstheme;
 
-	// Cheat/test features
+	// Cheat/test
 	int	cheat_pushmove;
 	int	cheat_freewheel;
 	int	cheat_shield;

@@ -5,7 +5,7 @@
  * Copyright 2001-2003 David Olofson
  * Copyright 2002 Jeremy Sheeley
  * Copyright 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -397,20 +397,13 @@ class st_options_base_t : public st_menu_base_t
 
 
 /*----------------------------------------------------------
-	Options Submenues
+	Options Submenus
 ----------------------------------------------------------*/
-class st_options_game_t : public st_options_base_t
+class st_options_system_t : public st_options_base_t
 {
   public:
-	st_options_game_t()	{ name = "options_game"; }
-	config_form_t *oopen()	{ return new game_options_t(gengine); }
-};
-
-class st_options_control_t : public st_options_base_t
-{
-  public:
-	st_options_control_t()	{ name = "options_control"; }
-	config_form_t *oopen()	{ return new control_options_t(gengine); }
+	st_options_system_t()	{ name = "options_system"; }
+	config_form_t *oopen()	{ return new system_options_t(gengine); }
 };
 
 class st_options_video_t : public st_options_base_t
@@ -420,6 +413,14 @@ class st_options_video_t : public st_options_base_t
 	config_form_t *oopen()	{ return new video_options_t(gengine); }
 };
 
+class st_options_controls_t : public st_options_base_t
+{
+  public:
+	st_options_controls_t()	{ name = "options_controls"; }
+	config_form_t *oopen()	{ return new controls_options_t(gengine); }
+};
+
+// NOTE: The "Sound" category is covered by the Audio menu
 class st_options_audio_t : public st_options_base_t
 {
   public:
@@ -427,11 +428,18 @@ class st_options_audio_t : public st_options_base_t
 	config_form_t *oopen()	{ return new audio_options_t(gengine); }
 };
 
-class st_options_system_t : public st_options_base_t
+class st_options_interface_t : public st_options_base_t
 {
   public:
-	st_options_system_t()	{ name = "options_system"; }
-	config_form_t *oopen()	{ return new system_options_t(gengine); }
+	st_options_interface_t()	{ name = "options_interface"; }
+	config_form_t *oopen()	{ return new interface_options_t(gengine); }
+};
+
+class st_options_game_t : public st_options_base_t
+{
+  public:
+	st_options_game_t()	{ name = "options_game"; }
+	config_form_t *oopen()	{ return new game_options_t(gengine); }
 };
 
 class st_options_cheat_t : public st_options_base_t
@@ -541,11 +549,12 @@ extern st_main_menu_t st_main_menu;
 extern st_skill_menu_t st_skill_menu;
 extern st_new_player_t st_new_player;
 extern st_options_main_t st_options_main;
-extern st_options_game_t st_options_game;
-extern st_options_control_t st_options_control;
-extern st_options_video_t st_options_video;
-extern st_options_audio_t st_options_audio;
 extern st_options_system_t st_options_system;
+extern st_options_video_t st_options_video;
+extern st_options_controls_t st_options_controls;
+extern st_options_audio_t st_options_audio;
+extern st_options_interface_t st_options_interface;
+extern st_options_game_t st_options_game;
 extern st_options_cheat_t st_options_cheat;
 extern st_options_debug_t st_options_debug;
 extern st_options_more_t st_options_more;

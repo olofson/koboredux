@@ -43,7 +43,20 @@ void prefs_t::init()
 	key("logverbosity", logverbosity, 2); desc("Log Verbosity Level");
 	yesno("quickstart", quickstart, 0); desc("Quick Startup");
 
-	section("Input");
+	section("Video");
+	yesno("fullscreen", fullscreen, 1); desc("Fullscreen Display");
+	key("width", width, 0); desc("Horizontal Resolution");
+	key("height", height, 0); desc("Vertical Resolution");
+	yesno("autoswap", autoswap, 0);
+			desc("Automatically swap display dimension");
+	key("maxfps", maxfps, 100); desc("Maximum fps");
+	key("maxfps_strict", maxfps_strict, 0); desc("Strictly Regulated fps");
+	key("videomode", videomode, 1); desc("Video Mode");
+	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
+	key("filter", filter, 2); desc("Logic-to-Video Motion Filter Mode");
+	key("timefilter", timefilter, 50); desc("Time Filter");
+
+	section("Controls");
 	yesno("joystick", joystick, 0); desc("Enable Joystick");
 	key("joystick_index", joystick_index, 0); desc("Joystick Number");
 	yesno("mouse", mouse, 0); desc("Enable Mouse");
@@ -56,14 +69,6 @@ void prefs_t::init()
 			desc("Diagonals Emphasis Filter");
 	yesno("mousecapture", mousecapture, 1); desc("In-game Mouse Capture");
 
-	section("Game");
-	yesno("scrollradar", scrollradar, 1); desc("Scrolling Radar");
-	key("filter", filter, 2); desc("Logic-to-Video Motion Filter Mode");
-	key("timefilter", timefilter, 50); desc("Time Filter");
-	key("countdown", countdown, 5); desc("Get Ready Countdown");
-	key("stars", stars, 500); desc("Number of Parallax Stars");
-	key("cannonloud", cannonloud, 100); desc("Player Cannons Loudness");
-
 	section("Audio");
 	yesno("sound", sound, 1); desc("Enable Sound");
 	yesno("music", music, 1); desc("Enable Music");
@@ -74,6 +79,7 @@ void prefs_t::init()
 	yesno("audiots", audiots, 1); desc("Timestamp Audio Events");
 	key("tsdelay", tsdelay, 5); desc("Timestamp Delay");
 
+	section("Sound");
 	key("sfxtheme", sfxtheme, ""); desc("Sound Theme");
 	key("volume", volume, 100); desc("Master Volume");
 	key("vol_boost", vol_boost, 2); desc("Volume Boost");
@@ -82,23 +88,19 @@ void prefs_t::init()
 	key("music_vol", music_vol, 50); desc("Music Volume");
 	key("title_vol", title_vol, 70); desc("Title Music Volume");
 
-	section("Video");
-	yesno("fullscreen", fullscreen, 1); desc("Fullscreen Display");
-	key("width", width, 0); desc("Horizontal Resolution");
-	key("height", height, 0); desc("Vertical Resolution");
-	yesno("autoswap", autoswap, 0);
-			desc("Automatically swap display dimension");
-	key("maxfps", maxfps, 100); desc("Maximum fps");
-	key("maxfps_strict", maxfps_strict, 0); desc("Strictly Regulated fps");
-	key("videomode", videomode, 1); desc("Video Mode");
-	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
-
+	section("Interface");
 	key("gfxtheme", gfxtheme, ""); desc("Graphics Theme");
+	yesno("scrollradar", scrollradar, 1); desc("Scrolling Radar");
+	key("stars", stars, 500); desc("Number of Parallax Stars");
+	key("cannonloud", cannonloud, 100); desc("Player Cannons Loudness");
 	key("scalemode", scalemode, 0); desc("Scaling Filter Mode");
 	yesno("alpha", alpha, 1); desc("Use Alpha Blending");
 	key("brightness", brightness, 100); desc("Brightness");
 	key("contrast", contrast, 100); desc("Contrast");
 	key("planetdither", planetdither, -1); desc("Planet Dither Style");
+
+	section("Game");
+	key("countdown", countdown, 5); desc("Get Ready Countdown");
 
 	section("Debug");
 	yesno("debug", debug, 0); desc("Enable Debug Features");
