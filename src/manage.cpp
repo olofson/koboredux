@@ -151,6 +151,8 @@ void _manage::noise_out(int duration)
 
 void _manage::noise_damage(float amt)
 {
+	if(!prefs->playerhitfx)
+		return;
 	noise_flash = -2;
 	noise_duration = noise_timer = (int)(300.0f + 1500.0f * amt);
 	noise_level = 0.3f + 0.3f * amt;

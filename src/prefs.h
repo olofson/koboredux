@@ -89,6 +89,7 @@ class prefs_t : public config_parser_t
 	int	brightness;	//Graphics brightness
 	int	contrast;	//Graphics contrast
 	int	planetdither;	//Spinning planet dither style
+	int	playerhitfx;	//Use visual effects when player takes damage
 
 	// Game
 	int	countdown;	//"Get Ready" countdown

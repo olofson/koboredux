@@ -404,6 +404,8 @@ void interface_options_t::build()
 	xoffs = 0.55;
 	yesno("Scrolling Radar", &prf->scrollradar, 0);
 	space();
+	yesno("Visual Player Hit FX", &prf->playerhitfx, 0);
+	space();
 	list("Starfield Density", &prf->stars, 0);
 		item("Minimal", 50);
 		item("Low", 250);
