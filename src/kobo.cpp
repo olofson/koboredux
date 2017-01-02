@@ -2018,11 +2018,10 @@ void kobo_gfxengine_t::frame()
 	sound.timestamp_bump(gengine->period());
 
 	// Screenshot video - "every Nth logic frame" rates
-	if(prefs->cmd_autoshot && (prefs->cmd_autoshot < 5) &&
-			manage.game_in_progress())
+	if((prefs->cmd_autoshot < 0) && manage.game_in_progress())
 	{
 		++km.ss_frames;
-		if(km.ss_frames >= prefs->cmd_autoshot)
+		if(km.ss_frames >= -prefs->cmd_autoshot)
 		{
 			gengine->screenshot();
 			km.ss_frames = 0;
@@ -2145,8 +2144,8 @@ void kobo_gfxengine_t::post_render()
 	if(prefs->mouse && mouse_visible)
 		wscreen->sprite(mouse_x, mouse_y, B_CROSSHAIR, 0);
 
-	// Screenshot video - high frame rates
-	if((prefs->cmd_autoshot >= 5) && manage.game_in_progress())
+	// Screenshot video - frame rates in Hz; 999 ==> every rendered frame
+	if((prefs->cmd_autoshot > 0) && manage.game_in_progress())
 	{
 		if((prefs->cmd_autoshot == 999) ||
 				(nt - km.ss_last_frame >=
