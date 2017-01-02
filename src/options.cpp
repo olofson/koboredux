@@ -102,6 +102,7 @@ void video_options_t::build()
 		item("Non Widescreen Modes", (int)VMM__NONWIDESCREEN);
 	yesno("Show Odd Low Resolutions" , &showlow, OS_REBUILD);
 	list("Display Mode", &prf->videomode, OS_RESTART_VIDEO | OS_REBUILD);
+	{
 		char buf[256];
 		buf[sizeof(buf) - 1] = 0;
 		for(VMM_Mode *vm = NULL; ; )
@@ -131,6 +132,7 @@ void video_options_t::build()
 			item(buf, vm->id);
 		}
 		item("Custom", -1);
+	}
 	if(prf->videomode < 0)
 	{
 		if(prf->width <= 32)

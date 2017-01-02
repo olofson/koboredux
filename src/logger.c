@@ -3,7 +3,7 @@
 	logger.c - Simple logger with redirection
 ---------------------------------------------------------------------------
  * Copyright 2003, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015, 2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -100,6 +100,9 @@ static inline int log_write_raw(int target, const char *text)
 	{
 		/* We should never get here. */
 		assert(0);
+
+		/* ...but some compilers are retarded about assert(). */
+		return 0;
 	}
 }
 
