@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -1156,7 +1156,7 @@ void KOBO_enemy::move_pipein()
 	}
 	if(mindiff < ((VIEWLIMIT >> 1) + 32))
 	{
-		playsound(S_RUMBLE);
+		controlsound(2, 1);
 		enemies.make(enemies.randexp(),
 				x + PIXEL2CS(pubrand.get(4) - 8),
 				y + PIXEL2CS(pubrand.get(4) - 8), 0, 0, 1);
@@ -1177,7 +1177,7 @@ const KOBO_enemy_kind pipein = {
 	-1, 0,
 	LAYER_BASES,
 	0,
-	S_NONE,
+	S_RUMBLE,
 	S_NONE,
 	S_NONE,
 	S_NONE
@@ -1258,7 +1258,7 @@ void KOBO_enemy::move_pipeout()
 	{
 		release();
 		screen.set_map(x1, y1, SPACE);
-		playsound(S_RUMBLE);
+		controlsound(2, 1);
 		if(mindiff < ((VIEWLIMIT >> 1) + 32))
 			enemies.make(enemies.randexp(), x, y, 0, 0, 1);
 		return;
@@ -1301,7 +1301,7 @@ void KOBO_enemy::move_pipeout()
 		return;
 	}
 	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
-	playsound(S_RUMBLE);
+	controlsound(2, 1);
 	if(mindiff < ((VIEWLIMIT >> 1) + 32))
 		enemies.make(&explosion,
 				x + PIXEL2CS(pubrand.get(4) - 8),
@@ -1321,7 +1321,7 @@ const KOBO_enemy_kind pipeout = {
 	-1, 0,
 	LAYER_BASES,
 	0,
-	S_NONE,
+	S_RUMBLE,
 	S_NONE,
 	S_NONE,
 	S_NONE

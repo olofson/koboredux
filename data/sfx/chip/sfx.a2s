@@ -282,25 +282,35 @@ export S_RUMBLE(P V=1 PanX)
 {
 	struct { wtosc; panmix }
 	pan PanX; vol V; set
-	w square
-	+tr P
-	@a .2
-	3 {
-		@p (rand .5)
-		-tr .7
-		d 10
+	w triangle; a .2; +tr (P - 3)
+
+	!PE 5
+	!running 1
+	while running or (a > .01) {
+		*a .97; p (PE + rand 2);	d 5
+		*PE .7
 	}
-	w triangle
-	a 1
+	a 0;					d 10
+
+	1()	{
+		running 0
+	}
+
+	2(Int)	{
+		*Int .5
+		a (Int + .5); ramp a 10
+		PE (Int + 4)
+	}
+}
+
+RumbleTest()
+{
+	1:S_RUMBLE 0 .5 0
 	20 {
-		@p (rand 1)
-		-tr .01
-		-a .05
-		d 20
+		1<2 rand 1
+		d (60 + rand 90)
 	}
-	a 0
-	-p 1
-	d 100
+	1<1
 }
 
 ChargeBlipp(P V=1 PanX Charge=1)
