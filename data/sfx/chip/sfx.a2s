@@ -2,7 +2,7 @@ def title	"KRChipSFX"
 def version	"1.0.0"
 def description	"Kobo Redux Chip Sound Theme - Sound Effects"
 def author	"David Olofson"
-def copyright	"Copyright 2016 David Olofson"
+def copyright	"Copyright 2016-2017 David Olofson"
 def license	"GPL"
 def a2sversion	"1.9.1"
 
@@ -173,15 +173,15 @@ export S_EXPLO_NODE(P V=1 PanX)
 	@p (rand .3)
 	5 {
 		w noise
-		-p .2;	*a .9;		d 10
+		-p .2;	*a .9;	d 10
 		w square
-		-p .2;	*a .9;		d 10
+		-p .2;	*a .9;	d 10
 	}
 	while a > .01 {
 		w noise
-		-p .02;	*a .95;		d 10
+		-p .02;	*a .95;	d 10
 		w square
-		-p .02;	*a .95;		d 10
+		-p .02;	*a .95;	d 10
 	}
 	a 0;			d 10
 }
@@ -193,11 +193,12 @@ export S_EXPLO_ENEMY(P V=1 PanX)
 	w square
 	+tr P
 	@a .7; @p .5
-	-p 1.5;			d 30
+	-p 2;			d 30
 	w noise; @p 3
-	-p 2.1; *a .5;		d 70
-	while a > .01 {
-		*a .9;			d 10
+	-p 3; *a .5;		d 50
+	*a .3; +p 1.5
+	while a > .001 {
+		*a .9;		d 10
 	}
 	a 0;			d 10
 }
