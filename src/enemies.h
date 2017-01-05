@@ -45,11 +45,17 @@ struct KOBO_enemy_kind
 	int		bank, frame;
 	int		layer;
 	int		launchspeed;
-	KOBO_sounds	sound;
-	KOBO_sounds	launchsound;
-	KOBO_sounds	impactsound;
-	KOBO_sounds	deathsound;
+	KOBO_sounds	sound;		// Continuous sound fx program
+	KOBO_sounds	launchsound;	// Launch/fire/spawn
+	KOBO_sounds	damagesound;	// Impact/damage
+	KOBO_sounds	deathsound;	// Death/failure
 };
+
+#define KOBO_EK_SOUNDS(x)	\
+	S_##x,			\
+	S_##x##_LAUNCH,		\
+	S_##x##_DAMAGE,		\
+	S_##x##_DEATH
 
 extern const KOBO_enemy_kind bullet1;
 extern const KOBO_enemy_kind bullet2;
@@ -149,7 +155,7 @@ class KOBO_enemy
 
 	inline void playsound(KOBO_sounds si);
 	inline void startsound(KOBO_sounds si);
-	inline void controlsound(unsigned c, float v);
+	inline void controlsound(unsigned ctrl, float val);
 	inline void stopsound();
 	void restartsound();
 
@@ -304,10 +310,10 @@ inline void KOBO_enemy::startsound(KOBO_sounds si)
 	soundtimer = enemies.sound_update_period;
 }
 
-inline void KOBO_enemy::controlsound(unsigned c, float v)
+inline void KOBO_enemy::controlsound(unsigned ctrl, float val)
 {
 	if(soundhandle)
-		sound.g_control(soundhandle, c, v);
+		sound.g_control(soundhandle, ctrl, val);
 }
 
 inline void KOBO_enemy::stopsound()
@@ -375,7 +381,7 @@ inline void KOBO_enemy::hit(int dmg)
 	else if(health > 0)
 	{
 		// Damaged but not destroyed!
-		playsound(ek->impactsound);
+		playsound(ek->damagesound);
 		controlsound(2, dmg * 0.01f);
 		return;
 	}

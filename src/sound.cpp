@@ -144,7 +144,7 @@ bool KOBO_sound::load(unsigned bank, const char *themepath,
 		}
 		switch(i)
 		{
-		  case S_SHOT:
+		  case S_PLAYER_GUN:
 			a2_Kill(iface, gunhandle);
 			gunhandle = 0;
 			break;
@@ -222,7 +222,7 @@ void KOBO_sound::unload(int bank)
 			}
 			switch(i)
 			{
-			  case S_SHOT:
+			  case S_PLAYER_GUN:
 				gunhandle = 0;
 				break;
 			}
@@ -680,10 +680,10 @@ void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
 
 void KOBO_sound::start_player_gun()
 {
-	if(!checksound(S_SHOT, "KOBO_sound::start_player_gun()"))
+	if(!checksound(S_PLAYER_GUN, "KOBO_sound::start_player_gun()"))
 		return;
-	gunhandle = a2_Start(iface, groups[KOBO_MG_SFX], sounds[S_SHOT], 0.0f,
-			(prefs->cannonloud << 14) / 6553600.0f);
+	gunhandle = a2_Start(iface, groups[KOBO_MG_SFX], sounds[S_PLAYER_GUN],
+			0.0f, (prefs->cannonloud << 14) / 6553600.0f);
 	if(gunhandle < 0)
 	{
 		log_printf(WLOG, "Couldn't start player gun sound! (%s)\n",
@@ -741,8 +741,8 @@ void KOBO_sound::g_player_explo_start()
 	g_player_damage();
 	if(!iface)
 		return;
-	if(checksound(S_EXPLO_PLAYER, "KOBO_sound::g_player_explo_start()"))
-		a2_Play(iface, groups[KOBO_MG_SFX], sounds[S_EXPLO_PLAYER]);
+	if(checksound(S_PLAYER_DEATH, "KOBO_sound::g_player_explo_start()"))
+		a2_Play(iface, groups[KOBO_MG_SFX], sounds[S_PLAYER_DEATH]);
 }
 
 
