@@ -1302,6 +1302,7 @@ void main_menu_t::build()
 #endif
 	}
 	space();
+	button("Showcase", 20);
 	button("Options", 2);
 	space();
 	if(manage.game_in_progress())
@@ -1398,6 +1399,14 @@ void st_main_menu_t::select(int tag)
 	  case 5:	// Start level: Inc/Dec
 		sound.ui_play(S_UI_TICK);
 		manage.select_scene(menu->start_level);
+		break;
+	  case 20:	// Showcase
+		sound.ui_play(S_UI_ERROR);
+		st_error.message("Showcase not yet implemented!",
+				"Here, you'll find information on\n"
+				"enemies and other objects of\n"
+				"interest seen in the game.");
+		gsm.push(&st_error);
 		break;
 	  case 50:	// Save Game
 	  case 51:	// Load Game
