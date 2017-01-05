@@ -385,6 +385,8 @@ export S_BOMB1_LAUNCH(pP pV=1 pX)
 	a 0;			d 200
 }
 
+export def S_BOMB1_DEATH EnemyExplo
+
 export S_BOMB1_TRIG(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
@@ -407,7 +409,7 @@ export S_BOMB1_TRIG(pP pV=1 pX)
 	}
 }
 
-export S_BOMB1_DETO(pP pV=1 pX)
+export S_BOMB1_DETONATE(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
 	pan pX; vol pV; set
@@ -424,13 +426,12 @@ export S_BOMB1_DETO(pP pV=1 pX)
 	a 0;		d 100
 }
 
-export def S_BOMB1_DEATH EnemyExplo
-
 
  // Bomb 2
 ///////////////////////////////////////////////////////////////////////////////
 
-export def S_BOMB2_LAUNCH S_BOMB1_LAUNCH
+export def S_BOMB2_LAUNCH	S_BOMB1_LAUNCH
+export def S_BOMB2_DEATH	EnemyExplo
 
 export S_BOMB2_TRIG(pP pV=1 pX)
 {
@@ -454,7 +455,7 @@ export S_BOMB2_TRIG(pP pV=1 pX)
 	}
 }
 
-export S_BOMB2_DETO(pP pV=1 pX)
+export S_BOMB2_DETONATE(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
 	pan pX; vol pV; set
@@ -471,8 +472,6 @@ export S_BOMB2_DETO(pP pV=1 pX)
 	a 0;			d 100
 }
 
-export def S_BOMB2_DEATH EnemyExplo
-
 
  // Explosions
 ///////////////////////////////////////////////////////////////////////////////
@@ -483,8 +482,8 @@ export def S_BOMB2_DEATH EnemyExplo
  // Base cannon
 ///////////////////////////////////////////////////////////////////////////////
 
-export def S_CANNON_DAMAGE Damage
-export def S_CANNON_DEATH NodeExplo
+export def S_CANNON_DAMAGE	Damage
+export def S_CANNON_DEATH	NodeExplo
 
 
  // Base core
@@ -593,19 +592,23 @@ export S_PIPEIN(pP pV=1 pX)
 		a (Int + .5); ramp a 10
 		PE (Int + 4)
 	}
+
+	3(pV pX Dur) {
+		pm.vol pV; pm.pan pX; ramp Dur
+	}
 }
 
 
  // Base pipe, outwards chain explosion
 ///////////////////////////////////////////////////////////////////////////////
 
-export def S_PIPEOUT S_PIPEIN
+export def S_PIPEOUT		S_PIPEIN
 
 
  // Enemies 1-7
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_ENEMY1_LAUNCH(pP pV=1 pX)
+GenericLaunch(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
 	pan pX; vol pV; set
@@ -620,28 +623,29 @@ export S_ENEMY1_LAUNCH(pP pV=1 pX)
 	a 0;			d 200
 }
 
-export def S_ENEMY2_LAUNCH S_ENEMY1_LAUNCH
-export def S_ENEMY3_LAUNCH S_ENEMY1_LAUNCH
-export def S_ENEMY4_LAUNCH S_ENEMY1_LAUNCH
-export def S_ENEMY5_LAUNCH S_ENEMY1_LAUNCH
-export def S_ENEMY6_LAUNCH S_ENEMY1_LAUNCH
-export def S_ENEMY7_LAUNCH S_ENEMY1_LAUNCH
+export def S_ENEMY1_LAUNCH	GenericLaunch
+export def S_ENEMY2_LAUNCH	GenericLaunch
+export def S_ENEMY3_LAUNCH	GenericLaunch
+export def S_ENEMY4_LAUNCH	GenericLaunch
+export def S_ENEMY5_LAUNCH	GenericLaunch
+export def S_ENEMY6_LAUNCH	GenericLaunch
+export def S_ENEMY7_LAUNCH	GenericLaunch
 
-export def S_ENEMY1_DAMAGE Damage
-export def S_ENEMY2_DAMAGE Damage
-export def S_ENEMY3_DAMAGE Damage
-export def S_ENEMY4_DAMAGE Damage
-export def S_ENEMY5_DAMAGE Damage
-export def S_ENEMY6_DAMAGE Damage
-export def S_ENEMY7_DAMAGE Damage
+export def S_ENEMY1_DAMAGE 	Damage
+export def S_ENEMY2_DAMAGE 	Damage
+export def S_ENEMY3_DAMAGE 	Damage
+export def S_ENEMY4_DAMAGE 	Damage
+export def S_ENEMY5_DAMAGE 	Damage
+export def S_ENEMY6_DAMAGE 	Damage
+export def S_ENEMY7_DAMAGE 	Damage
 
-export def S_ENEMY1_DEATH EnemyExplo
-export def S_ENEMY2_DEATH EnemyExplo
-export def S_ENEMY3_DEATH EnemyExplo
-export def S_ENEMY4_DEATH EnemyExplo
-export def S_ENEMY5_DEATH EnemyExplo
-export def S_ENEMY6_DEATH EnemyExplo
-export def S_ENEMY7_DEATH EnemyExplo
+export def S_ENEMY1_DEATH 	EnemyExplo
+export def S_ENEMY2_DEATH 	EnemyExplo
+export def S_ENEMY3_DEATH 	EnemyExplo
+export def S_ENEMY4_DEATH 	EnemyExplo
+export def S_ENEMY5_DEATH 	EnemyExplo
+export def S_ENEMY6_DEATH 	EnemyExplo
+export def S_ENEMY7_DEATH 	EnemyExplo
 
 
  // Enemies M1-M4
@@ -716,10 +720,10 @@ export BigShipReactor(pP pV=1 pX)
 	}
 }
 
-export def S_ENEMY_M1 BigShipReactor
-export def S_ENEMY_M2 BigShipReactor
-export def S_ENEMY_M3 BigShipReactor
-export def S_ENEMY_M4 BigShipReactor
+export def S_ENEMY_M1		BigShipReactor
+export def S_ENEMY_M2		BigShipReactor
+export def S_ENEMY_M3		BigShipReactor
+export def S_ENEMY_M4		BigShipReactor
 
 BigShipBailout(pP pV=1 pX)
 {
@@ -735,10 +739,10 @@ BigShipBailout(pP pV=1 pX)
 	a 0;			d 100
 }
 
-export def S_ENEMY_M1_BAILOUT BigShipBailout
-export def S_ENEMY_M2_BAILOUT BigShipBailout
-export def S_ENEMY_M3_BAILOUT BigShipBailout
-export def S_ENEMY_M4_BAILOUT BigShipBailout
+export def S_ENEMY_M1_BAILOUT	BigShipBailout
+export def S_ENEMY_M2_BAILOUT	BigShipBailout
+export def S_ENEMY_M3_BAILOUT	BigShipBailout
+export def S_ENEMY_M4_BAILOUT	BigShipBailout
 
 
  // Player ship sound effects
