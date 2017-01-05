@@ -243,7 +243,6 @@ void KOBO_enemy::shot_template_8_dir(const KOBO_enemy_kind *ekp)
 	int i;
 	for(i = 0; i < 8; i++)
 		enemies.make(ekp, x, y, vx[i], vy[i]);
-	playsound(S_BIGSPAWN);
 	playsound(ekp->launchsound);
 }
 
@@ -599,7 +598,7 @@ void KOBO_enemy::move_bomb1()
 	enemies.make(&bullet3, x, y, vx2, vy2);
 	enemies.make(&bullet3, x, y, vx3, vy3);
 	enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
-	playsound(S_BOMB1_DETO);
+	playsound(S_BOMB1_DETONATE);
 	release();
 }
 
@@ -683,7 +682,7 @@ void KOBO_enemy::move_bomb2()
 	enemies.make(&bullet3, x, y, vx4, vy4);
 	enemies.make(&bullet3, x, y, vx5, vy5);
 	enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
-	playsound(S_BOMB2_DETO);
+	playsound(S_BOMB2_DETONATE);
 	release();
 }
 
@@ -1567,6 +1566,7 @@ void KOBO_enemy::move_enemy_m1()
 	}
 	if(health < 200)
 	{
+		playsound(S_ENEMY_M1_BAILOUT);
 		this->shot_template_8_dir(&enemy2);
 		die();
 	}
@@ -1611,6 +1611,7 @@ void KOBO_enemy::move_enemy_m2()
 	}
 	if(health < 200)
 	{
+		playsound(S_ENEMY_M2_BAILOUT);
 		this->shot_template_8_dir(&bomb2);
 		die();
 	}
@@ -1655,6 +1656,7 @@ void KOBO_enemy::move_enemy_m3()
 	}
 	if(health < 200)
 	{
+		playsound(S_ENEMY_M3_BAILOUT);
 		this->shot_template_8_dir(&rock);
 		die();
 	}
@@ -1703,6 +1705,7 @@ void KOBO_enemy::move_enemy_m4()
 	}
 	if(health < 200)
 	{
+		playsound(S_ENEMY_M4_BAILOUT);
 		this->shot_template_8_dir(&rock);
 		die();
 	}

@@ -7,18 +7,152 @@ def license	"GPL"
 def a2sversion	"1.9.1"
 
 
-def FADETIME	100
+  /////////////////////////////////////////////////////////////////////////////
+ // Designing sound themes for Kobo Redux
+///////////////////////////////////////////////////////////////////////////////
+//
+// Overview
+//----------
+// Each game object (enemy, bullet, explosion, ...) has four hardwired sound
+// slots; one continuous sound effect that runs during the lifetime of the
+// object, and three one-shot event slots; launch, damage, and death. All slots
+// are wired to the game logic, but they're all optional. Sound themes should
+// just leave undesired slots undefined.
+//
+// All slot programs are expected to take the same arguments; (pP pV pX), which
+// are expected to initialize the pitch, volume, and horizontal pan position.
+// (See below for more on positional audio.)
+//
+//	Examples:
+//		S_CORE		Base core continuous sound with damage response
+//		S_ROCK_LAUNCH	Rock launch one-shot sound effect
+//		S_ROCK_DAMAGE	Rock damage (hit) one-shot sound effect
+//		S_ROCK_DEATH	Rock death (explosion) one-shot sound effect
+//
+// NOTE:
+//	For theme development purposes, it's recommended to set a sensible
+//	default value for the pV argument, but this is not strictly required,
+//	as the game engine will always specify all arguments.
+//
+//
+// Continuous positional sound effects
+//-------------------------------------
+// The continuous sounds effects are 2D positional, and are expected to respond
+// to certain voice messages while playing. They are started with a2_Start(),
+// and remain attached until the object is destroyed, whereby message 1() is
+// passed, after which the voice is detached. Unlike one-shot 
+//
+//	Messages:
+//		1()
+//			Stop the sound. Normally implies death.
+//
+//		2(Damage)
+//			Object has taken damage. The argument specifies the
+//			amount.
+//
+//		3(npP npV npX Dur)
+//			Positional audio update. pP is the new pitch, npV is
+//			the new volume, and npX is the new horizontal pan
+//			position.
+//
+//			The npP argument is intended for Doppler effects, and
+//			is a 1.0/octave linear pitch offset from the normal
+//			pitch of the sound effect. (Not yet implemented in the
+//			game.)
+//
+//			The simplest way of implementing npV and npX is to use
+//			a 'panmix' unit as the final stage in the voice
+//			structure, and apply the arguments directly to its
+//			'vol' and 'pan' registers.
+//
+//			Changes are expected to be linearly ramped over the
+//			time specified via the 'Dur' argument.
+//
+//
+// Extra sound effect slots
+//--------------------------
+// Some objects also have additional sound slots, named S_<object>_<x>, where
+// <x> is a descriptive name of the slot. These may have nonstandard arguments
+// and message handlers, though they will typically match the behavior of
+// either continuous or one-shot sounds, as described above.
+//
+//	Extra enemy sound slots:
+//
+//		Continuous positional sounds:
+//			S_BOMB1_TRIG		Bomb 1 trigger warning bleep
+//			S_BOMB2_TRIG		Bomb 2 trigger warning bleep
+//
+//		One-shot sounds:
+//			S_BOMB1_DETONATE	Bomb 1 detonation
+//			S_BOMB2_DETONATE	Bomb 2 detonation
+//			S_ENEMY_M1_BAILOUT	Enemy M1 final bailout spawn
+//			S_ENEMY_M2_BAILOUT	Enemy M2 final bailout spawn
+//			S_ENEMY_M3_BAILOUT	Enemy M3 final bailout spawn
+//			S_ENEMY_M4_BAILOUT	Enemy M4 final bailout spawn
+//
+//	Other extra sound slots:
+//
+//		One-shot sounds:
+//			S_NO_DAMAGE		Deflect "clank" for base pipes
+//
+//
+// Player ship sound effects
+//---------------------------
+// The player ship is (as of now) not based on the enemy model, and has its own
+// sound interface. It is, however, based on the same logic as the enemy sound
+// effects, so the same concepts still apply.
+//
+//	Player ship sound effect slots:
+//		S_PLAYER_DAMAGE		One-shot damage sound
+//		S_PLAYER_DEATH		One-shot player death sound
+//		S_PLAYER_GUN		Player gun sound program (nonstandard)
+//
+// The most interesting part here is S_PLAYER_GUN, which is actually a single
+// program implementing a number of related sound effects. The program takes
+// the same (pP pV pX) arguments as other continuous sound effects, but it does
+// NOT implement the usual positional update messages. It will typically start
+// silent, and the sound effects are then controlled via voice messages.
+//
+//	S_PLAYER_GUN messages:
+//		2()	Fire primary weapon
+//		3(Ch)	Secondary weapon charge "blipp"; Ch is current level.
+//		4(Ch)	Fire secondary (charged) weapon
+//
+//
+// TODO
+//------
+// Document the mixer group programs, songs, and UI sound effects. For now,
+// look at the examples included with this theme.
+//
+//	Relevant slots:
+//		Mixer groups:
+//			S_G_MASTER	Master section (parent of all groups)
+//			S_G_UI		User interface sound effect group
+//			S_G_SFX		Ingame sound effects group
+//			S_G_MUSIC	Ingame music group
+//			S_G_TITLE	Title/UI music group
+//
+//		Music:
+//			S_OAJINGLE	Olofson Arcade jingle
+//			S_TITLESONG	Game title song
+//			S_INGAMESONG1	Ingame track for region 1
+//			S_INGAMESONG2	Ingame track for region 2
+//			S_INGAMESONG3	Ingame track for region 3
+//			S_INGAMESONG4	Ingame track for region 4
+//			S_INGAMESONG5	Ingame track for region 5
+//
+///////////////////////////////////////////////////////////////////////////////
 
 
  // Common sound effects
 ///////////////////////////////////////////////////////////////////////////////
 
-Damage(P V=1 PanX)
+Damage(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w square
-	+tr (P + 1 + rand .5)
+	+tr (pP + 1 + rand .5)
 	d rand 50
 	phase 0
 	@a .4
@@ -32,12 +166,12 @@ Damage(P V=1 PanX)
 	a 0;			d 150
 }
 
-NodeExplo(P V=1 PanX)
+NodeExplo(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w square
-	+tr P
+	+tr pP
 	@a .5
 	@p (1 + rand .5)
 	-p 3.5;			d 50
@@ -57,12 +191,12 @@ NodeExplo(P V=1 PanX)
 	a 0;			d 10
 }
 
-EnemyExplo(P V=1 PanX)
+EnemyExplo(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w square
-	+tr P
+	+tr pP
 	@a .7; @p (.5 + rand 1)
 	-p 2;			d 20
 	w noise; @p (1.5 + rand 1)
@@ -80,36 +214,36 @@ EnemyExplo(P V=1 PanX)
  // Enemy bullets
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_BULLET1_LAUNCH(P V=1 PanX)
+export S_BULLET1_LAUNCH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w pulse1
-	+tr (P - 1.1); @p 0
+	+tr (pP - 1.1); @p 0
 	+a .3; +p .02;		d 20
 	-a .15; -p .03;		d 30
 	@a .1; w noise; p 7;	d 10
 	@a .02;	a 0;		d 150
 }
 
-export S_BULLET2_LAUNCH(P V=1 PanX)
+export S_BULLET2_LAUNCH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w pulse2
-	+tr (P - 1.6); @p 0
+	+tr (pP - 1.6); @p 0
 	+a .3; +p .02;		d 20
 	-a .1; -p .04;		d 40
 	@a .15; w noise; p 7.5;	d 10
 	@a .035; a 0;		d 150
 }
 
-export S_BULLET3_LAUNCH(P V=1 PanX)
+export S_BULLET3_LAUNCH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w pulse4
-	+tr (P - 2); @p 0
+	+tr (pP - 2); @p 0
 	+a .4; +p .04;		d 40
 	-a .3; -p .06;		d 60
 	@a .25; w noise; p 8;	d 10
@@ -121,12 +255,12 @@ export S_BULLET3_LAUNCH(P V=1 PanX)
  // Rocks
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_ROCK_LAUNCH(P V=1 PanX)
+export S_ROCK_LAUNCH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w noise
-	+tr P; @p 0
+	+tr pP; @p 0
 	+a .15; +p 1;		d 100
 	5 {
 		*a .25
@@ -136,12 +270,12 @@ export S_ROCK_LAUNCH(P V=1 PanX)
 	a 0;			d 200
 }
 
-export S_ROCK_DAMAGE(P V=1 PanX)
+export S_ROCK_DAMAGE(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w triangle
-	+tr (P + 3 + rand .5)
+	+tr (pP + 3 + rand .5)
 	d rand 50
 	phase 0
 	@a .5;			d 10
@@ -154,12 +288,12 @@ export S_ROCK_DAMAGE(P V=1 PanX)
 	a 0;			d 50
 }
 
-export S_ROCK_DEATH(P V=1 PanX)
+export S_ROCK_DEATH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w noise
-	+tr P
+	+tr pP
 	@p 3
 	3 {
 		@p (rand 3)
@@ -184,12 +318,12 @@ export S_ROCK_DEATH(P V=1 PanX)
  // Ring
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_RING_LAUNCH(P V=1 PanX)
+export S_RING_LAUNCH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w triangle
-	+tr (P - 1); @p 0
+	+tr (pP - 1); @p 0
 	+a 1; +p 2;		d 100
 	5 {
 		*a .25
@@ -199,12 +333,12 @@ export S_RING_LAUNCH(P V=1 PanX)
 	a 0;			d 100
 }
 
-export S_RING_DEATH(P V=1 PanX)
+export S_RING_DEATH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w noise
-	+tr (P - 1); @p 3
+	+tr (pP - 1); @p 3
 	a .5
 	a 0; +p .7;				d 50
 	a .5
@@ -230,12 +364,12 @@ export S_RING_DEATH(P V=1 PanX)
  // Bomb 1
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_BOMB1_LAUNCH(P V=1 PanX)
+export S_BOMB1_LAUNCH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w triangle
-	+tr P
+	+tr pP
 	@a .2
 	@p 2; -p 2.1;		d 60
 	w noise; @a .1; @p 7;	d 20
@@ -251,10 +385,10 @@ export S_BOMB1_LAUNCH(P V=1 PanX)
 	a 0;			d 200
 }
 
-export S_BOMB1_TRIG(P V=1 PanX)
+export S_BOMB1_TRIG(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w triangle
 	a .1
 	!playing 1
@@ -268,20 +402,18 @@ export S_BOMB1_TRIG(P V=1 PanX)
 		playing 0
 	}
 	2(Dmg) { }
-	3(pV pX) {
-		vol pV
-		pan pX
-		ramp FADETIME
+	3(npP npV npX Dur) {
+		vol npV; pan npX; ramp Dur
 	}
 }
 
-export S_BOMB1_DETO(P V=1 PanX)
+export S_BOMB1_DETO(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
-	+tr P
+	pan pX; vol pV; set
+	+tr pP
 	w square
-	+tr P
+	+tr pP
 	@a .5
 	@p 2
 	-p 4.9;		d 70
@@ -300,10 +432,10 @@ export def S_BOMB1_DEATH EnemyExplo
 
 export def S_BOMB2_LAUNCH S_BOMB1_LAUNCH
 
-export S_BOMB2_TRIG(P V=1 PanX)
+export S_BOMB2_TRIG(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w triangle
 	a .1
 	!playing 1
@@ -317,20 +449,18 @@ export S_BOMB2_TRIG(P V=1 PanX)
 		playing 0
 	}
 	2(Dmg) { }
-	3(pV pX) {
-		vol pV
-		pan pX
-		ramp FADETIME
+	3(npP npV npX Dur) {
+		vol npV; pan npX; ramp Dur
 	}
 }
 
-export S_BOMB2_DETO(P V=1 PanX)
+export S_BOMB2_DETO(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
-	+tr P
+	pan pX; vol pV; set
+	+tr pP
 	w square
-	+tr P
+	+tr pP
 	@a .7
 	@p 2.5
 	-p 5.6;			d 70
@@ -360,12 +490,12 @@ export def S_CANNON_DEATH NodeExplo
  // Base core
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_CORE(P V=1 PanX)
+export S_CORE(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w square
-	-tr (2 - P + rand .2)
+	-tr (2 - pP + rand .2)
 	!pf (.77 + rand .01)
 	def A0 .1
 	a 0
@@ -431,10 +561,8 @@ export S_CORE(P V=1 PanX)
 	}
 
 	// Positional update
-	3(pV pX) {
-		vol pV
-		pan pX
-		ramp FADETIME
+	3(npP npV npX Dur) {
+		vol npV; pan npX; ramp Dur
 	}
 }
 
@@ -442,11 +570,11 @@ export S_CORE(P V=1 PanX)
  // Base pipe, inwards chain explosion
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_PIPEIN(P V=1 PanX)
+export S_PIPEIN(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
-	w triangle; a .2; +tr (P - 3)
+	pan pX; vol pV; set
+	w triangle; a .2; +tr (pP - 3)
 
 	!PE 5
 	!running 1
@@ -477,12 +605,12 @@ export def S_PIPEOUT S_PIPEIN
  // Enemies 1-7
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_ENEMY1_LAUNCH(P V=1 PanX)
+export S_ENEMY1_LAUNCH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w noise
-	+tr (P + 2); @p 0
+	+tr (pP + 2); @p 0
 	+a .15; +p 1;		d 100
 	5 {
 		*a .25
@@ -519,15 +647,15 @@ export def S_ENEMY7_DEATH EnemyExplo
  // Enemies M1-M4
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_ENEMY_M1(P V=1 PanX)
+export BigShipReactor(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 
 	def A0 .3
 	def TR -3
 
-	!tr0 (tr + P + rand .2)
+	!tr0 (tr + pP + rand .2)
 	tr (tr0 + TR)
 	!pf (.51 + rand .01)
 	!damage_amount 0
@@ -583,23 +711,22 @@ export S_ENEMY_M1(P V=1 PanX)
 	}
 
 	// Positional update
-	3(pV pX) {
-		vol pV
-		pan pX
-		ramp FADETIME
+	3(npP npV npX Dur) {
+		vol npV; pan npX; ramp Dur
 	}
 }
 
-export def S_ENEMY_M2 S_ENEMY_M1
-export def S_ENEMY_M3 S_ENEMY_M1
-export def S_ENEMY_M4 S_ENEMY_M1
+export def S_ENEMY_M1 BigShipReactor
+export def S_ENEMY_M2 BigShipReactor
+export def S_ENEMY_M3 BigShipReactor
+export def S_ENEMY_M4 BigShipReactor
 
-export S_BIGSPAWN(P V=1 PanX)
+BigShipBailout(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w pulse10
-	+tr (P - 3); @p 0
+	+tr (pP - 3); @p 0
 	+a 1; +p .1;		d 100
 	-a 1; -p .1;		d 100
 	@a .5; w noise; @p 6;	d 10
@@ -608,16 +735,21 @@ export S_BIGSPAWN(P V=1 PanX)
 	a 0;			d 100
 }
 
+export def S_ENEMY_M1_BAILOUT BigShipBailout
+export def S_ENEMY_M2_BAILOUT BigShipBailout
+export def S_ENEMY_M3_BAILOUT BigShipBailout
+export def S_ENEMY_M4_BAILOUT BigShipBailout
+
 
  // Player ship sound effects
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_PLAYER_DAMAGE(P V=1 PanX)
+export S_PLAYER_DAMAGE(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w square
-	+tr (P + 1 + rand .5)
+	+tr (pP + 1 + rand .5)
 	d rand 50
 	phase 0
 	@a 1
@@ -630,12 +762,12 @@ export S_PLAYER_DAMAGE(P V=1 PanX)
 	a 0;		d 200
 }
 
-export S_PLAYER_DEATH(P V=1 PanX)
+export S_PLAYER_DEATH(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w square
-	+tr P
+	+tr pP
 	@a .5
 	@p 2
 	-p 5;			d 100
@@ -653,20 +785,20 @@ export S_PLAYER_DEATH(P V=1 PanX)
 	a 0;			d 10
 }
 
-ChargeBlipp(P V=1 PanX Charge=1)
+ChargeBlipp(pP pV=1 pX Charge=1)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	a .2; w saw; @p (Charge * 2);	d 2
 	*a .5; -p .5;			d 5
 	a 0;				d 10
 }
 
-FireCharged(P V=1 PanX Charge=1)
+FireCharged(pP pV=1 pX Charge=1)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
-	!tr0 (tr + P - 4)
+	pan pX; vol pV; set
+	!tr0 (tr + pP - 4)
 	tr tr0
 	a (Charge * .5 + .5); set a; w saw; @p (5 + Charge)
 	20 {
@@ -683,12 +815,12 @@ FireCharged(P V=1 PanX Charge=1)
 	a 0; d 100
 }
 
-export S_PLAYER_GUN(P V=1 PanX)
+export S_PLAYER_GUN(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w saw
-	+tr P
+	+tr pP
 
 	sleep	// Hold here until we start firing!
 
@@ -715,11 +847,11 @@ export S_PLAYER_GUN(P V=1 PanX)
 	}
 
 	3(Ch) {
-		ChargeBlipp P V PanX Ch
+		ChargeBlipp pP pV pX Ch
 	}
 
 	4(Ch) {
-		FireCharged P V PanX Ch
+		FireCharged pP pV pX Ch
 	}
 }
 
@@ -727,12 +859,12 @@ export S_PLAYER_GUN(P V=1 PanX)
  // Other sound effects
 ///////////////////////////////////////////////////////////////////////////////
 
-export S_NO_DAMAGE(P V=1 PanX)
+export S_NO_DAMAGE(pP pV=1 pX)
 {
 	struct { wtosc; panmix }
-	pan PanX; vol V; set
+	pan pX; vol pV; set
 	w square
-	+tr P
+	+tr pP
 	@a .1; @p (1 + rand .3);	d 5
 	a .03; @p (rand .5 - 1);	d 10
 	a 0; @p (3 + rand .3);		d 30

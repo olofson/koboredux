@@ -647,7 +647,7 @@ void KOBO_sound::g_move(int h, int x, int y)
 		return;
 	float vol, pan;
 	eval_pos(x, y, &vol, &pan);
-	a2_Send(iface, h, 3, vol, pan);
+	a2_Send(iface, h, 3, 0.0f, vol, pan);
 }
 
 void KOBO_sound::g_control(int h, int c, float v)
@@ -663,18 +663,6 @@ void KOBO_sound::g_stop(int h)
 		return;
 	a2_Send(iface, h, 1);
 	a2_Release(iface, h);
-}
-
-
-void KOBO_sound::g_play0(unsigned wid, int vol, int pitch)
-{
-	if(!iface)
-		return;
-	if(!checksound(wid, "KOBO_sound::g_play0()"))
-		return;
-	a2_Play(iface, groups[KOBO_MG_SFX], sounds[wid],
-			(pitch / 65536.0f - 60.0f)  / 12.0f,
-			vol / 65536.0f);
 }
 
 

@@ -74,10 +74,10 @@ enum KOBO_mixer_group {
 	KOBO_ENEMY_SFX_DEFS(RING)	\
 	KOBO_ENEMY_SFX_DEFS(BOMB1)	\
 	KOBO_DEFS(BOMB1_TRIG)		\
-	KOBO_DEFS(BOMB1_DETO)		\
+	KOBO_DEFS(BOMB1_DETONATE)	\
 	KOBO_ENEMY_SFX_DEFS(BOMB2)	\
 	KOBO_DEFS(BOMB2_TRIG)		\
-	KOBO_DEFS(BOMB2_DETO)		\
+	KOBO_DEFS(BOMB2_DETONATE)	\
 	KOBO_ENEMY_SFX_DEFS(EXPLO1)	\
 	KOBO_ENEMY_SFX_DEFS(EXPLO3)	\
 	KOBO_ENEMY_SFX_DEFS(EXPLO4)	\
@@ -101,10 +101,13 @@ enum KOBO_mixer_group {
 	KOBO_ENEMY_SFX_DEFS(ENEMY6)	\
 	KOBO_ENEMY_SFX_DEFS(ENEMY7)	\
 	KOBO_ENEMY_SFX_DEFS(ENEMY_M1)	\
+	KOBO_DEFS(ENEMY_M1_BAILOUT)	\
 	KOBO_ENEMY_SFX_DEFS(ENEMY_M2)	\
+	KOBO_DEFS(ENEMY_M2_BAILOUT)	\
 	KOBO_ENEMY_SFX_DEFS(ENEMY_M3)	\
+	KOBO_DEFS(ENEMY_M3_BAILOUT)	\
 	KOBO_ENEMY_SFX_DEFS(ENEMY_M4)	\
-	KOBO_DEFS(BIGSPAWN)		\
+	KOBO_DEFS(ENEMY_M4_BAILOUT)	\
 					\
 	KOBO_DEFS(PLAYER_DAMAGE)	\
 	KOBO_DEFS(PLAYER_DEATH)		\
@@ -250,9 +253,6 @@ class KOBO_sound
 
 	// Stop sound 'h', previously started with g_start().
 	static void g_stop(int h);
-
-	// Play a sound right where the listener is
-	static void g_play0(unsigned wid, int vol = 65536, int pitch = 60<<16);
 
 	// Various sound effects
 	static void g_player_fire();
