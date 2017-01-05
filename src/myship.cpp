@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -123,6 +123,11 @@ int KOBO_myship::init(bool newship)
 	{
 		_charge = game.initial_charge;
 		_health = game.health;
+	}
+	else
+	{
+		if(game.level_charge >= 0)
+			_charge = game.level_charge;
 	}
 
 	fire_time = health_time = explo_time = 0;

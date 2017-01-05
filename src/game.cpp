@@ -64,8 +64,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		noseloadtime = tailloadtime = 0;
 	else
 		noseloadtime = tailloadtime = 1;
-	initial_charge = 0;
-	charge = 100;
+	initial_charge = level_charge = charge = 100;
 	charge_rate = 1;
 	charge_limit = 50;
 	bolt_drain = 2;

@@ -3,7 +3,7 @@
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
  * Copyright (C) 2002, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -134,7 +134,9 @@ class game_t
 	int	bolt_range;	// Max distance player bolts can travel
 	int	noseloadtime;	// logic frames per nose shot
 	int	tailloadtime;	// logic frames per tail shot
-	int	initial_charge;	// Initial boost capacitor charge
+	int	initial_charge;	// Boost capacitor charge on a new ship
+	int	level_charge;	// Charge when entering new level (-1 to leave
+				// the charge unchanged)
 	int	charge;		// Initial/full charge
 	int	charge_rate;	// Boost capacitor charge rate
 	int	charge_limit;	// Maximum power of one charged shot
