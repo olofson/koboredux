@@ -593,8 +593,8 @@ export S_PIPEIN(pP pV=1 pX)
 		PE (Int + 4)
 	}
 
-	3(pV pX Dur) {
-		pm.vol pV; pm.pan pX; ramp Dur
+	3(npP npV npX Dur) {
+		vol npV; pan npX; ramp Dur
 	}
 }
 
