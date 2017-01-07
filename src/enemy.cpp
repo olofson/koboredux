@@ -732,34 +732,39 @@ void KOBO_enemy::make_expl()
 	damage = 0;
 	shootable = false;
 	physics = false;
+	di = -1;	// ::move_expl() skips the first frame otherwise...
+	a = frames;	// Use all loaded frames, unless overridden below!
 	switch(logical_bank)
 	{
-	  case B_EXPLO1:
-	  case B_EXPLO3:
-	  case B_EXPLO4:
-	  case B_EXPLO5:
-		a = 16;
-		break;
-	  case B_BOMBDETO:
-		a = 8;
-		break;
-	  case B_ROCKEXPL:
-		a = 12;
+	  case B_BASEEXPL:
+		a = -16;
 		break;
 	  case B_RINGEXPL:
-		frame = 8 * pubrand.get(1);
-		a = 8;
+		a = -8;
 		break;
 	  case B_BLTX_GREEN:
 	  case B_BLTX_RED:
 	  case B_BLTX_BLUE:
-		a = 6;
+		a = -6;
 		break;
 	  case B_BOLT:
 		frame = 80 + 4 * pubrand.get(2);
 		di = pubrand.get(2);
 		a = 8;
 		break;
+	  case B_EXPLO1:
+	  case B_EXPLO3:
+	  case B_EXPLO4:
+	  case B_EXPLO5:
+	  case B_BOMBDETO:
+	  case B_ROCKEXPL:
+		break;
+	}
+	if(a < 0)
+	{
+		a = -a;
+		if(frames >= a * 2)
+			frame = pubrand.get() % (frames / a) * a;
 	}
 }
 
@@ -819,6 +824,27 @@ const KOBO_enemy_kind explosion5 = {
 	LAYER_FX,
 	0,
 	KOBO_EK_SOUNDS(EXPLO5)
+};
+
+
+/*
+ * ===========================================================================
+ *                                 baseexpl
+ *                           Exploding base section
+ * ===========================================================================
+ */
+
+const KOBO_enemy_kind baseexpl = {
+	"baseexpl",
+	0,
+	&KOBO_enemy::make_expl,
+	&KOBO_enemy::move_expl,
+	&KOBO_enemy::kill_unused,
+	-1,
+	B_BASEEXPL, 0,
+	LAYER_FX,
+	0,
+	KOBO_EK_SOUNDS(BASEEXPL)
 };
 
 
@@ -1131,7 +1157,7 @@ void KOBO_enemy::move_pipein()
 		if(mindiff < ((VIEWLIMIT >> 1) + 32))
 		{
 			controlsound(2, 1);
-			enemies.make(enemies.randexp(),
+			enemies.make(&baseexpl,
 					x + PIXEL2CS(pubrand.get(3) - 4),
 					y + PIXEL2CS(pubrand.get(3) - 4),
 					0, 0, 1);
@@ -1236,7 +1262,7 @@ void KOBO_enemy::move_pipeout()
 		screen.set_map(x1, y1, SPACE);
 		controlsound(2, 1);
 		if(mindiff < ((VIEWLIMIT >> 1) + 32))
-			enemies.make(enemies.randexp(), x, y, 0, 0, 1);
+			enemies.make(&baseexpl, x, y, 0, 0, 1);
 		return;
 	}
 
@@ -1279,9 +1305,9 @@ void KOBO_enemy::move_pipeout()
 	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
 	controlsound(2, 1);
 	if(mindiff < ((VIEWLIMIT >> 1) + 32))
-		enemies.make(&explosion,
-				x + PIXEL2CS(pubrand.get(4) - 8),
-				y + PIXEL2CS(pubrand.get(4) - 8),
+		enemies.make(&baseexpl,
+				x + PIXEL2CS(pubrand.get(3) - 4),
+				y + PIXEL2CS(pubrand.get(3) - 4),
 				0, 0, 1);
 	x += x_next;
 	y += y_next;

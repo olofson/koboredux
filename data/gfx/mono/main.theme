@@ -1,5 +1,5 @@
 message "Kobo Redux Mono Theme"
-message "Copyright 2016 David Olofson"
+message "Copyright 2016-2017 David Olofson"
 message "CC BY-SA 4.0 (http://creativecommons.org/licenses/by-sa/4.0/)"
 
 //-----------------------------------------------------------------------------
@@ -154,6 +154,7 @@ sprites B_EXPLO1 "explo.png" 24 24 CENTER
 alias B_EXPLO3 B_EXPLO1
 alias B_EXPLO4 B_EXPLO1
 alias B_EXPLO5 B_EXPLO1
+alias B_BASEEXPL B_EXPLO1
 sprites B_ROCK1 "rock.png" 32 32 CENTER
 alias B_ROCK2 B_ROCK1
 alias B_ROCK3 B_ROCK1

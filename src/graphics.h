@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright 2016 David Olofson (Kobo Redux)
+ * Copyright 2016-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -106,6 +106,7 @@
 	KOBO_DEFS(BOMB)				\
 	KOBO_DEFS(BOMBDETO)			\
 	KOBO_DEFS(BOLT)				\
+	KOBO_DEFS(BASEEXPL)			\
 	KOBO_DEFS(EXPLO1)			\
 	KOBO_DEFS(EXPLO3)			\
 	KOBO_DEFS(EXPLO4)			\

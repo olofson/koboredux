@@ -65,6 +65,7 @@ extern const KOBO_enemy_kind explosion;
 extern const KOBO_enemy_kind explosion3;
 extern const KOBO_enemy_kind explosion4;
 extern const KOBO_enemy_kind explosion5;
+extern const KOBO_enemy_kind baseexpl;
 extern const KOBO_enemy_kind ringexpl;
 extern const KOBO_enemy_kind greenbltexpl;
 extern const KOBO_enemy_kind redbltexpl;
