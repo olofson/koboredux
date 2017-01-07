@@ -5,7 +5,7 @@
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2005, 2007, 2009 David Olofson
  * Copyright 2008 Robert Schuster
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -101,7 +101,8 @@ class KOBO_main
 	static SDL_Joystick	*joystick;
 	static int		js_lr;
 	static int		js_ud;
-	static int		js_fire;
+	static int		js_primary;
+	static int		js_secondary;
 	static int		js_start;
 
 	static FILE		*logfile;

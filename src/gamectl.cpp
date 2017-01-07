@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2006, 2009, 2012 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -133,15 +133,23 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 		else
 			return BTN_NONE;
 
-	  // Fire
+	  // Primary fire
 	  case SDLK_LSHIFT:
 		++src;
 	  case SDLK_RSHIFT:
 		++src;
+	  case SDLK_z:
+		return BTN_PRIMARY;
+
+	  // Secondary fire
 	  case SDLK_LCTRL:
 		++src;
 	  case SDLK_RCTRL:
-		return BTN_FIRE;
+		++src;
+	  case SDLK_SPACE:
+		++src;
+	  case SDLK_x:
+		return BTN_SECONDARY;
 
 	  // Exit
 	  case SDLK_ESCAPE:
@@ -152,10 +160,6 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 		++src;
 	  case SDLK_p:
 		return BTN_PAUSE;
-
-	  // Start
-	  case SDLK_SPACE:
-		return BTN_START;
 
 	  // Select
 	  case SDLK_KP_ENTER:
@@ -206,8 +210,10 @@ void gamecontrol_t::pressbtn(gc_targets_t b, gc_sources_t s)
 		return;
 	if(s < 0 || s > 31)
 		return;
-	state[b] |= 1 << s;
+	if(state[b] & (1 << s))
+		return;	// Filter out keyboard repeat!
 	_pressed[b] |= 1 << s;
+	state[b] |= 1 << s;
 	gamecontrol_t::change();
 }
 
@@ -218,27 +224,9 @@ void gamecontrol_t::releasebtn(gc_targets_t b, gc_sources_t s)
 		return;
 	if(s < 0 || s > 31)
 		return;
-	state[b] &= ~(1 << s);
 	_released[b] |= 1 << s;
+	state[b] &= ~(1 << s);
 	gamecontrol_t::change();
-}
-
-
-void gamecontrol_t::mouse_press(int n)
-{
-	if(n == 1)
-		pressbtn(BTN_FIRE, GC_SRC_MOUSE);
-#if 0
-	else if(n == 3)
-		manage.key_down(KEY_START);
-#endif
-}
-
-
-void gamecontrol_t::mouse_release(int n)
-{
-	if(n == 1)
-		releasebtn(BTN_FIRE, GC_SRC_MOUSE);
 }
 
 

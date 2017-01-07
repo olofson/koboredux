@@ -113,6 +113,7 @@ enum KOBO_mixer_group {
 	KOBO_DEFS(PLAYER_DAMAGE)	\
 	KOBO_DEFS(PLAYER_DEATH)		\
 	KOBO_DEFS(PLAYER_GUN)		\
+	KOBO_DEFS(PLAYER_FIRE_DENIED)	\
 					\
 	KOBO_DEFS(NO_DAMAGE)		\
 					\
@@ -257,6 +258,7 @@ class KOBO_sound
 
 	// Various sound effects
 	static void g_player_fire();
+	static void g_player_fire_denied();
 	static void g_player_charge(float charge);
 	static void g_player_charged_fire(float charge);
 	static void g_player_damage(float level = 1.0f);

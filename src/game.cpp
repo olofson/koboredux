@@ -57,7 +57,11 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	regen_step = 20;
 	health_fade = 10;
 
-	// Player guns
+	// Player guns: Accumulator
+	initial_charge = level_charge = charge = 1000;
+	charge_rate = 10;
+
+	// Player guns: Primary
 	bolt_speed = 12;
 	bolt_range = (VIEWLIMIT >> 1) + 16 + 32;
 	bolt_drain = 15;
@@ -65,11 +69,13 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		noseloadtime = tailloadtime = 0;
 	else
 		noseloadtime = tailloadtime = 1;
-	initial_charge = level_charge = charge = 1000;
-	charge_rate = 10;
-	charge_limit = 500;
+
+	// Player guns: Secondary
+	charge_min = 200;
+	charge_max = 500;
 	charge_drain = 10;
 	charge_spread = 3;
+	charge_cooldown = 10;
 
 	switch(skill)
 	{

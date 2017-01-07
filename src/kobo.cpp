@@ -61,8 +61,9 @@
 /* Joystick support */
 #define DEFAULT_JOY_LR		0	// Joystick axis left-right default
 #define DEFAULT_JOY_UD		1	// Joystick axis up-down default
-#define DEFAULT_JOY_FIRE	0	// Default fire button on joystick
-#define DEFAULT_JOY_START	1
+#define DEFAULT_JOY_PRIMARY	0	// Default primary fire button
+#define DEFAULT_JOY_SECONDARY	1	// Default secondary fire button
+#define DEFAULT_JOY_START	2	// Default start/pause/select
 
 
 /*----------------------------------------------------------
@@ -257,7 +258,8 @@ static void add_dirs(prefs_t *p)
 SDL_Joystick	*KOBO_main::joystick = NULL;
 int		KOBO_main::js_lr = DEFAULT_JOY_LR;
 int		KOBO_main::js_ud = DEFAULT_JOY_UD;
-int		KOBO_main::js_fire = DEFAULT_JOY_FIRE;
+int		KOBO_main::js_primary = DEFAULT_JOY_PRIMARY;
+int		KOBO_main::js_secondary = DEFAULT_JOY_SECONDARY;
 int		KOBO_main::js_start = DEFAULT_JOY_START;
 
 FILE		*KOBO_main::logfile = NULL;
@@ -1732,10 +1734,14 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 	if(!pointer_margin_used)
 		gsm.pressbtn(BTN_FIRE);
 #else
-	gsm.pressbtn(BTN_FIRE);
+	gsm.pressbtn(BTN_PRIMARY);
 #endif
-	if(mouse_left || mouse_middle || mouse_right)
-		gamecontrol.pressbtn(BTN_FIRE, GC_SRC_MOUSE);
+	if(mouse_left)
+		gamecontrol.pressbtn(BTN_PRIMARY, GC_SRC_MOUSE0);
+	if(mouse_middle)
+		gamecontrol.pressbtn(BTN_SECONDARY, GC_SRC_MOUSE0);
+	if(mouse_right)
+		gamecontrol.pressbtn(BTN_SECONDARY, GC_SRC_MOUSE1);
 }
 
 
@@ -1772,10 +1778,14 @@ void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
 		pointer_margin_used = false;
 	}
 #else
-	gsm.releasebtn(BTN_FIRE);
+	gsm.releasebtn(BTN_PRIMARY);
 #endif
-	if(!mouse_left && !mouse_middle && !mouse_right)
-		gamecontrol.releasebtn(BTN_FIRE, GC_SRC_MOUSE);
+	if(!mouse_left)
+		gamecontrol.releasebtn(BTN_PRIMARY, GC_SRC_MOUSE0);
+	if(!mouse_middle)
+		gamecontrol.releasebtn(BTN_SECONDARY, GC_SRC_MOUSE0);
+	if(!mouse_right)
+		gamecontrol.releasebtn(BTN_SECONDARY, GC_SRC_MOUSE1);
 }
 
 
@@ -1883,25 +1893,37 @@ void kobo_gfxengine_t::input(float fractional_frame)
 			km.brutal_quit();
 			break;
 		  case SDL_JOYBUTTONDOWN:
-			if(ev.jbutton.button == km.js_fire)
+			if(ev.jbutton.button == km.js_primary)
 			{
-				gamecontrol.pressbtn(BTN_FIRE,
+				gamecontrol.pressbtn(BTN_PRIMARY,
 						GC_SRC_JOYSTICK);
-				gsm.pressbtn(BTN_FIRE);
+				gsm.pressbtn(BTN_PRIMARY);
+			}
+			else if(ev.jbutton.button == km.js_secondary)
+			{
+				gamecontrol.pressbtn(BTN_SECONDARY,
+						GC_SRC_JOYSTICK);
+				gsm.pressbtn(BTN_SECONDARY);
 			}
 			else if(ev.jbutton.button == km.js_start)
 			{
-				gamecontrol.pressbtn(BTN_START,
+				gamecontrol.pressbtn(BTN_PAUSE,
 						GC_SRC_JOYSTICK);
-				gsm.pressbtn(BTN_START);
+				gsm.pressbtn(BTN_PAUSE);
 			}
 			break;
 		  case SDL_JOYBUTTONUP:
-			if(ev.jbutton.button == km.js_fire)
+			if(ev.jbutton.button == km.js_primary)
 			{
-				gamecontrol.releasebtn(BTN_FIRE,
+				gamecontrol.releasebtn(BTN_PRIMARY,
 						GC_SRC_JOYSTICK);
-				gsm.releasebtn(BTN_FIRE);
+				gsm.releasebtn(BTN_PRIMARY);
+			}
+			else if(ev.jbutton.button == km.js_secondary)
+			{
+				gamecontrol.releasebtn(BTN_SECONDARY,
+						GC_SRC_JOYSTICK);
+				gsm.releasebtn(BTN_SECONDARY);
 			}
 			break;
 		  case SDL_JOYAXISMOTION:

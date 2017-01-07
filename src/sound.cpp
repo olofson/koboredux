@@ -692,6 +692,17 @@ void KOBO_sound::g_player_fire()
 }
 
 
+void KOBO_sound::g_player_fire_denied()
+{
+	if(!iface)
+		return;
+	if(checksound(S_PLAYER_FIRE_DENIED,
+			"KOBO_sound::g_player_fire_denied()"))
+		a2_Play(iface, groups[KOBO_MG_SFX],
+				sounds[S_PLAYER_FIRE_DENIED]);
+}
+
+
 void KOBO_sound::g_player_charge(float charge)
 {
 	if(!iface)

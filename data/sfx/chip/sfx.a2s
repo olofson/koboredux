@@ -859,6 +859,22 @@ export S_PLAYER_GUN(pP pV=1 pX)
 	}
 }
 
+export S_PLAYER_FIRE_DENIED(pP pV=1 pX)
+{
+	struct { wtosc; panmix }
+	pan pX; vol pV; set
+	w square
+
+	a .05; +p 3;	d 5
+	3 {
+		+p 1;	set p
+			d 5
+		-p 1;	set p
+			d 10
+	}
+	a 0;		d 5
+}
+
 
  // Other sound effects
 ///////////////////////////////////////////////////////////////////////////////

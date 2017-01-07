@@ -122,8 +122,8 @@ void st_introbase_t::press(gc_targets_t button)
 	  case BTN_CLOSE:
 		gsm.push(&st_main_menu);
 		break;
-	  case BTN_START:
-	  case BTN_FIRE:
+	  case BTN_PRIMARY:
+	  case BTN_SECONDARY:
 	  case BTN_SELECT:
 		gsm.push(&st_main_menu);
 #if 0
@@ -373,7 +373,6 @@ void st_game_t::press(gc_targets_t button)
 		gsm.push(&st_ask_exit);
 		break;
 	  case BTN_SELECT:
-	  case BTN_START:
 	  case BTN_PAUSE:
 		sound.ui_play(S_UI_PAUSE);
 		gsm.push(&st_pause_game);
@@ -500,7 +499,8 @@ void st_get_ready_t::press(gc_targets_t button)
 	  case BTN_UR:
 	  case BTN_DL:
 	  case BTN_DR:
-	  case BTN_FIRE:
+	  case BTN_PRIMARY:
+	  case BTN_SECONDARY:
 	  case BTN_YES:
 		sound.ui_play(S_UI_PLAY);
 		manage.pause(false);
@@ -508,7 +508,6 @@ void st_get_ready_t::press(gc_targets_t button)
 		pop();
 		break;
 	  case BTN_SELECT:
-	  case BTN_START:
 	  case BTN_PAUSE:
 		sound.ui_play(S_UI_PAUSE);
 		manage.player_ready();
@@ -639,8 +638,8 @@ void st_game_over_t::press(gc_targets_t button)
 	  case BTN_UR:
 	  case BTN_DL:
 	  case BTN_DR:
-	  case BTN_FIRE:
-	  case BTN_START:
+	  case BTN_PRIMARY:
+	  case BTN_SECONDARY:
 	  case BTN_SELECT:
 	  case BTN_YES:
 		sound.ui_play(S_UI_OK);
@@ -801,8 +800,8 @@ void st_menu_base_t::press(gc_targets_t button)
 	  case BTN_RIGHT:
 	  case BTN_DEC:
 	  case BTN_LEFT:
-	  case BTN_FIRE:
-	  case BTN_START:
+	  case BTN_PRIMARY:
+	  case BTN_SECONDARY:
 	  case BTN_SELECT:
 		if(form->selected())
 			selection = translate(form->selected()->tag, button);
@@ -829,8 +828,8 @@ void st_menu_base_t::press(gc_targets_t button)
 		  case BTN_LEFT:
 			form->change(-1);
 			break;
-		  case BTN_FIRE:
-		  case BTN_START:
+		  case BTN_PRIMARY:
+		  case BTN_SECONDARY:
 		  case BTN_SELECT:
 			form->change(0);
 			break;
@@ -968,10 +967,10 @@ void st_new_player_t::press(gc_targets_t button)
 			menu->next();
 			break;
 
-		  case BTN_FIRE:
+		  case BTN_PRIMARY:
+		  case BTN_SECONDARY:
 			if(!prefs->joystick)
 				break;
-		  case BTN_START:
 		  case BTN_SELECT:
 			sound.ui_play(S_UI_OK);
 			menu->editing = 0;
@@ -1066,8 +1065,8 @@ void st_new_player_t::press(gc_targets_t button)
 			menu->selection = MENU_TAG_OK;
 			break;
 
-		  case BTN_FIRE:
-		  case BTN_START:
+		  case BTN_PRIMARY:
+		  case BTN_SECONDARY:
 		  case BTN_SELECT:
 			menu->change(0);
 			break;
@@ -1089,9 +1088,9 @@ void st_new_player_t::press(gc_targets_t button)
 		switch(menu->selection)
 		{
 		  case 1:
-			if(button == BTN_START
+			if(button == BTN_PRIMARY
 					|| button == BTN_SELECT
-					|| button == BTN_FIRE)
+					|| button == BTN_SECONDARY)
 			{
 				sound.ui_play(S_UI_OK);
 				menu->editing = 1;
@@ -1185,8 +1184,8 @@ void st_error_t::press(gc_targets_t button)
 	  case BTN_UR:
 	  case BTN_DL:
 	  case BTN_DR:
-	  case BTN_FIRE:
-	  case BTN_START:
+	  case BTN_PRIMARY:
+	  case BTN_SECONDARY:
 	  case BTN_SELECT:
 	  case BTN_YES:
 		sound.ui_play(S_UI_OK);
@@ -1358,8 +1357,8 @@ int st_main_menu_t::translate(int tag, int button)
 		// action for fire/start/select...
 		switch(button)
 		{
-		  case BTN_FIRE:
-		  case BTN_START:
+		  case BTN_PRIMARY:
+		  case BTN_SECONDARY:
 		  case BTN_SELECT:
 			do_default_action = 0;
 			return tag + 10;

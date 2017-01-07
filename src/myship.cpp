@@ -46,7 +46,8 @@ int KOBO_myship::hitsize;
 int KOBO_myship::_health;
 int KOBO_myship::_charge;
 float KOBO_myship::charge_blipp_granularity;
-int KOBO_myship::fire_time;
+int KOBO_myship::fire_hold_time;
+int KOBO_myship::charge_cool;
 int KOBO_myship::health_time;
 int KOBO_myship::explo_time;
 int KOBO_myship::nose_reload_timer;
@@ -132,7 +133,7 @@ int KOBO_myship::init(bool newship)
 	}
 	charge_blipp_granularity = (float)wcharge->led_count() / game.charge;
 
-	fire_time = health_time = explo_time = 0;
+	fire_hold_time = health_time = explo_time = charge_cool = 0;
 	nose_reload_timer = tail_reload_timer = 0;
 
 	int i;
@@ -216,12 +217,15 @@ void KOBO_myship::fire_control()
 	_charge += game.charge_rate;
 	if(_charge > game.charge)
 		_charge = game.charge;
+	if(charge_cool)
+		--charge_cool;
 
-	if(gamecontrol.fire())
+	// Primary fire + "tap for secondary" logic
+	if(gamecontrol.primary_fire())
 	{
-		if(!fire_time)
+		if(!fire_hold_time)
 			latched_dir = di;
-		++fire_time;
+		++fire_hold_time;
 		int fired = 0;
 		if(tail_reload_timer > 0)
 			--tail_reload_timer;
@@ -247,17 +251,24 @@ void KOBO_myship::fire_control()
 	}
 	else
 	{
-		if(fire_time && (fire_time <= prefs->fire_tap_time))
-			charged_fire();
-		else if(ceil(_charge * charge_blipp_granularity) !=
-				ceil(prevc * charge_blipp_granularity))
-			sound.g_player_charge((float)_charge / game.charge);
-		fire_time = 0;
+		if(prefs->fire_tap_time && fire_hold_time &&
+				(fire_hold_time <= prefs->fire_tap_time))
+			charged_fire(latched_dir);
+		fire_hold_time = 0;
 		if(nose_reload_timer > 0)
 			--nose_reload_timer;
 		if(tail_reload_timer > 0)
 			--tail_reload_timer;
 	}
+
+	// Secondary fire (no autofire!)
+	if(gamecontrol.pressed(BTN_SECONDARY))
+		charged_fire(di);
+
+	// Charge bar blipps
+	if(ceil(_charge * charge_blipp_granularity) >
+			ceil(prevc * charge_blipp_granularity))
+		sound.g_player_charge((float)_charge / game.charge);
 }
 
 
@@ -668,20 +679,26 @@ void KOBO_myship::tail_fire()
 }
 
 
-void KOBO_myship::charged_fire()
+void KOBO_myship::charged_fire(int dir)
 {
-	int power = _charge > game.charge_limit ? game.charge_limit : _charge;
-	sound.g_player_charged_fire((float)power / game.charge_limit);
+	if(charge_cool || _charge < game.charge_min)
+	{
+		sound.g_player_fire_denied();
+		return;
+	}
+
+	int power = _charge > game.charge_max ? game.charge_max : _charge;
+	sound.g_player_charged_fire((float)power / game.charge_max);
 	while(power >= game.charge_drain)
 	{
 		power -= game.charge_drain;
 		_charge -= game.charge_drain;
 		float spread = pubrand.get(16) * (8.0f / 65536.0f) - 4.0f;
 		spread *= game.charge_spread * (1.0f / 360.0f),
-		shot_single(latched_dir + spread,
-				15 + power / game.charge_drain,
+		shot_single(dir + spread, 15 + power / game.charge_drain,
 				pubrand.get(3) - 4);
 	}
+	charge_cool = game.charge_cooldown;
 }
 
 

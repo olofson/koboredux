@@ -128,21 +128,27 @@ class game_t
 	int	crash_damage;	// Damage inflicted on ship when hitting a base
 				// at full speed
 
-	// Player guns
+	// Player guns: Accumulator
+	int	initial_charge;	// Boost capacitor charge on a new ship
+	int	level_charge;	// Charge when entering new level (-1 to leave
+				// the charge unchanged)
+	int	charge;		// Initial/full charge
+	int	charge_rate;	// Boost capacitor charge rate
+
+	// Player guns: Primary
 	int	bolt_speed;	// Nominal bolt speed
 	int	bolt_damage;	// Damage inflicted by player fire bolt
 	int	bolt_drain;	// Normal bolt capacitor drain
 	int	bolt_range;	// Max distance player bolts can travel
 	int	noseloadtime;	// logic frames per nose shot
 	int	tailloadtime;	// logic frames per tail shot
-	int	initial_charge;	// Boost capacitor charge on a new ship
-	int	level_charge;	// Charge when entering new level (-1 to leave
-				// the charge unchanged)
-	int	charge;		// Initial/full charge
-	int	charge_rate;	// Boost capacitor charge rate
-	int	charge_limit;	// Maximum power of one charged shot
+
+	// Player guns: Secondary
+	int	charge_min;	// Minium power of one charged shot
+	int	charge_max;	// Maximum power of one charged shot
 	int	charge_drain;	// Charge fire capacitor drain (per bolt)
 	int	charge_spread;	// Charge fire spread (degrees)
+	int	charge_cooldown;// Charge fire cooldown time (logic frames)
 
 	// Enemies
 	int	rock_health;
