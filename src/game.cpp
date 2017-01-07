@@ -60,14 +60,15 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	// Player guns
 	bolt_speed = 12;
 	bolt_range = (VIEWLIMIT >> 1) + 16 + 32;
+	bolt_drain = 15;
 	if(prefs && prefs->cheat_firepower)
 		noseloadtime = tailloadtime = 0;
 	else
 		noseloadtime = tailloadtime = 1;
-	initial_charge = level_charge = charge = 100;
-	charge_rate = 1;
-	charge_limit = 50;
-	bolt_drain = 2;
+	initial_charge = level_charge = charge = 1000;
+	charge_rate = 10;
+	charge_limit = 500;
+	charge_drain = 10;
 
 	switch(skill)
 	{

@@ -3,7 +3,7 @@
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
  * Copyright 2003, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -150,6 +150,7 @@ class shieldbar_t : public bargraph_t
 	void set_leds(int _bank)	{ led_bank = _bank; }
 	void marker(float m)		{ _marker = m; }
 	void refresh(SDL_Rect *r);
+	int led_count();	// Returns number of LEDs with current theme
 };
 
 

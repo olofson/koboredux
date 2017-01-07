@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright (C) 1995, 1996  Akira Higuchi
  * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -57,6 +57,7 @@ class KOBO_myship
 	static int hitsize;
 	static int _health;
 	static int _charge;	// Weapon boost capacitor charge
+	static float charge_blipp_granularity;
 	static int fire_time;	// Frames fire button has been down
 	static int health_time;
 	static int explo_time;

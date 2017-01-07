@@ -131,6 +131,7 @@ class game_t
 	// Player guns
 	int	bolt_speed;	// Nominal bolt speed
 	int	bolt_damage;	// Damage inflicted by player fire bolt
+	int	bolt_drain;	// Normal bolt capacitor drain
 	int	bolt_range;	// Max distance player bolts can travel
 	int	noseloadtime;	// logic frames per nose shot
 	int	tailloadtime;	// logic frames per tail shot
@@ -140,7 +141,7 @@ class game_t
 	int	charge;		// Initial/full charge
 	int	charge_rate;	// Boost capacitor charge rate
 	int	charge_limit;	// Maximum power of one charged shot
-	int	bolt_drain;	// Normal bolt capacitor drain
+	int	charge_drain;	// Charge fire capacitor drain (per bolt)
 
 	// Enemies
 	int	rock_health;
