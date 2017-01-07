@@ -244,6 +244,7 @@ void controls_options_t::build()
 	}
 	space();
 	list("Charge Release Tap Time", &prf->fire_tap_time, 0);
+		item("OFF", 0);
 		item("1 frame", 1);
 		item("2 frames", 2);
 		item("3 frames", 3);

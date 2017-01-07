@@ -62,7 +62,7 @@ void prefs_t::init()
 	yesno("mouse", mouse, 0); desc("Enable Mouse");
 	key("mousemode", mousemode, MMD_CROSSHAIR); desc("Mouse Control Mode");
 	key("fire_tap_time", fire_tap_time, 2);
-			desc("Charge Release Tap Time");
+			desc("Primary Fire Tap Time for Charge Release");
 	yesno("broken_numdia", broken_numdia, 0);
 			desc("Broken NumPad Diagonals");
 	key("dia_emphasis", dia_emphasis, 1);
