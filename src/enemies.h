@@ -37,6 +37,7 @@ class KOBO_enemies;
 //---------------------------------------------------------------------------//
 struct KOBO_enemy_kind
 {
+	const char	*name;
 	int		score;
 	void (KOBO_enemy::*make) ();
 	void (KOBO_enemy::*move) ();
@@ -162,7 +163,9 @@ class KOBO_enemy
 	inline void stopsound();
 	void restartsound();
 
-	void kill_default();
+	void kill_default();	// Default explosion anim + sfx
+	void kill_silent();	// No explosion, no sfx
+	void kill_unused();	// Not to be called. (Log warning.)
 
 	void make_bullet1();
 	void make_bullet2();
@@ -374,6 +377,12 @@ inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 
 inline void KOBO_enemy::hit(int dmg)
 {
+	if(!dmg)
+		return;
+
+	if(!shootable)
+		return;
+
 	if(HEALTH_INDESTRUCTIBLE != health)
 		health -= dmg;
 	if(enemies.is_intro)
@@ -488,8 +497,8 @@ inline void KOBO_enemy::move()
 
 	int dmg = myship.hit_bolt(CS2PIXEL(x), CS2PIXEL(y),
 				hitsize + HIT_BOLT, health);
-	if(dmg && shootable)
-		hit(dmg);	// Bolt damages object
+
+	hit(dmg);	// Bolt damages object
 }
 
 inline void KOBO_enemy::move_intro()

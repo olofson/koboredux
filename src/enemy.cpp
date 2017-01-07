@@ -26,6 +26,7 @@
 #include "enemies.h"
 #include "myship.h"
 #include "random.h"
+#include "kobolog.h"
 #include <math.h>
 
 
@@ -252,6 +253,18 @@ void KOBO_enemy::kill_default()
 	die();
 }
 
+void KOBO_enemy::kill_silent()
+{
+	release();
+}
+
+void KOBO_enemy::kill_unused()
+{
+	log_printf(WLOG, "KOBO_enemy::kill_unused() called by '%s'!\n",
+			ek->name);
+	release();
+}
+
 void KOBO_enemy::player_collision(int dx, int dy)
 {
 	if(!physics)
@@ -409,6 +422,7 @@ void KOBO_enemy::kill_bullet3()
 }
 
 const KOBO_enemy_kind bullet1 = {
+	"bullet1",
 	0,
 	&KOBO_enemy::make_bullet1,
 	&KOBO_enemy::move_bullet,
@@ -421,6 +435,7 @@ const KOBO_enemy_kind bullet1 = {
 };
 
 const KOBO_enemy_kind bullet2 = {
+	"bullet2",
 	0,
 	&KOBO_enemy::make_bullet2,
 	&KOBO_enemy::move_bullet,
@@ -433,6 +448,7 @@ const KOBO_enemy_kind bullet2 = {
 };
 
 const KOBO_enemy_kind bullet3 = {
+	"bullet3",
 	0,
 	&KOBO_enemy::make_bullet3,
 	&KOBO_enemy::move_bullet,
@@ -483,6 +499,7 @@ void KOBO_enemy::kill_rock()
 }
 
 const KOBO_enemy_kind rock = {
+	"rock",
 	10,
 	&KOBO_enemy::make_rock,
 	&KOBO_enemy::move_rock,
@@ -524,6 +541,7 @@ void KOBO_enemy::kill_ring()
 }
 
 const KOBO_enemy_kind ring = {
+	"ring",
 	1,
 	&KOBO_enemy::make_ring,
 	&KOBO_enemy::move_ring,
@@ -603,6 +621,7 @@ void KOBO_enemy::move_bomb1()
 }
 
 const KOBO_enemy_kind bomb1 = {
+	"bomb1",
 	5,
 	&KOBO_enemy::make_bomb,
 	&KOBO_enemy::move_bomb1,
@@ -687,6 +706,7 @@ void KOBO_enemy::move_bomb2()
 }
 
 const KOBO_enemy_kind bomb2 = {
+	"bomb2",
 	20,
 	&KOBO_enemy::make_bomb,
 	&KOBO_enemy::move_bomb2,
@@ -750,10 +770,11 @@ void KOBO_enemy::move_expl()
 }
 
 const KOBO_enemy_kind explosion = {
+	"explosion",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_EXPLO1, 0,
 	LAYER_FX,
@@ -762,10 +783,11 @@ const KOBO_enemy_kind explosion = {
 };
 
 const KOBO_enemy_kind explosion3 = {
+	"explosion3",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_EXPLO3, 0,
 	LAYER_FX,
@@ -774,10 +796,11 @@ const KOBO_enemy_kind explosion3 = {
 };
 
 const KOBO_enemy_kind explosion4 = {
+	"explosion4",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_EXPLO4, 0,
 	LAYER_FX,
@@ -786,10 +809,11 @@ const KOBO_enemy_kind explosion4 = {
 };
 
 const KOBO_enemy_kind explosion5 = {
+	"explosion5",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_EXPLO5, 0,
 	LAYER_FX,
@@ -806,10 +830,11 @@ const KOBO_enemy_kind explosion5 = {
  */
 
 const KOBO_enemy_kind ringexpl = {
+	"ringexpl",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_RINGEXPL, 0,
 	LAYER_FX,
@@ -826,10 +851,11 @@ const KOBO_enemy_kind ringexpl = {
  */
 
 const KOBO_enemy_kind greenbltexpl = {
+	"greenbltexpl",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_BLTX_GREEN, 0,
 	LAYER_FX,
@@ -838,10 +864,11 @@ const KOBO_enemy_kind greenbltexpl = {
 };
 
 const KOBO_enemy_kind redbltexpl = {
+	"redbltexpl",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_BLTX_RED, 0,
 	LAYER_FX,
@@ -850,10 +877,11 @@ const KOBO_enemy_kind redbltexpl = {
 };
 
 const KOBO_enemy_kind bluebltexpl = {
+	"bluebltexpl",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_BLTX_BLUE, 0,
 	LAYER_FX,
@@ -870,10 +898,11 @@ const KOBO_enemy_kind bluebltexpl = {
  */
 
 const KOBO_enemy_kind boltexpl = {
+	"boltexpl",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_BOLT, 0,
 	LAYER_FX,
@@ -890,10 +919,11 @@ const KOBO_enemy_kind boltexpl = {
  */
 
 const KOBO_enemy_kind rockexpl = {
+	"rockexpl",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_ROCKEXPL, 0,
 	LAYER_FX,
@@ -910,10 +940,11 @@ const KOBO_enemy_kind rockexpl = {
  */
 
 const KOBO_enemy_kind bombdeto = {
+	"bombdeto",
 	0,
 	&KOBO_enemy::make_expl,
 	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	B_BOMBDETO, 0,
 	LAYER_ENEMIES,
@@ -948,7 +979,7 @@ void KOBO_enemy::move_cannon()
 		this->launch(enemies.ek1());
 }
 
-// For destruction via core chain reaction
+// For destruction via core chain reaction (don't spawn a pipein!)
 void KOBO_enemy::destroy_cannon()
 {
 	enemies.make(enemies.randexp(), x, y);
@@ -964,6 +995,7 @@ void KOBO_enemy::kill_cannon()
 }
 
 const KOBO_enemy_kind cannon = {
+	"cannon",
 	10,
 	&KOBO_enemy::make_cannon,
 	&KOBO_enemy::move_cannon,
@@ -1014,6 +1046,7 @@ void KOBO_enemy::kill_core()
 }
 
 const KOBO_enemy_kind core = {
+	"core",
 	200,
 	&KOBO_enemy::make_core,
 	&KOBO_enemy::move_core,
@@ -1035,7 +1068,7 @@ const KOBO_enemy_kind core = {
 
 void KOBO_enemy::make_pipein()
 {
-	health = 1;
+	health = 2;
 	damage = 0;
 	shootable = false;
 	physics = false;
@@ -1093,13 +1126,19 @@ void KOBO_enemy::move_pipein()
 		release();
 		return;
 	}
-	if(mindiff < ((VIEWLIMIT >> 1) + 32))
+	if(health == 1)	// Skip the starting point! Cannon nodes handle that.
 	{
-		controlsound(2, 1);
-		enemies.make(enemies.randexp(),
-				x + PIXEL2CS(pubrand.get(4) - 8),
-				y + PIXEL2CS(pubrand.get(4) - 8), 0, 0, 1);
+		if(mindiff < ((VIEWLIMIT >> 1) + 32))
+		{
+			controlsound(2, 1);
+			enemies.make(enemies.randexp(),
+					x + PIXEL2CS(pubrand.get(3) - 4),
+					y + PIXEL2CS(pubrand.get(3) - 4),
+					0, 0, 1);
+		}
 	}
+	else
+		health = 1;
 	screen.clean_scrap(x1, y1);
 	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
 	x += x_next;
@@ -1108,10 +1147,11 @@ void KOBO_enemy::move_pipein()
 }
 
 const KOBO_enemy_kind pipein = {
+	"pipein",
 	0,
 	&KOBO_enemy::make_pipein,
 	&KOBO_enemy::move_pipein,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	-1, 0,
 	LAYER_BASES,
@@ -1249,10 +1289,11 @@ void KOBO_enemy::move_pipeout()
 }
 
 const KOBO_enemy_kind pipeout = {
+	"pipeout",
 	0,
 	&KOBO_enemy::make_pipeout,
 	&KOBO_enemy::move_pipeout,
-	&KOBO_enemy::kill_default,
+	&KOBO_enemy::kill_unused,
 	-1,
 	-1, 0,
 	LAYER_BASES,
@@ -1282,6 +1323,7 @@ void KOBO_enemy::move_enemy1()
 }
 
 const KOBO_enemy_kind enemy1 = {
+	"enemy1",
 	2,
 	&KOBO_enemy::make_enemy1,
 	&KOBO_enemy::move_enemy1,
@@ -1320,6 +1362,7 @@ void KOBO_enemy::move_enemy2()
 }
 
 const KOBO_enemy_kind enemy2 = {
+	"enemy2",
 	10,
 	&KOBO_enemy::make_enemy2,
 	&KOBO_enemy::move_enemy2,
@@ -1353,6 +1396,7 @@ void KOBO_enemy::move_enemy3()
 }
 
 const KOBO_enemy_kind enemy3 = {
+	"enemy3",
 	1,
 	&KOBO_enemy::make_enemy3,
 	&KOBO_enemy::move_enemy3,
@@ -1386,6 +1430,7 @@ void KOBO_enemy::move_enemy4()
 }
 
 const KOBO_enemy_kind enemy4 = {
+	"enemy4",
 	1,
 	&KOBO_enemy::make_enemy4,
 	&KOBO_enemy::move_enemy4,
@@ -1438,6 +1483,7 @@ void KOBO_enemy::move_enemy5()
 }
 
 const KOBO_enemy_kind enemy5 = {
+	"enemy5",
 	5,
 	&KOBO_enemy::make_enemy,
 	&KOBO_enemy::move_enemy5,
@@ -1482,6 +1528,7 @@ void KOBO_enemy::move_enemy6()
 }
 
 const KOBO_enemy_kind enemy6 = {
+	"enemy6",
 	2,
 	&KOBO_enemy::make_enemy,
 	&KOBO_enemy::move_enemy6,
@@ -1526,6 +1573,7 @@ void KOBO_enemy::move_enemy7()
 }
 
 const KOBO_enemy_kind enemy7 = {
+	"enemy7",
 	5,
 	&KOBO_enemy::make_enemy,
 	&KOBO_enemy::move_enemy7,
@@ -1573,6 +1621,7 @@ void KOBO_enemy::move_enemy_m1()
 }
 
 const KOBO_enemy_kind enemy_m1 = {
+	"enemy_m1",
 	50,
 	&KOBO_enemy::make_enemy_m1,
 	&KOBO_enemy::move_enemy_m1,
@@ -1618,6 +1667,7 @@ void KOBO_enemy::move_enemy_m2()
 }
 
 const KOBO_enemy_kind enemy_m2 = {
+	"enemy_m2",
 	50,
 	&KOBO_enemy::make_enemy_m2,
 	&KOBO_enemy::move_enemy_m2,
@@ -1663,6 +1713,7 @@ void KOBO_enemy::move_enemy_m3()
 }
 
 const KOBO_enemy_kind enemy_m3 = {
+	"enemy_m3",
 	50,
 	&KOBO_enemy::make_enemy_m3,
 	&KOBO_enemy::move_enemy_m3,
@@ -1712,6 +1763,7 @@ void KOBO_enemy::move_enemy_m4()
 }
 
 const KOBO_enemy_kind enemy_m4 = {
+	"enemy_m4",
 	100,
 	&KOBO_enemy::make_enemy_m4,
 	&KOBO_enemy::move_enemy_m4,
