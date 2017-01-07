@@ -55,9 +55,6 @@
 // Player bolt hit rect size
 #define HIT_BOLT		5
 
-// Minimum speed for impact damage (fraction of game.top_speed)
-#define	KOBO_MIN_DAMAGE_SPEED	0.5f
-
 // Player ship vs base bounciness (24:8; 256 ==> 100% energy preserved)
 #define	KOBO_BASE_BOUNCE	256
 
@@ -115,13 +112,19 @@ class game_t
 	int	stage_cleared_health_bonus;
 	int	splash_damage_multiplier;
 
-	// Player ship health and damage
-	int	top_speed;	// Maximum speed when pushing stick
-	int	cruise_speed;	// Speed with stick in neutral
+	// Player ship: Health and damage
+	int	top_speed;	// Maximum speed when pushing stick (24:8)
+	int	cruise_speed;	// Speed with stick in neutral (24:8)
 	int	max_health;	// Maximum health (boost)
 	int	health;		// Initial/full health
 	int	regen_step;	// Health regeneration step
 	int	health_fade;	// Health fade period (logic frames/unit)
+
+	// Player ship: Velocity dependent damage
+	int	vdmg_minvel;	// Minimum velocity for crash/ram damage (24:8)
+	int	vdmg_maxvel;	// Velocity cap for crash/ram damage (24:8)
+	int	vdmg_linear;	// Linear velocity->damage scaling (24:8)
+	int	vdmg_quadratic;	// Quadratic (true) vel-dmg scaling (24:8)
 	int	ram_damage;	// Damage player inflicts when colliding with
 				// another object
 	int	crash_damage;	// Damage inflicted on ship when hitting a base

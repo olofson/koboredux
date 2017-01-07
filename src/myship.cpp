@@ -176,9 +176,9 @@ void KOBO_myship::handle_controls()
 	if(prefs->cheat_pushmove)
 		v = gamecontrol.dir_push() ? PIXEL2CS(4) : 0;
 	else if(gamecontrol.dir_push())
-		v = PIXEL2CS(game.top_speed);
+		v = game.top_speed;
 	else
-		v = PIXEL2CS(game.cruise_speed);
+		v = game.cruise_speed;
 	int tvx = v * sin(M_PI * (di - 1) / 4);
 	int tvy = -v * cos(M_PI * (di - 1) / 4);
 	if(gamecontrol.dir_push() || !prefs->cheat_freewheel)
@@ -535,7 +535,7 @@ void KOBO_myship::update_position()
 	{
 #if 0
 		// TODO: Grinding noise.
-		float grind = sqrt(vx*vx + vy*vy) / PIXEL2CS(game.top_speed);
+		float grind = sqrt(vx*vx + vy*vy) / game.top_speed;
 #endif
 	}
 

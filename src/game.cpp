@@ -49,9 +49,9 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	if(prefs && prefs->cheat_speed)
 		speed /= prefs->cheat_speed;
 
-	// Player ship health and damage
-	top_speed = 4;
-	cruise_speed = 2;
+	// Player ship: Health and damage
+	top_speed = PIXEL2CS(4);
+	cruise_speed = PIXEL2CS(2);
 	max_health = 200;
 	health = 100;
 	regen_step = 20;
@@ -60,6 +60,12 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	// Player guns: Accumulator
 	initial_charge = level_charge = charge = 1000;
 	charge_rate = 10;
+
+	// Player ship: Velocity dependent damage
+	vdmg_minvel = PIXEL2CS(1);
+	vdmg_maxvel = PIXEL2CS(5);
+	vdmg_linear = 128;
+	vdmg_quadratic = 128;
 
 	// Player guns: Primary
 	bolt_speed = 12;
@@ -85,7 +91,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		stage_cleared_health_bonus = 25;
 		splash_damage_multiplier = 2;
 
-		// Player ship health and damage
+		// Player ship: Velocity dependent damage
 		ram_damage = 100;
 		crash_damage = 30;
 
@@ -107,7 +113,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		stage_cleared_health_bonus = 25;
 		splash_damage_multiplier = 3;
 
-		// Player ship health and damage
+		// Player ship: Velocity dependent damage
 		ram_damage = 50;
 		crash_damage = 40;
 
@@ -130,7 +136,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		stage_cleared_health_bonus = 10;
 		splash_damage_multiplier = 5;
 
-		// Player ship health and damage
+		// Player ship: Velocity dependent damage
 		ram_damage = 30;
 		crash_damage = 50;
 
@@ -151,8 +157,21 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 
 int game_t::scale_vel_damage(int vel, int dmg)
 {
-	float ds = (float)vel / PIXEL2CS(top_speed);
-	if(fabs(ds) < KOBO_MIN_DAMAGE_SPEED)
+	vel = labs(vel);
+
+	// Upper velocity limit
+	if(vel > vdmg_maxvel)
+		vel = vdmg_maxvel;
+
+	// Lower velocity limit/truncation
+	//	Note that this will "compress" the response, as we still
+	//	normalize to the ship's nominal top speed!
+	vel -= vdmg_minvel;
+	if(vel <= 0)
 		return 0;
-	return dmg * ds*ds;
+
+	// Normalize to top speed
+	int ds = (vel << 8) / top_speed;
+	int ds2 = ds * ds >> 8;
+	return dmg * (ds * vdmg_linear + ds2 * vdmg_quadratic) >> 16;
 }
