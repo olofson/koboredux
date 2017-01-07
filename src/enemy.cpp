@@ -460,13 +460,13 @@ void KOBO_enemy::make_rock()
 	switch(gamerand.get() % 3)
 	{
 	  case 0:
-		bank = B_ROCK1;
+		set_bank(B_ROCK1);
 		break;
 	  case 1:
-		bank = B_ROCK2;
+		set_bank(B_ROCK2);
 		break;
 	  case 2:
-		bank = B_ROCK3;
+		set_bank(B_ROCK3);
 		break;
 	}
 }
@@ -712,7 +712,7 @@ void KOBO_enemy::make_expl()
 	damage = 0;
 	shootable = false;
 	physics = false;
-	switch(bank)
+	switch(logical_bank)
 	{
 	  case B_EXPLO1:
 	  case B_EXPLO3:

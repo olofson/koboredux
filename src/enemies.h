@@ -42,7 +42,7 @@ struct KOBO_enemy_kind
 	void (KOBO_enemy::*move) ();
 	void (KOBO_enemy::*kill) ();
 	int		hitsize;
-	int		bank, frame;
+	int		bank, frame;	// (Logical) bank, anim base frame
 	int		layer;
 	int		launchspeed;
 	KOBO_sounds	sound;		// Continuous sound fx program
@@ -112,7 +112,9 @@ class KOBO_enemy
 	int	a, b, c;		// "AI" work variables
 	int	soundhandle;		// Continuous positional sound fx
 	int	soundtimer;		// Positional audio update timer
-	int	bank, frame;		// Current sprite bank and frame
+	int	logical_bank;		// Logical bank. (Use set_bank()!)
+	int	actual_bank;		// Actual bank, after aliases etc.
+	int	frame;			// Base frame for animations
 	int	frames;			// Number of frames in sprite bank
 	int	health;			// Current health
 	int	damage;			// Damage dealt to player at contact
@@ -141,6 +143,7 @@ class KOBO_enemy
 	inline void move();
 	inline void move_intro();
 	inline void put();
+	inline void set_bank(int new_bank);
 	inline int make(const KOBO_enemy_kind *k,
 			int px, int py, int h1, int v1, int dir = 0);
 	inline int realize();
@@ -325,12 +328,22 @@ inline void KOBO_enemy::stopsound()
 	}
 }
 
+inline void KOBO_enemy::set_bank(int new_bank)
+{
+	logical_bank = new_bank;
+	actual_bank = s_get_actual_bank(gengine->get_gfx(), logical_bank);
+	s_bank_t *bnk = s_get_bank(gengine->get_gfx(), actual_bank);
+	if(bnk)
+		frames = bnk->max + 1;
+	else
+		frames = 8;
+}
+
 inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 		int h1, int v1, int dir)
 {
 	if(_state != notuse)
 		return -1;
-
 	ek = k;
 	state(reserved);
 	x = px;
@@ -351,17 +364,11 @@ inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
 	physics = true;
 	detonate_on_contact = false;
 	hitsize = ek->hitsize;
-	bank = ek->bank;
+	set_bank(ek->bank);
 	frame = ek->frame;
 	if(ek->sound)
 		startsound(ek->sound);
 	(this->*(ek->make)) ();
-	bank = s_get_actual_bank(gengine->get_gfx(), bank);
-	s_bank_t *bnk = s_get_bank(gengine->get_gfx(), bank);
-	if(bnk)
-		frames = bnk->max + 1;
-	else
-		frames = 8;
 	return 0;
 }
 
@@ -505,7 +512,7 @@ inline void KOBO_enemy::put()
 		return;
 	object->point.v.x = x;
 	object->point.v.y = y;
-	cs_obj_image(object, bank, frame + di - 1);
+	cs_obj_image(object, actual_bank, frame + di - 1);
 }
 
 inline int KOBO_enemy::realize()
