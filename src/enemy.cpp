@@ -222,9 +222,7 @@ inline void KOBO_enemy::move_enemy_template_3(int quick, int maxspeed)
 
 inline void KOBO_enemy::launch(const KOBO_enemy_kind *ekp)
 {
-#ifndef NOENEMYFIRE
-	if(enemies.is_intro)
-#endif
+	if(prefs->cheat_ceasefire || enemies.is_intro)
 		return;
 	int v0 = PIXEL2CS(ekp->launchspeed ? ekp->launchspeed :
 			DEFAULT_LAUNCH_SPEED);

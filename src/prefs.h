@@ -112,6 +112,7 @@ class prefs_t : public config_parser_t
 	int	cheat_freewheel;
 	int	cheat_shield;
 	int	cheat_invulnerability;
+	int	cheat_ceasefire;
 	int	cheat_firepower;
 	int	cheat_startlevel;
 	int	cheat_brokentrigger;
@@ -124,6 +125,7 @@ class prefs_t : public config_parser_t
 				cheat_freewheel ||
 				cheat_shield ||
 				cheat_invulnerability ||
+				cheat_ceasefire ||
 				cheat_firepower ||
 				cheat_startlevel ||
 				cheat_brokentrigger ||

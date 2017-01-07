@@ -488,6 +488,7 @@ void cheat_options_t::build()
 	yesno("Freewheel Mode", &prf->cheat_freewheel, 0);
 	yesno("Shield", &prf->cheat_shield, 0);
 	yesno("Invulnerability", &prf->cheat_invulnerability, 0);
+	yesno("Enemies Will Not Fire", &prf->cheat_ceasefire, 0);
 	yesno("Extra Firepower", &prf->cheat_firepower, 0);
 	yesno("Star Level Selector", &prf->cheat_startlevel, 0);
 	yesno("Broken Triggers", &prf->cheat_brokentrigger, 0);

@@ -129,6 +129,8 @@ void prefs_t::init()
 			desc("Cheat: Shield Always Up");
 	yesno("cheat_invulnerability", cheat_invulnerability, 0);
 			desc("Cheat: Player Invulnerable");
+	yesno("cheat_ceasefire", cheat_ceasefire, 0);
+			desc("Cheat: Enemies Will Not Fire");
 	yesno("cheat_firepower", cheat_firepower, 0);
 			desc("Cheat: Extra Firepower");
 	yesno("cheat_startlevel", cheat_startlevel, 0);

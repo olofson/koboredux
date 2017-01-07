@@ -73,7 +73,6 @@
 // Gameplay debug tools
 #undef	INVULNERABLE	// Player ship cannot take damage
 #undef	NOSPEEDLIMIT	// Player ship controlled via acceleration; no drag
-#undef	NOENEMYFIRE	// Enemies don't fire bullets at the player
 
 
   ////////////////////////////////////////////////////
