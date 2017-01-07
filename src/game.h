@@ -109,8 +109,8 @@ class game_t
 {
   public:
 	// Master game parameters
-	int	type;
-	int	skill;
+	int	type;		// game_types_t
+	int	skill;		// skill_levels_t
 	int	speed;		// ms per logic frame
 	int	core_destroyed_health_bonus;
 	int	stage_cleared_health_bonus;

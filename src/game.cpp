@@ -50,12 +50,12 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		speed /= prefs->cheat_speed;
 
 	// Player ship health and damage
-	health = 100;
-	max_health = 200;
-	regen_step = 20;
-	health_fade = 10;
 	top_speed = 4;
 	cruise_speed = 2;
+	max_health = 200;
+	health = 100;
+	regen_step = 20;
+	health_fade = 10;
 
 	// Player guns
 	bolt_speed = 12;
@@ -68,51 +68,73 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	charge_rate = 1;
 	charge_limit = 50;
 	bolt_drain = 2;
-	bolt_drain = 2;
 
 	switch(skill)
 	{
 	  case SKILL_NORMAL:
+		// Master game parameters
+		core_destroyed_health_bonus = 25;
+		stage_cleared_health_bonus = 25;
+		splash_damage_multiplier = 2;
+
+		// Player ship health and damage
 		ram_damage = 100;
+		crash_damage = 30;
+
+		// Player guns
 		bolt_damage = 40;
+
+		// Enemies
 		rock_health = 3000;
 		rock_damage = 40;
-		crash_damage = 30;
-		splash_damage_multiplier = 2;
 		core_health = 1000;
 		node_health = 40;
 		enemy_m_health = 3000;
-		core_destroyed_health_bonus = 25;
-		stage_cleared_health_bonus = 25;
 		bomb_delay = 8;
 		break;
+
 	  case SKILL_HARD:
+		// Master game parameters
+		core_destroyed_health_bonus = 10;
+		stage_cleared_health_bonus = 25;
+		splash_damage_multiplier = 3;
+
+		// Player ship health and damage
 		ram_damage = 50;
+		crash_damage = 40;
+
+		// Player guns
 		bolt_damage = 30;
+
+		// Enemies
 		rock_health = 5000;
 		rock_damage = 60;
-		crash_damage = 40;
-		splash_damage_multiplier = 3;
 		core_health = 1500;
 		node_health = 50;
 		enemy_m_health = 4000;
-		core_destroyed_health_bonus = 10;
-		stage_cleared_health_bonus = 25;
 		bomb_delay = 5;
 		break;
+
 	  case SKILL_INSANE:
 	  default:
+		// Master game parameters
+		core_destroyed_health_bonus = 10;
+		stage_cleared_health_bonus = 10;
+		splash_damage_multiplier = 5;
+
+		// Player ship health and damage
 		ram_damage = 30;
+		crash_damage = 50;
+
+		// Player guns
 		bolt_damage = 25;
+
+		// Enemies
 		rock_health = HEALTH_INDESTRUCTIBLE;
 		rock_damage = 80;
-		crash_damage = 50;
-		splash_damage_multiplier = 5;
 		core_health = 2000;
 		node_health = 60;
 		enemy_m_health = 5000;
-		core_destroyed_health_bonus = 10;
-		stage_cleared_health_bonus = 10;
 		bomb_delay = 2;
 		break;
 	}
