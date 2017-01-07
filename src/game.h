@@ -142,6 +142,7 @@ class game_t
 	int	charge_rate;	// Boost capacitor charge rate
 	int	charge_limit;	// Maximum power of one charged shot
 	int	charge_drain;	// Charge fire capacitor drain (per bolt)
+	int	charge_spread;	// Charge fire spread (degrees)
 
 	// Enemies
 	int	rock_health;

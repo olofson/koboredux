@@ -69,6 +69,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	charge_rate = 10;
 	charge_limit = 500;
 	charge_drain = 10;
+	charge_spread = 3;
 
 	switch(skill)
 	{

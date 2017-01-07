@@ -624,7 +624,7 @@ void KOBO_myship::render()
 }
 
 
-void KOBO_myship::shot_single(int dir, int loffset, int hoffset)
+void KOBO_myship::shot_single(float dir, int loffset, int hoffset)
 {
 	int i;
 	for(i = 0; i < MAX_BOLTS && bolts[i].state; i++)
@@ -635,7 +635,7 @@ void KOBO_myship::shot_single(int dir, int loffset, int hoffset)
 		return;
 	}
 	bolts[i].state = 1;
-	bolts[i].dir = dir;
+	bolts[i].dir = dir + .5f;
 	int sdi = sin(M_PI * (dir - 1) / 4) * 256.0f;
 	int cdi = cos(M_PI * (dir - 1) / 4) * 256.0f;
 	bolts[i].x = x - vx + loffset * sdi + hoffset * cdi;
@@ -676,7 +676,10 @@ void KOBO_myship::charged_fire()
 	{
 		power -= game.charge_drain;
 		_charge -= game.charge_drain;
-		shot_single(latched_dir, 15 + power / game.charge_drain,
+		float spread = pubrand.get(16) * (8.0f / 65536.0f) - 4.0f;
+		spread *= game.charge_spread * (1.0f / 360.0f),
+		shot_single(latched_dir + spread,
+				15 + power / game.charge_drain,
 				pubrand.get(3) - 4);
 	}
 }
