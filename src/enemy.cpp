@@ -1154,7 +1154,7 @@ void KOBO_enemy::move_pipein()
 	{
 		if(mindiff < ((VIEWLIMIT >> 1) + 32))
 		{
-			controlsound(2, 1);
+			controlsound(2, pubrand.get(16) * (1.0f / 65536.0f));
 			enemies.make(&baseexpl,
 					x + PIXEL2CS(pubrand.get(3) - 4),
 					y + PIXEL2CS(pubrand.get(3) - 4),
@@ -1258,7 +1258,7 @@ void KOBO_enemy::move_pipeout()
 	{
 		release();
 		screen.set_map(x1, y1, SPACE);
-		controlsound(2, 1);
+		controlsound(2, pubrand.get(16) * (1.0f / 65536.0f));
 		if(mindiff < ((VIEWLIMIT >> 1) + 32))
 			enemies.make(&baseexpl, x, y, 0, 0, 1);
 		return;
@@ -1301,7 +1301,7 @@ void KOBO_enemy::move_pipeout()
 		return;
 	}
 	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
-	controlsound(2, 1);
+	controlsound(2, pubrand.get(16) * (1.0f / 65536.0f));
 	if(mindiff < ((VIEWLIMIT >> 1) + 32))
 		enemies.make(&baseexpl,
 				x + PIXEL2CS(pubrand.get(3) - 4),
