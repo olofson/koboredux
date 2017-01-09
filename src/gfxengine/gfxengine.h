@@ -197,17 +197,6 @@ class gfxengine_t
 	void free_obj(cs_obj_t *obj);
 	void cursor(int csr);
 
-	s_container_t *get_gfx()	{ return gfx; }
-	s_sprite_t *get_sprite(unsigned bank, int _frame)
-	{
-		return s_get_sprite(gfx, bank, _frame);
-	}
-	SoFont *get_font(unsigned bank);
-	int set_hotspot(unsigned bank, int _frame, int x, int y)
-	{
-		return s_set_hotspot(gfx, bank, _frame, x, y);
-	}
-
 	void scroll(int xs, int ys);
 	void force_scroll();
 
@@ -220,6 +209,24 @@ class gfxengine_t
 	float nyoffs(int layer);
 
 	double frame_delta_time()	{ return _frame_delta_time; }
+
+	// Sprites and fonts
+	s_container_t *get_gfx()	{ return gfx; }
+	int get_nframes(unsigned bank)
+	{
+		bank = s_get_actual_bank(gfx, bank);
+		s_bank_t *bnk = s_get_bank(gfx, bank);
+		return bnk ? bnk->max + 1 : 0;
+	}
+	s_sprite_t *get_sprite(unsigned bank, int _frame)
+	{
+		return s_get_sprite(gfx, bank, _frame);
+	}
+	SoFont *get_font(unsigned bank);
+	int set_hotspot(unsigned bank, int _frame, int x, int y)
+	{
+		return s_set_hotspot(gfx, bank, _frame, x, y);
+	}
 
 	// Info
 	int objects_in_use();
