@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2005, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -335,12 +335,14 @@ void KOBO_screen::credits(int t)
 						"XKobo - The Original Game");
 			break;
 		}
+#if 0
 	if(!flashin(t - 7000))
 	{
 		woverlay->font(B_MEDIUM_FONT);
 		woverlay->center(170, "Additional Credits & Thanks");
 		woverlay->center(180, "in the scroller below");
 	}
+#endif
 }
 
 

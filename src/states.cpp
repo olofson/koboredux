@@ -164,7 +164,9 @@ void st_introbase_t::pre_render()
 void st_introbase_t::post_render()
 {
 	kobo_basestate_t::post_render();
+#if 0
 	screen.scroller();
+#endif
 }
 
 
@@ -218,7 +220,12 @@ void st_intro_instructions_t::enter()
 	st_introbase_t::enter();
 	duration = INTRO_INSTRUCTIONS_TIME;
 	inext = &st_intro_title;
+#if 0
 	st_intro_title.inext = &st_intro_highscores;
+#else
+	// Dropping highscore screen, as highscores need to be reimplemented!
+	st_intro_title.inext = &st_intro_credits;
+#endif
 	st_intro_title.duration = INTRO_TITLE2_TIME - INTRO_BLANK_TIME;
 	st_intro_title.mode = pubrand.get(1) + 1;
 }
