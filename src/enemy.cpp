@@ -222,13 +222,15 @@ inline void KOBO_enemy::move_enemy_template_3(int quick, int maxspeed)
 
 inline void KOBO_enemy::launch(const KOBO_enemy_kind *ekp)
 {
-	if(prefs->cheat_ceasefire || enemies.is_intro)
+	if(prefs->cheat_ceasefire || enemies.is_intro || !myship.alive())
 		return;
+
 	int v0 = PIXEL2CS(ekp->launchspeed ? ekp->launchspeed :
 			DEFAULT_LAUNCH_SPEED);
 	int norm = (int)sqrt(diffx * diffx + diffy * diffy);
 	if(!norm)
 		return;
+
 	int vx = v0 * -diffx / norm;
 	int vy = v0 * -diffy / norm;
 	enemies.make(ekp, x + vx, y + vy, vx, vy);
@@ -237,6 +239,9 @@ inline void KOBO_enemy::launch(const KOBO_enemy_kind *ekp)
 
 void KOBO_enemy::shot_template_8_dir(const KOBO_enemy_kind *ekp)
 {
+	if(prefs->cheat_ceasefire || enemies.is_intro || !myship.alive())
+		return;
+
 	static int vx[] = { 0, 200, 300, 200, 0, -200, -300, -200 };
 	static int vy[] = { -300, -200, 0, 200, 300, 200, 0, -200 };
 	int i;
