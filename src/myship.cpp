@@ -667,14 +667,14 @@ void KOBO_myship::shot_single(float dir, int loffset, int hoffset)
 
 void KOBO_myship::nose_fire()
 {
-	shot_single(di, 15, 0);
+	shot_single(di + GUN_NOSE_DIR - 1, GUN_NOSE_Y, GUN_NOSE_X);
 	nose_reload_timer = game.noseloadtime;
 }
 
 
 void KOBO_myship::tail_fire()
 {
-	shot_single((di + 3) % 8 + 1, 15, 0);
+	shot_single((di + GUN_TAIL_DIR - 1) % 8 + 1, GUN_TAIL_Y, GUN_TAIL_X);
 	tail_reload_timer = game.tailloadtime;
 }
 

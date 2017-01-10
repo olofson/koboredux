@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2002, 2007, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015, 2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -51,6 +51,13 @@ class rand_num_t
 		seed++;
 		seed &= 0xffffffffUL;
 		return (seed >> (32 - bit));
+	}
+	Uint32 get(Uint32 bit, Uint32 usrseed)
+	{
+		usrseed *= 1566083941UL;
+		usrseed++;
+		usrseed &= 0xffffffffUL;
+		return (usrseed >> (32 - bit));
 	}
 };
 

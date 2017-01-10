@@ -141,9 +141,21 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	INTRO_BLANK_TIME	1000	/* Inter-page blanking */
 #define	INTRO_TITLE_TIME	7000	/* "Real" title show time */
 #define	INTRO_TITLE2_TIME	5500	/* Intermediate title show time */
-#define	INTRO_INSTRUCTIONS_TIME	19700
 #define	INTRO_HIGHSCORE_TIME	11700
 #define	INTRO_CREDITS_TIME	13700
+
+/* Instructions page timing (these are END times!) */
+#define	INST_TIME_IN		200
+#define	INST_TIME_HL_OUT	300
+#define	INST_TIME_OUT		200
+
+#define	INST_TIME_CONTROL	(4000)
+#define	INST_TIME_FIRE		(4000 + 5000)
+#define	INST_TIME_BASES		(4000 + 5000 + 4000)
+#define	INST_TIME_ENEMIES	(4000 + 5000 + 4000 + 6000)
+#define	INST_TIME_TOUGH		(4000 + 5000 + 4000 + 6000 + 5000)
+
+#define	INTRO_INSTRUCTIONS_TIME	INST_TIME_TOUGH
 
 /* Level used as backdrop for the Options menus */
 #define	KOBO_OPTIONS_BACKGROUND_LEVEL	6
@@ -195,5 +207,15 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	SHIELD_GRADIENT_SIZE	4
 #define	SHIELD_FILTER_COEFF	0.01f	// (per ms)
 #undef	SHIELD_DITHER
+
+/* Player ship gun positions */
+#define	GUN_NOSE_DIR		1
+#define	GUN_NOSE_X		0
+#define	GUN_NOSE_Y		15
+
+#define	GUN_TAIL_DIR		4
+#define	GUN_TAIL_X		0
+#define	GUN_TAIL_Y		15
+
 
 #endif	/*_KOBO_CONFIG_H_*/

@@ -346,116 +346,157 @@ void KOBO_screen::credits(int t)
 }
 
 
+void KOBO_screen::render_anim(int x, int y, int bank, int first, int last,
+			float speed, int t)
+{
+	int nf = gengine->get_nframes(bank);
+	if(first < 0)
+		first = nf + first;
+	if(last < 0)
+		last = nf + last;
+	int reverse = first > last;
+	if(reverse)
+	{
+		int tmp = first;
+		first = last;
+		last = tmp;
+	}
+	nf = last - first + 1;
+	if(speed < 0)
+		speed = -speed * nf;
+	int frame = first + (int)(t * speed / 1000.0f) % (last - first + 1);
+	if(reverse)
+		frame = last - frame;
+	woverlay->sprite(x, y, bank, frame);
+}
+
+
 void KOBO_screen::help(int t)
 {
 	int cx = woverlay->width() / 2;
 	woverlay->font(B_BIG_FONT);
 	woverlay->center(53, "HOW TO PLAY");
 
-	// 0..3000: Control
-	if(t < 200)
+	// Control
+	if(t < 0 + INST_TIME_IN)
 		screen.set_highlight(112, 80);
-	else if(t < 2800)
+	else if(t < INST_TIME_CONTROL - INST_TIME_OUT)
 	{
-		if(t > 2700)
+		if(t > INST_TIME_CONTROL - INST_TIME_HL_OUT)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
-		woverlay->sprite(cx, 105, B_PLAYER, (t / 50) % 32);
+		render_anim(cx, 105, B_PLAYER, 0, -1, 30, t);
 		woverlay->center(130, "Use arrow keys or NumPad.");
 		woverlay->center(140, "to control the ship.");
 	}
-	else if(t < 3000)
+	else if(t < INST_TIME_CONTROL)
 		return;
 
-	// 3000..6000: Fire
-	else if(t < 3200)
-		screen.set_highlight(112, 80);
-	else if(t < 5800)
+	// Fire
+	else if(t < INST_TIME_CONTROL + INST_TIME_IN)
+		screen.set_highlight(112, 100);
+	else if(t < INST_TIME_FIRE - INST_TIME_OUT)
 	{
-		if(t > 5700)
+		if(t > INST_TIME_FIRE - INST_TIME_HL_OUT)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
-		woverlay->sprite(cx, 105, B_PLAYER, 8);
+		woverlay->center(80, "Primary Weapon: SHIFT or X");
+		woverlay->sprite(cx, 105, B_PLAYER,
+				gengine->get_nframes(B_PLAYER) / 4);
 		int i;
 		int txo = t * cx / 8 / 15 % (cx / 8);
 		for(i = 0; i < 8; ++i)
 		{
+			// NOTE: GUN_*_DIR constants ignored here...
 			int st = (cx * i / 8 + txo) / 5;
-			woverlay->sprite(cx - 12 - cx * i / 8 - txo, 105,
+			woverlay->sprite(cx - GUN_NOSE_Y - cx * i / 8 - txo,
+					105,
 					B_BOLT, myship.bolt_frame(7, st));
-			woverlay->sprite(cx + 14 + cx * i / 8 + txo, 105,
+			woverlay->sprite(cx + GUN_TAIL_Y + cx * i / 8 + txo,
+					105,
 					B_BOLT, myship.bolt_frame(3, st));
 		}
-		woverlay->center(140,
-				"Use any SHIFT or CONTROL keys to fire.");
+		int cx2 = cx - 40;
+		woverlay->sprite(cx2, 135, B_PLAYER,
+				gengine->get_nframes(B_PLAYER) / 4);
+		txo = t % 1000 / 3;
+		for(i = 0; i < 40; ++i)
+		{
+			int st = (cx2 * i / 8 + txo) / 5;
+			woverlay->sprite(cx2 + GUN_TAIL_Y + txo + i,
+					135 + sin(i * i * 0.02f +
+					txo * 0.05f) * 4,
+					B_BOLT, myship.bolt_frame(3, st + i));
+		}
+		woverlay->center(150, "Secondary Weapon: CTRL or SPACE");
 	}
-	else if(t < 6000)
+	else if(t < INST_TIME_FIRE)
 		return;
 
-	// 6000..9000: Bases
-	else if(t < 6200)
-		screen.set_highlight(112, 80);
-	else if(t < 8800)
+	// Bases
+	else if(t < INST_TIME_FIRE + INST_TIME_IN)
+		screen.set_highlight(112, 65);
+	else if(t < INST_TIME_BASES - INST_TIME_OUT)
 	{
-		if(t > 8700)
+		if(t > INST_TIME_BASES - INST_TIME_HL_OUT)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
-// TODO: Short demo of how to destroy a base
 		int i;
 		for(i = 0; i < 5; ++i)
-			woverlay->sprite(cx + 24 * i - ((4 * 24 + 16) / 2),
-					105 - 8, B_R1_TILES + i,
-					16 + (t / 50) % 8);
-		woverlay->center(140,
+		{
+			int f0 = (i & 1) ? 24 : 16;
+			render_anim(cx + 24 * i - ((4 * 24 + 16) / 2),
+					100 - 8, B_R1_TILES + i,
+					f0, f0 + 7, 20, t);
+		}
+		woverlay->center(125,
 				"Destroy bases by shooting their cores.");
 	}
-	else if(t < 9000)
+	else if(t < INST_TIME_BASES)
 		return;
 
-	// 9000..14000: Shoot everything!
-	else if(t < 9200)
-		screen.set_highlight(112, 80);
-	else if(t < 13800)
+	// Shoot everything!
+	else if(t < INST_TIME_BASES + INST_TIME_IN)
+		screen.set_highlight(112, 95);
+	else if(t < INST_TIME_ENEMIES - INST_TIME_OUT)
 	{
-		if(t > 13700)
+		if(t > INST_TIME_ENEMIES - INST_TIME_HL_OUT)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
-// TODO: Short demo of intense battle
-		woverlay->sprite(cx - 90, 90, B_RING, (t / 30) % 16);
-		woverlay->sprite(cx - 70, 110, B_BOMB, (t / 40) % 16);
-		woverlay->sprite(cx - 50, 90, B_BOMB, 31 - (t / 40) % 16);
-		woverlay->sprite(cx - 30, 110, B_BMR_GREEN, (t / 80) % 16);
-		woverlay->sprite(cx - 10, 90, B_BMR_PURPLE, (t / 70) % 16);
-		woverlay->sprite(cx + 10, 110, B_BMR_PINK, (t / 60) % 16);
-		woverlay->sprite(cx + 30, 90, B_FIGHTER, (t / 50) % 16);
-		woverlay->sprite(cx + 50, 110, B_MISSILE1, (t / 45) % 16);
-		woverlay->sprite(cx + 70, 90, B_MISSILE2, (t / 40) % 16);
-		woverlay->sprite(cx + 90, 110, B_MISSILE3, (t / 55) % 16);
-		woverlay->center(130, "Shoot everything that moves,");
-		woverlay->center(140, "but avoid getting hit!");
+		render_anim(cx - 100, 95, B_RING,	0, -1, -.5, t);
+		render_anim(cx - 85, 120, B_BOMB,	0, 32, -.5, t);
+		render_anim(cx - 70, 90, B_BOMB,	32, 0, -.5, t);
+		render_anim(cx - 50, 115, B_BMR_GREEN,	0, -1, -.75, t);
+		render_anim(cx - 20, 95, B_BMR_PURPLE,	-1, 0, -.7, t);
+		render_anim(cx + 10, 115, B_BMR_PINK,	0, -1, -.8, t);
+		render_anim(cx + 40, 95, B_FIGHTER,	-1, 0, -1, t);
+		render_anim(cx + 60, 115, B_MISSILE1,	0, -1, -.85, t);
+		render_anim(cx + 80, 95, B_MISSILE2,	-1, 0, -.95, t);
+		render_anim(cx + 100, 115, B_MISSILE3,	0, -1, -1.05, t);
+		woverlay->center(135, "Shoot everything that moves,");
+		woverlay->center(145, "but avoid getting hit!");
 	}
-	else if(t < 14000)
+	else if(t < INST_TIME_ENEMIES)
 		return;
 
-	// 14000..20000: Indestructible
-	else if(t < 14200)
-		screen.set_highlight(112, 80);
-	else if(t < 19800)
+	// Tough or indestructible objects
+	else if(t < INST_TIME_ENEMIES + INST_TIME_IN)
+		screen.set_highlight(112, 110);
+	else if(t < INST_TIME_TOUGH - INST_TIME_OUT)
 	{
-		if(t > 19700)
+		if(t > INST_TIME_TOUGH - INST_TIME_HL_OUT)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
-// TODO: Demo destroying a rock
+		woverlay->center(75, "Some objects are indestructible...");
 		int i;
 		for(i = 0; i < 5; ++i)
 			woverlay->sprite(cx + 24 * i - ((4 * 24 + 16) / 2),
-					82 - 8, B_R1_TILES + i, 32);
-		woverlay->center(90, "Some objects are indestructible...");
-		woverlay->sprite(cx - 60, 120, B_ROCK1, (t / 45) % 32);
-		woverlay->sprite(cx - 20, 115, B_ROCK2, (t / 40) % 32);
-		woverlay->sprite(cx + 20, 125, B_ROCK3, (t / 35) % 32);
-		woverlay->sprite(cx + 60, 120, B_BIGSHIP, (t / 40) % 13);
-		woverlay->center(140, "...or take many hits to destroy.");
+					95 - 8, B_R1_TILES + i, 32 + i % 4);
+		render_anim(cx - 70, 130, B_ROCK1,	0, -1, -.7, t);
+		render_anim(cx - 30, 120, B_ROCK2,	-1, 0, -.9, t);
+		render_anim(cx + 20, 130, B_BIGSHIP,	0, -1, -1, t);
+		render_anim(cx + 70, 135, B_ROCK3,	-1, 0, -.8, t);
+		woverlay->center(155, "...or take many hits to destroy.");
 	}
 }
 

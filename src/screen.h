@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -76,6 +76,8 @@ class KOBO_screen
 		if((map.pos(x, y) & SPACE) && (MAP_TILE(map.pos(x, y))))
 			set_map(x, y, SPACE);
 	}
+	static void render_anim(int x, int y, int bank, int first, int last,
+			float speed, int t);
   public:
 	~KOBO_screen();
 	static KOBO_radar_modes radar_mode;	// Last set radar mode
