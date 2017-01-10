@@ -105,6 +105,23 @@ class st_intro_credits_t : public st_introbase_t
 
 
 /*----------------------------------------------------------
+	Long Credits
+----------------------------------------------------------*/
+
+class st_long_credits_t : public kobo_basestate_t
+{
+  protected:
+	int		timer, start_time;
+  public:
+	st_long_credits_t();
+	void enter();
+	void press(gc_targets_t button);
+	void pre_render();
+	void post_render();
+};
+
+
+/*----------------------------------------------------------
 	In-game
 ----------------------------------------------------------*/
 
@@ -539,6 +556,7 @@ extern st_intro_title_t st_intro_title;
 extern st_intro_instructions_t st_intro_instructions;
 extern st_intro_highscores_t st_intro_highscores;
 extern st_intro_credits_t st_intro_credits;
+extern st_long_credits_t st_long_credits;
 extern st_ask_exit_t st_ask_exit;
 extern st_game_t st_game;
 extern st_ask_abort_game_t st_ask_abort_game;

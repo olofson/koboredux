@@ -163,6 +163,9 @@ static inline int kobo_wrapdist(int a, int b, int w)
 /* Level used as backdrop for the title screen (used to be 16) */
 #define	KOBO_TITLE_LEVEL		14
 
+/* Level used as backdrop for the Long Credits screen */
+#define	KOBO_CREDITS_BACKGROUND_LEVEL	4
+
 /*
  * This was originally 320x240. Kobo Redux changes the "native" resolution to
  * 640x360, while keeping the 16x16 tile size, so the view size is now 50%

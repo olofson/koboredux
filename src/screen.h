@@ -62,6 +62,7 @@ class KOBO_screen
 	static int hi_sc[10];
 	static int hi_st[10];
 	static char hi_nm[10][20];
+	static int long_credits_wrap;
 
 	static KOBO_Starfield stars;
 
@@ -115,6 +116,7 @@ class KOBO_screen
 	static void init_highscores();
 	static void highscores(int t, float fade);
 	static void credits(int t);
+	static void long_credits(int t);
 	static void help(int t);
 	static void scroller();
 	static void fps(float f);

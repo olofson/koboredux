@@ -65,6 +65,7 @@ int KOBO_screen::hi_st[10];
 char KOBO_screen::hi_nm[10][20];
 KOBO_radar_modes KOBO_screen::radar_mode = RM_OFF;
 KOBO_Starfield KOBO_screen::stars;
+int KOBO_screen::long_credits_wrap = 0;
 
 
 KOBO_screen::~KOBO_screen()
@@ -343,6 +344,131 @@ void KOBO_screen::credits(int t)
 		woverlay->center(180, "in the scroller below");
 	}
 #endif
+}
+
+
+static const char *kobo_credits[] = {
+	// '\\', 'i'(image)/'s'(sprite), bank, frame
+	(const char []){ '\\', 'i', B_LOGO, 0 },
+	"",
+	"!W a s   C r e a t e d   B y",
+	"",
+	"Akira Higuchi",
+	"!a n d",
+	"David Olofson",
+	"",
+	"",
+	(const char []){ '\\', 's', B_PLAYER, 0 },
+	"",
+	"",
+	"!S p e c i a l   T h a n k s   T o",
+	"",
+	"Andreas Spaangberg",
+	"Antonio Messina",
+	"Bruce Cheng",
+	"Christoph Lameter",
+	"David Andersson",
+	"Davide Rossi",
+	"Eduard Martinescu",
+	"Elan Feingold",
+	"Erik Auerswald",
+	"Florian Schulze",
+	"G. Low",
+	"Gerry Jo \"Trick\" Jellestad",
+	"Hans de Goede",
+	"Helmut Hoenig",
+	"Jeff Epler",
+	"Jeremy Sheeley",
+	"Joe Ramey",
+	"Joey Hess",
+	"Karina Gomez",
+	"Marianne Ibbotson",
+	"Martijn van Oosterhout",
+	"Masanao Izumo",
+	"Max Horn",
+	"Michael Sterrett",
+	"Mihail Iotov",
+	"Riki",
+	"Robert Schuster",
+	"Ryan C. Gordon",
+	"Sam Lantinga",
+	"Sam Palmer",
+	"Samuel Hart",
+	"Shoichi Nakayama",
+	"Simon Peter",
+	"SixK",
+	"Stephanie Vivian",
+	"Thomas Marsh",
+	"Torsten Giebl",
+	"Torsten Wolnik",
+	"Tsuyoshi Iguchi",
+	"",
+	"",
+	(const char []){ '\\', 's', B_PLAYER, 0 },
+	"",
+	"",
+	"T h a n k   Y o u",
+	"F o r",
+	"P l a y i n g",
+	"",
+	"",
+	(const char []){ '\\', 's', B_PLAYER, 0 },
+	NULL
+};
+
+
+void KOBO_screen::long_credits(int t)
+{
+	int y = woverlay->height();
+	t *= 10;
+	if(long_credits_wrap)
+		t %= long_credits_wrap;
+	screen.set_highlight(0, 0);
+	for(int i = 0; kobo_credits[i]; ++i)
+	{
+		const char *s = kobo_credits[i];
+		if(s[0] == '!')
+		{
+			woverlay->font(B_NORMAL_FONT);
+			++s;
+		}
+		else
+			woverlay->font(B_BIG_FONT);
+
+		int sy = PIXEL2CS(y - woverlay->fontheight() / 2) - t;
+
+		if(s[0] == '\\')
+		{
+			int w = 0;
+			int h = 0;
+			s_bank_t *b = s_get_bank(gfxengine->get_gfx(), s[2]);
+			if(b)
+			{
+				w = b->w;
+				h = b->h;
+			}
+			int sx;
+			if(s[1] == 'i')
+			{
+				// Center, assuming top-left hotspot
+				sx = PIXEL2CS(woverlay->width() - w) / 2;
+			}
+			else
+			{
+				// Assume centered hotspot!
+				sx = PIXEL2CS(woverlay->width()) / 2;
+				sy += PIXEL2CS(h / 2);
+			}
+			woverlay->sprite_fxp(sx, sy, s[2], s[3]);
+			y += h + 5;
+		}
+		else
+		{
+			woverlay->center_fxp(sy, s);
+			y += 30;
+		}
+	}
+	long_credits_wrap = PIXEL2CS(y + woverlay->height());
 }
 
 

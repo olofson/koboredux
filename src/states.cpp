@@ -317,6 +317,68 @@ st_intro_credits_t st_intro_credits;
 
 
 /*----------------------------------------------------------
+	st_long_credits
+----------------------------------------------------------*/
+
+st_long_credits_t::st_long_credits_t()
+{
+	name = "long_credits";
+	timer = 0;
+}
+
+
+void st_long_credits_t::enter()
+{
+	if(!manage.game_in_progress())
+		manage.select_scene(KOBO_CREDITS_BACKGROUND_LEVEL);
+	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
+	timer = 0;
+}
+
+
+void st_long_credits_t::press(gc_targets_t button)
+{
+	switch (button)
+	{
+	  case BTN_EXIT:
+	  case BTN_CLOSE:
+	  case BTN_PRIMARY:
+	  case BTN_SECONDARY:
+	  case BTN_SELECT:
+	  case BTN_BACK:
+		gsm.pop();
+		break;
+#if 0
+	  case BTN_UP:
+	  case BTN_LEFT:
+		break;
+	  case BTN_DOWN:
+	  case BTN_RIGHT:
+		break;
+#endif
+	  default:
+		break;
+	}
+}
+
+
+void st_long_credits_t::pre_render()
+{
+	kobo_basestate_t::pre_render();
+	timer = (int)SDL_GetTicks() - start_time;
+}
+
+
+void st_long_credits_t::post_render()
+{
+	kobo_basestate_t::post_render();
+	screen.long_credits(timer);
+}
+
+st_long_credits_t st_long_credits;
+
+
+/*----------------------------------------------------------
 	st_game
 ----------------------------------------------------------*/
 
@@ -1275,16 +1337,15 @@ void main_menu_t::build()
 			manage.select_scene(0);
 	}
 
+	space(2);
 	if(manage.game_in_progress())
 	{
-		space(2);
 		button("Return to Game", MENU_TAG_OK);
 		space();
 		button("Save Game", 50);
 	}
 	else
 	{
-		space();
 #if 0
 		if(scorefile.numProfiles > 0)
 		{
@@ -1307,10 +1368,12 @@ void main_menu_t::build()
 		button("Load Game", 51);
 #endif
 	}
-	space();
+	space(2);
 	button("Showcase", 20);
 	button("Options", 2);
-	space();
+	space(2);
+	button("Credits & Thanks", 30);
+	space(2);
 	if(manage.game_in_progress())
 		button("Abort Current Game", 101);
 	else
@@ -1413,6 +1476,9 @@ void st_main_menu_t::select(int tag)
 				"enemies and other objects of\n"
 				"interest seen in the game.");
 		gsm.push(&st_error);
+		break;
+	  case 30:	// Credits & Thanks
+		gsm.push(&st_long_credits);
 		break;
 	  case 50:	// Save Game
 	  case 51:	// Load Game
