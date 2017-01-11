@@ -85,10 +85,58 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 
 	switch(skill)
 	{
+	  case SKILL_NEWBIE:
+		// Master game parameters
+		launch_speed = 160;	// 0.625
+		bullet_speed = 192;	// 0.75
+		core_destroyed_health_bonus = 50;
+		stage_cleared_health_bonus = 50;
+		splash_damage_multiplier = 1;
+
+		// Player ship: Velocity dependent damage
+		ram_damage = 100;
+		crash_damage = 20;
+
+		// Player guns
+		bolt_damage = 50;
+
+		// Enemies
+		rock_health = 1000;
+		rock_damage = 20;
+		core_health = 1000;
+		node_health = 40;
+		enemy_m_health = 2000;
+		bomb_delay = 12;
+		break;
+
+	  case SKILL_EASY:
+		// Master game parameters
+		launch_speed = 192;	// 0.75
+		bullet_speed = 224;	// 0.875
+		core_destroyed_health_bonus = 35;
+		stage_cleared_health_bonus = 35;
+		splash_damage_multiplier = 2;
+
+		// Player ship: Velocity dependent damage
+		ram_damage = 100;
+		crash_damage = 25;
+
+		// Player guns
+		bolt_damage = 45;
+
+		// Enemies
+		rock_health = 2000;
+		rock_damage = 30;
+		core_health = 1000;
+		node_health = 40;
+		enemy_m_health = 2500;
+		bomb_delay = 10;
+		break;
+
 	  case SKILL_NORMAL:
 		// Master game parameters
-		launch_speed = 256;
-		bullet_speed = 256;
+		launch_speed = 256;	// 1.0
+		bullet_speed = 256;	// 1.0
 		core_destroyed_health_bonus = 25;
 		stage_cleared_health_bonus = 25;
 		splash_damage_multiplier = 2;
@@ -111,8 +159,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 
 	  case SKILL_HARD:
 		// Master game parameters
-		launch_speed = 352;
-		bullet_speed = 384;
+		launch_speed = 352;	// 1.375
+		bullet_speed = 384;	// 1.5
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 25;
 		splash_damage_multiplier = 3;
@@ -136,8 +184,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	  case SKILL_INSANE:
 	  default:
 		// Master game parameters
-		launch_speed = 384;
-		bullet_speed = 448;
+		launch_speed = 384;	// 1.5
+		bullet_speed = 448;	// 1.75
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 10;
 		splash_damage_multiplier = 5;

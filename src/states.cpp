@@ -1512,12 +1512,20 @@ st_main_menu_t st_main_menu;
 void skill_menu_t::build()
 {
 	title("Select Skill Level");
-	button("Normal", SKILL_NORMAL + 10);
-	button("Hard", SKILL_HARD + 10);
-	button("Insane", SKILL_INSANE + 10);
+	button("Newbie",	SKILL_NEWBIE + 10);
+	button("Easy",		SKILL_EASY + 10);
+	button("Normal",	SKILL_NORMAL + 10);
+	button("Hard",		SKILL_HARD + 10);
+	button("Insane",	SKILL_INSANE + 10);
 	space(2);
 	switch(skill)
 	{
+	  case SKILL_NEWBIE:
+		label("\"I'm afraid of the dark.\"");
+		break;
+	  case SKILL_EASY:
+		label("\"Please, don't hurt me!\"");
+		break;
 	  case SKILL_NORMAL:
 		label("\"Let's warm up a little first.\"");
 		break;
@@ -1548,15 +1556,21 @@ kobo_form_t *st_skill_menu_t::open()
 	menu->open();
 	switch(scorefile.profile()->skill)
 	{
-	  default:
-	  case SKILL_NORMAL:
+	  case SKILL_NEWBIE:
 		menu->select(1);
 		break;
-	  case SKILL_HARD:
+	  case SKILL_EASY:
 		menu->select(2);
 		break;
-	  case SKILL_INSANE:
+	  default:
+	  case SKILL_NORMAL:
 		menu->select(3);
+		break;
+	  case SKILL_HARD:
+		menu->select(4);
+		break;
+	  case SKILL_INSANE:
+		menu->select(5);
 		break;
 	}
 	return menu;
