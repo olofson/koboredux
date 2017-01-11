@@ -70,6 +70,10 @@ int _manage::cam_lead_x = 0;
 int _manage::cam_lead_y = 0;
 int _manage::cam_lead_xf = 0;
 int _manage::cam_lead_yf = 0;
+int _manage::shake_x = 0;
+int _manage::shake_y = 0;
+int _manage::shake_fade_x = 0;
+int _manage::shake_fade_y = 0;
 
 
 void _manage::set_bars()
@@ -432,11 +436,35 @@ void _manage::run_intro()
 }
 
 
+void _manage::screenshake(float mag_x, float mag_y, float fade)
+{
+	int nsx = mag_x * 256.0f;
+	int nsy = mag_y * 256.0f;
+	if((nsx > shake_x) || (nsy > shake_y))
+		shake_fade_x = shake_fade_y = fade * 256.0f;
+	if(nsx > shake_x)
+		shake_x = nsx;
+	if(nsy > shake_y)
+		shake_y = nsy;
+}
+
+
+void _manage::stop_screenshake()
+{
+	shake_fade_x = shake_fade_y = 0.75 * 256.0f;
+}
+
+
 void _manage::update()
 {
-	put_player_stats();
+	// Update sprite positions
 	myship.put();
 	enemies.put();
+
+	// Render effects, displays, and LEDs
+	run_noise();
+	run_leds();
+	put_player_stats();
 	put_score();
 
 	// Constant speed chase + IIR filtered camera lead
@@ -469,17 +497,24 @@ void _manage::update()
 	cam_lead_xf += (cam_lead_x - cam_lead_xf) * KOBO_CAM_LEAD_FILTER >> 8;
 	cam_lead_yf += (cam_lead_y - cam_lead_yf) * KOBO_CAM_LEAD_FILTER >> 8;
 
-	gengine->scroll(myship.get_csx() + cam_lead_xf -
+	// Screen shake
+	int ss = prefs->screenshake * prefs->screenshake;
+	float ph = SDL_GetTicks() * 2.0f * M_PI * 0.001f;
+	int shx = shake_x * ss * sin(ph * SCREEN_SHAKE_RATE_X);
+	int shy = shake_y * ss * sin(ph * SCREEN_SHAKE_RATE_Y);
+	shake_x = shake_x * shake_fade_x >> 8;
+	shake_y = shake_y * shake_fade_y >> 8;
+
+	// Apply scroll position
+	gengine->scroll(myship.get_csx() + cam_lead_xf + shx -
 			PIXEL2CS((int)DASHW(MAIN) / 2),
-			myship.get_csy() + cam_lead_yf -
+			myship.get_csy() + cam_lead_yf + shy -
 			PIXEL2CS((int)DASHH(MAIN) / 2));
 	if(scroll_jump)
 	{
 		gengine->force_scroll();
 		scroll_jump = 0;
 	}
-	run_noise();
-	run_leds();
 }
 
 
@@ -545,6 +580,8 @@ void _manage::pause(bool p)
 	if(p == paused)
 		return;
 	paused = p;
+	if(paused)
+		stop_screenshake();
 }
 
 
@@ -578,6 +615,7 @@ void _manage::destroyed_a_core()
 		gamestate = GS_LEVELDONE;
 	}
 	screen.generate_fixed_enemies();
+	screenshake(0.5f, 0.5f, 0.95f);
 }
 
 

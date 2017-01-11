@@ -5,7 +5,7 @@
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2002 Jeremy Sheeley
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -60,6 +60,10 @@ class _manage
 	// Camera lead
 	static int cam_lead_x, cam_lead_y;
 	static int cam_lead_xf, cam_lead_yf;
+
+	// Screen shake
+	static int shake_x, shake_y;
+	static int shake_fade_x, shake_fade_y;
 
 	// Timing
 	static int delay_count;
@@ -131,6 +135,8 @@ class _manage
 	static void noise(int duration, int flash);
 	static void noise_out(int duration);
 	static void noise_damage(float amt);
+	static void screenshake(float mag_x, float mag_y, float fade);
+	static void stop_screenshake();
 
 	// Game logic interface
 	static void lost_myship();

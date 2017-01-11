@@ -71,6 +71,10 @@
 #undef	INVULNERABLE	// Player ship cannot take damage
 #undef	NOSPEEDLIMIT	// Player ship controlled via acceleration; no drag
 
+// Screen shake frequencies (Hz)
+#define	SCREEN_SHAKE_RATE_X	9
+#define	SCREEN_SHAKE_RATE_Y	11
+
 
   ////////////////////////////////////////////////////
  // Skill level dependent game parameters

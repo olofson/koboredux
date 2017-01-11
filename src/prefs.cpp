@@ -98,8 +98,9 @@ void prefs_t::init()
 	key("brightness", brightness, 100); desc("Brightness");
 	key("contrast", contrast, 100); desc("Contrast");
 	key("planetdither", planetdither, -1); desc("Planet Dither Style");
-	yesno("playerhitfx", playerhitfx, 1);
+	yesno("playerhitfx", playerhitfx, 0);
 			desc("Use visual player hit effects");
+	key("screenshake", screenshake, 3); desc("Screen Shake");
 
 	section("Game");
 	key("countdown", countdown, 5); desc("Get Ready Countdown");

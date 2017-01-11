@@ -401,9 +401,15 @@ void KOBO_myship::hit(int dmg)
 	if(_health <= 0)
 	{
 		_health = 0;
+		manage.screenshake(2.0f, 2.0f, 0.99f);
 		manage.lost_myship();
 		state(SHIP_DEAD);
 		sound.g_player_explo_start();
+	}
+	else
+	{
+		float sh = (float)dmg / (_health + dmg);
+		manage.screenshake(sh, sh, 0.8f);
 	}
 }
 

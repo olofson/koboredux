@@ -406,6 +406,13 @@ void interface_options_t::build()
 	yesno("Scrolling Radar", &prf->scrollradar, 0);
 	space();
 	yesno("Visual Player Hit FX", &prf->playerhitfx, 0);
+	list("Screen Shake", &prf->screenshake, 0);
+		item("OFF", 0);
+		item("Subtle", 1);
+		item("Low", 2);
+		item("Moderate", 3);
+		item("Extreme", 4);
+		item("Ridiculous", 5);
 	space();
 	list("Starfield Density", &prf->stars, 0);
 		item("Minimal", 50);
