@@ -87,6 +87,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	{
 	  case SKILL_NORMAL:
 		// Master game parameters
+		launch_speed = 256;
+		bullet_speed = 256;
 		core_destroyed_health_bonus = 25;
 		stage_cleared_health_bonus = 25;
 		splash_damage_multiplier = 2;
@@ -109,6 +111,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 
 	  case SKILL_HARD:
 		// Master game parameters
+		launch_speed = 352;
+		bullet_speed = 384;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 25;
 		splash_damage_multiplier = 3;
@@ -132,6 +136,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	  case SKILL_INSANE:
 	  default:
 		// Master game parameters
+		launch_speed = 384;
+		bullet_speed = 448;
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 10;
 		splash_damage_multiplier = 5;

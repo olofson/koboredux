@@ -108,6 +108,8 @@ class game_t
 	int	type;		// game_types_t
 	int	skill;		// skill_levels_t
 	int	speed;		// ms per logic frame
+	int	launch_speed;	// Enemy launch speed scale factor (24:8)
+	int	bullet_speed;	// Enemy bullet speed scale factor (24:8)
 	int	core_destroyed_health_bonus;
 	int	stage_cleared_health_bonus;
 	int	splash_damage_multiplier;

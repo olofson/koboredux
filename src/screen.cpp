@@ -861,6 +861,10 @@ void KOBO_screen::generate_wave(const KOBO_enemy_set *wave)
 	for(int j = 0; j < wave->num; j++)
 	{
 		int sp = wave->speed;
+		if(wave->kind->is_bullet())
+			sp *= game.bullet_speed;
+		else
+			sp *= game.launch_speed;
 		int x, y, h, v, t;
 		x = gamerand.get() % (WORLD_SIZEX - VIEWLIMIT * 2);
 		y = gamerand.get() % (WORLD_SIZEY - VIEWLIMIT * 2);
@@ -877,8 +881,8 @@ void KOBO_screen::generate_wave(const KOBO_enemy_set *wave)
 		x += myship.get_x();
 		y += myship.get_y();
 		t = gamerand.get(4);
-		h = PIXEL2CS(sp * sint[t]) / 64;
-		v = PIXEL2CS(sp * cost[t]) / 64;
+		h = sp * sint[t] / 64;
+		v = sp * cost[t] / 64;
 		enemies.make(wave->kind, PIXEL2CS(x), PIXEL2CS(y), h, v);
 	}
 }

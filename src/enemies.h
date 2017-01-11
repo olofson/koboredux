@@ -50,6 +50,7 @@ struct KOBO_enemy_kind
 	KOBO_sounds	launchsound;	// Launch/fire/spawn
 	KOBO_sounds	damagesound;	// Impact/damage
 	KOBO_sounds	deathsound;	// Death/failure
+	bool is_bullet() const { return layer == LAYER_BULLETS; }
 };
 
 #define KOBO_EK_SOUNDS(x)	\

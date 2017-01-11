@@ -225,8 +225,11 @@ inline void KOBO_enemy::launch(const KOBO_enemy_kind *ekp)
 	if(prefs->cheat_ceasefire || enemies.is_intro || !myship.alive())
 		return;
 
-	int v0 = PIXEL2CS(ekp->launchspeed ? ekp->launchspeed :
-			DEFAULT_LAUNCH_SPEED);
+	int v0 = ekp->launchspeed ? ekp->launchspeed : DEFAULT_LAUNCH_SPEED;
+	if(ekp->is_bullet())
+		v0 *= game.bullet_speed;
+	else
+		v0 *= game.launch_speed;
 	int norm = (int)sqrt(diffx * diffx + diffy * diffy);
 	if(!norm)
 		return;
@@ -244,9 +247,10 @@ void KOBO_enemy::shot_template_8_dir(const KOBO_enemy_kind *ekp)
 
 	static int vx[] = { 0, 200, 300, 200, 0, -200, -300, -200 };
 	static int vy[] = { -300, -200, 0, 200, 300, 200, 0, -200 };
+	int vsc = ekp->is_bullet() ? game.bullet_speed : game.launch_speed;
 	int i;
 	for(i = 0; i < 8; i++)
-		enemies.make(ekp, x, y, vx[i], vy[i]);
+		enemies.make(ekp, x, y, vx[i] * vsc >> 8, vy[i] * vsc >> 8);
 	playsound(ekp->launchsound);
 }
 
