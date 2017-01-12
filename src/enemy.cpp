@@ -602,7 +602,9 @@ void KOBO_enemy::move_bomb1()
 		stopsound();
 		c = 0;
 	}
-	if((c < game.bomb_delay) || prefs->cheat_brokentrigger)
+	if((c < game.bomb_delay) || prefs->cheat_brokentrigger ||
+			prefs->cheat_ceasefire || enemies.is_intro ||
+			!myship.alive())
 		return;
 
 	// Detonate!
@@ -673,7 +675,9 @@ void KOBO_enemy::move_bomb2()
 		stopsound();
 		c = 0;
 	}
-	if((c < game.bomb_delay) || prefs->cheat_brokentrigger)
+	if((c < game.bomb_delay) || prefs->cheat_brokentrigger ||
+			prefs->cheat_ceasefire || enemies.is_intro ||
+			!myship.alive())
 		return;
 
 	// Detonate!
