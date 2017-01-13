@@ -32,6 +32,7 @@
 #include <math.h>
 
 #include "kobo.h"
+#include "kobolog.h"
 #include "screen.h"
 #include "manage.h"
 #include "options.h"
@@ -57,7 +58,8 @@ int _manage::score_changed = 1;
 int _manage::flash_score_count = 0;
 int _manage::scroll_jump = 0;
 int _manage::delay_count;
-int _manage::rest_cores;
+int _manage::total_cores;
+int _manage::remaining_cores;
 s_hiscore_t _manage::hi;
 int _manage::noise_duration = 0;
 int _manage::noise_timer = 0;
@@ -74,6 +76,8 @@ int _manage::shake_x = 0;
 int _manage::shake_y = 0;
 int _manage::shake_fade_x = 0;
 int _manage::shake_fade_y = 0;
+KOBO_replay *_manage::replay = NULL;
+KOBO_player_controls _manage::lastinput = KOBO_PC_FIRE;
 
 
 void _manage::set_bars()
@@ -189,27 +193,107 @@ void _manage::select_scene(int scene)
 }
 
 
-void _manage::start_game()
+void _manage::init_game(KOBO_replay *rp, bool newship)
 {
-	hi.clear();
+	sound.g_new_scene();
+	stop_screenshake();
+	noise(400, 300);
 
-	game.set(GAME_SINGLE, (skill_levels_t)scorefile.profile()->skill);
-
+	lastinput = KOBO_PC_FIRE;
 	disp_health = 0.0f;
 	disp_charge = 0.0f;
-	score = 0;
 	flash_score_count = 0;
-	gengine->period(game.speed);
-	screen.init_scene(scene_num);
-	init_resources_to_play(true);
+	score_changed = 1;
+	delay_count = 0;
+	scroll_jump = 1;
+	show_bars = 1;
 
+	if(rp)
+	{
+		// Start from replay!
+		gamestate = GS_REPLAY;
+		log_printf(ULOG, "Starting at stage %d from replay!\n",
+				replay->stage);
+		if(rp != replay)
+		{
+			delete replay;
+			replay = rp;
+		}
+		replay->log_dump(ULOG);
+		scene_num = replay->stage;
+		game.set((game_types_t)replay->type,
+				(skill_levels_t)replay->skill);
+		gamerand.init(replay->seed);
+		score = replay->score;
+		replay->rewind();
+		gengine->period(game.speed /* 3*/);
+	}
+	else
+	{
+		// No replay! Start from parameters.
+		gamestate = GS_GETREADY;
+		log_printf(ULOG, "Starting new level, stage %d!\n", scene_num);
+		game.set(GAME_SINGLE,
+				(skill_levels_t)scorefile.profile()->skill);
+		delete replay;
+		replay = new KOBO_replay();
+		replay->stage = scene_num;
+		replay->type = game.type;
+		replay->skill = game.skill;
+		replay->seed = game_seed = gamerand.get_seed();
+		replay->score = score;
+		replay->log_dump(ULOG);
+		gengine->period(game.speed);
+	}
+
+	screen.init_scene(scene_num);
+	enemies.init();
+	if(rp)
+	{
+		// New ship with state from the replay data
+		myship.init(replay->health, replay->charge);
+	}
+	else
+	{
+		// Old/new ship as specified; record state to replay!
+		myship.init(newship);
+		replay->health = myship.health();
+		replay->charge = myship.charge();
+	}
+	total_cores = remaining_cores = screen.prepare();
+	screen.generate_fixed_enemies();
+	put_info();
+	put_score();
+	gengine->camfilter(KOBO_CAM_FILTER);
+	set_bars();
+	put_player_stats();
+	myship.put();
+	gengine->scroll(myship.get_csx() - PIXEL2CS((int)DASHW(MAIN) / 2),
+			myship.get_csy() - PIXEL2CS((int)DASHH(MAIN) / 2));
+	gengine->force_scroll();
+	pxtop->fx(PFX_OFF);
+	pxbottom->fx(PFX_OFF);
+	pxleft->fx(PFX_OFF);
+	pxright->fx(PFX_OFF);
+	wdash->fade(1.0f);
+	wdash->mode(DASHBOARD_GAME);
+	sound.g_music(scene_num);
+}
+
+
+void _manage::start_new_game()
+{
+	score = 0;
+	init_game(NULL, true);
 	gamecontrol.clear();
 
+// FIXME: This is totally broken by the replay logic. Need to store this info
+// FIXME: along with the replays if we're going to use it again!
+	hi.clear();
 	hi.skill = game.skill;
 	hi.playtime = 0;
 	hi.gametype = game.type;
 #if 1
-	// The new skill levels are under development!
 	// We want to mark highscores so they're not mistaken
 	// for official scores from a future finalized version.
 	hi.gametype |= GAME_EXPERIMENTAL;
@@ -218,9 +302,13 @@ void _manage::start_game()
 	hi.loads = 0;
 	hi.start_scene = scene_num;
 	hi.end_lives = 0;
-	sound.g_music(scene_num);
+}
 
-	gamestate = GS_GETREADY;
+
+void _manage::start_replay()
+{
+	// Start replay of the current stage
+	init_game(replay);
 }
 
 
@@ -233,22 +321,19 @@ void _manage::player_ready()
 
 void _manage::next_scene()
 {
-	sound.g_new_scene();
 	scene_num++;
 	if(scene_num >= GIGA - 1)
 		scene_num = GIGA - 2;
-	screen.init_scene(scene_num);
-	scroll_jump = 1;
-	gamestate = GS_GETREADY;
+	init_game();
 }
 
 
 void _manage::init_resources_title()
 {
 	noise(1000, 800);
+	gamerand.init();
 	screen.init_scene(INTRO_SCENE);
 	gengine->period(30);
-	gamerand.init();
 	enemies.init();
 	enemies.is_intro = 1;
 	myship.init(true);
@@ -269,41 +354,7 @@ void _manage::init_resources_title()
 	pxright->fx(PFX_SCAN, PCOLOR_CORE);
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_TITLE);
-}
-
-
-void _manage::init_resources_to_play(bool newship)
-{
-	noise(400, 300);
-	delay_count = 0;
-	flash_score_count = (flash_score_count) ? -1 : 0;
-	score_changed = 0;
-
-	gamerand.init();
-	game_seed = gamerand.get_seed();
-	enemies.init();
-	myship.init(newship);
-	rest_cores = screen.prepare();
-	scroll_jump = 1;
-	screen.generate_fixed_enemies();
-	put_info();
-	put_score();
-	gengine->camfilter(KOBO_CAM_FILTER);
-	show_bars = 1;
-	set_bars();
-	put_player_stats();
-	myship.put();
-	gengine->scroll(myship.get_csx() - PIXEL2CS((int)DASHW(MAIN) / 2),
-			myship.get_csy() - PIXEL2CS((int)DASHH(MAIN) / 2));
-	gengine->force_scroll();
-	pxtop->fx(PFX_OFF);
-	pxbottom->fx(PFX_OFF);
-	pxleft->fx(PFX_OFF);
-	pxright->fx(PFX_OFF);
-	wdash->fade(1.0f);
-	wdash->mode(DASHBOARD_GAME);
-
-	gamecontrol.clear();
+	stop_screenshake();
 }
 
 
@@ -520,6 +571,67 @@ void _manage::update()
 
 void _manage::run_game()
 {
+	KOBO_player_controls ctrlin = myship.decode_input();
+	KOBO_player_controls ctrl;
+	if(gamestate == GS_REPLAY)
+	{
+		ctrl = replay->read();
+		if(ctrl == KOBO_PC_END)
+		{
+			// Player is dead. Just waiting for another replay, or
+			// game over.
+			ctrl = KOBO_PC_NONE;
+		}
+		else if((ctrlin & KOBO_PC_FIRE) && !(lastinput & KOBO_PC_FIRE))
+		{
+			// Player takes over control! Replay recording must be
+			// resumed at exactly this frame, overwriting any
+			// subsequent data.
+			replay->punchin();
+			replay->write(ctrlin);
+			gamestate = GS_PLAYING;
+			sound.ui_countdown(0);
+			gengine->period(game.speed);
+		}
+		else
+		{
+			// Control the replay playback speed
+			float m = 50.0f;
+			if(replay->recorded() < 100)
+				m = 0.5f;
+			else
+			{
+				m = 50.0f / replay->recorded();
+				if(m < 0.1f)
+					m = 0.1f;
+			}
+			float rps = m + (1.0f - m) * replay->progress();
+			switch(ctrlin & KOBO_PC_DIR)
+			{
+			  case 1:
+			  case 2:
+			  case 3:
+				rps *= 0.25f;
+				break;
+			  case 5:
+			  case 6:
+			  case 7:
+				rps = 1.0f;
+				break;
+			}
+			gengine->period(game.speed * rps);
+		}
+		lastinput = ctrlin;	// Must release controls first!
+	}
+	else
+	{
+		// Use and record the control input! Stop recording the moment
+		// the player dies, to keep the replay progress bar accurate.
+		ctrl = ctrlin;
+		if(replay && myship.alive())
+			replay->write(ctrl);
+	}
+	myship.control(ctrl);
 	myship.move();
 	enemies.move();
 	myship.check_base_bolts();
@@ -547,6 +659,7 @@ void _manage::run()
 		update();
 		break;
 	  case GS_PLAYING:
+	  case GS_REPLAY:
 	  case GS_GAMEOVER:
 		run_game();
 		break;
@@ -557,7 +670,6 @@ void _manage::run()
 		{
 			put_info();
 			next_scene();
-			init_resources_to_play(false);
 		}
 		else
 			run_game();
@@ -572,6 +684,8 @@ void _manage::abort_game()
 	sound.g_new_scene();
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_TITLE);
+	delete replay;
+	replay = NULL;
 }
 
 
@@ -595,18 +709,21 @@ void _manage::lost_myship()
 		scorefile.record(&hi);
 	}
 	gamestate = GS_GAMEOVER;
+	log_printf(ULOG, "Player died at stage %d; score: %d, health: %d, "
+			"charge: %d\n", scene_num, score, myship.health(),
+			myship.charge());
 }
 
 
 void _manage::destroyed_a_core()
 {
-	if(gamestate != GS_PLAYING)
+	if((gamestate != GS_PLAYING) && (gamestate != GS_REPLAY))
 		return;	// Can't win after death...
 
 	// Award health bonus for destroyed core!
 	myship.health_bonus(game.core_destroyed_health_bonus);
-	rest_cores--;
-	if(rest_cores == 0)
+	remaining_cores--;
+	if(remaining_cores == 0)
 	{
 		delay_count = 50;
 		// Award extra health bonus for stage cleared!

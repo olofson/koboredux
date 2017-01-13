@@ -26,7 +26,10 @@
 #define _KOBO_CONFIG_H_
 
 #define	KOBO_COPYRIGHT	"Copyright 2017 Olofson Arcade. All rights reserved."
- 
+
+// IMPPORTANT: Bump this whenever making any gameplay, map, or AI changes!
+#define	KOBO_REPLAY_VERSION	1
+
 #include "buildconfig.h"
 
 #ifndef DEBUG

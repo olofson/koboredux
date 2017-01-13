@@ -108,9 +108,10 @@ enum skill_levels_t
 class game_t
 {
   public:
-	// Master game parameters
 	int	type;		// game_types_t
 	int	skill;		// skill_levels_t
+
+	// Master game parameters
 	int	speed;		// ms per logic frame
 	int	launch_speed;	// Enemy launch speed scale factor (24:8)
 	int	bullet_speed;	// Enemy bullet speed scale factor (24:8)

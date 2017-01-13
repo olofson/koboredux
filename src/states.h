@@ -165,6 +165,7 @@ class st_get_ready_t : public kobo_basestate_t
 class st_game_over_t : public kobo_basestate_t
 {
 	int	start_time, frame_time;
+	int	countdown;
   public:
 	st_game_over_t();
 	void enter();

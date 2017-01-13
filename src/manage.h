@@ -27,6 +27,7 @@
 
 #include "SDL.h"
 #include "score.h"
+#include "replay.h"
 
 enum KOBO_gamestates
 {
@@ -35,6 +36,7 @@ enum KOBO_gamestates
 	GS_SELECT,
 	GS_GETREADY,
 	GS_PLAYING,
+	GS_REPLAY,
 	GS_LEVELDONE,
 	GS_GAMEOVER
 };
@@ -46,7 +48,8 @@ class _manage
 	static int blank;
 	static int game_seed;
 	static int scroll_jump;
-	static int rest_cores;
+	static int total_cores;
+	static int remaining_cores;
 	static int exit_manage;
 	static s_hiscore_t hi;
 	static int noise_flash;
@@ -77,6 +80,11 @@ class _manage
 	static float disp_charge;
 	static int flash_score_count;
 	static int score_changed;
+
+	// Game replays
+	static KOBO_replay *replay;
+	static KOBO_player_controls lastinput;
+
 	static void put_player_stats();
 	static void put_info();
 	static void put_score();
@@ -85,7 +93,7 @@ class _manage
 	static void run_leds();
 	static void set_bars();
 	static void init_resources_title();
-	static void init_resources_to_play(bool newship);
+//	static void init_resources_to_play(bool newship);
 	static void update();
 	static void run_intro();
 	static void run_pause();
@@ -101,12 +109,20 @@ class _manage
 	// State management
 	static void start_intro();
 	static void select_scene(int scene);
-	static void start_game();
+	static void init_game(KOBO_replay *rp = NULL, bool newship = false);
+	static void start_new_game();
+	static void start_replay();
 	static void player_ready();
 	static void abort_game();
 	static void pause(bool p);
 	static bool game_paused()	{ return paused; }
 	static KOBO_gamestates state()	{ return gamestate; }
+
+	// Replays
+	static float replay_progress()
+	{
+		return replay ? replay->progress() : 0.0f;
+	}
 
 	// Running the game
 	static void run();
@@ -118,6 +134,7 @@ class _manage
 		{
 		  case GS_GETREADY:
 		  case GS_PLAYING:
+		  case GS_REPLAY:
 		  case GS_LEVELDONE:
 		  case GS_GAMEOVER:
 			return true;
@@ -126,6 +143,8 @@ class _manage
 		}
 	}
 	static int game_time()		{ return hi.playtime; }
+	static int cores_total()	{ return total_cores; }
+	static int cores_remaining()	{ return remaining_cores; }
 
 	// Player input
 	static void key_down(SDL_Keycode sym);

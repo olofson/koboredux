@@ -243,13 +243,6 @@ void controls_options_t::build()
 		}
 	}
 	space();
-	list("Charge Release Tap Time", &prf->fire_tap_time, 0);
-		item("OFF", 0);
-		item("1 frame", 1);
-		item("2 frames", 2);
-		item("3 frames", 3);
-		item("4 frames", 4);
-		item("5 frames", 5);
 	yesno("Broken NumPad Diagonals", &prf->broken_numdia, 0);
 	list("Diagonals Emphasis Filter", &prf->dia_emphasis, 0);
 		item("OFF", 0);
@@ -465,8 +458,20 @@ void game_options_t::build()
 	title("Game Options");
 
 	xoffs = 0.55;
-	list("Get Ready Countdown", &prf->countdown, 0);
+	list("\"Get Ready!\" Countdown", &prf->countdown, 0);
 		item("Quick Start", 0);
+		item("1 second", 1);
+		item("2 seconds", 2);
+		item("3 seconds", 3);
+		item("4 seconds", 4);
+		item("5 seconds", 5);
+		item("6 seconds", 6);
+		item("7 seconds", 7);
+		item("8 seconds", 8);
+		item("9 seconds", 9);
+		item("Wait Forever", 10);
+	list("\"Continue?\" Countdown", &prf->cont_countdown, 0);
+		item("Quick Continue", 0);
 		item("1 second", 1);
 		item("2 seconds", 2);
 		item("3 seconds", 3);

@@ -29,6 +29,9 @@
 #include "kobolog.h"
 #include <math.h>
 
+// HAX: See "Game logic/effects pseudo-RNG interference #308"
+#define	pubrand	gamerand
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fast integer atan() approximation. Input is 24:8 fixed point.

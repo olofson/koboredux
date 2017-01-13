@@ -122,6 +122,8 @@ class KOBO_screen
 	static void fps(float f);
 	static float fps()	{ return _fps; }
 	static void noise(int on);
+	static void render_countdown(int y, float t, int timeout,
+			int countdown);
 };
 
 extern KOBO_screen screen;

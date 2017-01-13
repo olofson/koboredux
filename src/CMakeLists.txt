@@ -27,6 +27,7 @@ set(sources
 	spinplanet.cpp
 	starfield.cpp
 	themeparser.cpp
+	replay.cpp
 	logger.c
 	openurl.c
 	gfxengine/gfxengine.cpp

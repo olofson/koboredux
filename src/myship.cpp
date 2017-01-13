@@ -32,9 +32,9 @@
 #include "sound.h"
 
 KOBO_myship_state KOBO_myship::_state;
+KOBO_player_controls KOBO_myship::ctrl;
 int KOBO_myship::di;
 int KOBO_myship::fdi;
-int KOBO_myship::latched_dir;
 int KOBO_myship::dframes;
 int KOBO_myship::x;
 int KOBO_myship::y;
@@ -46,7 +46,6 @@ int KOBO_myship::hitsize;
 int KOBO_myship::_health;
 int KOBO_myship::_charge;
 float KOBO_myship::charge_blipp_granularity;
-int KOBO_myship::fire_hold_time;
 int KOBO_myship::charge_cool;
 int KOBO_myship::health_time;
 int KOBO_myship::explo_time;
@@ -105,7 +104,7 @@ void KOBO_myship::off()
 }
 
 
-int KOBO_myship::init(bool newship)
+void KOBO_myship::init(bool newship)
 {
 	di = 1;
 	if(s_bank_t *b = s_get_bank(gengine->get_gfx(), B_PLAYER))
@@ -133,7 +132,7 @@ int KOBO_myship::init(bool newship)
 	}
 	charge_blipp_granularity = (float)wcharge->led_count() / game.charge;
 
-	fire_hold_time = health_time = explo_time = charge_cool = 0;
+	health_time = explo_time = charge_cool = 0;
 	nose_reload_timer = tail_reload_timer = 0;
 
 	int i;
@@ -144,8 +143,14 @@ int KOBO_myship::init(bool newship)
 
 	state(SHIP_NORMAL);
 	apply_position();
+}
 
-	return 0;
+
+void KOBO_myship::init(int rhealth, int rcharge)
+{
+	init(false);
+	_health = rhealth;
+	_charge = rcharge;
 }
 
 
@@ -170,18 +175,37 @@ void KOBO_myship::explode()
 }
 
 
+KOBO_player_controls KOBO_myship::decode_input()
+{
+	int c = 0;
+	if(gamecontrol.dir_push())
+		c |= gamecontrol.dir();
+	if(gamecontrol.pressed(BTN_PRIMARY))
+		c |= KOBO_PC_PRIMARY_DOWN;
+	if(gamecontrol.down(BTN_PRIMARY))
+		c |= KOBO_PC_PRIMARY;
+	if(gamecontrol.pressed(BTN_SECONDARY))
+		c |= KOBO_PC_SECONDARY_DOWN;
+	if(gamecontrol.down(BTN_SECONDARY))
+		c |= KOBO_PC_SECONDARY;
+	return (KOBO_player_controls)c;
+}
+
+
 void KOBO_myship::handle_controls()
 {
 	int v;
 	if(prefs->cheat_pushmove)
-		v = gamecontrol.dir_push() ? PIXEL2CS(4) : 0;
-	else if(gamecontrol.dir_push())
+		v = (ctrl & KOBO_PC_DIR) ? PIXEL2CS(4) : 0;
+	else if(ctrl & KOBO_PC_DIR)
 		v = game.top_speed;
 	else
 		v = game.cruise_speed;
+	if(ctrl & KOBO_PC_DIR)
+		di = ctrl & KOBO_PC_DIR;
 	int tvx = v * sin(M_PI * (di - 1) / 4);
 	int tvy = -v * cos(M_PI * (di - 1) / 4);
-	if(gamecontrol.dir_push() || !prefs->cheat_freewheel)
+	if((ctrl & KOBO_PC_DIR) || !prefs->cheat_freewheel)
 	{
 		if(prefs->cheat_pushmove)
 		{
@@ -221,11 +245,8 @@ void KOBO_myship::fire_control()
 		--charge_cool;
 
 	// Primary fire + "tap for secondary" logic
-	if(gamecontrol.primary_fire())
+	if(ctrl & (KOBO_PC_PRIMARY_DOWN | KOBO_PC_PRIMARY))
 	{
-		if(!fire_hold_time)
-			latched_dir = di;
-		++fire_hold_time;
 		int fired = 0;
 		if(tail_reload_timer > 0)
 			--tail_reload_timer;
@@ -251,10 +272,6 @@ void KOBO_myship::fire_control()
 	}
 	else
 	{
-		if(prefs->fire_tap_time && fire_hold_time &&
-				(fire_hold_time <= prefs->fire_tap_time))
-			charged_fire(latched_dir);
-		fire_hold_time = 0;
 		if(nose_reload_timer > 0)
 			--nose_reload_timer;
 		if(tail_reload_timer > 0)
@@ -262,7 +279,7 @@ void KOBO_myship::fire_control()
 	}
 
 	// Secondary fire (no autofire!)
-	if(gamecontrol.pressed(BTN_SECONDARY))
+	if(ctrl & KOBO_PC_SECONDARY_DOWN)
 		charged_fire(di);
 
 	// Charge bar blipps
@@ -274,9 +291,6 @@ void KOBO_myship::fire_control()
 
 void KOBO_myship::move()
 {
-	int i;
-	di = gamecontrol.dir();
-
 	// Health regeneration/overcharge fade
 	if(++health_time >= game.health_fade)
 	{
@@ -333,7 +347,7 @@ void KOBO_myship::move()
 		fire_control();
 
 	// Bolts
-	for(i = 0; i < MAX_BOLTS; i++)
+	for(int i = 0; i < MAX_BOLTS; i++)
 	{
 		if(!bolts[i].state)
 			continue;
@@ -699,10 +713,10 @@ void KOBO_myship::charged_fire(int dir)
 	{
 		power -= game.charge_drain;
 		_charge -= game.charge_drain;
-		float spread = pubrand.get(16) * (8.0f / 65536.0f) - 4.0f;
+		float spread = gamerand.get(16) * (8.0f / 65536.0f) - 4.0f;
 		spread *= game.charge_spread * (1.0f / 360.0f),
 		shot_single(dir + spread, 15 + power / game.charge_drain,
-				pubrand.get(3) - 4);
+				gamerand.get(3) - 4);
 	}
 	charge_cool = game.charge_cooldown;
 }

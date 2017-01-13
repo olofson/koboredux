@@ -61,8 +61,6 @@ void prefs_t::init()
 	key("joystick_index", joystick_index, 0); desc("Joystick Number");
 	yesno("mouse", mouse, 0); desc("Enable Mouse");
 	key("mousemode", mousemode, MMD_CROSSHAIR); desc("Mouse Control Mode");
-	key("fire_tap_time", fire_tap_time, 2);
-			desc("Primary Fire Tap Time for Charge Release");
 	yesno("broken_numdia", broken_numdia, 0);
 			desc("Broken NumPad Diagonals");
 	key("dia_emphasis", dia_emphasis, 1);
@@ -104,6 +102,7 @@ void prefs_t::init()
 
 	section("Game");
 	key("countdown", countdown, 5); desc("Get Ready Countdown");
+	key("cont_countdown", cont_countdown, 9); desc("Continue Countdown");
 
 	section("Debug");
 	yesno("debug", debug, 0); desc("Enable Debug Features");

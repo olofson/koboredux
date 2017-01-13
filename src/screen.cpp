@@ -389,6 +389,7 @@ static const char *kobo_credits[] = {
 	"Michael Sterrett",
 	"Mihail Iotov",
 	"Riki",
+	"Robert Salender",
 	"Robert Schuster",
 	"Ryan C. Gordon",
 	"Sam Lantinga",
@@ -794,7 +795,6 @@ void KOBO_screen::init_scene(int sc)
 		if(level + i <= 10)
 			bg_map[i].init(&scenes[scene_num + 1 + i]);
 	init_background();
-	gengine->period(game.speed);
 	generate_count = 0;
 	wradar->mode(radar_mode);
 }
@@ -1292,4 +1292,40 @@ void KOBO_screen::fps(float f)
 void KOBO_screen::noise(int on)
 {
 	do_noise = on;
+}
+
+
+void KOBO_screen::render_countdown(int y, float t, int timeout, int countdown)
+{
+	char counter[2] = "0";
+
+	if(timeout == 10)
+		t = -1;
+	else if(timeout)
+		t = timeout - t * 0.001f;
+	else
+		t = 1.0f - t / 700.0f;
+	if((t > 0.0f) && (t < 1.0f))
+	{
+		float x = woverlay->width() / 2;
+		woverlay->foreground(woverlay->map_rgb(
+				255 - (int)(t * 255.0f),
+				(int)(t * 255.0f),
+				0));
+		woverlay->fillrect_fxp(PIXEL2CS((int)(x - t * 50.0f)),
+				y + PIXEL2CS(16),
+				PIXEL2CS((int)(t * 100.0f)),
+				PIXEL2CS(10));
+	}
+
+	woverlay->font(B_MEDIUM_FONT);
+	if(timeout == 10)
+		woverlay->center_fxp(y + PIXEL2CS(10), "(Press FIRE)");
+	else if(timeout)
+	{
+		woverlay->center_fxp(y + PIXEL2CS(40), "(Press FIRE)");
+		counter[0] = countdown + '0';
+		woverlay->font(B_COUNTER_FONT);
+		woverlay->center_fxp(y, counter);
+	}
 }

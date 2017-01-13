@@ -2,8 +2,8 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright (C) 1995, 1996  Akira Higuchi
- * Copyright (C) 2001, 2003, 2007, 2009 David Olofson
+ * Copyright 1995, 1996  Akira Higuchi
+ * Copyright 2001, 2003, 2007, 2009 David Olofson
  * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
@@ -27,8 +27,8 @@
 #include "config.h"
 #include "gfxengine.h"
 #include "game.h"
+#include "replay.h"
 
-//---------------------------------------------------------------------------//
 enum KOBO_myship_state
 {
 	SHIP_NORMAL,
@@ -47,9 +47,9 @@ struct KOBO_player_bolt
 class KOBO_myship
 {
 	static KOBO_myship_state _state;
+	static KOBO_player_controls ctrl;
 	static int di;		// Direction (1: N, 2: NE, 3: W etc)
 	static int fdi;		// Filtered direction (sprite frames, 24:8)
-	static int latched_dir;	// Latched direction for charged fire
 	static int dframes;	// Number of sprite rotation frames
 	static int x, y;	// Position
 	static int vx, vy;	// Velocity
@@ -58,7 +58,6 @@ class KOBO_myship
 	static int _health;
 	static int _charge;	// Weapon boost capacitor charge
 	static float charge_blipp_granularity;
-	static int fire_hold_time; // Frames fire button has been down
 	static int charge_cool;	// Charge cooldown timer
 	static int health_time;
 	static int explo_time;
@@ -79,6 +78,8 @@ class KOBO_myship
 	static void kill_bolt(int bolt, bool impact);
   public:
 	KOBO_myship();
+	static KOBO_player_controls decode_input();
+	static void control(KOBO_player_controls c)	{ ctrl = c; }
 	static void state(KOBO_myship_state s);
 	static int get_velx()		{ return vx; }
 	static int get_vely()		{ return vy; }
@@ -92,7 +93,8 @@ class KOBO_myship
 		vx += ix;
 		vy += iy;
 	}
-	static int init(bool newship);
+	static void init(bool newship);
+	static void init(int rhealth, int rcharge);	// Replay init
 	static void off();
 	static void move();
 	static int put();

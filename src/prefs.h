@@ -55,7 +55,6 @@ class prefs_t : public config_parser_t
 	int	joystick_index;	//which joystick to use
 	int	mouse;
 	int	mousemode;
-	int	fire_tap_time;
 	int	broken_numdia;
 	int	dia_emphasis;
 	int	mousecapture;
@@ -94,6 +93,7 @@ class prefs_t : public config_parser_t
 
 	// Game
 	int	countdown;	//"Get Ready" countdown
+	int	cont_countdown;	//"Continue?" countdown
 
 	// Debug
 	int	debug;

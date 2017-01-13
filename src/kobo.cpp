@@ -1820,6 +1820,9 @@ void kobo_gfxengine_t::input(float fractional_frame)
 #endif
 				gengine->screenshot();
 				break;
+			  case SDLK_r:
+				manage.start_replay();
+				break;
 			  default:
 				break;
 			}
@@ -2114,16 +2117,22 @@ void kobo_gfxengine_t::post_render()
 	if(prefs->debug)
 	{
 		char buf[20];
+		woverlay->font(B_SMALL_FONT);
 
 		// Objects in use
 		snprintf(buf, sizeof(buf), "Obj: %d",
 				gengine->objects_in_use());
-		woverlay->font(B_NORMAL_FONT);
-		woverlay->string(160, 5, buf);
+		woverlay->string(120, 1, buf);
+
+		// Cores; left/total
+		snprintf(buf, sizeof(buf), "Cores: %d/%d",
+				manage.cores_remaining(),
+				manage.cores_total());
+		woverlay->string(180, 1, buf);
 
 		// Mouse cursor position
 		snprintf(buf, sizeof(buf), "M(%d, %d)", mouse_x, mouse_y);
-		woverlay->string(DASHW(MAIN) - 100, 5, buf);
+		woverlay->string(DASHW(MAIN) - 60, 1, buf);
 	}
 
 	// Frame rate counter

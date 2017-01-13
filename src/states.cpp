@@ -390,7 +390,9 @@ st_game_t::st_game_t()
 
 void st_game_t::enter()
 {
-	manage.start_game();
+	// st_game_over may start_replay() and then go back here!
+	if(!manage.game_in_progress())
+		manage.start_new_game();
 	if(!manage.game_in_progress())
 	{
 		st_error.message("Could not start game!",
@@ -477,6 +479,33 @@ void st_game_t::frame()
 void st_game_t::post_render()
 {
 	kobo_basestate_t::post_render();
+
+	if(manage.state() == GS_REPLAY)
+	{
+		woverlay->foreground(woverlay->map_rgb(48, 48, 48));
+		woverlay->alphamod(128);
+		woverlay->fillrect(0, 0, woverlay->width(),
+				woverlay->height());
+		woverlay->alphamod(255);
+		woverlay->font(B_NORMAL_FONT);
+		float p = manage.replay_progress();
+		float px = p * p;
+		px *= px;
+		int p1 = (int)(px * 128.0f);
+		int p2 = (int)(px * 192.0f);
+		woverlay->foreground(woverlay->map_rgb(
+				128 + p1, 192 - p2, 192 - p2));
+		woverlay->alphamod(64);
+		woverlay->fillrect_fxp(0, PIXEL2CS(300),
+				PIXEL2CS((int)(woverlay->width() * p)),
+				PIXEL2CS(woverlay->fontheight() + 2));
+		woverlay->alphamod(255);
+		if(SDL_GetTicks() & 0x300)
+			woverlay->center_fxp(PIXEL2CS(301), "[ REPLAY ]");
+		woverlay->center_fxp(PIXEL2CS(315),
+				"Stick controls speed.   Fire to take over!");
+	}
+
 	wradar->frame();
 }
 
@@ -551,9 +580,6 @@ void st_get_ready_t::enter()
 
 void st_get_ready_t::press(gc_targets_t button)
 {
-	if(frame_time < 500)
-		return;
-
 	switch (button)
 	{
 	  case BTN_EXIT:
@@ -571,6 +597,8 @@ void st_get_ready_t::press(gc_targets_t button)
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
 	  case BTN_YES:
+		if(frame_time < 500)
+			break;
 		sound.ui_play(S_UI_PLAY);
 		manage.pause(false);
 		manage.player_ready();
@@ -597,7 +625,7 @@ void st_get_ready_t::frame()
 	}
 
 	frame_time = (int)SDL_GetTicks() - start_time;
-	if(0 == prefs->countdown)
+	if(!prefs->countdown)
 	{
 		if(frame_time > 700)
 		{
@@ -610,7 +638,7 @@ void st_get_ready_t::frame()
 	else if(prefs->countdown <= 9)
 	{
 		int prevcount = countdown;
-		countdown = prefs->countdown - frame_time/1000;
+		countdown = prefs->countdown - frame_time / 1000;
 		if(prevcount != countdown)
 			sound.ui_countdown(countdown);
 
@@ -630,41 +658,12 @@ void st_get_ready_t::post_render()
 	kobo_basestate_t::post_render();
 
 	float ft = SDL_GetTicks() * 0.001;
-	char counter[2] = "0";
 	woverlay->font(B_BIG_FONT);
 	int y = PIXEL2CS(70) + (int)floor(PIXEL2CS(15)*sin(ft * 6));
 	woverlay->center_fxp(y, "GET READY!");
-
-	float z = (float)((int)SDL_GetTicks() - start_time);
-	if(10 == prefs->countdown)
-		z = -1;
-	else if(prefs->countdown)
-		z = prefs->countdown - z * 0.001;
-	else
-		z = 1.0 - z / 700.0;
-	if((z > 0.0) && (z < 1.0))
-	{
-		float x = woverlay->width() / 2;
-		woverlay->foreground(woverlay->map_rgb(
-				255 - (int)(z * 255.0),
-				(int)(z * 255.0),
-				0));
-		woverlay->fillrect_fxp(PIXEL2CS((int)(x - z * 50.0)),
-				y + PIXEL2CS(76),
-				PIXEL2CS((int)(z * 100.0)),
-				PIXEL2CS(10));
-	}
-
-	woverlay->font(B_MEDIUM_FONT);
-	if(10 == prefs->countdown)
-		woverlay->center_fxp(y + PIXEL2CS(70), "(Press FIRE)");
-	else if(prefs->countdown)
-	{
-		woverlay->center_fxp(y + PIXEL2CS(100), "(Press FIRE)");
-		counter[0] = countdown + '0';
-		woverlay->font(B_COUNTER_FONT);
-		woverlay->center_fxp(y + PIXEL2CS(60), counter);
-	}
+	screen.render_countdown(y + PIXEL2CS(60),
+			(int)SDL_GetTicks() - start_time,
+			prefs->countdown, countdown);
 
 	wradar->frame();
 }
@@ -687,18 +686,18 @@ void st_game_over_t::enter()
 	sound.ui_play(S_UI_GAMEOVER);
 	start_time = (int)SDL_GetTicks();
 	frame_time = 0;
+	countdown = prefs->cont_countdown;
 }
 
 
 void st_game_over_t::press(gc_targets_t button)
 {
-	if(frame_time < 1500)
-		return;
-
 	switch (button)
 	{
 	  case BTN_EXIT:
 	  case BTN_NO:
+		gsm.change(&st_main_menu);
+		break;
 	  case BTN_LEFT:
 	  case BTN_RIGHT:
 	  case BTN_UP:
@@ -711,10 +710,11 @@ void st_game_over_t::press(gc_targets_t button)
 	  case BTN_SECONDARY:
 	  case BTN_SELECT:
 	  case BTN_YES:
+		if(frame_time < 500)
+			break;
 		sound.ui_play(S_UI_OK);
-		manage.abort_game();
-		pop();
-		break;
+		manage.start_replay();
+		gsm.change(&st_game);
 	  default:
 		break;
 	}
@@ -724,11 +724,30 @@ void st_game_over_t::press(gc_targets_t button)
 void st_game_over_t::frame()
 {
 	frame_time = (int)SDL_GetTicks() - start_time;
-	if(frame_time > 10000)
+	if(!prefs->cont_countdown)
 	{
-		manage.abort_game();
-		pop();
+		if(frame_time > 700)
+		{
+			sound.ui_play(S_UI_OK);
+			manage.start_replay();
+			gsm.change(&st_game);
+		}
 	}
+	else if(prefs->cont_countdown <= 9)
+	{
+		int prevcount = countdown;
+		countdown = prefs->cont_countdown - frame_time / 1000;
+		if(prevcount != countdown)
+			sound.ui_countdown(countdown);
+
+		if(countdown < 1)
+		{
+			sound.ui_play(S_UI_CANCEL);
+			manage.abort_game();
+			pop();
+		}
+	}
+
 }
 
 
@@ -739,7 +758,10 @@ void st_game_over_t::post_render()
 	float ft = SDL_GetTicks() * 0.001;
 	woverlay->font(B_BIG_FONT);
 	int y = PIXEL2CS(100) + (int)floor(PIXEL2CS(15)*sin(ft * 6));
-	woverlay->center_fxp(y, "GAME OVER");
+	woverlay->center_fxp(y, "CONTINUE?");
+	screen.render_countdown(y + PIXEL2CS(60),
+			(int)SDL_GetTicks() - start_time,
+			prefs->cont_countdown, countdown);
 
 	wradar->frame();
 }

@@ -42,9 +42,10 @@ void game_t::reset()
 
 void game_t::set(game_types_t tp, skill_levels_t sk)
 {
-	// Master game parameters
 	type = tp;
 	skill = sk;
+
+	// Master game parameters
 	speed = 30;
 	if(prefs && prefs->cheat_speed)
 		speed /= prefs->cheat_speed;

@@ -37,7 +37,9 @@ class rand_num_t
 		else
 			seed = SDL_GetTicks();
 	}
+
 	Uint32 get_seed()	{ return seed; }
+
 	Uint32 get()
 	{
 		seed *= 1566083941UL;
@@ -45,6 +47,7 @@ class rand_num_t
 		seed &= 0xffffffffUL;
 		return seed;
 	}
+
 	Uint32 get(Uint32 bit)
 	{
 		seed *= 1566083941UL;
@@ -52,27 +55,19 @@ class rand_num_t
 		seed &= 0xffffffffUL;
 		return (seed >> (32 - bit));
 	}
-	Uint32 get(Uint32 bit, Uint32 usrseed)
-	{
-		usrseed *= 1566083941UL;
-		usrseed++;
-		usrseed &= 0xffffffffUL;
-		return (usrseed >> (32 - bit));
-	}
 };
 
-//This instance is *ONLY* for map generation and
-//pure game AI stuff!!! Stealing numbers from here
-//will screw up demo playback totally, as demos
-//record only the seed used for each level; not
-//every random number used.
+// This instance is ONLY for map generation and game logic! Stealing numbers
+// from here will screw up demo/replay playback, checkpoints, saves and the
+// like totally, as demos record only the seed used for each level; not every
+// random number used.
 extern rand_num_t gamerand;
 
-//Use this "public" random number generator for
-//other stuff, like explosion effects, and things
-//that may pick different amounts of numbers
-//depending on engine version, configuration,
-//computer speed and the like.
+// Use this "public" random number generator for other stuff, like explosion
+// effects, and things that may pick different amounts of numbers depending on
+// engine version, configuration, computer speed and the like. Due to the
+// issues mentioned above, this generator must NOT be used for anything that
+// affects the game logic in any way.
 extern rand_num_t pubrand;
 
 #endif //_KOBO_RANDOM_H_
