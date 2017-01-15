@@ -48,6 +48,21 @@ int last_level = -1;
 kobo_basestate_t::kobo_basestate_t()
 {
 	name = "<unnamed>";
+	song = -1;
+}
+
+
+void kobo_basestate_t::enter()
+{
+	if(!exit_game && (song >= 0))
+		sound.music(song);
+}
+
+
+void kobo_basestate_t::reenter()
+{
+	if(!exit_game && (song >= 0))
+		sound.music(song);
 }
 
 
@@ -88,15 +103,17 @@ st_introbase_t::st_introbase_t()
 	inext = NULL;
 	duration = 0;
 	timer = 0;
+	song = S_TITLESONG;
 }
 
 
 void st_introbase_t::enter()
 {
+	kobo_basestate_t::enter();
 	if(manage.state() != GS_INTRO)
 		manage.start_intro();
 	if(!exit_game)
-		sound.ui_music_title();
+		sound.music(song);
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
 	timer = 0;
 }
@@ -104,10 +121,11 @@ void st_introbase_t::enter()
 
 void st_introbase_t::reenter()
 {
+	kobo_basestate_t::reenter();
 	if(manage.state() != GS_INTRO)
 		manage.start_intro();
 	if(!exit_game)
-		sound.ui_music_title();
+		sound.music(song);
 	gsm.change(&st_intro_title);
 }
 
@@ -324,11 +342,13 @@ st_long_credits_t::st_long_credits_t()
 {
 	name = "long_credits";
 	timer = 0;
+	song = S_EPILOGUE;
 }
 
 
 void st_long_credits_t::enter()
 {
+	kobo_basestate_t::enter();
 	if(!manage.game_in_progress())
 		manage.select_scene(KOBO_CREDITS_BACKGROUND_LEVEL);
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;

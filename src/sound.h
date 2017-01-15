@@ -66,6 +66,7 @@ enum KOBO_mixer_group {
 	KOBO_DEFS(INGAMESONG3)		\
 	KOBO_DEFS(INGAMESONG4)		\
 	KOBO_DEFS(INGAMESONG5)		\
+	KOBO_DEFS(EPILOGUE)		\
 					\
 	KOBO_ENEMY_SFX_DEFS(BULLET1)	\
 	KOBO_ENEMY_SFX_DEFS(BULLET2)	\
@@ -270,8 +271,6 @@ class KOBO_sound
 	/*--------------------------------------------------
 		UI sound effects
 	--------------------------------------------------*/
-	// Low level interface
-	static void ui_music_title();
 
 	// Various UI effects
 	static void ui_noise(int h);

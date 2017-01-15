@@ -93,7 +93,6 @@ class _manage
 	static void run_leds();
 	static void set_bars();
 	static void init_resources_title();
-//	static void init_resources_to_play(bool newship);
 	static void update();
 	static void run_intro();
 	static void run_pause();

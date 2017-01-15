@@ -772,12 +772,6 @@ void KOBO_sound::g_new_scene()
 	UI sound effects
 --------------------------------------------------*/
 
-void KOBO_sound::ui_music_title()
-{
-	music(S_TITLESONG);
-}
-
-
 void KOBO_sound::ui_noise(int h)
 {
 	if(!iface)

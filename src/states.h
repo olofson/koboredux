@@ -37,9 +37,12 @@
 
 class kobo_basestate_t : public gamestate_t
 {
+  protected:
+	int		song;
   public:
 	kobo_basestate_t();
-
+	void enter();
+	void reenter();
 	void frame();
 	void pre_render();
 	void post_render();
