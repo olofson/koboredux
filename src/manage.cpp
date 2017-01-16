@@ -325,6 +325,12 @@ void _manage::next_scene()
 	if(scene_num >= GIGA - 1)
 		scene_num = GIGA - 2;
 	init_game();
+	if((scene_num + 1) == km.smsg_stage)
+	{
+		sound.ui_play(S_UI_PAUSE);
+		st_error.message(km.smsg_header, km.smsg_message);
+		gsm.push(&st_error);
+	}
 }
 
 

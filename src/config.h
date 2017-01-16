@@ -27,7 +27,9 @@
 
 #define	KOBO_COPYRIGHT	"Copyright 2017 Olofson Arcade. All rights reserved."
 
-// IMPPORTANT: Bump this whenever making any gameplay, map, or AI changes!
+// IMPORTANT: Bump this whenever making any gameplay, map, or AI changes!
+// (Of course, we don't have to bother with this until we actually start saving
+// or sending replay data.)
 #define	KOBO_REPLAY_VERSION	1
 
 #include "buildconfig.h"

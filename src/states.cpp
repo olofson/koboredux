@@ -1322,7 +1322,7 @@ void st_error_t::post_render()
 {
 	kobo_basestate_t::post_render();
 
-	woverlay->font(B_MEDIUM_FONT);
+	woverlay->font(B_BIG_FONT);
 	woverlay->center(95, msg[0]);
 
 	woverlay->font(B_NORMAL_FONT);
@@ -1414,12 +1414,14 @@ void main_menu_t::build()
 	button("Showcase", 20);
 	button("Options", 2);
 	space(2);
-	button("Credits & Thanks", 30);
-	space(2);
 	if(manage.game_in_progress())
 		button("Abort Current Game", 101);
 	else
+	{
+		button("Credits & Thanks", 30);
+		space(2);
 		button("Return to Intro", MENU_TAG_OK);
+	}
 	button("Quit Kobo Redux", MENU_TAG_CANCEL);
 }
 

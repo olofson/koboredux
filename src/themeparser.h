@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright 2016 David Olofson (Kobo Redux)
+ * Copyright 2016-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -84,6 +84,8 @@ enum KOBO_TP_Tokens
 	KTK_THEMEDATA,	// iv = ThemeData item index
 
 	KTK_KW_MESSAGE,
+	KTK_KW_STAGEMESSAGE,
+
 	KTK_KW_IMAGE,
 	KTK_KW_SPRITES,
 	KTK_KW_SFONT,
@@ -141,25 +143,26 @@ class KOBO_ThemeParser
 	{
 		switch(tk)
 		{
-		  case KTK_ERROR:	return "ERROR";
-		  case KTK_EOF:		return "EOF";
-		  case KTK_EOLN:	return "EOLN";
-		  case KTK_BANK:	return "BANK";
-		  case KTK_PALETTE:	return "PALETTE";
-		  case KTK_FLAG:	return "FLAG";
-		  case KTK_STRING:	return "STRING";
-		  case KTK_NUMBER:	return "NUMBER";
-		  case KTK_HEXCOLOR:	return "HEXCOLOR";
-		  case KTK_THEMEDATA:	return "THEMEDATA";
-		  case KTK_KW_MESSAGE:	return "KW_MESSAGE";
-		  case KTK_KW_IMAGE:	return "KW_IMAGE";
-		  case KTK_KW_SPRITES:	return "KW_SPRITES";
-		  case KTK_KW_SFONT:	return "KW_SFONT";
-		  case KTK_KW_PALETTE:	return "KW_PALETTE";
-		  case KTK_KW_FALLBACK:	return "KW_FALLBACK";
-		  case KTK_KW_PATH:	return "KW_PATH";
-		  case KTK_KW_ALIAS:	return "KW_ALIAS";
-		  case KTK_KW_SET:	return "KW_SET";
+		  case KTK_ERROR:		return "ERROR";
+		  case KTK_EOF:			return "EOF";
+		  case KTK_EOLN:		return "EOLN";
+		  case KTK_BANK:		return "BANK";
+		  case KTK_PALETTE:		return "PALETTE";
+		  case KTK_FLAG:		return "FLAG";
+		  case KTK_STRING:		return "STRING";
+		  case KTK_NUMBER:		return "NUMBER";
+		  case KTK_HEXCOLOR:		return "HEXCOLOR";
+		  case KTK_THEMEDATA:		return "THEMEDATA";
+		  case KTK_KW_MESSAGE:		return "KW_MESSAGE";
+		  case KTK_KW_STAGEMESSAGE:	return "KW_STAGEMESSAGE";
+		  case KTK_KW_IMAGE:		return "KW_IMAGE";
+		  case KTK_KW_SPRITES:		return "KW_SPRITES";
+		  case KTK_KW_SFONT:		return "KW_SFONT";
+		  case KTK_KW_PALETTE:		return "KW_PALETTE";
+		  case KTK_KW_FALLBACK:		return "KW_FALLBACK";
+		  case KTK_KW_PATH:		return "KW_PATH";
+		  case KTK_KW_ALIAS:		return "KW_ALIAS";
+		  case KTK_KW_SET:		return "KW_SET";
 		}
 		return "<unknown>";
 	}
@@ -177,6 +180,7 @@ class KOBO_ThemeParser
 	void apply_flags(int flags, double scale);
 	void warn_bank_used(int bank);
 	KOBO_TP_Tokens handle_message();
+	KOBO_TP_Tokens handle_stagemessage();
 	KOBO_TP_Tokens handle_image();
 	KOBO_TP_Tokens handle_sprites();
 	KOBO_TP_Tokens handle_sfont();

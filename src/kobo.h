@@ -139,6 +139,11 @@ class KOBO_main
 	static int ss_frames;
 	static int ss_last_frame;
 
+	// Level messages
+	static int smsg_stage;
+	static char *smsg_header;
+	static char *smsg_message;
+
 	static int restart_audio();
 	static int restart_video();
 	static int reload_sounds();
@@ -179,6 +184,25 @@ class KOBO_main
 	static void print_fps_results();
 
 	static void place(windowbase_t *w, KOBO_TD_Items td);
+
+	static void set_stagemessage(int stage, const char *hdr,
+			const char *msg)
+	{
+		// HAX: "There can be only one!"
+		smsg_stage = stage;
+		free(smsg_header);
+		smsg_header = strdup(hdr);
+		free(smsg_message);
+		smsg_message = strdup(msg);
+	}
+	static void clear_messages()
+	{
+		smsg_stage = 0;
+		free(smsg_header);
+		smsg_header = NULL;
+		free(smsg_message);
+		smsg_message = NULL;
+	}
 };
 
 

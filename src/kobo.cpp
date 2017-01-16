@@ -290,6 +290,10 @@ display_t	*KOBO_main::st_symname = NULL;
 int		KOBO_main::ss_frames = 0;
 int		KOBO_main::ss_last_frame = 0;
 
+int		KOBO_main::smsg_stage = 0;
+char		*KOBO_main::smsg_header = NULL;
+char		*KOBO_main::smsg_message = NULL;
+
 KOBO_main km;
 
 
@@ -913,6 +917,8 @@ int KOBO_main::load_graphics()
 {
 	KOBO_ThemeParser tp(themedata);
 
+	clear_messages();
+
 	gengine->reset_filters();
 	gengine->mark_tiles(prefs->show_tiles);
 
@@ -1233,6 +1239,7 @@ int KOBO_main::open()
 
 void KOBO_main::close()
 {
+	clear_messages();
 	close_js();
 	close_display();
 	if(gengine)

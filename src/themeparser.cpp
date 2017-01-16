@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright 2016 David Olofson (Kobo Redux)
+ * Copyright 2016-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -42,15 +42,16 @@ struct TP_keywords
 
 static TP_keywords tp_keywords[] =
 {
-	{ "message",	KTK_KW_MESSAGE,		0	},
-	{ "image",	KTK_KW_IMAGE,		0	},
-	{ "sprites",	KTK_KW_SPRITES,		0	},
-	{ "sfont",	KTK_KW_SFONT,		0	},
-	{ "palette",	KTK_KW_PALETTE,		0	},
-	{ "fallback",	KTK_KW_FALLBACK,	0	},
-	{ "path",	KTK_KW_PATH,		0	},
-	{ "alias",	KTK_KW_ALIAS,		0	},
-	{ "set",	KTK_KW_SET,		0	},
+	{ "message",		KTK_KW_MESSAGE,		0	},
+	{ "stagemessage",	KTK_KW_STAGEMESSAGE,	0	},
+	{ "image",		KTK_KW_IMAGE,		0	},
+	{ "sprites",		KTK_KW_SPRITES,		0	},
+	{ "sfont",		KTK_KW_SFONT,		0	},
+	{ "palette",		KTK_KW_PALETTE,		0	},
+	{ "fallback",		KTK_KW_FALLBACK,	0	},
+	{ "path",		KTK_KW_PATH,		0	},
+	{ "alias",		KTK_KW_ALIAS,		0	},
+	{ "set",		KTK_KW_SET,		0	},
 
 	{ "CLAMP",		KTK_FLAG,	KOBO_CLAMP		},
 	{ "CLAMP_OPAQUE",	KTK_FLAG,	KOBO_CLAMP_OPAQUE	},
@@ -317,7 +318,6 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_hexcolor()
 				"Expected 3, 4, 6, or 8 digits.\n");
 		return KTK_ERROR;
 	}
-fprintf(stderr, "#%x\n", iv);
 	return KTK_HEXCOLOR;
 }
 
@@ -335,19 +335,42 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_string()
 			return KTK_ERROR;
 		}
 		int c = bufget();
-		if(c == '"')
-			break;
-		else if(c == '\n')
+		switch(c)
 		{
+		  case '"':
+			sv[p++] = 0;
+			return KTK_STRING;
+		  case '\\':
+			switch((c = bufget()))
+			{
+			  case 'n':
+				sv[p++] = '\n';
+				break;
+			  case 'r':
+				sv[p++] = '\r';
+				break;
+			  case 't':
+				sv[p++] = '\t';
+				break;
+			  case '\n':
+				// Line continuation! Just skip and read on.
+				break;
+			  case '\\':
+			  default:
+				sv[p++] = c;
+				break;
+			}
+			break;
+		  case '\n':
 			dump_line();
 			log_printf(ELOG, "[Theme Loader] Unexpected newline "
 					"inside string literal!\n");
 			return KTK_ERROR;
+		  default:
+			sv[p++] = c;
+			break;
 		}
-		sv[p++] = c;
 	}
-	sv[p++] = 0;
-	return KTK_STRING;
 }
 
 
@@ -525,6 +548,25 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_message()
 	wdash->doing(sv);
 	log_printf(ULOG, "[Theme Loader] === %s\n", sv);
 	return KTK_KW_MESSAGE;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::handle_stagemessage()
+{
+	if(!expect(KTK_NUMBER))
+		return KTK_ERROR;
+	int stage = (int)rv;
+	if(!expect(KTK_STRING))
+		return KTK_ERROR;
+	char *header = strdup(sv);
+	if(!expect(KTK_STRING))
+		return KTK_ERROR;
+	if(prefs->debug)
+		log_printf(ULOG, "[Theme Loader] === stagemessage "
+				"%d \"%s\" \"%s\"\n", stage, header, sv);
+	km.set_stagemessage(stage, header, sv);
+	free(header);
+	return KTK_KW_STAGEMESSAGE;
 }
 
 
@@ -1049,6 +1091,8 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 		return tk;
 	  case KTK_KW_MESSAGE:
 		return handle_message();
+	  case KTK_KW_STAGEMESSAGE:
+		return handle_stagemessage();
 	  case KTK_KW_IMAGE:
 		return handle_image();
 	  case KTK_KW_SPRITES:
