@@ -195,7 +195,7 @@ void _manage::select_scene(int scene)
 
 void _manage::init_game(KOBO_replay *rp, bool newship)
 {
-	sound.g_new_scene();
+	sound.g_new_scene(100);
 	stop_screenshake();
 	noise(400, 300);
 
@@ -581,6 +581,8 @@ void _manage::run_game()
 			// Player is dead. Just waiting for another replay, or
 			// game over.
 			ctrl = KOBO_PC_NONE;
+			sound.g_volume(0.5f);
+			sound.g_pitch();
 		}
 		else if((ctrlin & KOBO_PC_FIRE) && !(lastinput & KOBO_PC_FIRE))
 		{
@@ -592,6 +594,8 @@ void _manage::run_game()
 			gamestate = GS_PLAYING;
 			sound.ui_countdown(0);
 			gengine->period(game.speed);
+			sound.g_volume();
+			sound.g_pitch();
 		}
 		else
 		{
@@ -620,6 +624,17 @@ void _manage::run_game()
 				break;
 			}
 			gengine->period(game.speed * rps);
+			if(rps < 0.25f)
+			{
+				sound.g_volume(0.0f);
+				sound.g_pitch(2.0f);
+			}
+			else
+			{
+				float v = 1.0f - (rps - 0.25f) / 0.75f * 0.5f;
+				sound.g_volume(1.0f - v * v);
+				sound.g_pitch(log2f(1.0f / rps));
+			}
 		}
 		lastinput = ctrlin;	// Must release controls first!
 	}

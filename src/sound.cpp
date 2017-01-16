@@ -25,6 +25,7 @@
 #include "game.h"
 #include "kobolog.h"
 #include "random.h"
+#include "enemies.h"
 
 int KOBO_sound::tsdcounter = 0;
 
@@ -35,6 +36,8 @@ int KOBO_sound::wrap_y = 0;
 int KOBO_sound::scale = 65536 / 1000;
 int KOBO_sound::panscale = 65536 / 700;
 unsigned KOBO_sound::rumble = 0;
+float KOBO_sound::volscale = 1.0f;
+float KOBO_sound::pitchshift = 0.0f;
 
 A2_interface *KOBO_sound::iface = NULL;
 A2_handle KOBO_sound::rootvoice = 0;
@@ -274,7 +277,8 @@ void KOBO_sound::prefschange()
 	a2_Send(iface, groups[KOBO_MG_MASTER], 3, (float)prefs->vol_boost);
 	a2_Send(iface, groups[KOBO_MG_MASTER], 2, pref2vol(prefs->volume));
 
-	a2_Send(iface, groups[KOBO_MG_SFX], 2, pref2vol(prefs->sfx_vol));
+	a2_Send(iface, groups[KOBO_MG_SFX], 2,
+			pref2vol(prefs->sfx_vol) * volscale);
 
 	a2_Send(iface, groups[KOBO_MG_UI], 2, pref2vol(prefs->ui_vol));
 
@@ -346,6 +350,8 @@ int KOBO_sound::open()
 
 	g_wrap(WORLD_SIZEX, WORLD_SIZEY);
 	g_scale(VIEWLIMIT, VIEWLIMIT);
+	g_volume();
+	g_pitch();
 	return 0;
 }
 
@@ -590,7 +596,7 @@ bool KOBO_sound::eval_pos(int x, int y, float *vol, float *pan)
 	// Approximation of distance attenuation
 	int vx = abs(x * scale);
 	int vy = abs(y * scale);
-	if((vx | vy) & 0xffff0000)
+	if((vx | vy) & 0xffff0000 || !volscale)
 	{
 		*vol = *pan = 0.0f;
 		return false;
@@ -624,7 +630,8 @@ void KOBO_sound::g_play(unsigned wid, int x, int y)
 	if(!eval_pos(x, y, &vol, &pan))
 		return;	// We don't start "short" sounds that are out of range!
 
-	a2_Play(iface, groups[KOBO_MG_SFX], sounds[wid], 0.0f, vol, pan);
+	a2_Play(iface, groups[KOBO_MG_SFX], sounds[wid],
+			pitchshift, vol, pan);
 }
 
 
@@ -634,11 +641,13 @@ int KOBO_sound::g_start(unsigned wid, int x, int y)
 		return -1;
 	if(!checksound(wid, "KOBO_sound::g_start()"))
 		return -1;
+	if(!volscale)
+		return -1;
 
 	float vol, pan;
 	eval_pos(x, y, &vol, &pan);
-	return a2_Start(iface, groups[KOBO_MG_SFX],
-			sounds[wid], 0.0f, vol, pan);
+	return a2_Start(iface, groups[KOBO_MG_SFX], sounds[wid],
+			pitchshift, vol, pan);
 }
 
 void KOBO_sound::g_move(int h, int x, int y)
@@ -647,7 +656,7 @@ void KOBO_sound::g_move(int h, int x, int y)
 		return;
 	float vol, pan;
 	eval_pos(x, y, &vol, &pan);
-	a2_Send(iface, h, 3, 0.0f, vol, pan);
+	a2_Send(iface, h, 3, pitchshift, vol, pan);
 }
 
 void KOBO_sound::g_control(int h, int c, float v)
@@ -685,6 +694,8 @@ void KOBO_sound::g_player_fire()
 {
 	if(!iface)
 		return;
+	if(!volscale)
+		return;
 	if(!gunhandle)
 		start_player_gun();
 	if(gunhandle)
@@ -695,6 +706,8 @@ void KOBO_sound::g_player_fire()
 void KOBO_sound::g_player_fire_denied()
 {
 	if(!iface)
+		return;
+	if(!volscale)
 		return;
 	if(checksound(S_PLAYER_FIRE_DENIED,
 			"KOBO_sound::g_player_fire_denied()"))
@@ -707,6 +720,8 @@ void KOBO_sound::g_player_charge(float charge)
 {
 	if(!iface)
 		return;
+	if(!volscale)
+		return;
 	if(!gunhandle)
 		start_player_gun();
 	if(gunhandle)
@@ -717,6 +732,8 @@ void KOBO_sound::g_player_charge(float charge)
 void KOBO_sound::g_player_charged_fire(float charge)
 {
 	if(!iface)
+		return;
+	if(!volscale)
 		return;
 	if(!gunhandle)
 		start_player_gun();
@@ -729,6 +746,8 @@ void KOBO_sound::g_player_damage(float level)
 {
 	if(!iface)
 		return;
+	if(!volscale)
+		return;
 	if(checksound(S_PLAYER_DAMAGE, "KOBO_sound::g_player_damage()"))
 		a2_Play(iface, groups[KOBO_MG_SFX], sounds[S_PLAYER_DAMAGE],
 				0.0f, level);
@@ -737,6 +756,8 @@ void KOBO_sound::g_player_damage(float level)
 
 void KOBO_sound::g_player_explo_start()
 {
+	if(!volscale)
+		return;
 	g_player_damage();
 	if(!iface)
 		return;
@@ -745,15 +766,17 @@ void KOBO_sound::g_player_explo_start()
 }
 
 
-void KOBO_sound::g_new_scene()
+void KOBO_sound::g_new_scene(int fadetime)
 {
 	if(!iface)
 		return;
+	if(!fadetime)
+		fadetime = KOBO_SFX_XFADE_TIME;
 
 	// Fade out, then kill the current SFX group
-	a2_Send(iface, groups[KOBO_MG_SFX], 2, 0, KOBO_SFX_XFADE_TIME);
+	a2_Send(iface, groups[KOBO_MG_SFX], 2, 0, (float)fadetime);
 	A2_timestamp t = a2_TimestampBump(iface, a2_ms2Timestamp(iface,
-			KOBO_SFX_XFADE_TIME));
+			fadetime));
 	a2_Kill(iface, groups[KOBO_MG_SFX]);
 	a2_TimestampSet(iface, t);
 	groups[KOBO_MG_SFX] = 0;
@@ -761,10 +784,35 @@ void KOBO_sound::g_new_scene()
 	// Replace the SFX group with a new instance, and fade that in
 	init_mixer_group(KOBO_MG_SFX);
 	a2_Send(iface, groups[KOBO_MG_SFX], 2, 0, 0);
-	a2_Send(iface, groups[KOBO_MG_SFX], 2, pref2vol(prefs->sfx_vol),
-			KOBO_SFX_XFADE_TIME);
+	a2_Send(iface, groups[KOBO_MG_SFX], 2,
+			pref2vol(prefs->sfx_vol) * volscale, (float)fadetime);
 
 	gunhandle = 0;	// This one gets killed too, so we'll need a new one!
+}
+
+
+void KOBO_sound::g_volume(float volume)
+{
+	if(volume && !volscale)
+	{
+		// This is a bit ugly... Only the game logic can "restart"
+		// sounds that were dropped or killed when sound was muted.
+		volscale = volume;
+		enemies.restart_sounds();
+	}
+	else
+		volscale = volume;
+	a2_Send(iface, groups[KOBO_MG_SFX], 2,
+			pref2vol(prefs->sfx_vol) * volscale,
+			KOBO_SOUND_UPDATE_PERIOD);
+}
+
+
+void KOBO_sound::g_pitch(float pitch)
+{
+	// That's all! The game logic calls g_move() to update all continuous
+	// sounds anyway, which takes care of pitch changes as well.
+	pitchshift = pitch;
 }
 
 

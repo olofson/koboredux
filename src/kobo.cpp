@@ -1820,9 +1820,11 @@ void kobo_gfxengine_t::input(float fractional_frame)
 #endif
 				gengine->screenshot();
 				break;
+#if 0
 			  case SDLK_r:
 				manage.start_replay();
 				break;
+#endif
 			  default:
 				break;
 			}

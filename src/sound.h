@@ -27,10 +27,10 @@
 #define	KOBO_SOUND_UPDATE_PERIOD	100
 
 // Bank slots, for keeping track of multiple themes
-#define	KOBO_SOUND_BANKS	8
+#define	KOBO_SOUND_BANKS		8
 
 // Crossfade time when switching to a new ingame SFX group with g_new_scene()
-#define KOBO_SFX_XFADE_TIME	1000
+#define KOBO_SFX_XFADE_TIME		1000
 
 #include "config.h"
 #include "audiality2.h"
@@ -152,6 +152,8 @@ class KOBO_sound
 	static int	wrap_y;
 	static int	scale;
 	static int	panscale;
+	static float	volscale;
+	static float	pitchshift;
 	static unsigned	rumble;
 
 	// Audiality 2 interface
@@ -266,7 +268,19 @@ class KOBO_sound
 	static void g_player_explo_start();
 
 	// Crossfade to a new ingame sfx group, then kill the old group
-	static void g_new_scene();
+	static void g_new_scene(int fadetime = 0);
+
+	// Control volume and pitch of all sound effects. g_volume() takes a
+	// linear gain argument, where 1.0 is unity/unaffected. g_pitch()
+	// takes 1.0/octave linear pitch, where 0.0 is nominal pitch.
+	//
+	// NOTE:
+	//	To work properly, g_pitch() needs a sound theme where
+	//	all sound effects respond correctly to program pP arguments,
+	//	and npP arguments of the 3() message handlers.
+	//
+	static void g_volume(float volume = 1.0f);
+	static void g_pitch(float pitch = 0.0f);
 
 	/*--------------------------------------------------
 		UI sound effects
