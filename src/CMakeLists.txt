@@ -65,7 +65,16 @@ include_directories(${SDL2IMAGE_INCLUDE_DIRS})
 pkg_check_modules(AUDIALITY2 REQUIRED audiality2)
 include_directories(${AUDIALITY2_INCLUDE_DIRS})
 
-add_executable(kobord WIN32 MACOSX_BUNDLE ${sources})
+set(RES_FILES "")
+if(MINGW)
+	set(RES_FILES "${KOBOREDUX_SOURCE_DIR}/kobord.rc")
+	set(CMAKE_RC_COMPILER_INIT windres)
+	ENABLE_LANGUAGE(RC)
+	SET(CMAKE_RC_COMPILE_OBJECT
+		"<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+endif(MINGW)
+
+add_executable(kobord WIN32 MACOSX_BUNDLE ${sources} ${RES_FILES})
 
 target_link_libraries(kobord ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES}
 	${AUDIALITY2_LIBRARIES})
