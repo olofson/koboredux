@@ -672,8 +672,8 @@ void KOBO_myship::shot_single(float dir, int loffset, int hoffset, int speed)
 	bolts[i].x = x - vx + loffset * sdi + hoffset * cdi;
 	bolts[i].y = y - vy - loffset * cdi + hoffset * sdi;
 	int sp = game.bolt_speed * speed;
-	bolts[i].dx = vx + sp * sdi >> 16;
-	bolts[i].dy = vy - sp * cdi >> 16;
+	bolts[i].dx = vx + (sp * sdi >> 16);
+	bolts[i].dy = vy - (sp * cdi >> 16);
 	if(!bolts[i].object)
 		bolts[i].object = gengine->get_obj(LAYER_PLAYER);
 	if(bolts[i].object)
