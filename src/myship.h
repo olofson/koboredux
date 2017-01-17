@@ -68,7 +68,8 @@ class KOBO_myship
 	// For the gfxengine connection
 	static cs_obj_t *object;
 
-	static void shot_single(float dir, int loffset, int hoffset);
+	static void shot_single(float dir, int loffset, int hoffset,
+			int speed = 65536);
 	static void charged_fire(int dir);
 	static void apply_position();
 	static void explode();

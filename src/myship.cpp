@@ -655,7 +655,7 @@ void KOBO_myship::render()
 }
 
 
-void KOBO_myship::shot_single(float dir, int loffset, int hoffset)
+void KOBO_myship::shot_single(float dir, int loffset, int hoffset, int speed)
 {
 	int i;
 	for(i = 0; i < MAX_BOLTS && bolts[i].state; i++)
@@ -671,8 +671,9 @@ void KOBO_myship::shot_single(float dir, int loffset, int hoffset)
 	int cdi = cos(M_PI * (dir - 1) / 4) * 256.0f;
 	bolts[i].x = x - vx + loffset * sdi + hoffset * cdi;
 	bolts[i].y = y - vy - loffset * cdi + hoffset * sdi;
-	bolts[i].dx = vx + game.bolt_speed * sdi;
-	bolts[i].dy = vy - game.bolt_speed * cdi;
+	int sp = game.bolt_speed * speed;
+	bolts[i].dx = vx + sp * sdi >> 16;
+	bolts[i].dy = vy - sp * cdi >> 16;
 	if(!bolts[i].object)
 		bolts[i].object = gengine->get_obj(LAYER_PLAYER);
 	if(bolts[i].object)
@@ -708,15 +709,17 @@ void KOBO_myship::charged_fire(int dir)
 	}
 
 	int power = _charge > game.charge_max ? game.charge_max : _charge;
+	int maxbolts = game.charge_max / game.charge_drain;
 	sound.g_player_charged_fire((float)power / game.charge_max);
-	while(power >= game.charge_drain)
+	for(int b = 0; power >= game.charge_drain; ++b)
 	{
 		power -= game.charge_drain;
 		_charge -= game.charge_drain;
 		float spread = gamerand.get(16) * (8.0f / 65536.0f) - 4.0f;
-		spread *= game.charge_spread * (1.0f / 360.0f),
-		shot_single(dir + spread, 15 + power / game.charge_drain,
-				gamerand.get(3) - 4);
+		spread *= game.charge_spread * (1.0f / 360.0f);
+		int cx = gamerand.get(3) - 4;
+		shot_single(dir + spread, GUN_NOSE_Y - labs(cx), cx,
+				(b + maxbolts * 2) * 16384 / maxbolts);
 	}
 	charge_cool = game.charge_cooldown;
 }
