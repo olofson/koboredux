@@ -135,6 +135,9 @@ class KOBO_main
 	static label_t		*st_hotkeys;
 	static display_t	*st_symname;
 
+	// Themes
+	static KOBO_ThemeData	*themes;
+
 	// Screenshot video
 	static int ss_frames;
 	static int ss_last_frame;
@@ -167,6 +170,13 @@ class KOBO_main
 	static void show_progress(prefs_t *p);
 	static void progress();
 	static void doing(const char *msg);
+
+	static void discover_themes(const char *ref = NULL);
+	static KOBO_ThemeData *get_next_theme(const char *type,
+			KOBO_ThemeData *td);
+	static void list_themes();
+	static void free_themes();
+
 	static int load_palette();
 	static int load_graphics();
 	static int load_sounds(bool progress = true);

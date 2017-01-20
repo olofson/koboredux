@@ -287,6 +287,8 @@ prefs_t		KOBO_main::safe_prefs;
 label_t		*KOBO_main::st_hotkeys = NULL;
 display_t	*KOBO_main::st_symname = NULL;
 
+KOBO_ThemeData	*KOBO_main::themes = NULL;
+
 int		KOBO_main::ss_frames = 0;
 int		KOBO_main::ss_last_frame = 0;
 
@@ -893,6 +895,90 @@ int KOBO_main::load_palette()
 }
 
 
+void KOBO_main::free_themes()
+{
+	while(themes)
+	{
+		KOBO_ThemeData *td = themes;
+		themes = td->next;
+		delete td;
+	}
+}
+
+
+void KOBO_main::discover_themes(const char *ref)
+{
+	if(!ref)
+	{
+		free_themes();
+		discover_themes("GFX>>");
+		discover_themes("SFX>>");
+		return;
+	}
+
+	KOBO_ThemeData *last_td = themes;
+	while(last_td && last_td->next)
+		last_td = last_td->next;
+	fmap->list_begin(ref, FM_DIR);
+	while(1)
+	{
+		const char *path = fmap->list_next(FM_DIR);
+		if(!path)
+			break;
+		KOBO_ThemeData *td = new KOBO_ThemeData;
+		KOBO_ThemeParser tp(*td);
+		if(!tp.examine(path))
+		{
+			log_printf(WLOG, "  %s is not a valid theme!\n", path);
+			delete td;
+			continue;
+		}
+		if(last_td)
+			last_td = last_td->next = td;
+		else
+			last_td = themes = td;
+	}
+}
+
+
+KOBO_ThemeData *KOBO_main::get_next_theme(const char *type, KOBO_ThemeData *td)
+{
+	if(!td)
+		td = themes;
+	while(td && strcmp(type, td->get_string(KOBO_D_THEMETYPE, "?")))
+		td = td->next;
+	return td;
+}
+
+
+void KOBO_main::list_themes()
+{
+	if(themes)
+		log_printf(ULOG, "Discovered themes:\n");
+	else
+		log_printf(WLOG, "No themes discovered!\n");
+	for(KOBO_ThemeData *td = themes; td; td = td->next)
+	{
+		log_printf(ULOG, "  %s -- %s (%s)\n",
+				td->get_string(KOBO_D_THEMELABEL, "<error>"),
+				td->get_string(KOBO_D_THEMENAME, "<unnamed>"),
+				td->get_string(KOBO_D_THEMETYPE, "<unknown>"));
+		log_printf(ULOG, "    Path:      \"%s\"\n",
+				td->get_string(KOBO_D_THEMEPATH, "<unknown>"));
+		log_printf(ULOG, "    Author:    %s <%s>\n",
+				td->get_string(KOBO_D_AUTHOR, "<unknown>"),
+				td->get_string(KOBO_D_CONTACT,
+				"no contact info"));
+		log_printf(ULOG, "    Copyright: %s\n",
+				td->get_string(KOBO_D_COPYRIGHT,
+				"<unspecified>"));
+		log_printf(ULOG, "    License:   %s\n",
+				td->get_string(KOBO_D_LICENSE,
+				"<unspecified>"));
+	}
+}
+
+
 int KOBO_main::load_graphics()
 {
 	KOBO_ThemeParser tp(themedata);
@@ -1219,6 +1305,7 @@ int KOBO_main::open()
 
 void KOBO_main::close()
 {
+	free_themes();
 	clear_messages();
 	close_js();
 	close_display();
@@ -2518,6 +2605,9 @@ int main(int argc, char *argv[])
 		printf("----------------------------------------\n");
 		cmd_exit = 1;
 	}
+
+	km.discover_themes();
+	km.list_themes();
 
 	if(cmd_exit)
 	{

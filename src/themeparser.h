@@ -32,14 +32,21 @@ class KOBO_ThemeData
 {
 	unsigned sizes[KOBO_D__COUNT];
 	double *items[KOBO_D__COUNT];
+	char *strings[KOBO_D__COUNT];
   public:
+	KOBO_ThemeData *next;
+
 	KOBO_ThemeData();
 	~KOBO_ThemeData();
+
 	bool set(KOBO_TD_Items item, unsigned index, double value);
+	bool set(KOBO_TD_Items item, const char *str);
+
 	bool set(KOBO_TD_Items item, double value)
 	{
 		return set(item, 0, value);
 	}
+
 	double get(KOBO_TD_Items item, unsigned index = 0)
 	{
 		if(!sizes[item])
@@ -48,16 +55,24 @@ class KOBO_ThemeData
 			index = sizes[item] - 1;
 		return items[item][index];
 	}
+
+	const char *get_string(KOBO_TD_Items item, const char *fallback = 0)
+	{
+		return strings[item] ? strings[item] : fallback;
+	}
+
 	double lerp(KOBO_TD_Items item, double index)
 	{
 		int ii = floor(index);
 		float w = fmod(index, 1.0f);
 		return get(item, ii) * (1.0f - w) + get(item, ii + 1) * w;
 	}
+
 	int length(KOBO_TD_Items item)
 	{
 		return sizes[item];
 	}
+
 	bool defined(KOBO_TD_Items item, unsigned index = 0)
 	{
 		if(!sizes[item])
@@ -75,6 +90,7 @@ enum KOBO_TP_Tokens
 	KTK_EOF = 0,
 	KTK_EOLN,
 
+	// Symbols
 	KTK_BANK,	// iv = bank index
 	KTK_PALETTE,	// iv = palette index
 	KTK_FLAG,	// iv = flag bit mask
@@ -83,17 +99,21 @@ enum KOBO_TP_Tokens
 	KTK_HEXCOLOR,	// iv = value (NOTE: Unsigned!)
 	KTK_THEMEDATA,	// iv = ThemeData item index
 
+	// General
+	KTK_KW_FALLBACK,
+	KTK_KW_PATH,
 	KTK_KW_MESSAGE,
+	KTK_KW_SET,
+
+	// Stages, maps, and levels
 	KTK_KW_STAGEMESSAGE,
 
+	// Graphics
 	KTK_KW_IMAGE,
 	KTK_KW_SPRITES,
 	KTK_KW_SFONT,
 	KTK_KW_PALETTE,
-	KTK_KW_FALLBACK,
-	KTK_KW_PATH,
-	KTK_KW_ALIAS,
-	KTK_KW_SET
+	KTK_KW_ALIAS
 };
 
 
@@ -105,6 +125,7 @@ class KOBO_ThemeParser
 	int pos;
 	int unlex_pos;
 	int default_flags;
+	bool silent;
 	char sv[KOBO_TP_MAXLEN];
 	double rv;
 	int iv;
@@ -153,16 +174,19 @@ class KOBO_ThemeParser
 		  case KTK_NUMBER:		return "NUMBER";
 		  case KTK_HEXCOLOR:		return "HEXCOLOR";
 		  case KTK_THEMEDATA:		return "THEMEDATA";
+
+		  case KTK_KW_FALLBACK:		return "KW_FALLBACK";
+		  case KTK_KW_PATH:		return "KW_PATH";
 		  case KTK_KW_MESSAGE:		return "KW_MESSAGE";
+		  case KTK_KW_SET:		return "KW_SET";
+
 		  case KTK_KW_STAGEMESSAGE:	return "KW_STAGEMESSAGE";
+
 		  case KTK_KW_IMAGE:		return "KW_IMAGE";
 		  case KTK_KW_SPRITES:		return "KW_SPRITES";
 		  case KTK_KW_SFONT:		return "KW_SFONT";
 		  case KTK_KW_PALETTE:		return "KW_PALETTE";
-		  case KTK_KW_FALLBACK:		return "KW_FALLBACK";
-		  case KTK_KW_PATH:		return "KW_PATH";
 		  case KTK_KW_ALIAS:		return "KW_ALIAS";
-		  case KTK_KW_SET:		return "KW_SET";
 		}
 		return "<unknown>";
 	}
@@ -199,6 +223,7 @@ class KOBO_ThemeParser
 	KOBO_ThemeParser(KOBO_ThemeData &td);
 	bool parse(const char *theme, int flags = 0);
 	bool load(const char *themepath, int flags = 0);
+	bool examine(const char *themepath, int flags = 0);
 };
 
 #endif // _KOBO_THEMEPARSER_H_

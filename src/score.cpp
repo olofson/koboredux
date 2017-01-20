@@ -437,12 +437,12 @@ FIXME: are rather foreign matters to the average winuser...)
 	// Search through all registered score directories
 	// for all of the files that end in .UID
 	struct stat st_buffer;
-	fmap->get_all("SCORES>>", FM_DIR);
+	fmap->list_begin("SCORES>>", FM_DIR);
 	char UIDbuf[12];
 	snprintf(UIDbuf, sizeof(UIDbuf), ".%u", nUID);
 	while(1)
 	{
-		const char *path = fmap->get_next();
+		const char *path = fmap->list_next();
 		if(!path)
 			break;
 
@@ -640,10 +640,10 @@ void score_manager_t::gather_high_scores(int placeholders)
 
 	s_profile_t p;
 	highs = 0;
-	fmap->get_all("SCORES>>", FM_DIR);
+	fmap->list_begin("SCORES>>", FM_DIR);
 	while(highs < MAX_HIGHSCORES)
 	{
-		const char *path = fmap->get_next();
+		const char *path = fmap->list_next(FM_FILE);
 		if(!path)
 			break;
 

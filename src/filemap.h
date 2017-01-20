@@ -3,7 +3,7 @@
 	filemap.h - Simple Portable File Path Mapper
 ------------------------------------------------------------
  * Copyright 2001, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -156,18 +156,16 @@ class filemapper_t
 	const char *get(const char *ref, int kind = FM_FILE,
 			const char *defprefix = NULL);
 
-/*
-FIXME: Do these really handle the 'kind' argument properly...?
-FIXME: When looking for files, they should return only files
-FIXME: matching the 'ref' path, while when looking for dirs,
-FIXME: every file inside each matching dir should be returned.
-*/
-	// Initialize path scan. Use get_next() to get the
-	// paths to all matches.
-	void get_all(const char *ref, int kind = FM_FILE);
+	// Initialize path scan, by creating a list of all paths matching 'ref'
+	// and 'kind'. Use list_next() to get the paths.
+	void list_begin(const char *ref, int kind = FM_FILE);
 
-	// Get next object (returns path in system format!)
-	const char *get_next();
+	// Get first/next path, based on the results of list_begin(). Depending
+	// on 'filter', this will return only files, only directory, or both.
+	// If 'kind' is passed, it's set to the kind of the return object.
+	// Returns path in system format, or NULL, in which case 'kind' (if
+	// used) is undefined.
+	const char *list_next(int filter = FM_ANY, int *kind = NULL);
 
 	// Open/create file/dir.
 	FILE *fopen(const char *ref, const char *mode);
@@ -179,6 +177,9 @@ FIXME: every file inside each matching dir should be returned.
 
 	// Determine if a path (fm Unix-like!) is relative.
 	bool is_relative(const char *path);
+
+	// Get the name of the file/directory only, without the full path.
+	const char *get_name(const char *path);
 
 	// Translate to and from the internal Unix-like path format
 	char *sys2fm(const char *syspath);

@@ -1,0 +1,6 @@
+set D_THEMETYPE "toolsgfx"
+set D_THEMENAME "Tools"
+set D_AUTHOR "David Olofson"
+set D_CONTACT "david@olofson.net"
+set D_COPYRIGHT "Copyright 2017 David Olofson"
+set D_LICENSE "CC BY-SA 4.0 (http://creativecommons.org/licenses/by-sa/4.0/)"

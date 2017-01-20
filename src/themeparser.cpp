@@ -42,17 +42,23 @@ struct TP_keywords
 
 static TP_keywords tp_keywords[] =
 {
+	// General
+	{ "fallback",		KTK_KW_FALLBACK,	0	},
+	{ "path",		KTK_KW_PATH,		0	},
 	{ "message",		KTK_KW_MESSAGE,		0	},
+	{ "set",		KTK_KW_SET,		0	},
+
+	// Stages, maps, and levels
 	{ "stagemessage",	KTK_KW_STAGEMESSAGE,	0	},
+
+	// Graphics
 	{ "image",		KTK_KW_IMAGE,		0	},
 	{ "sprites",		KTK_KW_SPRITES,		0	},
 	{ "sfont",		KTK_KW_SFONT,		0	},
 	{ "palette",		KTK_KW_PALETTE,		0	},
-	{ "fallback",		KTK_KW_FALLBACK,	0	},
-	{ "path",		KTK_KW_PATH,		0	},
 	{ "alias",		KTK_KW_ALIAS,		0	},
-	{ "set",		KTK_KW_SET,		0	},
 
+	// Flag constants
 	{ "CLAMP",		KTK_FLAG,	KOBO_CLAMP		},
 	{ "CLAMP_OPAQUE",	KTK_FLAG,	KOBO_CLAMP_OPAQUE	},
 	{ "WRAP",		KTK_FLAG,	KOBO_WRAP		},
@@ -66,6 +72,7 @@ static TP_keywords tp_keywords[] =
 	{ "FALLBACK",		KTK_FLAG,	KOBO_FALLBACK		},
 	{ "FUTURE",		KTK_FLAG,	KOBO_FUTURE		},
 
+	// Numeric constants
 	{ "RAW",	KTK_NUMBER,	SPINPLANET_DITHER_RAW		},
 	{ "NONE",	KTK_NUMBER,	SPINPLANET_DITHER_NONE		},
 	{ "RANDOM",	KTK_NUMBER,	SPINPLANET_DITHER_RANDOM	},
@@ -91,15 +98,20 @@ static TP_keywords tp_keywords[] =
 
 KOBO_ThemeData::KOBO_ThemeData()
 {
+	next = NULL;
 	memset(sizes, 0, sizeof(sizes));
 	memset(items, 0, sizeof(items));
+	memset(strings, 0, sizeof(strings));
 }
 
 
 KOBO_ThemeData::~KOBO_ThemeData()
 {
 	for(int i = 0; i < KOBO_D__COUNT; ++i)
+	{
 		free(items[i]);
+		free(strings[i]);
+	}
 }
 
 
@@ -119,6 +131,20 @@ bool KOBO_ThemeData::set(KOBO_TD_Items item, unsigned index, double value)
 	items[item][index] = value;
 	return true;
 }
+
+
+bool KOBO_ThemeData::set(KOBO_TD_Items item, const char *str)
+{
+	free(strings[item]);
+	if(!str)
+	{
+		strings[item] = NULL;
+		return true;
+	}
+	strings[item] = strdup(str);
+	return (strings[item] != NULL);
+}
+
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -1044,7 +1070,9 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_set()
 	if(!expect(KTK_THEMEDATA))
 		return KTK_ERROR;
 	int td = iv;
-	log_printf(ULOG, "[Theme Loader] set %s ...\n", kobo_datanames[td]);
+	if(!(default_flags & KOBO_SILENT))
+		log_printf(ULOG, "[Theme Loader] set %s ...\n",
+				kobo_datanames[td]);
 	for(int i = 0; ; ++i)
 	{
 		KOBO_TP_Tokens tk = lex();
@@ -1055,13 +1083,22 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_set()
 			if(!i)
 			{
 				dump_line();
-				log_printf(ELOG, "[Theme Loader] Expected at "
+				log_printf(ELOG, "[Theme Loader] Expected at"
 						" least one value!\n");
 				return KTK_ERROR;
 			}
 			return KTK_KW_SET;
 		  case KTK_NUMBER:
 			themedata->set((KOBO_TD_Items)td, i, rv);
+			break;
+		  case KTK_STRING:
+			if(i != 0)
+			{
+				log_printf(ELOG, "[Theme Loader] String arrays"
+						" not supported!\n");
+				return KTK_ERROR;
+			}
+			themedata->set((KOBO_TD_Items)td, sv);
 			break;
 		  case KTK_BANK:
 		  case KTK_PALETTE:
@@ -1127,12 +1164,15 @@ void KOBO_ThemeParser::init(int flags)
 	rv = 0.0f;
 	unlex_pos = -1;
 	default_flags = flags;
+	silent = false;
 }
 
 
 KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 {
-	log_printf(ULOG, "[Theme Loader] Loading \"%s\"...\n", scriptpath);
+	if(!(flags & KOBO_SILENT))
+		log_printf(ULOG, "[Theme Loader] Loading \"%s\"...\n",
+				scriptpath);
 
 	init(flags);
 
@@ -1141,7 +1181,9 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 	char *s = strrchr(basepath, '/');
 	if(s)
 		*s = 0;
-	log_printf(ULOG, "[Theme Loader] Base path: \"%s\"\n", basepath);
+	if(!(flags & KOBO_SILENT))
+		log_printf(ULOG, "[Theme Loader] Base path: \"%s\"\n",
+				basepath);
 
 	// See if we can actually find this theme...
 	char *sp = (char *)get_path(scriptpath);
@@ -1151,7 +1193,8 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 				scriptpath);
 		return KTK_ERROR;
 	}
-	log_printf(ULOG, "[Theme Loader] Theme file: \"%s\"\n", sp);
+	if(!(flags & KOBO_SILENT))
+		log_printf(ULOG, "[Theme Loader] Theme file: \"%s\"\n", sp);
 
 	// Because this might be a temporary string that may be clobbered by
 	// further extensive use of get_path()...
@@ -1191,7 +1234,8 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 	// Parse theme file
 	KOBO_TP_Tokens res;
 	while((res = parse_line()) > KTK_EOF)
-		wdash->progress((float)pos / bufsize);
+		if(wdash)
+			wdash->progress((float)pos / bufsize);
 
 	free((char *)buffer);
 	free(sp);
@@ -1201,6 +1245,10 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 
 bool KOBO_ThemeParser::parse(const char *theme, int flags)
 {
+	char buf[128];
+	snprintf(buf, sizeof(buf), "<string %p>", theme);
+	themedata->set(KOBO_D_THEMEPATH, buf);
+	themedata->set(KOBO_D_THEMELABEL, "<none>");
 	init(flags);
 	buffer = theme;
 	bufsize = strlen(theme);
@@ -1223,12 +1271,27 @@ bool KOBO_ThemeParser::load(const char *themepath, int flags)
 {
 	char p[KOBO_TP_MAXLEN];
 	char *tp = strdup(themepath);
+	themedata->set(KOBO_D_THEMEPATH, tp);
+	themedata->set(KOBO_D_THEMELABEL, fmap->get_name(tp));
 	snprintf(p, sizeof(p), "%s/main.theme", tp);
 	KOBO_TP_Tokens res = parse_theme(p, flags);
 	if(res != KTK_ERROR)
 		log_printf(ULOG, "[Theme Loader] \"%s\" loaded!\n", p);
 	else
 		log_printf(ULOG, "[Theme Loader] \"%s\" failed to load!\n", p);
+	free(tp);
+	return (res != KTK_ERROR);
+}
+
+
+bool KOBO_ThemeParser::examine(const char *themepath, int flags)
+{
+	char p[KOBO_TP_MAXLEN];
+	char *tp = strdup(themepath);
+	themedata->set(KOBO_D_THEMEPATH, tp);
+	themedata->set(KOBO_D_THEMELABEL, fmap->get_name(tp));
+	snprintf(p, sizeof(p), "%s/header.theme", tp);
+	KOBO_TP_Tokens res = parse_theme(p, flags | KOBO_SILENT);
 	free(tp);
 	return (res != KTK_ERROR);
 }

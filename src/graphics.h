@@ -203,6 +203,14 @@ enum KOBO_LogoEffects
 
 
 #define KOBO_ALLTDITEMS			\
+	KOBO_DEFS(THEMELABEL)		\
+	KOBO_DEFS(THEMEPATH)		\
+	KOBO_DEFS(THEMETYPE)		\
+	KOBO_DEFS(THEMENAME)		\
+	KOBO_DEFS(AUTHOR)		\
+	KOBO_DEFS(CONTACT)		\
+	KOBO_DEFS(COPYRIGHT)		\
+	KOBO_DEFS(LICENSE)		\
 	KOBO_DEFS(LOGO_EFFECT)		\
 	KOBO_DEFS(BACKDROP_COLORMOD)	\
 	KOBO_DEFS(PLANET_DITHERMODE)	\
@@ -260,7 +268,8 @@ enum KOBO_GfxDescFlags
 	KOBO_CENTER =		0x0200,	// Center hotspot in frames
 	KOBO_NOBRIGHT =		0x0400,	// Disable brightness/contrast filter
 	KOBO_FALLBACK =		0x1000,	// Disable "in use" overwrite warning
-	KOBO_FUTURE =		0x2000	// Allow alias to (still) empty banks
+	KOBO_FUTURE =		0x2000,	// Allow alias to (still) empty banks
+	KOBO_SILENT =		0x4000	// Disable logging, except errors
 };
 
 #endif // _KOBO_GRAPHICS_H_

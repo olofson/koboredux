@@ -634,6 +634,17 @@ bool filemapper_t::is_relative(const char *path)
 }
 
 
+const char *filemapper_t::get_name(const char *path)
+{
+	const char *c = strrchr(path, '/');
+	if(!c)
+		c = strrchr(path, '\\');
+	if(!c)
+		c = strrchr(path, ':');
+	return c ? c + 1 : path;
+}
+
+
 const char *filemapper_t::get(const char *ref, int kind, const char *defprefix)
 {
 	// Prefix relative paths, if desired
@@ -660,8 +671,16 @@ const char *filemapper_t::get(const char *ref, int kind, const char *defprefix)
 }
 
 
-void filemapper_t::get_all(const char *ref, int kind)
+void filemapper_t::list_begin(const char *ref, int kind)
 {
+	if((kind == FM_FILE_CREATE) || (kind == FM_DIR_CREATE))
+	{
+		log_printf(WLOG, "filemapper_t::get_all() used with %s! "
+				"Aborted.\n", kind == FM_FILE_CREATE ?
+				"FM_FILE_CREATE" : "FM_DIR_CREATE");
+		return;
+	}
+
 	while(objects)
 	{
 		fm_object_t *obj = objects;
@@ -669,16 +688,13 @@ void filemapper_t::get_all(const char *ref, int kind)
 		delete obj;
 	}
 
-	if(kind == FM_FILE_CREATE)
-		return;
-
 	recurse_get(NULL, ref, kind, 1, 1);
 	current_obj = objects;
 	current_dir = NULL;
 }
 
 
-const char *filemapper_t::get_next()
+const char *filemapper_t::list_next(int filter, int *kind)
 {
 	while(1)
 	{
@@ -694,6 +710,10 @@ const char *filemapper_t::get_next()
 			  {
 				const char *res = current_obj->path;
 				current_obj = current_obj->next;
+				if(filter == FM_DIR)
+					continue;
+				if(kind)
+					*kind = current_obj->kind;
 				return res;
 			  }
 			  case FM_DIR:
@@ -753,7 +773,16 @@ const char *filemapper_t::get_next()
 		switch(probe(path))
 		{
 		  case FM_FILE:
+			if(filter == FM_DIR)
+				continue;
+			if(kind)
+				*kind = FM_FILE;
+			return path;
 		  case FM_DIR:
+			if(filter == FM_FILE)
+				continue;
+			if(kind)
+				*kind = FM_DIR;
 			return path;
 		  default:
 			continue;
