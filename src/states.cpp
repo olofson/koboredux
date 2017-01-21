@@ -1515,7 +1515,7 @@ void st_main_menu_t::select(int tag)
 		break;
 	  case 20:	// Showcase
 		sound.ui_play(S_UI_ERROR);
-		st_error.message("Showcase not yet implemented!",
+		st_error.message("Showcase not implemented!",
 				"Here, you'll find information on\n"
 				"enemies and other objects of\n"
 				"interest seen in the game.");
@@ -1527,7 +1527,7 @@ void st_main_menu_t::select(int tag)
 	  case 50:	// Save Game
 	  case 51:	// Load Game
 		sound.ui_play(S_UI_ERROR);
-		st_error.message("Game saves not yet implemented!",
+		st_error.message("Saves not yet implemented!",
 				"Tell Dave that you want them.");
 		gsm.push(&st_error);
 		break;
