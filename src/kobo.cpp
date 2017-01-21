@@ -824,48 +824,28 @@ int KOBO_main::init_display(prefs_t *p)
 
 void KOBO_main::close_display()
 {
-	delete pxtop;
-	pxtop = NULL;
-	delete pxbottom;
-	pxbottom = NULL;
-	delete pxleft;
-	pxleft = NULL;
-	delete pxright;
-	pxright = NULL;
-	delete st_hotkeys;
-	st_hotkeys = NULL;
-	delete st_symname;
-	st_symname = NULL;
-	delete dstage;
-	dstage = NULL;
-	delete dregion;
-	dregion = NULL;
-	delete dlevel;
-	dlevel = NULL;
-	delete wradar;
-	wradar = NULL;
-	delete wmap;
-	wmap = NULL;
-	delete dscore;
-	dscore = NULL;
-	delete dhigh;
-	dhigh = NULL;
-	delete wmain;
-	woverlay = NULL;
-	delete wbackdrop;
-	wmain = NULL;
-	delete wplanet;
-	wplanet = NULL;
-	delete woverlay;
-	wbackdrop = NULL;
-	delete wcharge;
-	wcharge = NULL;
-	delete whealth;
-	whealth = NULL;
-	delete wdash;
-	wdash = NULL;
-	delete wscreen;
-	wscreen = NULL;
+	delete st_hotkeys;	st_hotkeys = NULL;
+	delete st_symname;	st_symname = NULL;
+
+	delete pxright;		pxright = NULL;
+	delete pxleft;		pxleft = NULL;
+	delete pxbottom;	pxbottom = NULL;
+	delete pxtop;		pxtop = NULL;
+	delete dlevel;		dlevel = NULL;
+	delete dregion;		dregion = NULL;
+	delete dstage;		dstage = NULL;
+	delete wradar;		wradar = NULL;
+	delete wmap;		wmap = NULL;
+	delete dscore;		dscore = NULL;
+	delete dhigh;		dhigh = NULL;
+	delete woverlay;	woverlay = NULL;
+	delete wmain;		wmain = NULL;
+	delete wplanet;		wplanet = NULL;
+	delete wbackdrop;	wbackdrop = NULL;
+	delete wcharge;		wcharge = NULL;
+	delete whealth;		whealth = NULL;
+	delete wdash;		wdash = NULL;
+	delete wscreen;		wscreen = NULL;
 }
 
 
@@ -1339,6 +1319,7 @@ int KOBO_main::reload_graphics()
 	if(load_graphics() < 0)
 		return 7;
 	wdash->progress_done();
+	init_dash_layout();
 	screen.init_graphics();
 	wdash->fade(1.0f);
 	wdash->mode(manage.game_in_progress() ?
