@@ -3,7 +3,7 @@
 	toolkit.h - Simple "GUI" toolkit for config screens.
 ---------------------------------------------------------------------------
  * Copyright 2001, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -51,6 +51,7 @@ class ct_widget_t : public window_t
 	int		highlighted;
 	Uint32		_color;
 	double		_value;
+	char		*_string;
 	int		_widget_index;
 	ct_align_t	_halign;
 	ct_align_t	_valign;
@@ -64,12 +65,15 @@ class ct_widget_t : public window_t
 	int		user2;	//user stuff
 	int		tag;	//user stuff
 	ct_widget_t(gfxengine_t *e);
+	~ct_widget_t();
 	void transparency(int t);
 	void highlight(int hl);
 	void color(Uint32 _cl);
 	virtual void change(double delta);
 	virtual void value(double val);
+	virtual void value(const char *str);
 	virtual double value();
+	virtual const char *stringvalue();
 
 	//Contents alignment modes.
 	virtual void halign(ct_align_t ha);
@@ -117,15 +121,23 @@ class ct_item_t
 	char	_caption[64];
 	int	_index;
 	double	_value;
+	char	*_string;
   public:
 	ct_item_t	*next, *prev;	//*CIRCULAR* list!
 	ct_item_t(const char *cap = NULL, double val = 0.0f);
+	ct_item_t(const char *ca, const char *str);
 	void caption(const char *cap);
 	const char *caption()	{ return _caption; }
 	void value(double val)	{ _value = val; }
-	double value()		{ return _value; }
-	void index(int i)	{ _index = i; }
-	int index()		{ return _index; }
+	void value(const char *str)
+	{
+		free(_string);
+		_string = strdup(str);
+	}
+	double value()			{ return _value; }
+	const char *stringvalue()	{ return _string; }
+	void index(int i)		{ _index = i; }
+	int index()			{ return _index; }
 };
 
 class ct_list_t : public ct_label_t
@@ -144,7 +156,9 @@ class ct_list_t : public ct_label_t
 	void select(int ind);
 	ct_item_t *selected();
 	void value(double val);
+	void value(const char *val);
 	double value();
+	const char *stringvalue();
 	void change(double delta);
 	virtual void halign(ct_align_t ha);
 };

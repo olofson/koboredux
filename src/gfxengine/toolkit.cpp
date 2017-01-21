@@ -3,7 +3,7 @@
 	toolkit.cpp - Simple "GUI" toolkit for config screens.
 ---------------------------------------------------------------------------
  * Copyright 2001, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -50,6 +50,14 @@ ct_widget_t::ct_widget_t(gfxengine_t *e) : window_t(e)
 	_token = 0;
 	xo = yo = 0.0;
 	_color = map_rgb(0,0,0);
+	_value = 0.0f;
+	_string = NULL;
+}
+
+
+ct_widget_t::~ct_widget_t()
+{
+	free(_string);
 }
 
 
@@ -173,6 +181,19 @@ double ct_widget_t::value()
 }
 
 
+void ct_widget_t::value(const char *str)
+{
+	free(_string);
+	_string = strdup(str);
+}
+
+
+const char *ct_widget_t::stringvalue()
+{
+	return _string;
+}
+
+
 
 /*----------------------------------------------------------
 	ct_engine_t::
@@ -257,7 +278,19 @@ ct_item_t::ct_item_t(const char *cap, double val)
 		caption(cap);
 	else
 		caption("Item");
+	_string = NULL;
 	_value = val;
+}
+
+
+ct_item_t::ct_item_t(const char *cap, const char *val)
+{
+	if(cap)
+		caption(cap);
+	else
+		caption("Item");
+	_string = strdup(val);
+	_value = 0.0f;
 }
 
 
@@ -407,6 +440,22 @@ void ct_list_t::value(double val)
 }
 
 
+void ct_list_t::value(const char *val)
+{
+	if(!items)
+		return;
+
+	_selected = items;
+	while(strcmp(_selected->stringvalue(), val) != 0)
+	{
+		if(_selected->next == items)
+			break;
+		_selected = _selected->next;
+	}
+	select(_selected);	//To update _value, render etc...
+}
+
+
 double ct_list_t::value()
 {
 	if(!items)
@@ -415,6 +464,17 @@ double ct_list_t::value()
 		return _selected->value();
 	else
 		return dummy_item.value();
+}
+
+
+const char *ct_list_t::stringvalue()
+{
+	if(!items)
+		return dummy_item.stringvalue();
+	if(_selected)
+		return _selected->stringvalue();
+	else
+		return dummy_item.stringvalue();
 }
 
 

@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 2001, 2007, 2009 David Olofson
  * Copyright 2005 Erik Auerswald
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -60,6 +60,7 @@ class kobo_form_t : public ct_form_t
 	void list(const char *cap, void *var, int tag = 0);
 	void item(const char *cap, int value, int ind = 0);
 	void item(const char *cap, float value, int ind = 0);
+	void item(const char *cap, const char *value, int ind = 0);
 	void perc_list(int first, int last, int step);
 	void enum_list(int first, int last);
 

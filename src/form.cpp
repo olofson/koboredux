@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 2001, 2002, 2007, 2009 David Olofson
  * Copyright 2005 Erik Auerswald
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -107,6 +107,11 @@ void kobo_form_t::prev()
 	  case CFG_FLOAT:
 		prefs->set(handle, (float)selected()->value());
 		DBG(log_printf(D2LOG, "Changed to %f\n", selected()->value());)
+		break;
+	  case CFG_STRING:
+		prefs->set(handle, selected()->stringvalue());
+		DBG(log_printf(D2LOG, "Changed to \"%s\"\n",
+				selected()->stringvalue());)
 		break;
 	  default:
 		break;
@@ -241,6 +246,19 @@ void kobo_form_t::item(const char *cap, float value, int ind)
 }
 
 
+void kobo_form_t::item(const char *cap, const char *value, int ind)
+{
+	if(current_list)
+	{
+		ct_item_t *i = new ct_item_t(cap, value);
+		i->index(ind);
+		current_list->add(i);
+	}
+	else
+		log_printf(ELOG, "kobo_form_t::form_item(): No list!\n");
+}
+
+
 void kobo_form_t::perc_list(int first, int last, int step)
 {
 	char buf[50];
@@ -322,8 +340,7 @@ void kobo_form_t::build_all()
 			w->value(prefs->get_f(handle));
 			break;
 		  case CFG_STRING:
-			log_printf(ELOG, "kobo_form_t: String editor not yet "
-					"implemented!\n");
+			w->value(prefs->get_s(handle));
 			break;
 		  default:
 			log_printf(ELOG, "kobo_form_t: Configuration key '%s' "
