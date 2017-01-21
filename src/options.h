@@ -70,6 +70,7 @@ class audio_options_t : public config_form_t
 
 class interface_options_t : public config_form_t
 {
+	void add_theme_items(const char *type);
   public:
 	interface_options_t(gfxengine_t *e) : config_form_t(e) { }
 	void build();

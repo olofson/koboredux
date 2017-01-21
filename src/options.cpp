@@ -391,11 +391,29 @@ void audio_options_t::prepare_to_apply()
 }
 
 
+void interface_options_t::add_theme_items(const char *type)
+{
+	KOBO_ThemeData *td = NULL;
+	while((td = km.get_next_theme(type, td)))
+	{
+		const char *lab = td->get_string(KOBO_D_THEMELABEL);
+		if(!lab)
+			continue;	// Can't use one without a valid label!
+		item(td->get_string(KOBO_D_THEMENAME, lab), lab);
+	}
+}
+
+
 void interface_options_t::build()
 {
 	title("Interface");
 
 	xoffs = 0.55;
+	list("Graphics Theme", &prf->gfxtheme, OS_RESTART_VIDEO);
+	add_theme_items("gamegfx");
+	list("Sound Theme", &prf->sfxtheme, OS_RELOAD_SOUNDS);
+	add_theme_items("gamesfx");
+	space();
 	yesno("Scrolling Radar", &prf->scrollradar, 0);
 	space();
 	yesno("Visual Player Hit FX", &prf->playerhitfx, 0);

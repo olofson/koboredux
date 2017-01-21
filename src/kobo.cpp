@@ -945,8 +945,17 @@ KOBO_ThemeData *KOBO_main::get_next_theme(const char *type, KOBO_ThemeData *td)
 {
 	if(!td)
 		td = themes;
-	while(td && strcmp(type, td->get_string(KOBO_D_THEMETYPE, "?")))
+	else
 		td = td->next;
+	if(type)
+		for( ; td; td = td->next)
+		{
+			const char *tt = td->get_string(KOBO_D_THEMETYPE);
+			if(!tt)
+				continue;	// No type? Skip!
+			if(strcmp(type, tt) == 0)
+				break;		// Found one!
+		}
 	return td;
 }
 
