@@ -127,12 +127,12 @@ void gfxengine_t::messagebox(const char *message)
 	Initialization
 ----------------------------------------------------------*/
 
-void gfxengine_t::mode(VMM_ModeID modeid, int fullscreen)
+void gfxengine_t::mode(VMM_ModeID modeid, int fs)
 {
 	int was_showing = is_showing;
 	hide();
 	_modeid = modeid;
-	_fullscreen = fullscreen;
+	_fullscreen = fs;
 	if(was_showing)
 		show();
 }

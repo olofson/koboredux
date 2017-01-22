@@ -1726,12 +1726,26 @@ void st_options_main_t::select(int tag)
 		gsm.push(&st_options_system);
 		break;
 
+#ifdef KOBO_DEMO
+	  case 20:
+	  case 21:
+		sound.ui_play(S_UI_ERROR);
+		st_error.message("Not available in this demo!",
+				"These options are not available\n"
+				"in the Kobo Redux demo.\n"
+				"\n"
+				"Get the full version at:\n"
+				"https://olofson.itch.io/kobo-redux");
+		gsm.push(&st_error);
+		break;
+#else
 	  case 20:
 		gsm.push(&st_options_cheat);
 		break;
 	  case 21:
 		gsm.push(&st_options_debug);
 		break;
+#endif
 	  case 22:
 		gsm.push(&st_options_more);
 		break;

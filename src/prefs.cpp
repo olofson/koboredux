@@ -170,4 +170,36 @@ void prefs_t::postload()
 {
 	if(cheat_speed == 1.0f)
 		cheat_speed = 0.0f;
+
+#ifdef KOBO_DEMO
+	// This is a bit ugly... We silently ignore any of these switches by
+	// just resetting them after loading the cfg and parsing options.
+
+	gfxtheme[0] = 0;
+	sfxtheme[0] = 0;
+	toolstheme[0] = 0;
+
+	debug = 0;
+	show_fps = 0;
+	force_fallback_gfxtheme = 0;
+	force_fallback_sfxtheme = 0;
+	show_map_border = 0;
+	show_coordinates = 0;
+	show_tiles = 0;
+	show_hit = 0;
+	tsdebug = 0;
+	soundtools = 0;
+
+	cheat_pushmove = 0;
+	cheat_freewheel = 0;
+	cheat_shield = 0;
+	cheat_invulnerability = 0;
+	cheat_ceasefire = 0;
+	cheat_firepower = 0;
+	cheat_startlevel = 0;
+	cheat_brokentrigger = 0;
+	cheat_speed = 0.0f;
+
+	cmd_warp = 0;
+#endif
 }

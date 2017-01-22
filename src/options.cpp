@@ -409,10 +409,15 @@ void interface_options_t::build()
 	title("Interface");
 
 	xoffs = 0.55;
+#ifdef KOBO_DEMO
+	label("Graphics Theme: Kobo Redux Demo");
+	label("Sound Theme: Kobo Redux Demo");
+#else
 	list("Graphics Theme", &prf->gfxtheme, OS_RESTART_VIDEO);
 	add_theme_items("gamegfx");
 	list("Sound Theme", &prf->sfxtheme, OS_RELOAD_SOUNDS);
 	add_theme_items("gamesfx");
+#endif
 	space();
 	yesno("Scrolling Radar", &prf->scrollradar, 0);
 	space();

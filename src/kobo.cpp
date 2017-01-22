@@ -2540,12 +2540,11 @@ int main(int argc, char *argv[])
 	signal(SIGINT, breakhandler);
 
 	SDL_Init(0);
-
 	if(main_init())
 	{
 		fprintf(stderr, "INTERNAL ERROR\n");
 		return 1;
-	};
+	}
 
 	km.open_logging(NULL);
 
