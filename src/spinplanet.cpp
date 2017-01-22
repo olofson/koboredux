@@ -2,7 +2,7 @@
 ----------------------------------------------------------------------
 	spinplanet.cpp - Spinning planet effect
 ----------------------------------------------------------------------
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -23,7 +23,7 @@
 #include "gfxengine.h"
 #include "sprite.h"
 #include "logger.h"
-
+#include "graphics.h"
 
 spinplanet_t::spinplanet_t(gfxengine_t *e) : stream_window_t(e)
 {
@@ -92,15 +92,19 @@ void spinplanet_t::set_source(int bank, int frame)
 	s_bank_t *b = s_get_bank(engine->get_gfx(), sbank);
 	if(!b)
 	{
-		log_printf(ELOG, "spinplanet_t::set_source(): Sprite bank %d "
-				"not found!\n", sbank);
+		log_printf(ELOG, "spinplanet_t::set_source(): Sprite bank %s "
+				"(%d) not found!\n",
+				sbank < B__COUNT ? kobo_gfxbanknames[sbank] :
+				"<out of range>", sbank);
 		set_mode(SPINPLANET_OFF);
 		return;
 	}
 	if(b->h != b->w)
 	{
 		log_printf(ELOG, "spinplanet_t::set_source(): The sprites of "
-				"bank %d are %dx%d, but need to be square!\n",
+				"bank %s (%d) are %dx%d, but need to be "
+				"square!\n", sbank < B__COUNT ?
+				kobo_gfxbanknames[sbank] : "<out of range>",
 				sbank, b->w, b->h);
 		set_mode(SPINPLANET_OFF);
 		return;
