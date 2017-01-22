@@ -62,7 +62,6 @@ int KOBO_screen::highlight_h = 0;
 int KOBO_screen::hi_sc[10];
 int KOBO_screen::hi_st[10];
 char KOBO_screen::hi_nm[10][20];
-KOBO_radar_modes KOBO_screen::radar_mode = RM_OFF;
 KOBO_Starfield KOBO_screen::stars;
 int KOBO_screen::long_credits_wrap = 0;
 
@@ -746,42 +745,24 @@ void KOBO_screen::scroller()
 }
 
 
-void KOBO_screen::init_stage(int st)
+void KOBO_screen::init_stage(int st, bool ingame)
 {
 	wplanet->resetmod();
 	wplanet->blendmode(GFX_BLENDMODE_ALPHA);
 	int cm = 255.0f * themedata.get(KOBO_D_PLANET_COLORMOD, level - 1);
 	wplanet->colormod(cm, cm, cm);
 
-	// Handle intro and start stage selection
-	if(st <= 0)
+	if(!ingame)
 	{
-		// Intro mode
 		show_title = 1;
 		myship.off();
 		enemies.off();
-		if(st == INTRO_SCENE)
-		{
-			// Plain intro - no map
-			radar_mode = RM_OFF;	// Clear radar
-			stage = KOBO_TITLE_LEVEL;
-		}
-		else
-		{
-			// Map selection - show current map
-			radar_mode = RM_SHOW;
-			stage = -st;
-		}
 	}
 	else
-	{
-		// In-game mode
 		show_title = 0;
-		stage = st;
-		radar_mode = RM_RADAR;
-	}
 
 	// Get scene data, region, level etc
+	stage = st;
 	scene = scene_manager.get(stage);
 	if(!scene)
 		return;
@@ -789,7 +770,7 @@ void KOBO_screen::init_stage(int st)
 	region = scene_manager.region(stage);
 	level = scene_manager.level(stage);
 
-	// Initialize maps
+	// Initialize maps (current + parallax layers)
 	map[0].init(scene);
 	for(int i = 0; i < KOBO_BG_MAP_LEVELS; ++i)
 	{
@@ -799,9 +780,9 @@ void KOBO_screen::init_stage(int st)
 		map[i + 1].init(s);
 	}
 
+	// Set up backdrop, planet, starfield, ground etc
 	init_background();
 	generate_count = 0;
-	wradar->mode(radar_mode);
 }
 
 

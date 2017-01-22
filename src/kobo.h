@@ -285,8 +285,6 @@ extern int exit_game;
 
 #define	NOALPHA_THRESHOLD	64
 
-#define	INTRO_SCENE	-100000
-
 typedef enum
 {
 	STARFIELD_NONE = 0,

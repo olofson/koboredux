@@ -107,7 +107,7 @@ class _manage
 
 	// State management
 	static void start_intro();
-	static void select_scene(int scene);
+	static void select_scene(int scene, bool radar = false);
 	static void init_game(KOBO_replay *rp = NULL, bool newship = false);
 	static void start_new_game();
 	static void start_replay();

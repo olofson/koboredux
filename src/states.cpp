@@ -1529,7 +1529,7 @@ void st_main_menu_t::select(int tag)
 		break;
 	  case 5:	// Start level: Inc/Dec
 		sound.ui_play(S_UI_TICK);
-		manage.select_scene(menu->start_level);
+		manage.select_scene(menu->start_level, true);
 		break;
 	  case 20:	// Showcase
 		sound.ui_play(S_UI_ERROR);

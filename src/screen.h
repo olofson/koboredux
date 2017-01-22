@@ -79,10 +79,9 @@ class KOBO_screen
 	static void render_anim(int x, int y, int bank, int first, int last,
 			float speed, int t);
   public:
-	static KOBO_radar_modes radar_mode;	// Last set radar mode
 	static void init_graphics();
 	static void init_background();
-	static void init_stage(int st);
+	static void init_stage(int st, bool ingame);
 	static int prepare();
 	static void generate_wave(const KOBO_enemy_set *wave);
 	static void generate_fixed_enemies();

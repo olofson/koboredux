@@ -1349,7 +1349,7 @@ int KOBO_main::restart_audio()
 	wdash->fade(1.0f);
 	wdash->mode(manage.game_in_progress() ?
 			DASHBOARD_GAME : DASHBOARD_TITLE);
-	wradar->mode(screen.radar_mode);
+	wradar->mode(RM__REINIT);
 	enemies.restart_sounds();
 	return 0;
 }
@@ -1420,7 +1420,7 @@ int KOBO_main::reload_graphics()
 	wdash->fade(1.0f);
 	wdash->mode(manage.game_in_progress() ?
 			DASHBOARD_GAME : DASHBOARD_TITLE);
-	wradar->mode(screen.radar_mode);
+	wradar->mode(RM__REINIT);
 	log_printf(ULOG, "--- Graphics reloaded.\n");
 	return 0;
 }

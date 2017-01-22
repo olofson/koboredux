@@ -183,10 +183,11 @@ void _manage::start_intro()
 }
 
 
-void _manage::select_scene(int scene)
+void _manage::select_scene(int scene, bool radar)
 {
 	selected_stage = scene;
-	screen.init_stage(-scene);
+	screen.init_stage(scene, false);
+	wradar->mode(radar ? RM_SHOW : RM_OFF);
 	put_info();
 	noise(150, 0);
 	gamestate = GS_SELECT;
@@ -247,7 +248,8 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		gengine->period(game.speed);
 	}
 
-	screen.init_stage(selected_stage);
+	screen.init_stage(selected_stage, true);
+	wradar->mode(RM_RADAR);
 	enemies.init();
 	if(rp)
 	{
@@ -339,7 +341,8 @@ void _manage::init_resources_title()
 {
 	noise(1000, 800);
 	gamerand.init();
-	screen.init_stage(INTRO_SCENE);
+	screen.init_stage(KOBO_TITLE_LEVEL, false);
+	wradar->mode(RM_OFF);
 	gengine->period(30);
 	enemies.init();
 	enemies.is_intro = 1;
