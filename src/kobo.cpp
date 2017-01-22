@@ -1303,7 +1303,7 @@ int KOBO_main::open()
 	if(prefs->cmd_warp)
 	{
 		log_printf(ULOG, "Warping to stage %d!\n", prefs->cmd_warp);
-		manage.select_scene(prefs->cmd_warp - 1);
+		manage.select_scene(prefs->cmd_warp);
 		scorefile.profile()->skill = prefs->cmd_skill;
 		gsm.push(&st_game);
 	}
