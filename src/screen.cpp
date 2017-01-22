@@ -217,13 +217,21 @@ void KOBO_screen::title(int t, float fade, int mode)
 		woverlay->font(B_MEDIUM_FONT);
 		woverlay->center(230, "CHEAT MODE");
 	}
+#ifdef KOBO_DEMO
+	if(t % 1000 < 500)
+	{
+		woverlay->font(B_BIG_FONT);
+		woverlay->center(230, "DEMO");
+	}
+#endif
 #if 1
 	// WIP notice
 	if(!flashin(t - 2000))
 	{
 		woverlay->font(B_MEDIUM_FONT);
 		woverlay->center(260, "This is a Work in Progress!");
-		woverlay->center(270, "Check http://koboredux.com");
+		woverlay->center(270, "Check out");
+		woverlay->center(280, "https://olofson.itch.io/kobo-redux");
 	}
 #endif
 }

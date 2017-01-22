@@ -51,6 +51,10 @@ include_directories(${KOBOREDUX_SOURCE_DIR}/src)
 include_directories(${KOBOREDUX_SOURCE_DIR}/src/gfxengine)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
+if(DEMO_BUILD)
+	add_definitions(-DKOBO_DEMO)
+endif(DEMO_BUILD)
+
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 include_directories(${SDL2_INCLUDE_DIRS})
 

@@ -7,6 +7,8 @@ set(VERSION_MINOR 7)
 set(VERSION_PATCH 1)
 set(VERSION_BUILD 0)
 
+option(DEMO_BUILD "Build Kobo Redux demo." OFF)
+
 set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 set(PACKAGE "koboredux-${VERSION_STRING}")
 
