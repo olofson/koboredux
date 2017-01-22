@@ -1495,7 +1495,12 @@ void st_main_menu_t::select(int tag)
 	switch(tag)
 	{
 	  case 1:
+#ifdef KOBO_DEMO
+		scorefile.profile()->skill = KOBO_DEMO_SKILL;
+		gsm.change(&st_game);
+#else
 		gsm.change(&st_skill_menu);
+#endif
 		break;
 	  case 2:
 		gsm.push(&st_options_main);

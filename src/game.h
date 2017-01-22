@@ -105,6 +105,9 @@ enum skill_levels_t
 	SKILL_INSANE
 };
 
+#define	KOBO_DEMO_SKILL	SKILL_NEWBIE
+
+
 class game_t
 {
   public:
