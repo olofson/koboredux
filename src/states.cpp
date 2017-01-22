@@ -1387,8 +1387,10 @@ void main_menu_t::build()
 	if(manage.game_in_progress())
 	{
 		button("Return to Game", MENU_TAG_OK);
+#ifndef KOBO_DEMO
 		space();
 		button("Save Game", 50);
+#endif
 	}
 	else
 	{
@@ -1410,10 +1412,17 @@ void main_menu_t::build()
 		button("Start New Game!", 1);
 		if(prefs->cheat_startlevel)
 			buildStartLevel(-1);
+# ifndef KOBO_DEMO
 		space();
 		button("Load Game", 51);
+# endif
 #endif
 	}
+#ifdef KOBO_DEMO
+	space(2);
+	button("Buy Kobo Redux", 40);
+	label("https://olofson.itch.io/kobo-redux");
+#endif
 	space(2);
 	button("Showcase", 20);
 	button("Options", 2);
@@ -1532,6 +1541,9 @@ void st_main_menu_t::select(int tag)
 		break;
 	  case 30:	// Credits & Thanks
 		gsm.push(&st_long_credits);
+		break;
+	  case 40:	// Home site link
+		kobo_OpenURL("https://olofson.itch.io/kobo-redux");
 		break;
 	  case 50:	// Save Game
 	  case 51:	// Load Game
