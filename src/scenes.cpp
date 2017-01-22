@@ -2,7 +2,7 @@
  * XKOBO, a video-oriented game
  * Copyright 1995, 1996 Akira Higuchi <a-higuti@math.hokudai.ac.jp>
  * Copyright 2006, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -20,8 +20,9 @@
  */
 
 #include "scenes.h"
+#include "kobolog.h"
 
-const KOBO_scene scenes[] = {
+const KOBO_scene scene_data[] = {
 #if 0
 	/* Test map */
 	{
@@ -1184,3 +1185,26 @@ const KOBO_scene scenes[] = {
 		},
 	},
 };
+
+
+KOBO_scene_manager::KOBO_scene_manager()
+{
+	scenes = scene_data;
+	nscenes = 0;
+	while(scenes[nscenes].ratio != -1)
+		++nscenes;
+}
+
+
+const KOBO_scene *KOBO_scene_manager::get(int scene)
+{
+	if(scene <= 0)
+	{
+		log_printf(ELOG, "Invalid stage #%d!\n", scene);
+		return NULL;
+	}
+	return &scenes[(scene - 1) % nscenes];
+}
+
+
+KOBO_scene_manager scene_manager;

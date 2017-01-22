@@ -74,7 +74,7 @@ class _manage
 	static void next_scene();
 	static void retry();
 
-	static int scene_num;
+	static int selected_stage;
 	static int score;
 	static float disp_health;
 	static float disp_charge;
@@ -103,7 +103,7 @@ class _manage
 	static void reenter();
 
 	// Map management
-	static int current_scene()	{ return scene_num; }
+	static int current_stage()	{ return selected_stage; }
 
 	// State management
 	static void start_intro();

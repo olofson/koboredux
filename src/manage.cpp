@@ -50,7 +50,7 @@
 KOBO_gamestates _manage::gamestate = GS_NONE;
 bool _manage::paused = false;
 int _manage::game_seed;
-int _manage::scene_num;
+int _manage::selected_stage;
 int _manage::score;
 float _manage::disp_health;
 float _manage::disp_charge;
@@ -185,9 +185,9 @@ void _manage::start_intro()
 
 void _manage::select_scene(int scene)
 {
-	scene_num = scene;
+	selected_stage = scene;
+	screen.init_stage(-scene);
 	put_info();
-	screen.init_scene(-scene_num - 1);
 	noise(150, 0);
 	gamestate = GS_SELECT;
 }
@@ -220,7 +220,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 			replay = rp;
 		}
 		replay->log_dump(ULOG);
-		scene_num = replay->stage;
+		selected_stage = replay->stage;
 		game.set((game_types_t)replay->type,
 				(skill_levels_t)replay->skill);
 		gamerand.init(replay->seed);
@@ -232,12 +232,13 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	{
 		// No replay! Start from parameters.
 		gamestate = GS_GETREADY;
-		log_printf(ULOG, "Starting new level, stage %d!\n", scene_num);
+		log_printf(ULOG, "Starting new level, stage %d!\n",
+				selected_stage);
 		game.set(GAME_SINGLE,
 				(skill_levels_t)scorefile.profile()->skill);
 		delete replay;
 		replay = new KOBO_replay();
-		replay->stage = scene_num;
+		replay->stage = selected_stage;
 		replay->type = game.type;
 		replay->skill = game.skill;
 		replay->seed = game_seed = gamerand.get_seed();
@@ -246,7 +247,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		gengine->period(game.speed);
 	}
 
-	screen.init_scene(scene_num);
+	screen.init_stage(selected_stage);
 	enemies.init();
 	if(rp)
 	{
@@ -277,7 +278,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	pxright->fx(PFX_OFF);
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_GAME);
-	sound.g_music(scene_num);
+	sound.g_music(selected_stage);
 }
 
 
@@ -300,7 +301,7 @@ void _manage::start_new_game()
 #endif
 	hi.saves = 0;
 	hi.loads = 0;
-	hi.start_scene = scene_num;
+	hi.start_scene = selected_stage;
 	hi.end_lives = 0;
 }
 
@@ -321,11 +322,11 @@ void _manage::player_ready()
 
 void _manage::next_scene()
 {
-	scene_num++;
-	if(scene_num >= GIGA - 1)
-		scene_num = GIGA - 2;
+	selected_stage++;
+	if(selected_stage >= GIGA - 1)
+		selected_stage = GIGA - 2;
 	init_game();
-	if((scene_num + 1) == km.smsg_stage)
+	if(selected_stage == km.smsg_stage)
 	{
 		sound.ui_play(S_UI_PAUSE);
 		st_error.message(km.smsg_header, km.smsg_message);
@@ -338,7 +339,7 @@ void _manage::init_resources_title()
 {
 	noise(1000, 800);
 	gamerand.init();
-	screen.init_scene(INTRO_SCENE);
+	screen.init_stage(INTRO_SCENE);
 	gengine->period(30);
 	enemies.init();
 	enemies.is_intro = 1;
@@ -407,15 +408,15 @@ void _manage::put_info()
 	dhigh->text(s);
 	dhigh->on();
 
-	snprintf(s, 16, "%d", scene_num + 1);
+	snprintf(s, 16, "%d", selected_stage);
 	dstage->text(s);
 	dstage->on();
 
-	snprintf(s, 16, "%d", scene_num / 10 % 5 + 1);
+	snprintf(s, 16, "%d", (selected_stage - 1) / 10 % 5 + 1);
 	dregion->text(s);
 	dregion->on();
 
-	snprintf(s, 16, "%d", scene_num % 10 + 1);
+	snprintf(s, 16, "%d", (selected_stage - 1) % 10 + 1);
 	dlevel->text(s);
 	dlevel->on();
 
@@ -462,10 +463,9 @@ void _manage::flash_score()
 void _manage::init()
 {
 	scorefile.init();
-	scene_num = -1;
+	selected_stage = -1;
 	flash_score_count = 0;
 	delay_count = 0;
-	screen.init_maps();
 	gamestate = GS_NONE;
 }
 
@@ -725,13 +725,13 @@ void _manage::lost_myship()
 	if(!prefs->cheats())
 	{
 		hi.score = score;
-		hi.end_scene = scene_num;
+		hi.end_scene = selected_stage;
 		hi.end_health = myship.health();
 		scorefile.record(&hi);
 	}
 	gamestate = GS_GAMEOVER;
 	log_printf(ULOG, "Player died at stage %d; score: %d, health: %d, "
-			"charge: %d\n", scene_num, score, myship.health(),
+			"charge: %d\n", selected_stage, score, myship.health(),
 			myship.charge());
 }
 

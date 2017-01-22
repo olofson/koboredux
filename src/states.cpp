@@ -488,7 +488,7 @@ void st_game_t::frame()
 		pop();
 		return;
 	  default:
-		last_level = manage.current_scene();
+		last_level = manage.current_stage();
 		break;
 	}
 	if(exit_game)
@@ -1350,15 +1350,15 @@ void main_menu_t::buildStartLevel(int profNum)
 {
 	char buf[50];
 	int MaxStartLevel = profNum >= 0 ? scorefile.last_scene(profNum) : 500;
-	start_level = manage.current_scene();
+	start_level = manage.current_stage();
 	if(start_level > MaxStartLevel)
 		start_level = MaxStartLevel;
 	halign = ALIGN_CENTER;
 	list("Start at Stage", &start_level, 5);
 	halign = ALIGN_DEFAULT;
-	for(int i = 0; i <= MaxStartLevel; ++i)
+	for(int i = 1; i <= MaxStartLevel; ++i)
 	{
-		snprintf(buf, sizeof(buf), "%d", i + 1);
+		snprintf(buf, sizeof(buf), "%d", i);
 		item(buf, i);
 	}
 }
@@ -1368,15 +1368,19 @@ void main_menu_t::build()
 	if(!manage.game_in_progress())
 	{
 		prefs->last_profile = scorefile.current_profile();
+		int sc;
 		if(prefs->cheat_startlevel)
 		{
-			if(last_level < 0)
-				manage.select_scene(scorefile.last_scene());
+			if(last_level <= 0)
+				sc = scorefile.last_scene();
 			else
-				manage.select_scene(last_level);
+				sc = last_level;
 		}
 		else
-			manage.select_scene(0);
+			sc = 1;
+		if(sc < 1)
+			sc = 1;
+		manage.select_scene(sc);
 	}
 
 	space(2);
@@ -1664,8 +1668,7 @@ void options_main_t::build()
 	button("System", 12);
 	space();
 	font(B_NORMAL_FONT);
-//TODO:	if(prefs->cheats)
-		button("Cheats", 20);
+	button("Cheats", 20);
 	button("Debug", 21);
 	button("More", 22);
 	font();

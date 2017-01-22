@@ -3,7 +3,7 @@
  * Copyright 1995, 1996 Akira Higuchi
  *     a-higuti@math.hokudai.ac.jp
  * Copyright 2006, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -56,6 +56,24 @@ struct KOBO_scene
 	KOBO_base base[SCENE_BASE_MAX];
 };
 
-extern const KOBO_scene scenes[];
+class KOBO_scene_manager
+{
+	int			nscenes;
+	const KOBO_scene	*scenes;
+  public:
+	KOBO_scene_manager();
+	const KOBO_scene *get(int stage);
+	int scene_count()	{ return nscenes; }
+	int region(int stage)
+	{
+		return stage / KOBO_LEVELS_PER_REGION % KOBO_REGIONS;
+	}
+	int level(int stage)
+	{
+		return stage % KOBO_LEVELS_PER_REGION + 1;
+	}
+};
+
+extern KOBO_scene_manager scene_manager;
 
 #endif // XKOBO_H_SCENES

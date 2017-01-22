@@ -4,7 +4,7 @@
 ------------------------------------------------------------
  * Copyright 1995, 1996 Akira Higuchi
  * Copyright 2002, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -28,6 +28,8 @@
 void KOBO_map::init(const KOBO_scene *s)
 {
 	clear();
+	if(!s)
+		return;
 	for(int i = 0; i < s->base_max; i++)
 		make_maze(s->base[i].x, s->base[i].y, s->base[i].h,
 				s->base[i].v);

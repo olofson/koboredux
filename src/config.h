@@ -95,15 +95,6 @@ enum KOBO_sound_banks {
  */
 #define POINTER_MARGIN_PERCENT	10
 
-/*
- * Fraction of the screen size in which clicks are not considered
- * clicks but movements in that direction (as regarded from the
- * center of the screen) or other special things (pause & exit).
- *
- * Used only in touchscreen mode.
- */
-#define POINTER_MARGIN_PERCENT	10
-
 /* Various size info (DO NOT EDIT!) */
 #define TILE_SIZEX_LOG2		4
 #define TILE_SIZEY_LOG2		4
@@ -161,6 +152,10 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	INST_TIME_TOUGH		(4000 + 5000 + 4000 + 6000 + 5000)
 
 #define	INTRO_INSTRUCTIONS_TIME	INST_TIME_TOUGH
+
+/* Stage/region/level layout */
+#define	KOBO_REGIONS		5
+#define	KOBO_LEVELS_PER_REGION	10
 
 /* Level used as backdrop for the Options menus */
 #define	KOBO_OPTIONS_BACKGROUND_LEVEL	6

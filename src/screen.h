@@ -34,18 +34,17 @@ class KOBO_screen
 {
   protected:
 	static window_t *target;
-	static int scene_max;
-	static int scene_num;
+	static int stage;
 	static int region;
 	static int level;
+	static const KOBO_scene *scene;
 	static int bg_altitude;
 	static int bg_backdrop;
 	static int bg_clouds;
 	static int bg_planet;
 	static int restarts;
 	static int generate_count;
-	static KOBO_map map;
-	static KOBO_map bg_map[KOBO_BG_MAP_LEVELS];
+	static KOBO_map map[KOBO_BG_MAP_LEVELS + 1];
 	static int show_title;
 	static int do_noise;
 	static float _fps;
@@ -74,29 +73,27 @@ class KOBO_screen
 	static void render_bases(KOBO_map &map, int tileset, int vx, int vy);
 	static void clean_scrap_tile(int x, int y)
 	{
-		if((map.pos(x, y) & SPACE) && (MAP_TILE(map.pos(x, y))))
+		if((map[0].pos(x, y) & SPACE) && (MAP_TILE(map[0].pos(x, y))))
 			set_map(x, y, SPACE);
 	}
 	static void render_anim(int x, int y, int bank, int first, int last,
 			float speed, int t);
   public:
-	~KOBO_screen();
 	static KOBO_radar_modes radar_mode;	// Last set radar mode
-	static void init_maps();
 	static void init_graphics();
 	static void init_background();
-	static void init_scene(int sc);
+	static void init_stage(int st);
 	static int prepare();
 	static void generate_wave(const KOBO_enemy_set *wave);
 	static void generate_fixed_enemies();
 	static inline int get_map(int x, int y)
 	{
-		return map.pos(x, y);
+		return map[0].pos(x, y);
 	}
 	static inline int test_line(int x1, int y1, int x3, int y3,
 			int *x2, int *y2, int *hx, int *hy)
 	{
-		return map.test_line(x1, y1, x3, y3, x2, y2, hx, hy);
+		return map[0].test_line(x1, y1, x3, y3, x2, y2, hx, hy);
 	}
 	static void set_map(int x, int y, int n);
 	static void clean_scrap(int x, int y)

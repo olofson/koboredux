@@ -37,16 +37,15 @@
 #include "config.h"
 #include "random.h"
 
-int KOBO_screen::scene_max;
-int KOBO_screen::scene_num;
+int KOBO_screen::stage;
 int KOBO_screen::region;
 int KOBO_screen::level;
+const KOBO_scene *KOBO_screen::scene;
 int KOBO_screen::bg_altitude;
 int KOBO_screen::bg_clouds;
 int KOBO_screen::restarts;
 int KOBO_screen::generate_count;
-KOBO_map KOBO_screen::map;
-KOBO_map KOBO_screen::bg_map[KOBO_BG_MAP_LEVELS];
+KOBO_map KOBO_screen::map[KOBO_BG_MAP_LEVELS + 1];
 int KOBO_screen::show_title = 0;
 int KOBO_screen::do_noise = 0;
 float KOBO_screen::_fps = 40;
@@ -66,19 +65,6 @@ char KOBO_screen::hi_nm[10][20];
 KOBO_radar_modes KOBO_screen::radar_mode = RM_OFF;
 KOBO_Starfield KOBO_screen::stars;
 int KOBO_screen::long_credits_wrap = 0;
-
-
-KOBO_screen::~KOBO_screen()
-{
-}
-
-
-void KOBO_screen::init_maps()
-{
-	scene_max = 0;
-	while(scenes[scene_max].ratio != -1)
-		scene_max++;
-}
 
 
 void KOBO_screen::init_graphics()
@@ -760,48 +746,59 @@ void KOBO_screen::scroller()
 }
 
 
-void KOBO_screen::init_scene(int sc)
+void KOBO_screen::init_stage(int st)
 {
 	wplanet->resetmod();
 	wplanet->blendmode(GFX_BLENDMODE_ALPHA);
 	int cm = 255.0f * themedata.get(KOBO_D_PLANET_COLORMOD, level - 1);
 	wplanet->colormod(cm, cm, cm);
-	if(sc < 0)
+
+	// Handle intro and start stage selection
+	if(st <= 0)
 	{
 		// Intro mode
 		show_title = 1;
 		myship.off();
 		enemies.off();
-		if(sc == INTRO_SCENE)
+		if(st == INTRO_SCENE)
 		{
 			// Plain intro - no map
 			radar_mode = RM_OFF;	// Clear radar
-			scene_num = KOBO_TITLE_LEVEL;
-			restarts = 0;
+			stage = KOBO_TITLE_LEVEL;
 		}
 		else
 		{
 			// Map selection - show current map
 			radar_mode = RM_SHOW;
-			scene_num = -(sc + 1) % scene_max;
-			restarts = -(sc + 1) / scene_max;
+			stage = -st;
 		}
 	}
 	else
 	{
 		// In-game mode
 		show_title = 0;
-		scene_num = sc % scene_max;
-		restarts = sc / scene_max;
+		stage = st;
 		radar_mode = RM_RADAR;
 	}
-	region = scene_num / 10 % 5;
-	level = scene_num % 10 + 1;
 
-	map.init(&scenes[scene_num]);
+	// Get scene data, region, level etc
+	scene = scene_manager.get(stage);
+	if(!scene)
+		return;
+	restarts = stage / scene_manager.scene_count();
+	region = scene_manager.region(stage);
+	level = scene_manager.level(stage);
+
+	// Initialize maps
+	map[0].init(scene);
 	for(int i = 0; i < KOBO_BG_MAP_LEVELS; ++i)
-		if(level + i <= 10)
-			bg_map[i].init(&scenes[scene_num + 1 + i]);
+	{
+		const KOBO_scene *s = NULL;
+		if(level + i <= KOBO_LEVELS_PER_REGION)
+			s = scene_manager.get(stage + 1 + i);
+		map[i + 1].init(s);
+	}
+
 	init_background();
 	generate_count = 0;
 	wradar->mode(radar_mode);
@@ -810,30 +807,29 @@ void KOBO_screen::init_scene(int sc)
 
 int KOBO_screen::prepare()
 {
-	if(scene_num < 0)
+	if(stage <= 0)
 		return 0;
 
-	const KOBO_scene *s = &scenes[scene_num];
 	int i, j;
 	int count_core = 0;
 	int c = 0;
 
-	sound.g_position(s->startx << 4, s->starty << 4);
+	sound.g_position(scene->startx << 4, scene->starty << 4);
 
 	int lc = restarts > 31 ? 31 : restarts;
-	int interval_1 = (s->ek1_interval) >> lc;
-	int interval_2 = (s->ek2_interval) >> lc;
+	int interval_1 = (scene->ek1_interval) >> lc;
+	int interval_2 = (scene->ek2_interval) >> lc;
 	if(interval_1 < 4)
 		interval_1 = 4;
 	if(interval_2 < 4)
 		interval_2 = 4;
-	enemies.set_ekind_to_generate(s->ek1, interval_1, s->ek2,
+	enemies.set_ekind_to_generate(scene->ek1, interval_1, scene->ek2,
 			interval_2);
 
 	for(i = 0; i < MAP_SIZEX; i++)
 		for(j = 0; j < MAP_SIZEY; j++)
 		{
-			int m = MAP_BITS(map.pos(i, j));
+			int m = MAP_BITS(map[0].pos(i, j));
 			if(IS_SPACE(m))
 				continue;
 			if((m == U_MASK) || (m == R_MASK) || (m == D_MASK)
@@ -852,7 +848,7 @@ int KOBO_screen::prepare()
 			}
 		}
 
-	myship.set_position(s->startx << 4, s->starty << 4);
+	myship.set_position(scene->startx << 4, scene->starty << 4);
 
 	return count_core;
 }
@@ -898,18 +894,17 @@ void KOBO_screen::generate_wave(const KOBO_enemy_set *wave)
 
 void KOBO_screen::generate_fixed_enemies()
 {
-	const KOBO_scene *s = &scenes[scene_num];
-	if(s->enemy_max < 0)
+	if(scene->enemy_max < 0)
 	{
-		for(int i = 0; i < -s->enemy_max; ++i)
-			generate_wave(&s->enemy[i]);
+		for(int i = 0; i < -scene->enemy_max; ++i)
+			generate_wave(&scene->enemy[i]);
 	}
 	else
 	{
-		if(generate_count >= s->enemy_max)
+		if(generate_count >= scene->enemy_max)
 			generate_count = 0;
-		generate_wave(&s->enemy[generate_count]);
-		if(generate_count < s->enemy_max)
+		generate_wave(&scene->enemy[generate_count]);
+		if(generate_count < scene->enemy_max)
 			generate_count++;
 	}
 }
@@ -917,7 +912,7 @@ void KOBO_screen::generate_fixed_enemies()
 
 void KOBO_screen::set_map(int x, int y, int n)
 {
-	map.pos(x, y) = n;
+	map[0].pos(x, y) = n;
 	wradar->update(x, y);
 }
 
@@ -1274,13 +1269,13 @@ void KOBO_screen::render_background()
 			  case 0: tiles += B_R1_TILES_SMALL_SPACE; break;
 			  case 1: tiles += B_R1_TILES_TINY_INTERMEDIATE; break;
 			}
-		render_bases(bg_map[m], tiles, vx, vy);
+		render_bases(map[m + 1], tiles, vx, vy);
 	}
 
 	// Render the bases of the current level
 	cm = 255.0f * themedata.get(KOBO_D_BASES_COLORMOD, show_title ? 3 : 2);
 	wmain->colormod(cm, cm, cm);
-	render_bases(map, B_R1_TILES + region, vx, vy);
+	render_bases(map[0], B_R1_TILES + region, vx, vy);
 }
 
 
