@@ -1895,6 +1895,57 @@ st_options_more_t st_options_more;
 
 
 /*----------------------------------------------------------
+	st_demo_over_t
+----------------------------------------------------------*/
+
+#ifdef KOBO_DEMO
+
+void demo_over_t::build()
+{
+	space(2);
+	font(B_BIG_FONT); label("Thank You For Playing!");; font();
+	space(2);
+	label("You've reached the end of the");
+	space();
+	font(B_BIG_FONT); label("Kobo Redux"); font();
+	space();
+	label("demo.");
+	space(2);
+	label("To play the rest of the game...");
+	space();
+	button("Buy Kobo Redux", 40);
+	label("https://olofson.itch.io/kobo-redux");
+	space(2);
+	button("Back To Title", MENU_TAG_OK);
+}
+
+kobo_form_t *st_demo_over_t::open()
+{
+	demo_over_t *m = new demo_over_t(gengine);
+	m->open();
+	return m;
+}
+
+void st_demo_over_t::select(int tag)
+{
+	switch(tag)
+	{
+	  case 40:
+		kobo_OpenURL("https://olofson.itch.io/kobo-redux");
+		break;
+	  case MENU_TAG_OK:
+	  case MENU_TAG_CANCEL:
+		gsm.pop();
+		break;
+	}
+}
+
+
+st_demo_over_t st_demo_over;
+#endif
+
+
+/*----------------------------------------------------------
 	Requesters
 ----------------------------------------------------------*/
 void yesno_menu_t::build()

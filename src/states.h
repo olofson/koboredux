@@ -178,7 +178,6 @@ class st_game_over_t : public kobo_basestate_t
 };
 
 
-
 /*----------------------------------------------------------
 	Menu Base
 ----------------------------------------------------------*/
@@ -495,6 +494,32 @@ class st_options_more_t : public st_menu_base_t
 	kobo_form_t *open();
 	void select(int tag);
 };
+
+
+/*----------------------------------------------------------
+	Demo Over Page
+----------------------------------------------------------*/
+
+#ifdef KOBO_DEMO
+
+class demo_over_t : public menu_base_t
+{
+  public:
+	demo_over_t(gfxengine_t *e) : menu_base_t(e) { }
+	void build();
+};
+
+class st_demo_over_t : public st_menu_base_t
+{
+  public:
+	st_demo_over_t()	{ name = "demo_over"; }
+	kobo_form_t *open();
+	void select(int tag);
+};
+
+extern st_demo_over_t st_demo_over;
+
+#endif
 
 
 /*----------------------------------------------------------

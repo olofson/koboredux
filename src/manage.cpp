@@ -334,6 +334,12 @@ void _manage::next_scene()
 		st_error.message(km.smsg_header, km.smsg_message);
 		gsm.push(&st_error);
 	}
+#ifdef KOBO_DEMO
+	if(selected_stage == (KOBO_DEMO_LAST_STAGE + 1))
+	{
+		gsm.change(&st_demo_over);
+	}
+#endif
 }
 
 

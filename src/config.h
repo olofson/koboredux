@@ -220,5 +220,8 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	GUN_TAIL_X		0
 #define	GUN_TAIL_Y		15
 
+/* Demo build settings */
+#define	KOBO_DEMO_SKILL		SKILL_NEWBIE
+#define	KOBO_DEMO_LAST_STAGE	5
 
 #endif	/*_KOBO_CONFIG_H_*/
