@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright 2016 David Olofson
+ * Copyright 2016-2017 David Olofson
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -22,14 +22,6 @@
 #ifndef _KOBO_OPENURL_H_
 #define _KOBO_OPENURL_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int kobo_OpenURL(const char *url);
-
-#ifdef __cplusplus
-};
-#endif
 
 #endif /* _KOBO_OPENURL_H_ */

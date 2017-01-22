@@ -28,8 +28,8 @@ set(sources
 	starfield.cpp
 	themeparser.cpp
 	replay.cpp
+	openurl.cpp
 	logger.c
-	openurl.c
 	gfxengine/gfxengine.cpp
 	gfxengine/sofont.cpp
 	gfxengine/toolkit.cpp

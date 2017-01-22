@@ -1855,7 +1855,6 @@ void st_options_more_t::select(int tag)
 	switch(tag)
 	{
 	  case 1:
-		gengine->switch_video_mode(KOBO_VIDEOMODE_WINDOWED);
 		kobo_OpenURL("https://github.com/olofson/koboredux");
 		break;
 	  case MENU_TAG_OK:

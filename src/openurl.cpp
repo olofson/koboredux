@@ -20,6 +20,7 @@
  */
 
 #include "openurl.h"
+#include "kobo.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -31,6 +32,8 @@
 
 int kobo_OpenURL(const char *url)
 {
+	if(gengine && gengine->fullscreen())
+		gengine->switch_video_mode(KOBO_VIDEOMODE_WINDOWED);
 #ifdef _WIN32
 	HINSTANCE res;
 	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
