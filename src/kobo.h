@@ -253,7 +253,6 @@ extern window_t			*woverlay;
 
 extern display_t		*dhigh;
 extern display_t		*dscore;
-extern display_t		*dstage;
 extern display_t		*dregion;
 extern display_t		*dlevel;
 extern hledbar_t		*pxtop;

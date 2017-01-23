@@ -417,15 +417,13 @@ void _manage::put_info()
 	dhigh->text(s);
 	dhigh->on();
 
-	snprintf(s, 16, "%d", selected_stage);
-	dstage->text(s);
-	dstage->on();
-
-	snprintf(s, 16, "%d", (selected_stage - 1) / 10 % 5 + 1);
+	snprintf(s, 16, "%d / %d", (selected_stage - 1) / 10 % 5 + 1,
+			KOBO_REGIONS);
 	dregion->text(s);
 	dregion->on();
 
-	snprintf(s, 16, "%d", (selected_stage - 1) % 10 + 1);
+	snprintf(s, 16, "%d / %d", (selected_stage - 1) % 10 + 1,
+			KOBO_LEVELS_PER_REGION);
 	dlevel->text(s);
 	dlevel->on();
 

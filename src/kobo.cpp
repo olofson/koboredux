@@ -94,7 +94,6 @@ window_t		*woverlay = NULL;
 
 display_t		*dhigh = NULL;
 display_t		*dscore = NULL;
-display_t		*dstage = NULL;
 display_t		*dregion = NULL;
 display_t		*dlevel = NULL;
 hledbar_t		*pxtop = NULL;
@@ -582,20 +581,15 @@ void KOBO_main::init_dash_layout()
 	dscore->caption("SCORE");
 	dscore->text("000000000");
 
-	place(dstage, KOBO_D_DASH_STAGE);
-	dstage->font(B_NORMAL_FONT);
-	dstage->caption("STAGE");
-	dstage->text("000");
-
 	place(dregion, KOBO_D_DASH_REGION);
 	dregion->font(B_NORMAL_FONT);
 	dregion->caption("REGION");
-	dregion->text("0");
+	dregion->text("-");
 
 	place(dlevel, KOBO_D_DASH_LEVEL);
 	dlevel->font(B_NORMAL_FONT);
 	dlevel->caption("LEVEL");
-	dlevel->text("00");
+	dlevel->text("-");
 
 	// Ship health bar
 	place(whealth, KOBO_D_DASH_HEALTH);
@@ -809,7 +803,6 @@ int KOBO_main::init_display(prefs_t *p)
 	dscore = new display_t(gengine);
 	wmap = new KOBO_radar_map(gengine);
 	wradar = new KOBO_radar_window(gengine);
-	dstage = new display_t(gengine);
 	dregion = new display_t(gengine);
 	dlevel = new display_t(gengine);
 	pxtop = new hledbar_t(gengine);
@@ -835,7 +828,6 @@ void KOBO_main::close_display()
 	delete pxtop;		pxtop = NULL;
 	delete dlevel;		dlevel = NULL;
 	delete dregion;		dregion = NULL;
-	delete dstage;		dstage = NULL;
 	delete wradar;		wradar = NULL;
 	delete wmap;		wmap = NULL;
 	delete dscore;		dscore = NULL;

@@ -129,7 +129,6 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 	wradar->visible(main);
 	dhigh->visible(score);
 	dscore->visible(score);
-	dstage->visible(ingame);
 	dregion->visible(ingame);
 	dlevel->visible(ingame);
 	pxtop->visible(main);
