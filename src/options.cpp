@@ -394,6 +394,7 @@ void audio_options_t::prepare_to_apply()
 void interface_options_t::add_theme_items(const char *type)
 {
 	KOBO_ThemeData *td = NULL;
+	item("Default", "");
 	while((td = km.get_next_theme(type, td)))
 	{
 		const char *lab = td->get_string(KOBO_D_THEMELABEL);
