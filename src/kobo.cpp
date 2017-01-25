@@ -1372,6 +1372,7 @@ int KOBO_main::restart_video()
 	init_dash_layout();
 	screen.init_graphics();
 	gamecontrol.init();
+	gsm.rebuild();
 	log_printf(ULOG, "--- Video restarted.\n");
 
 	// FIXME: We may not always need to reload graphics, but that's a bit
@@ -1413,6 +1414,7 @@ int KOBO_main::reload_graphics()
 	wdash->mode(manage.game_in_progress() ?
 			DASHBOARD_GAME : DASHBOARD_TITLE);
 	wradar->mode(RM__REINIT);
+	gsm.rebuild();
 	log_printf(ULOG, "--- Graphics reloaded.\n");
 	return 0;
 }

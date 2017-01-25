@@ -3,7 +3,7 @@
 	Game State Manager
 ------------------------------------------------------------
  * Copyright 2001-2003, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015, 2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -46,6 +46,7 @@ class gamestate_t
 	virtual void leave();
 	virtual void yield();
 	virtual void reenter();
+	virtual void rebuild();
 
 	virtual void frame();		//Control system stuff
 	virtual void pre_render();	//Background rendering
@@ -73,6 +74,7 @@ class gamestatemanager_t
 	void delta(int dx, int dy);
 
 	// CS frame and rendering callbacks
+	void rebuild();
 	void frame();
 	void pre_render();
 	void post_render();

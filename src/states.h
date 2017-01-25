@@ -275,7 +275,7 @@ class st_menu_base_t : public kobo_basestate_t
 	st_menu_base_t();
 	~st_menu_base_t();
 	void enter();
-	void reenter();
+	void rebuild();
 	void leave();
 	void press(gc_targets_t button);
 	void frame();

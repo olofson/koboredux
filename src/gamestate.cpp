@@ -3,7 +3,7 @@
 	Game State Manager
 ------------------------------------------------------------
  * Copyright 2001-2003, 2009 David Olofson
- * Copyright 2015 David Olofson (Kobo Redux)
+ * Copyright 2015, 2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -56,6 +56,7 @@ void gamestate_t::enter()			{}
 void gamestate_t::leave()			{}
 void gamestate_t::yield()			{}
 void gamestate_t::reenter()			{}
+void gamestate_t::rebuild()			{}
 void gamestate_t::press(gc_targets_t button)	{}
 void gamestate_t::release(gc_targets_t button)	{}
 void gamestate_t::pos(int x, int y)		{}
@@ -190,6 +191,13 @@ void gamestatemanager_t::delta(int dx, int dy)
 {
 	if(top)
 		top->delta(dx, dy);
+}
+
+
+void gamestatemanager_t::rebuild()
+{
+	if(top)
+		top->rebuild();
 }
 
 

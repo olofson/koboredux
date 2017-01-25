@@ -124,6 +124,14 @@ void kobo_form_t::prev()
 }
 
 
+void kobo_form_t::rebuild()
+{
+	int sel = selected_index();
+	build_all();
+	select(sel);
+}
+
+
 void kobo_form_t::init_widget(ct_widget_t *w, int def_font)
 {
 	current_widget = w;

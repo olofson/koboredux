@@ -71,6 +71,7 @@ class kobo_form_t : public ct_form_t
 	virtual ~kobo_form_t();
 	void next();
 	void prev();
+	void rebuild();
 	virtual void change(int delta);
 	virtual void build();
 };

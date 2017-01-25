@@ -837,12 +837,12 @@ void st_menu_base_t::enter()
 		sound.ui_play(S_UI_OPEN);
 }
 
-// Because we may get back here after changing the configuration!
-void st_menu_base_t::reenter()
+
+void st_menu_base_t::rebuild()
 {
-	if(global_status & OS_RESTART_VIDEO)
-		pop();
+	form->rebuild();
 }
+
 
 void st_menu_base_t::leave()
 {
