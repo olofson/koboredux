@@ -1232,10 +1232,16 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_theme(const char *scriptpath, int flags)
 	fclose(f);
 
 	// Parse theme file
-	KOBO_TP_Tokens res;
-	while((res = parse_line()) > KTK_EOF)
+	while(1)
+	{
+		KOBO_TP_Tokens res = parse_line();
+		if(res == KTK_EOF)
+			break;
+		else if(res == KTK_ERROR)
+			skip_to_eoln();
 		if(wdash)
 			wdash->progress((float)pos / bufsize);
+	}
 
 	free((char *)buffer);
 	free(sp);
