@@ -108,8 +108,6 @@ int mouse_middle = 0;
 int mouse_right = 0;
 bool mouse_visible = false;
 
-int exit_game = 0;
-
 
 /*----------------------------------------------------------
 	Backdrop window
@@ -266,6 +264,7 @@ FILE		*KOBO_main::logfile = NULL;
 Uint32		KOBO_main::esc_tick = 0;
 int		KOBO_main::esc_count = 0;
 int		KOBO_main::esc_hammering_trigs = 0;
+int		KOBO_main::exit_game = 0;
 int		KOBO_main::exit_game_fast = 0;
 
 int		KOBO_main::fps_count = 0;
@@ -350,7 +349,7 @@ bool KOBO_main::quit_requested()
 		switch(e.type)
 		{
 		  case SDL_QUIT:
-			exit_game_fast = 1;
+			km.brutal_quit();
 			break;
 		  case SDL_WINDOWEVENT:
 			switch(e.window.event)
@@ -362,7 +361,7 @@ bool KOBO_main::quit_requested()
 			  case SDL_WINDOWEVENT_RESTORED:
 				break;
 			  case SDL_WINDOWEVENT_CLOSE:
-				exit_game_fast = 1;
+				km.brutal_quit();
 				break;
 			}
 			break;
@@ -381,7 +380,7 @@ bool KOBO_main::quit_requested()
 			{
 			  case SDLK_ESCAPE:
 				if(escape_hammering())
-					exit_game_fast = 1;
+					km.brutal_quit();
 				break;
 			  default:
 				break;
@@ -404,7 +403,7 @@ bool KOBO_main::skip_requested()
 		switch(e.type)
 		{
 		  case SDL_QUIT:
-			exit_game_fast = 1;
+			km.brutal_quit();
 			break;
 		  case SDL_WINDOWEVENT:
 			switch(e.window.event)
@@ -416,7 +415,7 @@ bool KOBO_main::skip_requested()
 			  case SDL_WINDOWEVENT_RESTORED:
 				break;
 			  case SDL_WINDOWEVENT_CLOSE:
-				exit_game_fast = 1;
+				km.brutal_quit();
 				break;
 			}
 			break;
@@ -435,7 +434,7 @@ bool KOBO_main::skip_requested()
 			{
 			  case SDLK_ESCAPE:
 				if(escape_hammering())
-					exit_game_fast = 1;
+					km.brutal_quit();
 			  case SDLK_SPACE:
 			  case SDLK_RETURN:
 				do_skip = true;
@@ -1222,11 +1221,18 @@ void KOBO_main::save_config(prefs_t *p)
 }
 
 
+void KOBO_main::quit()
+{
+	exit_game = 1;
+}
+
+
 void KOBO_main::brutal_quit(bool force)
 {
 	if(exit_game_fast || force)
 	{
-		log_printf(ULOG, "Second try quitting; using brutal method!\n");
+		log_printf(ULOG, "Second try quitting; using brutal "
+				"method!\n");
 		atexit(SDL_Quit);
 		close_logging();
 		exit(1);
@@ -1434,6 +1440,8 @@ int KOBO_main::run()
 			break;
 		if(exit_game)
 		{
+			sound.music(-1);
+			manage.abort_game();
 			if(wdash)
 				wdash->mode(DASHBOARD_BLACK);
 			break;
@@ -1955,7 +1963,7 @@ void kobo_gfxengine_t::input(float fractional_frame)
 			  case SDL_WINDOWEVENT_RESTORED:
 				break;
 			  case SDL_WINDOWEVENT_CLOSE:
-				km.brutal_quit();
+				km.quit();
 				break;
 			  case SDL_WINDOWEVENT_ENTER:
 				mouse_visible = true;
@@ -1973,7 +1981,7 @@ void kobo_gfxengine_t::input(float fractional_frame)
 			}
 			break;
 		  case SDL_QUIT:
-			km.brutal_quit();
+			km.quit();
 			break;
 		  case SDL_JOYBUTTONDOWN:
 			if(ev.jbutton.button == km.js_primary)
@@ -2097,11 +2105,11 @@ void kobo_gfxengine_t::frame()
 	if(!gsm.current())
 	{
 		log_printf(CELOG, "INTERNAL ERROR: No gamestate!\n");
-		exit_game = 1;
+		km.quit();
 		stop();
 		return;
 	}
-	if(exit_game)
+	if(km.quitting())
 	{
 		stop();
 		return;

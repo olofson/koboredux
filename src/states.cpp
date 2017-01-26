@@ -54,14 +54,14 @@ kobo_basestate_t::kobo_basestate_t()
 
 void kobo_basestate_t::enter()
 {
-	if(!exit_game && (song >= 0))
+	if(!km.quitting() && (song >= 0))
 		sound.music(song);
 }
 
 
 void kobo_basestate_t::reenter()
 {
-	if(!exit_game && (song >= 0))
+	if(!km.quitting() && (song >= 0))
 		sound.music(song);
 }
 
@@ -112,7 +112,7 @@ void st_introbase_t::enter()
 	kobo_basestate_t::enter();
 	if(manage.state() != GS_INTRO)
 		manage.start_intro();
-	if(!exit_game)
+	if(!km.quitting())
 		sound.music(song);
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
 	timer = 0;
@@ -124,7 +124,7 @@ void st_introbase_t::reenter()
 	kobo_basestate_t::reenter();
 	if(manage.state() != GS_INTRO)
 		manage.start_intro();
-	if(!exit_game)
+	if(!km.quitting())
 		sound.music(song);
 	gsm.change(&st_intro_title);
 }
@@ -209,7 +209,7 @@ void st_intro_title_t::enter()
 
 void st_intro_title_t::post_render()
 {
-	if(exit_game)
+	if(km.quitting())
 		return;
 	st_introbase_t::post_render();
 	if((timer >= 0) && (timer < duration))
@@ -250,7 +250,7 @@ void st_intro_instructions_t::enter()
 
 void st_intro_instructions_t::post_render()
 {
-	if(exit_game)
+	if(km.quitting())
 		return;
 	st_introbase_t::post_render();
 	if((timer >= 0) && (timer < duration))
@@ -286,7 +286,7 @@ void st_intro_highscores_t::enter()
 
 void st_intro_highscores_t::post_render()
 {
-	if(exit_game)
+	if(km.quitting())
 		return;
 	st_introbase_t::post_render();
 	if((timer >= 0) && (timer < duration))
@@ -322,7 +322,7 @@ void st_intro_credits_t::enter()
 
 void st_intro_credits_t::post_render()
 {
-	if(exit_game)
+	if(km.quitting())
 		return;
 	st_introbase_t::post_render();
 	if((timer >= 0) && (timer < duration))
@@ -491,7 +491,7 @@ void st_game_t::frame()
 		last_level = manage.current_stage();
 		break;
 	}
-	if(exit_game)
+	if(km.quitting())
 		pop();
 }
 
@@ -638,7 +638,7 @@ void st_get_ready_t::press(gc_targets_t button)
 
 void st_get_ready_t::frame()
 {
-	if(exit_game || !manage.game_in_progress())
+	if(km.quitting() || !manage.game_in_progress())
 	{
 		pop();
 		return;
@@ -2027,10 +2027,8 @@ void st_ask_exit_t::select(int tag)
 	switch(tag)
 	{
 	  case MENU_TAG_OK:
-		sound.music(-1);
-		manage.abort_game();
 		sound.ui_play(S_UI_OK);
-		exit_game = 1;
+		km.quit();
 		pop();
 		break;
 	  case MENU_TAG_CANCEL:

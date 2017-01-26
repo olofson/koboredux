@@ -97,6 +97,8 @@ class backdrop_t : public window_t
 
 class KOBO_main
 {
+	static int		exit_game;
+	static int		exit_game_fast;
   public:
 	static SDL_Joystick	*joystick;
 	static int		js_lr;
@@ -110,7 +112,6 @@ class KOBO_main
 	static Uint32		esc_tick;
 	static int		esc_count;
 	static int		esc_hammering_trigs;
-	static int		exit_game_fast;
 
 	// Frame rate counter
 	static int		fps_count;
@@ -188,8 +189,11 @@ class KOBO_main
 	static bool escape_hammering_quit();
 	static bool quit_requested();
 	static bool skip_requested();
-	static void brutal_quit(bool force = false);
 	static void pause_game();
+
+	static void quit();
+	static void brutal_quit(bool force = false);
+	bool quitting()		{ return exit_game || exit_game_fast; }
 
 	static void print_fps_results();
 
@@ -263,8 +267,6 @@ extern vledbar_t		*pxright;
 extern int mouse_x, mouse_y;
 extern int mouse_left, mouse_middle, mouse_right;
 extern bool mouse_visible;
-
-extern int exit_game;
 
 
   /////////////////////////////////////////////////////////////////////////////
