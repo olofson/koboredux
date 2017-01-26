@@ -285,6 +285,9 @@ void KOBO_sound::prefschange()
 	a2_Send(iface, groups[KOBO_MG_MUSIC], 2, pref2vol(prefs->music_vol));
 	a2_Send(iface, groups[KOBO_MG_TITLE], 2, pref2vol(prefs->title_vol));
 	update_music(false);
+
+	if(gunhandle)
+		start_player_gun();
 }
 
 
@@ -678,6 +681,16 @@ void KOBO_sound::g_stop(int h)
 void KOBO_sound::start_player_gun()
 {
 	if(!checksound(S_PLAYER_GUN, "KOBO_sound::start_player_gun()"))
+		return;
+	if(!iface)
+		return;
+	if(gunhandle)
+	{
+		a2_Send(iface, gunhandle, 1);
+		a2_Release(iface, gunhandle);
+		gunhandle = 0;
+	}
+	if(!prefs->cannonloud)
 		return;
 	gunhandle = a2_Start(iface, groups[KOBO_MG_SFX], sounds[S_PLAYER_GUN],
 			0.0f, (prefs->cannonloud << 14) / 6553600.0f);

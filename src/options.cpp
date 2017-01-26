@@ -463,10 +463,11 @@ void interface_options_t::build()
 		perc_list(50, 150, 10);
 #endif
 	space();
-	list("Cannon Sound Suppression", &prf->cannonloud, 0);
-		item("Off", 200);
-		item("Low", 100);
-		item("High", 50);
+	list("Cannon Sound Suppression", &prf->cannonloud, OS_UPDATE_AUDIO);
+		item("Off", 100);
+		item("Low", 50);
+		item("High", 25);
+		item("Silent", 0);
 
 	xoffs = 0.5;
 	space(2);
