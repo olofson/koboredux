@@ -656,7 +656,7 @@ void KOBO_sound::g_move(int h, int x, int y)
 		return;
 	float vol, pan;
 	eval_pos(x, y, &vol, &pan);
-	a2_Send(iface, h, 3, pitchshift, vol, pan);
+	a2_Send(iface, h, 3, pitchshift, vol, pan, KOBO_SOUND_UPDATE_PERIOD);
 }
 
 void KOBO_sound::g_control(int h, int c, float v)
