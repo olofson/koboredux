@@ -284,6 +284,8 @@ prefs_t		KOBO_main::safe_prefs;
 
 label_t		*KOBO_main::st_hotkeys = NULL;
 display_t	*KOBO_main::st_symname = NULL;
+display_t	*KOBO_main::st_cpuload = NULL;
+display_t	*KOBO_main::st_voicecount = NULL;
 
 KOBO_ThemeData	*KOBO_main::themes = NULL;
 
@@ -624,11 +626,15 @@ void KOBO_main::init_dash_layout()
 	place(pxbottom, KOBO_D_DASH_BOTTOMLEDS);
 	place(pxleft, KOBO_D_DASH_LEFTLEDS);
 	place(pxright, KOBO_D_DASH_RIGHTLEDS);
+
+	hide_soundtools();
 }
 
 
-void KOBO_main::build_soundtools()
+void KOBO_main::show_soundtools()
 {
+	if(st_hotkeys)
+		return;
 	st_hotkeys = new label_t(gengine);
 	place(st_hotkeys, KOBO_D_SOUNDTOOLS_HOTKEYS);
 	st_hotkeys->color(wdash->map_rgb(16, 16, 16));
@@ -651,6 +657,29 @@ void KOBO_main::build_soundtools()
 	st_symname->color(wdash->map_rgb(24, 24, 24));
 	st_symname->font(B_TOOL_FONT);
 	st_symname->caption("SFX Symbol Name");
+
+	st_cpuload = new display_t(gengine);
+	place(st_cpuload, KOBO_D_SOUNDTOOLS_CPULOAD);
+	st_cpuload->color(wdash->map_rgb(32, 24, 16));
+	st_cpuload->font(B_TOOL_FONT);
+	st_cpuload->caption("CPU Load");
+
+	st_voicecount = new display_t(gengine);
+	place(st_voicecount, KOBO_D_SOUNDTOOLS_VOICECOUNT);
+	st_voicecount->color(wdash->map_rgb(16, 24, 32));
+	st_voicecount->font(B_TOOL_FONT);
+	st_voicecount->caption("Voices");
+}
+
+
+void KOBO_main::hide_soundtools()
+{
+	if(!st_hotkeys)
+		return;
+	delete st_hotkeys;	st_hotkeys = NULL;
+	delete st_symname;	st_symname = NULL;
+	delete st_cpuload;	st_cpuload = NULL;
+	delete st_voicecount;	st_voicecount = NULL;
 }
 
 
@@ -1600,16 +1629,20 @@ void kobo_gfxengine_t::st_update_sound_displays()
 {
 	if(!prefs->soundtools)
 		return;
-	log_printf(ULOG, "Selected sound %s\n", sound.symname(st_sound));
-	if(!km.st_symname)
-		km.build_soundtools();
+
+	km.show_soundtools();
 	km.st_symname->text(sound.symname(st_sound));
+
+	static char s[16];
+	snprintf(s, sizeof(s), "%d%%", sound.cpuload());
+	km.st_cpuload->text(s);
+	snprintf(s, sizeof(s), "%d", sound.voicecount());
+	km.st_voicecount->text(s);
 }
 
 
 void kobo_gfxengine_t::pre_loop()
 {
-	st_update_sound_displays();
 	sound.timestamp_reset();
 	sound.timestamp_bump(timestamp_delay() +
 			1000.0f / (prefs->maxfps > 60 ? 60 : prefs->maxfps));
@@ -1654,13 +1687,15 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 			--st_sound;
 			if(st_sound < 1)
 				st_sound = S__COUNT - 1;
-			st_update_sound_displays();
+			log_printf(ULOG, "Selected sound %s\n",
+					sound.symname(st_sound));
 			return true;
 		  case SDLK_F3:		// Select next sound
 			++st_sound;
 			if(st_sound >= S__COUNT)
 				st_sound = 1;
-			st_update_sound_displays();
+			log_printf(ULOG, "Selected sound %s\n",
+					sound.symname(st_sound));
 			return true;
 		  case SDLK_F4:		// Play detached
 			if(st_handle)
@@ -2149,6 +2184,7 @@ void kobo_gfxengine_t::frame()
 
 void kobo_gfxengine_t::pre_render()
 {
+	st_update_sound_displays();
 }
 
 
@@ -2175,10 +2211,7 @@ void kobo_gfxengine_t::post_render()
 	if(prefs->soundtools)
 	{
 		// Make sure the GUI is built and visible
-		if(!km.st_symname)
-			km.build_soundtools();
-		km.st_hotkeys->visible(true);
-		km.st_symname->visible(true);
+		km.show_soundtools();
 
 		// Ear (listener position)
 		wmain->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,
@@ -2193,12 +2226,8 @@ void kobo_gfxengine_t::post_render()
 		ssy %= PIXEL2CS(WORLD_SIZEY);
 		wmain->sprite_fxp(ssx, ssy, B_SOUND_ICONS, 0);
 	}
-	else if(km.st_symname)
-	{
-		// Soundtools enabled and then disabled; hide the GUI!
-		km.st_hotkeys->visible(false);
-		km.st_symname->visible(false);
-	}
+	else
+		km.hide_soundtools();
 
 	gsm.post_render();
 

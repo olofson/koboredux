@@ -387,6 +387,30 @@ const char *KOBO_sound::symname(unsigned wid)
 }
 
 
+int KOBO_sound::cpuload()
+{
+	int v = 0;
+	if(iface)
+	{
+		a2_GetStateProperty(iface, A2_PCPULOADAVG, &v);
+		a2_SetStateProperty(iface, A2_PCPULOADAVG, 0);
+	}
+	return v;
+}
+
+
+int KOBO_sound::voicecount()
+{
+	int v = 0;
+	if(iface)
+	{
+		a2_GetStateProperty(iface, A2_PACTIVEVOICESMAX, &v);
+		a2_SetStateProperty(iface, A2_PACTIVEVOICESMAX, 0);
+	}
+	return v;
+}
+
+
 /*--------------------------------------------------
 	Main controls
 --------------------------------------------------*/
@@ -521,9 +545,15 @@ bool KOBO_sound::checksound(int wid, const char *where)
 		return false;	// This is not an error...
 	if(!sounds[wid])
 	{
+#if 0
+		// This is no longer usable, as it just spams the log with
+		// warnings! All slots on all enemies are defined now, but
+		// not intended to be fully populated; they're only provided
+		// for sound design flexibility.
 		if(prefs->soundtools)
 			log_printf(WLOG, "%s: Sound %s (%d) not loaded!\n",
 					where, kobo_soundnames[wid], wid);
+#endif
 		return false;
 	}
 	return true;
@@ -668,6 +698,7 @@ void KOBO_sound::g_control(int h, int c, float v)
 		return;
 	a2_Send(iface, h, c, v);
 }
+
 
 void KOBO_sound::g_stop(int h)
 {

@@ -135,6 +135,8 @@ class KOBO_main
 	// Sound design tools
 	static label_t		*st_hotkeys;
 	static display_t	*st_symname;
+	static display_t	*st_cpuload;
+	static display_t	*st_voicecount;
 
 	// Themes
 	static KOBO_ThemeData	*themes;
@@ -163,7 +165,8 @@ class KOBO_main
 	static void save_config(prefs_t *p);
 
 	static void init_dash_layout();
-	static void build_soundtools();
+	static void show_soundtools();
+	static void hide_soundtools();
 	static int init_display(prefs_t *p);
 	static void close_display();
 
