@@ -55,10 +55,10 @@ if(DEMO_BUILD)
 	add_definitions(-DKOBO_DEMO)
 endif(DEMO_BUILD)
 
-PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
+pkg_search_module(SDL2 REQUIRED sdl2)
 include_directories(${SDL2_INCLUDE_DIRS})
 
-PKG_SEARCH_MODULE(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
+pkg_search_module(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
 include_directories(${SDL2IMAGE_INCLUDE_DIRS})
 
 #find_package(PNG REQUIRED)
@@ -66,7 +66,7 @@ include_directories(${SDL2IMAGE_INCLUDE_DIRS})
 
 #find_package(AUDIALITY2 REQUIRED)
 #include_directories(${AUDIALITY2_INCLUDE_DIR})
-pkg_check_modules(AUDIALITY2 REQUIRED audiality2)
+pkg_search_module(AUDIALITY2 REQUIRED audiality2)
 include_directories(${AUDIALITY2_INCLUDE_DIRS})
 
 set(RES_FILES "")
