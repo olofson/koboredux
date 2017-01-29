@@ -246,14 +246,13 @@ class KOBO_sound
 	// the audible range.
 	static void g_scale(int maxrange, int pan_maxrange);
 
-	// Play a sound at a specific location on the map
+	// Play a one-shot sound at a specific location on the map
 	static void g_play(unsigned wid, int x, int y);
 
-	// Start a sound at a specific location on the map. Returns handle.
-	static int g_start(unsigned wid, int x, int y);
-
-	// Update position of sound 'h', previously started with g_start().
-	static void g_move(int h, int x, int y);
+	// Start sound 'wid' at (x, y), or update an instance 'h' of that sound
+	// accordingly. (This is a merger of the former g_start() and g_move()
+	// calls.)
+	static void g_run(unsigned wid, int &h, int x, int y);
 
 	// Change fx control 'c' of sound 'h' to 'v'.
 	static void g_control(int h, int c, float v);

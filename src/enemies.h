@@ -113,6 +113,7 @@ class KOBO_enemy
 	int	contact;		// 0 or amount of overlap (24:8)
 	int	di;			// Direction
 	int	a, b, c;		// "AI" work variables
+	KOBO_sounds	soundslot;	// Sound slot for positional sfx
 	int	soundhandle;		// Continuous positional sound fx
 	int	soundtimer;		// Positional audio update timer
 	int	logical_bank;		// Logical bank. (Use set_bank()!)
@@ -314,7 +315,8 @@ inline void KOBO_enemy::startsound(KOBO_sounds si)
 	stopsound();
 	if(enemies.is_intro || (_state == notuse))
 		return;
-	soundhandle = sound.g_start(si, CS2PIXEL(x), CS2PIXEL(y));
+	soundslot = si;
+	sound.g_run(soundslot, soundhandle, CS2PIXEL(x), CS2PIXEL(y));
 	soundtimer = enemies.sound_update_period;
 }
 
@@ -465,9 +467,9 @@ inline void KOBO_enemy::move()
 
 	// Need to update this for stationary objects as well, as the listener
 	// is (usually) moving around at all times!
-	if((soundhandle > 0) && (soundtimer-- <= 0))
+	if(soundslot && (soundtimer-- <= 0))
 	{
-		sound.g_move(soundhandle, CS2PIXEL(x), CS2PIXEL(y));
+		sound.g_run(soundslot, soundhandle, CS2PIXEL(x), CS2PIXEL(y));
 		soundtimer = enemies.sound_update_period;
 	}
 

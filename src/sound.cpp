@@ -626,28 +626,27 @@ bool KOBO_sound::eval_pos(int x, int y, float *vol, float *pan)
 		y -= wrap_y / 2;
 	}
 
-	// Approximation of distance attenuation
-	int vx = abs(x * scale);
-	int vy = abs(y * scale);
-	if((vx | vy) & 0xffff0000 || !volscale)
-	{
-		*vol = *pan = 0.0f;
-		return false;
-	}
-
-	vx = (65536 - vx) >> 1;
-	vy = (65536 - vy) >> 1;
-	int v = vx * vy >> 14;
-	v = (v >> 1) * (v >> 1) >> 14;
-
+	// Calculate pan position
 	int p = x * panscale;
 	if(p < -65536)
 		p = -65536;
 	else if(p > 65536)
 		p = 65536;
-
-	*vol = v / 65536.0f;
 	*pan = p / 65536.0f;
+
+	// Approximation of distance attenuation
+	int vx = abs(x * scale);
+	int vy = abs(y * scale);
+	if(!volscale || (vx | vy) & 0xffff0000)
+	{
+		*vol = 0.0f;
+		return false;
+	}
+	vx = (65536 - vx) >> 1;
+	vy = (65536 - vy) >> 1;
+	int v = vx * vy >> 14;
+	v = (v >> 1) * (v >> 1) >> 14;
+	*vol = v / 65536.0f;
 	return true;
 }
 
@@ -668,29 +667,46 @@ void KOBO_sound::g_play(unsigned wid, int x, int y)
 }
 
 
-int KOBO_sound::g_start(unsigned wid, int x, int y)
+void KOBO_sound::g_run(unsigned wid, int &h, int x, int y)
 {
 	if(!iface)
-		return -1;
-	if(!checksound(wid, "KOBO_sound::g_start()"))
-		return -1;
-	if(!volscale)
-		return -1;
-
-	float vol, pan;
-	eval_pos(x, y, &vol, &pan);
-	return a2_Start(iface, groups[KOBO_MG_SFX], sounds[wid],
-			pitchshift, vol, pan);
-}
-
-void KOBO_sound::g_move(int h, int x, int y)
-{
-	if(!iface || h <= 0)
+	{
+		h = 0;
 		return;
+	}
 	float vol, pan;
-	eval_pos(x, y, &vol, &pan);
-	a2_Send(iface, h, 3, pitchshift, vol, pan, KOBO_SOUND_UPDATE_PERIOD);
+	if(!eval_pos(x, y, &vol, &pan))
+	{
+		if(h)
+		{
+			// Fade out and kill!
+			a2_Send(iface, h, 3, pitchshift, vol, pan,
+					KOBO_SOUND_UPDATE_PERIOD);
+			A2_timestamp t = a2_TimestampBump(iface,
+					a2_ms2Timestamp(iface,
+					KOBO_SOUND_UPDATE_PERIOD));
+			a2_Kill(iface, h);
+			a2_TimestampSet(iface, t);
+			h = 0;
+		}
+		return;
+	}
+	if(!h)
+	{
+		// (Re)start
+		if(!wid || !checksound(wid, "KOBO_sound::g_run()"))
+			return;
+		h = a2_Start(iface, groups[KOBO_MG_SFX], sounds[wid],
+				pitchshift, vol, pan);
+	}
+	else
+	{
+		// Update
+		a2_Send(iface, h, 3, pitchshift, vol, pan,
+				KOBO_SOUND_UPDATE_PERIOD);
+	}
 }
+
 
 void KOBO_sound::g_control(int h, int c, float v)
 {

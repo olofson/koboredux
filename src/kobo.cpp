@@ -1713,10 +1713,13 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 			/* Fall-through! */
 		  case SDLK_F6:		// Start
 			if(st_handle)
+			{
 				sound.g_stop(st_handle);
+				st_handle = 0;
+			}
 			st_x = myship.get_x();
 			st_y = myship.get_y();
-			st_handle = sound.g_start(st_sound, st_x, st_y);
+			sound.g_run(st_sound, st_handle, st_x, st_y);
 			return true;
 		  case SDLK_F7:		// Stop
 			if(ev.key.repeat)
@@ -2134,8 +2137,8 @@ void kobo_gfxengine_t::frame()
 {
 	sound.frame();
 
-	if(prefs->soundtools && st_handle)
-		sound.g_move(st_handle, st_x, st_y);
+	if(prefs->soundtools)
+		sound.g_run(st_sound, st_handle, st_x, st_y);
 
 	if(!gsm.current())
 	{

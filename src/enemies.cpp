@@ -49,6 +49,7 @@ void KOBO_enemy::state(KOBO_state s)
 	{
 	  case notuse:
 		soundhandle = 0;
+		soundslot = S_NONE;
 		if(object)
 		{
 			gengine->free_obj(object);
@@ -81,8 +82,7 @@ void KOBO_enemy::state(KOBO_state s)
 void KOBO_enemy::restartsound()
 {
 	soundhandle = 0;
-	if(ek->sound)
-		startsound(ek->sound);
+	sound.g_run(soundslot, soundhandle, CS2PIXEL(x), CS2PIXEL(y));
 }
 
 //---------------------------------------------------------------------------//
