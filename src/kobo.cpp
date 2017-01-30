@@ -2441,11 +2441,14 @@ static void put_versions()
 	printf(	PACKAGE "\n"
 		"Build date: " __DATE__ " " __TIME__ "\n"
 		"Build options:"
+#ifdef KOBO_DEMO
+		"  KOBO_DEMO"
+#endif
 #ifdef DEBUG
-        	"  DEBUG"
+		"  DEBUG"
 #endif
 #ifdef ENABLE_TOUCHSCREEN
-        	"  ENABLE_TOUCHSCREEN"
+		"  ENABLE_TOUCHSCREEN"
 #endif
 		"\n\n");
 
