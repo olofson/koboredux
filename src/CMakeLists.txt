@@ -129,13 +129,13 @@ if(WIN32)
 	set(KOBO_USERDIR "EXE>>")
 	set(KOBO_EXEFILE "kobord.exe")
 else(WIN32)
-	set(KOBO_DATADIR "${CMAKE_INSTALL_PREFIX}/share/koboredux")
-	set(KOBO_SCOREDIR "/var/games/koboredux/scores")
-	set(KOBO_USERDIR "HOME>>.koboredux")
+	set(KOBO_DATADIR "${CMAKE_INSTALL_PREFIX}/share/${KOBO_PACKAGE_NAME}")
+	set(KOBO_SCOREDIR "/var/games/${KOBO_PACKAGE_NAME}/scores")
+	set(KOBO_USERDIR "HOME>>.${KOBO_PACKAGE_NAME}")
 	set(KOBO_EXEFILE "kobord")
 	set(KOBO_SYSCONFDIR "/etc")
 endif(WIN32)
-set(KOBO_CONFIGFILE "koboredux.cfg")
+set(KOBO_CONFIGFILE "${KOBO_PACKAGE_NAME}.cfg")
 
 CHECK_C_SOURCE_COMPILES(
 	"#include <sys/types.h>
