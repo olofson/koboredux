@@ -66,11 +66,11 @@ class KOBO_scene_manager
 	int scene_count()	{ return nscenes; }
 	int region(int stage)
 	{
-		return stage / KOBO_LEVELS_PER_REGION % KOBO_REGIONS;
+		return (stage - 1) / KOBO_LEVELS_PER_REGION % KOBO_REGIONS;
 	}
 	int level(int stage)
 	{
-		return stage % KOBO_LEVELS_PER_REGION + 1;
+		return (stage - 1) % KOBO_LEVELS_PER_REGION + 1;
 	}
 };
 
