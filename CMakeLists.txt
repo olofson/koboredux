@@ -74,7 +74,7 @@ set(CPACK_RESOURCE_FILE_README "${KOBOREDUX_SOURCE_DIR}/README.md")
 
 # CPack DEB
 set(CPACK_DEBIAN_PACKAGE_SECTION "Games")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2,libsdl2-image")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0,libsdl2-image-2.0")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION_SUMMARY "An arcade style 2D shooter")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Kobo Redux is a frantic 80's style 2D shooter, inspired by the look and feel of 90's arcade cabinets. The gameplay is fast and unforgiving, although with less of the frustrating quirkiness of the actual games of the 80's. A true challenge in the spirit of the arcade era!")
 
