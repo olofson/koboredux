@@ -53,6 +53,9 @@ include_directories(${CMAKE_BINARY_DIR}/include)
 
 if(DEMO_BUILD)
 	add_definitions(-DKOBO_DEMO)
+	set(KOBO_EXE_SUFFIX "-demo")
+else(DEMO_BUILD)
+	set(KOBO_EXE_SUFFIX "")
 endif(DEMO_BUILD)
 
 pkg_search_module(SDL2 REQUIRED sdl2)
@@ -79,6 +82,8 @@ if(MINGW)
 endif(MINGW)
 
 add_executable(kobord WIN32 MACOSX_BUNDLE ${sources} ${RES_FILES})
+set_target_properties(kobord PROPERTIES OUTPUT_NAME
+	"kobord${KOBO_EXE_SUFFIX}")
 
 target_link_libraries(kobord ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES}
 	${AUDIALITY2_LIBRARIES})
@@ -127,12 +132,10 @@ if(WIN32)
 	set(KOBO_DATADIR "EXE>>")
 	set(KOBO_SCOREDIR "EXE>>scores")
 	set(KOBO_USERDIR "EXE>>")
-	set(KOBO_EXEFILE "kobord.exe")
 else(WIN32)
 	set(KOBO_DATADIR "${CMAKE_INSTALL_PREFIX}/share/${KOBO_PACKAGE_NAME}")
 	set(KOBO_SCOREDIR "/var/games/${KOBO_PACKAGE_NAME}/scores")
 	set(KOBO_USERDIR "HOME>>.${KOBO_PACKAGE_NAME}")
-	set(KOBO_EXEFILE "kobord")
 	set(KOBO_SYSCONFDIR "/etc")
 endif(WIN32)
 set(KOBO_CONFIGFILE "${KOBO_PACKAGE_NAME}.cfg")
