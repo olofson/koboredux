@@ -17,14 +17,12 @@ if(DEMO_BUILD)
 	set(KOBO_PACKAGE_NAME "koboredux-demo")
 	set(DEMO_EXCLUDE_GFX PATTERN mono EXCLUDE)
 	set(DEMO_EXCLUDE_SFX PATTERN chip EXCLUDE)
-	set(EXT_GFX_DIR "demo-data/gfx")
-	set(EXT_SFX_DIR "demo-data/sfx")
+	set(EXT_DATA_DIR "${KOBOREDUX_SOURCE_DIR}/demo-data")
 else(DEMO_BUILD)
 	set(KOBO_PACKAGE_NAME "koboredux")
 	set(DEMO_EXCLUDE_GFX "")
 	set(DEMO_EXCLUDE_SFX "")
-	set(EXT_GFX_DIR "full-data/gfx")
-	set(EXT_SFX_DIR "full-data/sfx")
+	set(EXT_DATA_DIR "${KOBOREDUX_SOURCE_DIR}/full-data")
 endif(DEMO_BUILD)
 
 set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
@@ -47,20 +45,36 @@ set(CMAKE_C_FLAGS_DEBUG ${f})
 
 add_subdirectory(src)
 
-install(DIRECTORY data/gfx ${EXT_GFX_DIR}
+# Game data files
+install(DIRECTORY data/gfx "${EXT_DATA_DIR}/gfx"
 	DESTINATION "share/${KOBO_PACKAGE_NAME}"
 	FILES_MATCHING
 	${DEMO_EXCLUDE_GFX}
 	PATTERN "*.png"
 	PATTERN "*.gpl"
 	PATTERN "*.theme")
-install(DIRECTORY data/sfx  ${EXT_SFX_DIR}
+install(DIRECTORY data/sfx "${EXT_DATA_DIR}/sfx"
 	DESTINATION "share/${KOBO_PACKAGE_NAME}"
 	FILES_MATCHING
 	${DEMO_EXCLUDE_SFX}
 	PATTERN "*.a2s")
 
-#TODO: Score directory?
+# Documentation
+file(GLOB doc_files
+	"${KOBOREDUX_SOURCE_DIR}/*.md"
+	"${KOBOREDUX_SOURCE_DIR}/LICENSE*")
+install(FILES ${doc_files}
+	DESTINATION "share/doc/${KOBO_PACKAGE_NAME}")
+
+# License agreement
+if(WIN32)
+	install(FILES "${EXT_DATA_DIR}/EULA.txt"
+		DESTINATION "share/doc/${KOBO_PACKAGE_NAME}")
+else(WIN32)
+	install(FILES "${EXT_DATA_DIR}/EULA.txt"
+		DESTINATION "share/doc/${KOBO_PACKAGE_NAME}"
+		RENAME "copyright")
+endif(WIN32)
 
 # CPack general
 set(CPACK_GENERATOR "DEB" "RPM" "TBZ2")
@@ -69,7 +83,7 @@ set(CPACK_PACKAGE_RELOCATABLE "false")
 set(CPACK_PACKAGE_NAME "${KOBO_PACKAGE_NAME}")
 set(CPACK_PACKAGE_VERSION "${VERSION_STRING}")
 set(CPACK_PACKAGE_CONTACT "David Olofson <david@olofson.net>")
-set(CPACK_RESOURCE_FILE_LICENSE "${KOBOREDUX_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_LICENSE "${EXT_DATA_DIR}/EULA.txt")
 set(CPACK_RESOURCE_FILE_README "${KOBOREDUX_SOURCE_DIR}/README.md")
 
 # CPack DEB
