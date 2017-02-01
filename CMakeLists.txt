@@ -66,14 +66,16 @@ file(GLOB doc_files
 install(FILES ${doc_files}
 	DESTINATION "share/doc/${KOBO_PACKAGE_NAME}")
 
-# License agreement
+# License agreement for proprietary data, if any
 if(WIN32)
 	install(FILES "${EXT_DATA_DIR}/EULA.txt"
-		DESTINATION "share/doc/${KOBO_PACKAGE_NAME}")
+		DESTINATION "share/doc/${KOBO_PACKAGE_NAME}"
+		OPTIONAL)
 else(WIN32)
 	install(FILES "${EXT_DATA_DIR}/EULA.txt"
 		DESTINATION "share/doc/${KOBO_PACKAGE_NAME}"
-		RENAME "copyright")
+		RENAME "copyright"
+		OPTIONAL)
 endif(WIN32)
 
 # CPack general
@@ -83,7 +85,12 @@ set(CPACK_PACKAGE_RELOCATABLE "false")
 set(CPACK_PACKAGE_NAME "${KOBO_PACKAGE_NAME}")
 set(CPACK_PACKAGE_VERSION "${VERSION_STRING}")
 set(CPACK_PACKAGE_CONTACT "David Olofson <david@olofson.net>")
-set(CPACK_RESOURCE_FILE_LICENSE "${EXT_DATA_DIR}/EULA.txt")
+if(EXISTS "${EXT_DATA_DIR}/EULA.txt")
+	set(CPACK_RESOURCE_FILE_LICENSE "${EXT_DATA_DIR}/EULA.txt")
+else()
+	set(CPACK_RESOURCE_FILE_LICENSE
+		"${KOBOREDUX_SOURCE_DIR}/LICENSE.game_code.txt")
+endif()
 set(CPACK_RESOURCE_FILE_README "${KOBOREDUX_SOURCE_DIR}/README.md")
 
 # CPack DEB
