@@ -63,6 +63,7 @@ install(DIRECTORY data/sfx "${EXT_DATA_DIR}/sfx"
 file(GLOB doc_files
 	"${KOBOREDUX_SOURCE_DIR}/*.md"
 	"${KOBOREDUX_SOURCE_DIR}/LICENSE*")
+list(REMOVE_ITEM doc_files "${KOBOREDUX_SOURCE_DIR}/INSTALL.md")
 install(FILES ${doc_files}
 	DESTINATION "share/doc/${KOBO_PACKAGE_NAME}")
 
@@ -72,10 +73,15 @@ if(WIN32)
 		DESTINATION "share/doc/${KOBO_PACKAGE_NAME}"
 		OPTIONAL)
 else(WIN32)
-	install(FILES "${EXT_DATA_DIR}/EULA.txt"
-		DESTINATION "share/doc/${KOBO_PACKAGE_NAME}"
-		RENAME "copyright"
-		OPTIONAL)
+	file(REMOVE "copyright")
+	if(EXISTS "${EXT_DATA_DIR}/EULA.txt")
+		file(READ "${EXT_DATA_DIR}/EULA.txt" cpr)
+	else()
+		file(READ "${KOBOREDUX_SOURCE_DIR}/LICENSE.game_code.txt" cpr)
+	endif()
+	string(REPLACE "\r" "" cpr ${cpr})
+	file(WRITE "copyright" ${cpr})
+	install(FILES "copyright" DESTINATION "share/doc/${KOBO_PACKAGE_NAME}")
 endif(WIN32)
 
 # CPack general
@@ -93,18 +99,24 @@ else()
 		"${KOBOREDUX_SOURCE_DIR}/LICENSE.game_code.txt")
 endif()
 set(CPACK_RESOURCE_FILE_README "${KOBOREDUX_SOURCE_DIR}/README.md")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Arcade style 2D shooter")
+set(CPACK_PACKAGE_DESCRIPTION "Frantic 80's style 2D shooter, inspired by the look and feel of 90's arcades.")
 
 # CPack DEB
-set(CPACK_DEBIAN_PACKAGE_SECTION "Games")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0,libsdl2-image-2.0-0")
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION_SUMMARY "An arcade style 2D shooter")
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Kobo Redux is a frantic 80's style 2D shooter, inspired by the look and feel of 90's arcade cabinets. The gameplay is fast and unforgiving, although with less of the frustrating quirkiness of the actual games of the 80's. A true challenge in the spirit of the arcade era!")
+set(CPACK_DEBIAN_PACKAGE_SECTION "games")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_SUMMARY "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Arcade style 2D shooter\n \
+Kobo Redux is a frantic 80's style 2D shooter, inspired by the look and\n \
+feel of 90's arcade cabinets. The game play is fast and unforgiving,\n \
+although with less of the frustrating quirkiness of the actual games of\n \
+the 80's. A true challenge in the spirit of the arcade era!")
 
 # CPack PRM
 set(CPACK_RPM_PACKAGE_GROUP "Games")
-set(CPACK_RPM_PACKAGE_SUMMARY "${CPACK_DEBIAN_PACKAGE_DESCRIPTION_SUMMARY}")
 set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
 set(CPACK_RPM_PACKAGE_LICENSE "zlib")
-set(CPACK_RPM_PACKAGE_REQUIRES "libSDL2-2.0.so.0,libSDL2_image-2.0.so.0,libm.so.6")
+set(CPACK_RPM_PACKAGE_URL "http://koboredux.com")
 
 include(CPack)
