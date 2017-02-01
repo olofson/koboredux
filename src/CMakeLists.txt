@@ -160,4 +160,4 @@ set(KOBOREDUX_AUTO_MESSAGE
 configure_file(${CMAKE_SOURCE_DIR}/buildconfig.h.cmake
 	${CMAKE_BINARY_DIR}/include/buildconfig.h)
 
-install(TARGETS kobord DESTINATION bin)
+install(TARGETS kobord DESTINATION "${KOBO_BIN_DIR}")

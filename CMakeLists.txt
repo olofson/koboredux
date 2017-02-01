@@ -8,18 +8,27 @@ set(VERSION_PATCH 2)
 set(VERSION_BUILD 0)
 
 option(DEMO_BUILD "Build Kobo Redux demo." OFF)
+option(WIN32_ZIP_BUILD "Build flat Win32 ZIP archive." OFF)
 
 if(DEMO_BUILD)
 	# Demo build differcences:
 	#	- Append "-demo" to the package/install dir/... name.
 	#	- Exclude the mono and chip themes.
 	#	- Install the Kobo Redux Demo themes.
-	set(KOBO_PACKAGE_NAME "koboredux-demo")
+	if(WIN32)
+		set(KOBO_PACKAGE_NAME "KoboRedux-Demo")
+	else(WIN32)
+		set(KOBO_PACKAGE_NAME "koboredux-demo")
+	endif(WIN32)
 	set(DEMO_EXCLUDE_GFX PATTERN mono EXCLUDE)
 	set(DEMO_EXCLUDE_SFX PATTERN chip EXCLUDE)
 	set(EXT_DATA_DIR "${KOBOREDUX_SOURCE_DIR}/demo-data")
 else(DEMO_BUILD)
-	set(KOBO_PACKAGE_NAME "koboredux")
+	if(WIN32)
+		set(KOBO_PACKAGE_NAME "KoboRedux")
+	else(WIN32)
+		set(KOBO_PACKAGE_NAME "koboredux")
+	endif(WIN32)
 	set(DEMO_EXCLUDE_GFX "")
 	set(DEMO_EXCLUDE_SFX "")
 	set(EXT_DATA_DIR "${KOBOREDUX_SOURCE_DIR}/full-data")
@@ -43,18 +52,30 @@ set(CMAKE_C_FLAGS_MAINTAINER "${f} -Werror")
 set(f "${f} -DDEBUG")
 set(CMAKE_C_FLAGS_DEBUG ${f})
 
+if(WIN32 AND WIN32_ZIP_BUILD)
+	# Of course, you're not supposed to use 'make install' when using this!
+	# This is a dirty hack to build Win32 ZIP archives.
+	set(KOBO_BIN_DIR "/")
+	set(KOBO_SHARE_DIR "/")
+	set(KOBO_DOC_DIR "/")
+else(WIN32 AND WIN32_ZIP_BUILD)
+	set(KOBO_BIN_DIR "bin")
+	set(KOBO_SHARE_DIR "share/${KOBO_PACKAGE_NAME}")
+	set(KOBO_DOC_DIR "share/doc/${KOBO_PACKAGE_NAME}")
+endif(WIN32 AND WIN32_ZIP_BUILD)
+
 add_subdirectory(src)
 
 # Game data files
 install(DIRECTORY data/gfx "${EXT_DATA_DIR}/gfx"
-	DESTINATION "share/${KOBO_PACKAGE_NAME}"
+	DESTINATION "${KOBO_SHARE_DIR}"
 	FILES_MATCHING
 	${DEMO_EXCLUDE_GFX}
 	PATTERN "*.png"
 	PATTERN "*.gpl"
 	PATTERN "*.theme")
 install(DIRECTORY data/sfx "${EXT_DATA_DIR}/sfx"
-	DESTINATION "share/${KOBO_PACKAGE_NAME}"
+	DESTINATION "${KOBO_SHARE_DIR}"
 	FILES_MATCHING
 	${DEMO_EXCLUDE_SFX}
 	PATTERN "*.a2s")
@@ -65,7 +86,7 @@ file(GLOB doc_files
 	"${KOBOREDUX_SOURCE_DIR}/LICENSE*")
 list(REMOVE_ITEM doc_files "${KOBOREDUX_SOURCE_DIR}/INSTALL.md")
 install(FILES ${doc_files}
-	DESTINATION "share/doc/${KOBO_PACKAGE_NAME}")
+	DESTINATION "${KOBO_DOC_DIR}")
 
 # Desktop entry
 if(NOT WIN32)
@@ -80,7 +101,7 @@ endif(NOT WIN32)
 # License agreement for proprietary data, if any
 if(WIN32)
 	install(FILES "${EXT_DATA_DIR}/EULA.txt"
-		DESTINATION "share/doc/${KOBO_PACKAGE_NAME}"
+		DESTINATION "${KOBO_DOC_DIR}"
 		OPTIONAL)
 else(WIN32)
 	file(REMOVE "copyright")
@@ -91,11 +112,24 @@ else(WIN32)
 	endif()
 	string(REPLACE "\r" "" cpr ${cpr})
 	file(WRITE "copyright" ${cpr})
-	install(FILES "copyright" DESTINATION "share/doc/${KOBO_PACKAGE_NAME}")
+	install(FILES "copyright"
+		DESTINATION "${KOBO_DOC_DIR}")
+endif(WIN32)
+
+# Win32 redistributables (SDL2, Audiality 2, libstdc++ etc)
+if(WIN32)
+	install(FILES "${KOBOREDUX_SOURCE_DIR}/win32-redist/"
+		DESTINATION "${KOBO_BIN_DIR}")
 endif(WIN32)
 
 # CPack general
-set(CPACK_GENERATOR "DEB" "RPM" "TBZ2")
+if(WIN32)
+	# Windows ZIP archive
+	set(CPACK_GENERATOR "ZIP")
+else(WIN32)
+	# Linux packages
+	set(CPACK_GENERATOR "DEB" "RPM" "TBZ2")
+endif(WIN32)
 set(CPACK_SET_DESTDIR ON)
 set(CPACK_PACKAGE_RELOCATABLE false)
 set(CPACK_STRIP_FILES true)
