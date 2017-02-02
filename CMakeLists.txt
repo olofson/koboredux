@@ -67,6 +67,15 @@ list(REMOVE_ITEM doc_files "${KOBOREDUX_SOURCE_DIR}/INSTALL.md")
 install(FILES ${doc_files}
 	DESTINATION "share/doc/${KOBO_PACKAGE_NAME}")
 
+# Desktop entry
+if(NOT WIN32)
+	set(KOBO_DE_FILE "net.olofson.${KOBO_PACKAGE_NAME}.desktop")
+	install(FILES "${KOBOREDUX_SOURCE_DIR}/icons/koboredux.png"
+		DESTINATION "share/pixmaps")
+	install(FILES "${KOBOREDUX_SOURCE_DIR}/icons/${KOBO_DE_FILE}"
+		DESTINATION "share/applications")
+endif(NOT WIN32)
+
 # License agreement for proprietary data, if any
 if(WIN32)
 	install(FILES "${EXT_DATA_DIR}/EULA.txt"

@@ -74,7 +74,7 @@ include_directories(${AUDIALITY2_INCLUDE_DIRS})
 
 set(RES_FILES "")
 if(MINGW)
-	set(RES_FILES "${KOBOREDUX_SOURCE_DIR}/kobord.rc")
+	set(RES_FILES "${KOBOREDUX_SOURCE_DIR}/icons/windows/kobord.rc")
 	set(CMAKE_RC_COMPILER_INIT windres)
 	ENABLE_LANGUAGE(RC)
 	SET(CMAKE_RC_COMPILE_OBJECT
