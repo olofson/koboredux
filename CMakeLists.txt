@@ -127,5 +127,7 @@ set(CPACK_RPM_PACKAGE_GROUP "Games")
 set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
 set(CPACK_RPM_PACKAGE_LICENSE "zlib")
 set(CPACK_RPM_PACKAGE_URL "http://koboredux.com")
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+	/usr/share/applications /usr/share/pixmaps)
 
 include(CPack)
