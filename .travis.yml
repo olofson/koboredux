@@ -21,6 +21,9 @@ before_install:
   - if [[ "$DEMO" == "ON" ]]; then ./install-demo-data.sh; fi
 
 script:
+  - cmake --version
+  - dpkg --version
+  - rpm --version
   - mkdir build
   - cd build
   - cmake -DCMAKE_INSTALL_PREFIX=/usr -DDEMO_BUILD=$DEMO ..
