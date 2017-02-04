@@ -1,9 +1,9 @@
 #!/bin/sh
-RELEASE=v0.7.2
+. ./PACKAGEDEFS
 
 set -ex
 
-if [ !-d "koboreduxassets" ]; then
+if [ ! -d "koboreduxassets" ]; then
 	git clone git@github.com:olofson/koboreduxassets.git
 	cd koboreduxassets
 else
@@ -12,7 +12,7 @@ else
 	git pull
 fi
 
-git checkout ${RELEASE}
+git checkout v${KRRELEASE}
 
 cd ..
 
