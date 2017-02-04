@@ -6,6 +6,6 @@ GenericName=Arcade Game
 Comment=Arcade style 2D shooter (Demo version)
 TryExec=kobord-demo
 Exec=kobord-demo
-Icon=koboredux
+Icon=koboredux-demo
 Terminal=false
 Categories=Application;Game;ArcadeGame;2DGraphics;

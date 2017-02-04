@@ -71,7 +71,8 @@ install(FILES ${doc_files}
 if(NOT WIN32)
 	set(KOBO_DE_FILE "net.olofson.${KOBO_PACKAGE_NAME}.desktop")
 	install(FILES "${KOBOREDUX_SOURCE_DIR}/icons/koboredux.png"
-		DESTINATION "share/pixmaps")
+		DESTINATION "share/pixmaps"
+		RENAME "${KOBO_PACKAGE_NAME}.png")
 	install(FILES "${KOBOREDUX_SOURCE_DIR}/icons/${KOBO_DE_FILE}"
 		DESTINATION "share/applications")
 endif(NOT WIN32)
