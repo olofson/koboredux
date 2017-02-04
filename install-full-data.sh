@@ -1,7 +1,21 @@
 #!/bin/sh
+RELEASE=v0.7.2
+
 set -ex
-git clone git@github.com:olofson/koboreduxassets.git
-cd koboreduxassets
-git checkout v0.7.2
+
+if [ !-d "koboreduxassets" ]; then
+	git clone git@github.com:olofson/koboreduxassets.git
+	cd koboreduxassets
+else
+	cd koboreduxassets
+	git checkout master
+	git pull
+fi
+
+git checkout ${RELEASE}
+
 cd ..
-ln -s koboreduxassets/data full-data
+
+if [ ! -L full-data ]; then
+	ln -s koboreduxassets/data full-data
+fi
