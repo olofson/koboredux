@@ -3,23 +3,30 @@
 
 set -ex
 
+render=false
+
 # Clone or update repository as needed
 if [ ! -d "koboreduxassets" ]; then
 	git clone git@github.com:olofson/koboreduxassets.git
 	cd koboreduxassets
+	git checkout v${KRRELEASE}
+	render=true
 else
 	cd koboreduxassets
-	git checkout master
-	git pull
+	if ! git checkout v${KRRELEASE} ; then
+		git checkout master
+		git pull
+		git checkout v${KRRELEASE}
+		render=true
+	fi
 fi
 
-# Checkout the appropriate release
-git checkout v${KRRELEASE}
-
 # Render the TIPE sprites
-cd src
-eel render-sprites
-cd ..
+if "$render" == true || [ ! -f "data/gfx/redux/sprites/bigship.png" ]; then
+	cd src
+	eel render-sprites
+	cd ..
+fi
 
 # Make sure we have a link to the actual data directories
 cd ..
