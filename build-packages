@@ -1,6 +1,10 @@
 #!/bin/bash
 shopt -s extglob
 
+if [ ! -d "build" ]; then
+	./cfg-all
+fi
+
 ./install-demo-data
 ./install-full-data
 
@@ -25,6 +29,7 @@ for i in $BUILDDIR/$FILTER ; do
 	echo "[ Building $(basename $i) ]"
 	echo $i
 	cd $i
+	make -j20
 	make package
 	mv *.@(rpm|deb|tar.bz2|zip) "${PKGDIR}"
 	echo "[ Leaving $(basename $i) ]"
