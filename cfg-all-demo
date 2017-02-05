@@ -1,2 +1,0 @@
-#!/bin/sh
-./cfg-all -DDEMO_BUILD=ON

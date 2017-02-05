@@ -1,7 +1,6 @@
 #!/bin/sh
 SOURCEDIR=$(pwd)
 BUILDDIR=$SOURCEDIR/build
-XOPTS=$1
 
 if [ ! -e $BUILDDIR ]; then
 	mkdir $BUILDDIR
@@ -37,7 +36,7 @@ setup_native() {
 	local btype=$2
 	local desc=$3
 	local prefix=$4
-	local opts="$5 $XOPTS"
+	local opts="$5"
 	create_build_dir $dname $btype $desc
 	cmake $opts $SOURCEDIR -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE="$btype"
 	cd $SOURCEDIR
@@ -48,7 +47,7 @@ setup_cross() {
 	local btype=$2
 	local desc=$3
 	local target=$4
-	local opts="$5 $XOPTS"
+	local opts="$5 -DWIN32_ZIP_BUILD=ON"
 	create_build_dir $dname $btype $desc
 	cmake $opts -DCMAKE_TOOLCHAIN_FILE=$SOURCEDIR/mingw32-cross.cmake $SOURCEDIR -DCMAKE_BUILD_TYPE="$btype" -DCMAKE_TOOLCHAIN_FILE=$MXEPATH/usr/$target/share/cmake/mxe-conf.cmake -DBUILD_SHARED_LIBS=ON
 	cd $SOURCEDIR
@@ -61,6 +60,7 @@ echo "Setting up build directories for native targets..."
 echo "=========================================================="
 
 setup_native release Release "host native" /usr
+setup_native demo Release "host native DEMO" /usr "-DDEMO_BUILD=ON"
 setup_native maintainer Maintainer "host native" /usr
 setup_native debug Debug "host native" /usr
 
@@ -80,6 +80,7 @@ if [ -e $MXEPATH ]; then
 	echo "=========================================================="
 
 	setup_cross mingw-release Release "MXE cross" i686-w64-mingw32.shared
+	setup_cross mingw-demo Release "MXE cross DEMO" i686-w64-mingw32.shared "-DDEMO_BUILD=ON"
 	setup_cross mingw-debug Debug "MXE cross" i686-w64-mingw32.shared
 
 	echo
