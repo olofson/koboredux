@@ -24,7 +24,7 @@ DATADIR="usr/share/koboredux"
 
 prepare_rebuild() {
 	# Make sure we have the appropriate full version data files
-	./install-full-data.sh
+	./install-full-data
 
 	# Clean up or create target directory, as needed
 	if [ -d "${OUTDIR}" ]; then

@@ -17,8 +17,8 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libsdl2-dev libsdl2-image-dev
   - sudo apt install rpm
-  - ./install-audiality2.sh
-  - if [[ "$DEMO" == "ON" ]]; then ./install-demo-data.sh; fi
+  - ./install-audiality2
+  - if [[ "$DEMO" == "ON" ]]; then ./install-demo-data; fi
 
 script:
   - cmake --version

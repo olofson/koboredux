@@ -1,8 +1,8 @@
 #!/bin/bash
 shopt -s extglob
 
-./install-demo-data.sh
-./install-full-data.sh
+./install-demo-data
+./install-full-data
 
 if [ $# -eq 0 ]; then
 	FILTER=@(*release|*demo)
