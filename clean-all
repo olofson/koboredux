@@ -1,0 +1,7 @@
+#!/bin/sh
+rm -rf build
+rm -rf demo-data full-data
+rm -rf packages full-packages
+rm -rf koboreduxassets audiality2
+rm -rf win32-redist
+rm -f copyright
