@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Kobo Redux
+GenericName=Arcade Game
+Comment=Arcade style 2D shooter
+TryExec=kobord
+Exec=bash -c '"$(dirname "$1")"/kobord.sh' dummy %k
+Terminal=false
+Categories=Application;Game;ArcadeGame;2DGraphics;

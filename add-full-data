@@ -57,7 +57,7 @@ fix_permissions() {
 
 
 #
-# Bzip2
+# Bzip2 (flattened!)
 #
 
 rebuild_bzip2() {
@@ -66,9 +66,12 @@ rebuild_bzip2() {
 	tar -xjvf ${BZIP2ARCH}
 	rm -rf ${BZIP2ARCH}
 
-	add_data_files "${PACKAGENAME}/${DATADIR}"
+	add_data_files "${PACKAGENAME}"
 
-	fix_permissions "${PACKAGENAME}"
+	find . -type d -print0 | xargs -0 chmod 755
+	find . -type f -print0 | xargs -0 chmod 644
+	find kobord* -type f -print0 | xargs -0 chmod 755
+	find *.desktop -type f -print0 | xargs -0 chmod 755
 
 	# Repackage and clean up
 	BZIP2=--best tar -cvjSf ${BZIP2ARCH} ${PACKAGENAME}

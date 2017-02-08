@@ -5,3 +5,6 @@ rm -rf packages full-packages
 rm -rf koboreduxassets audiality2
 rm -rf win32-redist
 rm -f copyright
+rm -rf SDL2-2*
+rm -rf SDL2_image-2*
+rm -rf linux-bundle-lib

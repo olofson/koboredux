@@ -1,0 +1,41 @@
+#!/bin/sh
+set -ex
+
+SDLRELEASE=2.0.5
+SDLURL="https://www.libsdl.org/release/SDL2-${SDLRELEASE}.tar.gz"
+
+IMGRELEASE=2.0.1
+IMGURL="https://www.libsdl.org/projects/SDL_image/release/SDL2_image-${IMGRELEASE}.tar.gz"
+
+rm -rf linux-bundle-lib
+mkdir linux-bundle-lib
+
+# SDL2
+if pkg-config sdl2 --exists; then
+	echo "SDL2 already installed in the system!"
+else
+	curl -O ${SDLURL}
+	tar -xzvf SDL2-${SDLRELEASE}.tar.gz
+	cd SDL2-${SDLRELEASE}
+	./configure --prefix=/usr
+	make
+	sudo make install
+	cp -L build/.libs/libSDL2-*.so.0 ../linux-bundle-lib
+	cd ..
+fi
+
+# SDL2_image
+if [ -f "/usr/include/SDL2/SDL_image.h" ]; then
+	echo "SDL2_image already installed in the system!"
+else
+	curl -O ${IMGURL}
+	tar -xzvf SDL2_image-${IMGRELEASE}.tar.gz
+	cd SDL2_image-${IMGRELEASE}
+	./configure --prefix=/usr --disable-bmp --disable-gif --disable-jpg --disable-jpg-shared --disable-lbm --disable-pcx --enable-png --enable-png-shared --disable-pnm --disable-tga --disable-tif --disable-tif-shared --disable-xcf --disable-xpm --disable-xv --disable-webp --disable-webp-shared
+	make
+	sudo make install
+	cp -L .libs/libSDL2_image-*.so.0 ../linux-bundle-lib
+	cd ..
+fi
+
+strip linux-bundle-lib/*

@@ -2,7 +2,7 @@
 . ./PACKAGEDEFS
 
 if pkg-config audiality2 --exists; then
-	echo "Audiality 2 already installed on the system!"
+	echo "Audiality 2 already installed in the system!"
 	exit
 fi
 

@@ -5,6 +5,8 @@ if [ ! -d "build" ]; then
 	./cfg-all
 fi
 
+./install-sdl2
+./install-audiality2
 ./install-demo-data
 ./install-full-data
 ./install-win32-redist
@@ -36,9 +38,16 @@ for i in $BUILDDIR/$FILTER ; do
 	echo "[ Leaving $(basename $i) ]"
 	echo
 done
+cd ${SOURCEDIR}
 
 # HAX: Can't get CPack to stop adding those bogus directories...
 for a in ${PKGDIR}/KoboRedux-*-win32.zip ; do
 	echo $a
 	zip -d $a */home/*
+done
+
+# HAX: No reliable way of selectively flattening archives with CPack. >:-/
+for a in ${PKGDIR}/koboredux-*-Linux.tar.bz2 ; do
+	echo $a
+	${SOURCEDIR}/fix-linux-bz2-package $a
 done
