@@ -14,7 +14,7 @@ PACKAGENAME="koboredux-${KRRELEASE}-Linux"
 DEBARCH="${PACKAGENAME}.deb"
 RPMARCH="${PACKAGENAME}.rpm"
 BZIP2ARCH="${PACKAGENAME}.tar.bz2"
-BASEURL="${KRREPO}/releases/download/v${KRRELEASE}"
+BASEURL="${KRREPO}/releases/download/v${RELEASETAG}"
 
 DATADIR="usr/share/koboredux"
 
@@ -68,10 +68,10 @@ rebuild_bzip2() {
 
 	add_data_files "${PACKAGENAME}"
 
-	find . -type d -print0 | xargs -0 chmod 755
-	find . -type f -print0 | xargs -0 chmod 644
-	find kobord* -type f -print0 | xargs -0 chmod 755
-	find *.desktop -type f -print0 | xargs -0 chmod 755
+	find ${PACKAGENAME} -type d -print0 | xargs -0 chmod 755
+	find ${PACKAGENAME} -type f -print0 | xargs -0 chmod 644
+	find ${PACKAGENAME}/kobord* -type f -print0 | xargs -0 chmod 755
+	find ${PACKAGENAME}/*.desktop -type f -print0 | xargs -0 chmod 755
 
 	# Repackage and clean up
 	BZIP2=--best tar -cvjSf ${BZIP2ARCH} ${PACKAGENAME}
