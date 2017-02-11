@@ -1,33 +1,29 @@
 #!/bin/bash
-shopt -s extglob
+. ./BUILDDEFS
 
-if [ ! -d "build" ]; then
-	./cfg-all
+shopt -s extglob
+shopt -s nullglob
+
+if [ $# -eq 0 ]; then
+	# Default: Build all native demo and release packages
+	FILTER=@(release|demo)
+elif [ $1 == all ]; then
+	FILTER="*"
+else
+	FILTER="$1"
 fi
 
-./install-sdl2
-./install-audiality2
+./install-libs
 ./install-demo-data
 ./install-full-data
 ./install-win32-redist
 
-if [ $# -eq 0 ]; then
-	FILTER=@(*release|*demo)
-else
-	FILTER=$1
-fi
+./configure "${FILTER}"
 
-SOURCEDIR="$(pwd)"
-BUILDDIR="${SOURCEDIR}/build"
-PKGDIR="$(pwd)/packages"
+mkdir -p "${PKGDIR}"
+rm -rf "${PKGDIR}/*"
 
-if [ ! -d "${PKGDIR}" ]; then
-	mkdir "${PKGDIR}"
-else
-	rm -rf "${PKGDIR}/*"
-fi
-
-for i in $BUILDDIR/$FILTER ; do
+for i in ${BUILDDIR}/${FILTER} ; do
 	echo
 	echo "[ Building $(basename $i) ]"
 	echo $i
@@ -49,5 +45,15 @@ done
 # HAX: No reliable way of selectively flattening archives with CPack. >:-/
 for a in ${PKGDIR}/koboredux-*-Linux.tar.bz2 ; do
 	echo $a
-	${SOURCEDIR}/fix-linux-bz2-package $a
+	"${SOURCEDIR}/fix-linux-bz2-package" $a
+done
+
+# HAX: CPack makes pretty bad DEBs and RPMs
+for a in ${PKGDIR}/koboredux-*-Linux.deb ; do
+	echo $a
+	fakeroot "${SOURCEDIR}/fix-linux-deb-package" $a
+done
+for a in ${PKGDIR}/koboredux-*-Linux.rpm ; do
+	echo $a
+	"${SOURCEDIR}/fix-linux-rpm-package" $a
 done

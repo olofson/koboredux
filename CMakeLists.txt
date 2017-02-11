@@ -9,6 +9,15 @@ set(VERSION_BUILD 0)
 
 option(DEMO_BUILD "Build Kobo Redux demo." OFF)
 option(WIN32_ZIP_BUILD "Build flat Win32 ZIP archive." OFF)
+option(WORKDIR "Top level build/staging directory."
+	"${KOBOREDUX_SOURCE_DIR}/build")
+option(KOBO_EXTRA_LIBRARIES "Extra libraries to link with." "")
+
+message(".-----------------------------------------")
+message("|      DEMO_BUILD: ${DEMO_BUILD}")
+message("| WIN32_ZIP_BUILD: ${WIN32_ZIP_BUILD}")
+message("|         WORKDIR: ${WORKDIR}")
+message("'-----------------------------------------")
 
 if(DEMO_BUILD)
 	# Demo build differcences:
@@ -22,7 +31,7 @@ if(DEMO_BUILD)
 	endif(WIN32)
 	set(DEMO_EXCLUDE_GFX PATTERN mono EXCLUDE)
 	set(DEMO_EXCLUDE_SFX PATTERN chip EXCLUDE)
-	set(EXT_DATA_DIR "${KOBOREDUX_SOURCE_DIR}/demo-data")
+	set(EXT_DATA_DIR "${WORKDIR}/demo-data")
 else(DEMO_BUILD)
 	if(WIN32)
 		set(KOBO_PACKAGE_NAME "KoboRedux")
@@ -31,7 +40,7 @@ else(DEMO_BUILD)
 	endif(WIN32)
 	set(DEMO_EXCLUDE_GFX "")
 	set(DEMO_EXCLUDE_SFX "")
-	set(EXT_DATA_DIR "${KOBOREDUX_SOURCE_DIR}/full-data")
+	set(EXT_DATA_DIR "${WORKDIR}/full-data")
 endif(DEMO_BUILD)
 
 set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
@@ -104,21 +113,23 @@ if(WIN32)
 		DESTINATION "${KOBO_DOC_DIR}"
 		OPTIONAL)
 else(WIN32)
-	file(REMOVE "copyright")
+	file(REMOVE "${PROJECT_BINARY_DIR}/copyright")
 	if(EXISTS "${EXT_DATA_DIR}/EULA.txt")
 		file(READ "${EXT_DATA_DIR}/EULA.txt" cpr)
 	else()
+		message("WARNING: No EULA found; using LICENSE.game_code.txt.")
 		file(READ "${KOBOREDUX_SOURCE_DIR}/LICENSE.game_code.txt" cpr)
 	endif()
 	string(REPLACE "\r" "" cpr ${cpr})
-	file(WRITE "copyright" ${cpr})
-	install(FILES "copyright"
+	file(WRITE "${PROJECT_BINARY_DIR}/copyright" ${cpr})
+	install(FILES "${PROJECT_BINARY_DIR}/copyright"
 		DESTINATION "${KOBO_DOC_DIR}")
 endif(WIN32)
 
 # Win32 redistributables (SDL2, Audiality 2, libstdc++ etc)
 if(WIN32)
-	install(FILES "${KOBOREDUX_SOURCE_DIR}/win32-redist/"
+	file(GLOB win32_redist_files "${WORKDIR}/win32-redist/*")
+	install(FILES ${win32_redist_files}
 		DESTINATION "${KOBO_BIN_DIR}")
 endif(WIN32)
 
@@ -151,16 +162,12 @@ set(CPACK_DEBIAN_PACKAGE_SECTION "games")
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_SUMMARY "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Arcade style 2D shooter\n \
-Kobo Redux is a frantic 80's style 2D shooter, inspired by the look and\n \
-feel of 90's arcade cabinets. The game play is fast and unforgiving,\n \
-although with less of the frustrating quirkiness of the actual games of\n \
-the 80's. A true challenge in the spirit of the arcade era!")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Arcade style 2D shooter\n Kobo Redux is a frantic 80's style 2D shooter, inspired by the look and\n feel of 90's arcade cabinets. The game play is fast and unforgiving,\n although with less of the frustrating quirkiness of the actual games of\n the 80's. A true challenge in the spirit of the arcade era!")
 
 # CPack PRM
 set(CPACK_RPM_PACKAGE_GROUP "Games")
 set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
-set(CPACK_RPM_PACKAGE_LICENSE "zlib")
+set(CPACK_RPM_PACKAGE_LICENSE "GPLv2+")
 set(CPACK_RPM_PACKAGE_URL "http://koboredux.com")
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
 	/usr/share/applications /usr/share/pixmaps)

@@ -1,0 +1,61 @@
+#!/bin/bash
+. ./BUILDDEFS
+
+# Create RPM spec file from existing RPM
+create_rpm_spec() {
+	local package=$1
+	local spec=$2
+	rpm -qp --qf "Name: %{NAME}
+Version: %{VERSION}
+Release: %{RELEASE}
+BuildArch: %{ARCH}
+Group: %{GROUP}
+License: %{LICENSE}
+Source RPM: %{SOURCERPM}
+Vendor: Olofson Arcade
+Packager: David Olofson <david@olofson.net>
+URL: %{URL}
+Summary: %{SUMMARY}
+
+%%description
+%{DESCRIPTION}
+
+%%files
+/usr/bin/*
+/usr/share/doc/*
+/usr/share/kobo*/*
+/usr/share/applications/*
+/usr/share/pixmaps/*
+" ${package} > ${spec}
+}
+
+set -ex
+
+PKGFILE=$1
+PKGTMP="${WORKDIR}/$(basename ${PKGFILE}).tmp"
+rm -rf ${PKGTMP}
+
+# Unpack
+mkdir ${PKGTMP}
+cd ${PKGTMP}
+rpm2cpio ${PKGFILE} | cpio -idmv
+cd ..
+
+# Fix bogus permissions
+find "${PKGTMP}/." -type d -print0 | xargs -0 chmod 755
+find "${PKGTMP}/usr/share" -type f -print0 | xargs -0 chmod 644
+find "${PKGTMP}/usr/bin" -type f -print0 | xargs -0 chmod 755
+
+create_rpm_spec ${PKGFILE} "${WORKDIR}/koboredux.spec"
+echo "--- Generated spec ---"
+cat "${WORKDIR}/koboredux.spec"
+echo "----------------------"
+
+# Repackage and clean up
+archdir=$(rpm -qp --qf "%{ARCH}" ${PKGFILE})
+rm ${PKGFILE}
+rpmbuild --buildroot "${PKGTMP}" --define "_rpmdir $(pwd)" -bb "${WORKDIR}/koboredux.spec"
+mv ${archdir}/*.rpm ${PKGFILE}
+rm -rf ${archdir}
+rm "${WORKDIR}/koboredux.spec"
+rm -rf ${PKGTMP}

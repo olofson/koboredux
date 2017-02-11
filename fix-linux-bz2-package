@@ -1,39 +1,52 @@
 #!/bin/bash
-SOURCEDIR="$(pwd)"
+. ./BUILDDEFS
+
+set -ex
+
 PKGPATH=$1
 ARCHNAME=$(basename ${PKGPATH%})
 PKGNAME=${ARCHNAME%.*.*}
-[[ ${PKGNAME} == *"demo"* ]] && DEMO="-demo" || DEMO=""
+[[ "${PKGNAME}" == *"demo"* ]] && DEMO="-demo" || DEMO=""
 
-cd $(dirname ${PKGPATH})
+cd $(dirname "${PKGPATH}")
 
 echo "Flattening package ${PKGNAME}..."
 
 # Extract
 tar -xjvf ${ARCHNAME}
+if [ ! -d "${PKGNAME}/usr" ] ; then
+	echo "This package has already been flattened!"
+	rm -rf ${PKGNAME}
+	exit
+fi
 rm -f ${ARCHNAME}
-mv ${PKGNAME} orig-pkg
+ORIGPKG="${PKGNAME}.orig"
+mv ${PKGNAME} ${ORIGPKG}
 
 # Rebuild
 mkdir ${PKGNAME}
-mv orig-pkg/usr/bin/kobord${DEMO} ${PKGNAME}
-mv orig-pkg/usr/share/koboredux${DEMO}/* ${PKGNAME}
-mv orig-pkg/usr/share/doc/koboredux${DEMO}/* ${PKGNAME}
-if [[ ${DEMO} == "" ]] ; then
+mv ${ORIGPKG}/usr/bin/kobord${DEMO} ${PKGNAME}
+mv ${ORIGPKG}/usr/share/koboredux${DEMO}/* ${PKGNAME}
+mv ${ORIGPKG}/usr/share/doc/koboredux${DEMO}/* ${PKGNAME}
+mv ${PKGNAME}/copyright ${PKGNAME}/EULA.txt
+if [[ "${DEMO}" == "" ]] ; then
 	cp ${SOURCEDIR}/linux-bundle/.itch.toml ${PKGNAME}
 else
 	cp ${SOURCEDIR}/linux-bundle/demo.itch.toml ${PKGNAME}/.itch.toml
 fi
 cp ${SOURCEDIR}/linux-bundle/kobord${DEMO}.sh ${PKGNAME}
 cp ${SOURCEDIR}/linux-bundle/koboredux${DEMO}.desktop ${PKGNAME}
-mkdir ${PKGNAME}/lib
-cp ${SOURCEDIR}/linux-bundle-lib/* ${PKGNAME}/lib
+
+if [ ! "${KOBO_STATIC_LINUX}" = true ] ; then
+	mkdir ${PKGNAME}/lib
+	cp ${WORKDIR}/linux-bundle-lib/* ${PKGNAME}/lib
+fi
 
 # Archive
 BZIP2=--best tar -cvjSf ${ARCHNAME} ${PKGNAME}
 
 # Clean up
 rm -rf ${PKGNAME}
-rm -rf orig-pkg
+rm -rf ${ORIGPKG}
 
 echo "Package ${PKGNAME} flattened!"

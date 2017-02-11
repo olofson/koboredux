@@ -1,3 +1,4 @@
 #!/bin/bash
 shopt -s extglob
+# Build only Win32 demo and release packages
 ./build-packages mingw-@(release|demo)

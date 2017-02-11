@@ -1,15 +1,19 @@
 #!/bin/sh
-. ./PACKAGEDEFS
+. ./BUILDDEFS
 
-if [ -d "win32-redist" ]; then
+if [ ! -d "${WORKDIR}" ]; then
+	mkdir "${WORKDIR}"
+fi
+
+if [ -d "${WORKDIR}/win32-redist" ]; then
 	echo "Win32 redistributables (win32-redist) already in place!"
 	exit
 fi
 
 set -ex
 
-mkdir win32-redist
-cd win32-redist
+mkdir "${WORKDIR}/win32-redist"
+cd "${WORKDIR}/win32-redist"
 
 # Grab Win32 DLL package from koboredux.com
 wget "${KRHOME}/download/${REDISTARCH}"

@@ -16,8 +16,7 @@ dist: trusty
 before_install:
   - sudo apt-get update -qq
   - sudo apt install rpm
-  - ./install-sdl2
-  - ./install-audiality2
+  - ./install-libs
   - if [[ "$DEMO" == "ON" ]]; then ./install-demo-data; fi
 
 script:
@@ -28,20 +27,20 @@ script:
   - cd build
   - cmake -DCMAKE_INSTALL_PREFIX=/usr -DDEMO_BUILD=$DEMO ..
   - make
-  - make package
-  - cd ..
-  - ./fix-linux-bz2-package build/koboredux-*-Linux.tar.bz2
+#  - make package
+#  - cd ..
+#  - ./fix-linux-bz2-package build/koboredux-*-Linux.tar.bz2
 
-deploy:
-  skip_cleanup: true
-  provider: releases
-  api_key:
-    secure: FA4FE9EvlMu40snssAbcB/HSv8mqomC5N28/f5pSxggfCXeNKbL1NH7lT+/4dafJxkh1VjdAmUI/ENHnyP8h8a6lIrXD6YRTboV2n0WCovBguqKR4d5TTG1izeVHgHfy5iPFiSpg/bjNntrUCpq7oQ0BPeKcsvuZzBgOfLJYBObkCSb7pron4p22N4b19TS8LGWpzA2XOB74LXs2YkftjtMLjTdoemnJxXBAZKMa2H5UbyCtJTqHuM5pq0uHuaIbSjZLL/5/QR5mbeSzVxL93q2eGUR22MZgqhRiCLxKO48xQv7twH/NYiI+U4cw+DB3UmWtUFZUEdZ061kWS8RLpXYIcBakPT33EgBeSeAReNESvoQi1t42/kPmyweU0i1X77c6V/Wcw1jgS7yYVESbpQdemBHf1WSoam0tCJ7QnW9KuN+o19/O13Ic3IN0RvXlyTQnrZntxs7OtTxutGCSFuqIOCoFYT9wLhbjO0MNLL6ojnKkaoFjuCv/RDae1rJksKrNRh4wx0u0DQIeQ5mNWOViFerB4ocKD9uwrBhfgIn5kyrJlvxc8yCv5jmshaJNZBCZn3DOPjhyTkqbzB/tbGe8YsXBnUVWCDktjvj3U9ykSBkx/AYKgXB4mHsbpc+2SLuQ4NPiYrQykKABXFASC+yl36y1QZ0Fo0mT1w1bvG4=
-  file-glob: true
-  file:
-    - build/koboredux-*-Linux.deb
-    - build/koboredux-*-Linux.rpm
-    - build/koboredux-*-Linux.tar.bz2
-  on:
-    tags: true
-    repo: olofson/koboredux
+#deploy:
+#  skip_cleanup: true
+#  provider: releases
+#  api_key:
+#    secure: FA4FE9EvlMu40snssAbcB/HSv8mqomC5N28/f5pSxggfCXeNKbL1NH7lT+/4dafJxkh1VjdAmUI/ENHnyP8h8a6lIrXD6YRTboV2n0WCovBguqKR4d5TTG1izeVHgHfy5iPFiSpg/bjNntrUCpq7oQ0BPeKcsvuZzBgOfLJYBObkCSb7pron4p22N4b19TS8LGWpzA2XOB74LXs2YkftjtMLjTdoemnJxXBAZKMa2H5UbyCtJTqHuM5pq0uHuaIbSjZLL/5/QR5mbeSzVxL93q2eGUR22MZgqhRiCLxKO48xQv7twH/NYiI+U4cw+DB3UmWtUFZUEdZ061kWS8RLpXYIcBakPT33EgBeSeAReNESvoQi1t42/kPmyweU0i1X77c6V/Wcw1jgS7yYVESbpQdemBHf1WSoam0tCJ7QnW9KuN+o19/O13Ic3IN0RvXlyTQnrZntxs7OtTxutGCSFuqIOCoFYT9wLhbjO0MNLL6ojnKkaoFjuCv/RDae1rJksKrNRh4wx0u0DQIeQ5mNWOViFerB4ocKD9uwrBhfgIn5kyrJlvxc8yCv5jmshaJNZBCZn3DOPjhyTkqbzB/tbGe8YsXBnUVWCDktjvj3U9ykSBkx/AYKgXB4mHsbpc+2SLuQ4NPiYrQykKABXFASC+yl36y1QZ0Fo0mT1w1bvG4=
+#  file-glob: true
+#  file:
+#    - build/koboredux-*-Linux.deb
+#    - build/koboredux-*-Linux.rpm
+#    - build/koboredux-*-Linux.tar.bz2
+#  on:
+#    tags: true
+#    repo: olofson/koboredux

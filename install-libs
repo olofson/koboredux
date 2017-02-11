@@ -1,0 +1,106 @@
+#!/bin/sh
+. ./BUILDDEFS
+
+# FIXME: Grab libs from system if we build dynamic, but don't build libs here!
+
+set -ex
+
+if [ ! -d "${WORKDIR}/libs-build" ]; then
+	mkdir -p "${WORKDIR}/libs-build"
+fi
+
+rm -rf "${WORKDIR}/linux-bundle-lib"
+if [ "${KOBO_STATIC_LINUX}" = true ] ; then
+	AUTOTOOLS_EXTRA="--enable-static --disable-shared"
+	LIBPNG_FLAGS="--enable-png --disable-png-shared"
+	CMAKE_EXTRA="-DBUILD_SHARED_LIBS=OFF"
+else
+	AUTOTOOLS_EXTRA="--disable-static --enable-shared"
+	LIBPNG_FLAGS="--enable-png --enable-png-shared"
+	CMAKE_EXTRA="-DBUILD_SHARED_LIBS=ON"
+	mkdir "${WORKDIR}/linux-bundle-lib"
+fi
+
+cd "${WORKDIR}/libs-build"
+
+# SDL2
+if pkg-config sdl2 --exists; then
+	echo "SDL2 already installed in the system!"
+else
+	if [ ! -f "SDL2-${SDLRELEASE}.tar.gz" ]; then
+		curl -O ${SDLURL}
+	fi
+	tar -xzvf "SDL2-${SDLRELEASE}.tar.gz"
+	cd SDL2-${SDLRELEASE}
+	./configure --prefix=/usr ${AUTOTOOLS_EXTRA}
+	make
+	sudo make install
+	if [ ! "${KOBO_STATIC_LINUX}" = true ] ; then
+		cp -L build/.libs/libSDL2-*.so.0 "${WORKDIR}/linux-bundle-lib"
+	fi
+	cd ..
+fi
+
+# libPNG
+if [ -f "/usr/include/png.h" ]; then
+	echo "libpng already installed in the system!"
+else
+	if [ ! -f "libpng-${PNGRELEASE}.tar.xz" ]; then
+		curl -O ${PNGURL}
+	fi
+	tar -xf "libpng-${PNGRELEASE}.tar.xz"
+	cd libpng-${PNGRELEASE}
+	./configure --prefix=/usr ${AUTOTOOLS_EXTRA}
+	make
+	sudo make install
+	if [ ! "${KOBO_STATIC_LINUX}" = true ] ; then
+		cp -L build/.libs/libSDL2-*.so.0 "${WORKDIR}/linux-bundle-lib"
+	fi
+	cd ..
+fi
+
+# SDL2_image
+if [ -f "/usr/include/SDL2/SDL_image.h" ]; then
+	echo "SDL2_image already installed in the system!"
+else
+	if [ ! -f "SDL2_image-${IMGRELEASE}.tar.gz" ]; then
+		curl -O ${IMGURL}
+	fi
+	tar -xzvf "SDL2_image-${IMGRELEASE}.tar.gz"
+	cd SDL2_image-${IMGRELEASE}
+	./configure --prefix=/usr ${AUTOTOOLS_EXTRA} ${LIBPNG_FLAGS} --disable-bmp --disable-gif --disable-jpg --disable-jpg-shared --disable-lbm --disable-pcx --disable-pnm --disable-tga --disable-tif --disable-tif-shared --disable-xcf --disable-xpm --disable-xv --disable-webp --disable-webp-shared
+	make
+	sudo make install
+	if [ ! "${KOBO_STATIC_LINUX}" = true ] ; then
+		cp -L .libs/libSDL2_image-*.so.0 "${WORKDIR}/linux-bundle-lib"
+	fi
+	cd ..
+fi
+
+# Audiality 2
+if pkg-config audiality2 --exists; then
+	echo "Audiality 2 already installed in the system!"
+else
+	if [ ! -d "audiality2" ]; then
+		git clone https://github.com/olofson/audiality2.git
+		cd audiality2
+	else
+		cd audiality2
+		git checkout master
+		git pull
+	fi
+	git checkout v${A2RELEASE}
+	mkdir -p build
+	cd build
+	cmake -DCMAKE_INSTALL_PREFIX=/usr ${CMAKE_EXTRA} -DUSE_ALSA=NO -DUSE_JACK=NO ..
+	make
+	sudo make install
+	if [ ! "${KOBO_STATIC_LINUX}" = true ] ; then
+		cp -L build/src/libaudiality2-*.so.0 "${WORKDIR}/linux-bundle-lib"
+	fi
+	cd ..
+fi
+
+if [ ! "${KOBO_STATIC_LINUX}" = true ] ; then
+	strip "${WORKDIR}/linux-bundle-lib/*"
+fi

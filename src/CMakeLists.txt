@@ -86,12 +86,10 @@ set_target_properties(kobord PROPERTIES OUTPUT_NAME
 	"kobord${KOBO_EXE_SUFFIX}")
 
 target_link_libraries(kobord ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES}
-	${AUDIALITY2_LIBRARIES})
+	${AUDIALITY2_LIBRARIES} ${KOBO_EXTRA_LIBRARIES})
 
 if(WIN32)
-	target_link_libraries(kobord -lwinmm -ldxguid)
-	# FIXME: Why do we have to pull all these in manually now...?
-	target_link_libraries(kobord -lws2_32 -liphlpapi -ljpeg -lz)
+	target_link_libraries(kobord winmm dxguid)
 endif(WIN32)
 
 # Release build: full optimization, no debug features, no debug info

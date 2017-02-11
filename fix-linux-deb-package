@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# === THIS SCRIPT NEEDS TO RUN AS (FAKE)ROOT ===
+#
+. ./BUILDDEFS
+
+set -ex
+
+PKGFILE=$1
+PKGTMP="${WORKDIR}/$(basename ${PKGFILE}).tmp"
+rm -rf ${PKGTMP}
+
+# Unpack
+mkdir ${PKGTMP}
+dpkg-deb -R ${PKGFILE} ${PKGTMP}
+rm ${PKGFILE}
+cd ${PKGTMP}
+
+# Generate new md5sums
+find . -type f ! -regex '.*.hg.*' ! -regex '.*?debian-binary.*' ! -regex '.*?DEBIAN.*' -printf '%P ' | xargs md5sum > DEBIAN/md5sums
+chmod 644 DEBIAN/md5sums
+
+# Fix bogus permissions
+find . -type d -print0 | xargs -0 chmod 755
+find usr/share -type f -print0 | xargs -0 chmod 644
+find usr/bin -type f -print0 | xargs -0 chmod 755
+
+# Repackage and clean up
+cd ..
+dpkg-deb -b ${PKGTMP} ${PKGFILE}
+rm -rf ${PKGTMP}

@@ -1,0 +1,103 @@
+#!/bin/sh
+
+#----------------------
+# --- Configuration ---
+#----------------------
+
+# Set to true to build SDL2, SDL2_image, libpng, and Audiality 2 for static
+# linking only.
+#
+# NOTE: This will NOT work if these libraries are already installed in the
+#       system!
+#
+# NOTE 2: Dynamic linking has not been tested after the recent changes, and
+#         there is at least one known problem: Libs will NOT be copied from the
+#         system, so packaging will only work if build-packages is run without
+#         any of these libraries installed in the system.
+#
+KOBO_STATIC_LINUX=true
+
+
+#-------------------
+# --- Kobo Redux ---
+#-------------------
+
+# Current Kobo Redux release
+KRRELEASE=0.7.2
+RELEASETAG=0.7.2.1
+
+# Kobo Redux source git repository
+KRREPO="https://github.com/olofson/koboredux"
+
+# Official Kobo Redux home site (with downloads directory)
+KRHOME="http://koboredux.com"
+
+# Archive with Win32 SDL2 redistributables suitable for this release
+REDISTARCH="koboredux-libs-redist-win32.tar.bz2"
+
+
+#--------------------
+# --- Audiality 2 ---
+#--------------------
+
+# Recommended Audiality 2 version for this Kobo Redux release
+A2RELEASE=1.9.2
+
+# Audiality 2 git repository
+A2REPO="https://github.com/olofson/audiality2"
+
+
+#-------------
+# --- SDL2 ---
+#-------------
+
+SDLRELEASE=2.0.4
+SDLURL="https://www.libsdl.org/release/SDL2-${SDLRELEASE}.tar.gz"
+
+
+#---------------
+# --- libpng ---
+#---------------
+
+IMGRELEASE=2.0.1
+IMGURL="https://www.libsdl.org/projects/SDL_image/release/SDL2_image-${IMGRELEASE}.tar.gz"
+
+
+#-------------------
+# --- SDL2_image ---
+#-------------------
+
+PNGRELEASE=1.6.28
+PNGURL="ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-${PNGRELEASE}.tar.xz"
+
+
+#--------------------
+# --- Directories ---
+#--------------------
+
+# Root of the source tree
+SOURCEDIR="$(pwd)"
+
+# CMake top-level build directory. (NOTE: The actual build directories are
+# inside this one!)
+BUILDDIR="$(pwd)/build"
+
+# Staging directory for dependency library builds, downloads, packages etc
+WORKDIR="$(pwd)/work"
+
+# Download directory
+DLDIR="${WORKDIR}/downloads"
+
+# Final package output directory
+PKGDIR="${WORKDIR}/packages"
+
+
+#------------
+# --- MXE ---
+#------------
+
+# MinGW32 cross build using MXE (http://mxe.cc/)
+if [ -z $MXEPATH ]; then
+	# This is where Dave keeps his MXE.
+	MXEPATH=~/src/mxe
+fi

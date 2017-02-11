@@ -1,11 +1,19 @@
 #!/bin/sh
-. ./PACKAGEDEFS
+#
+# This script checks out and prepares the full version Kobo Redux data files.
+# (Of course, this will not work without access to the private repository.)
+#
+. ./BUILDDEFS
 
 set -ex
 
 render=false
 
 # Clone or update repository as needed
+if [ ! -d "${DLDIR}" ]; then
+	mkdir -p "${DLDIR}"
+fi
+cd ${DLDIR}
 if [ ! -d "koboreduxassets" ]; then
 	git clone git@github.com:olofson/koboreduxassets.git
 	cd koboreduxassets
@@ -29,7 +37,10 @@ if "$render" == true || [ ! -f "data/gfx/redux/sprites/bigship.png" ]; then
 fi
 
 # Make sure we have a link to the actual data directories
-cd ..
-if [ ! -L full-data ]; then
-	ln -s koboreduxassets/data full-data
+if [ ! -d "${WORKDIR}" ]; then
+	mkdir "${WORKDIR}"
+fi
+cd ${WORKDIR}
+if [ ! -L "${WORKDIR}/full-data" ]; then
+	ln -s "${DLDIR}/koboreduxassets/data" "${WORKDIR}/full-data"
 fi
