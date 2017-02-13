@@ -141,7 +141,6 @@ void prefs_t::init()
 
 	section("Paths");
 	key("data", data, ""); desc("Alternate Data Path");
-	key("themes", themes, ""); desc("Alternate Themes Path");
 	key("scores", scores, ""); desc("Alternate Scores Path");
 
 	section("Temporary variables");

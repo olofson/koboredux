@@ -136,7 +136,6 @@ class prefs_t : public config_parser_t
 
 	// File paths
 	cfg_string_t	data;
-	cfg_string_t	themes;
 	cfg_string_t	scores;
 
 	// "Hidden" stuff ("to remember until next startup")

@@ -197,29 +197,33 @@ static void setup_dirs(char *xpath)
 {
 	fmap->exepath(xpath);
 
-	// Installed data path
-	fmap->addpath("DATA", KOBO_DATADIR);
+	// Data paths (sound and graphics, maps etc)
+#ifdef KOBO_DATADIR
+	fmap->addpath("DATA", KOBO_DATADIR);	// System wide install data dir
+#endif
+#ifdef KOBO_USERDIR
+	fmap->addpath("DATA", KOBO_USERDIR);	// User dir (custom themes)
+#endif
+	fmap->addpath("DATA", "EXE>>");		// Next to the executable
 
-	// Sound and graphics theme paths
-	fmap->addpath("THEMES", "DATA>>");	// Install data dir
-	fmap->addpath("THEMES", KOBO_USERDIR);	// User dir
-	fmap->addpath("THEMES", "./data");	// Build dir (development)
-
-	// Directory layout within a theme directory
-	fmap->addpath("GFX", "THEMES>>gfx");
-	fmap->addpath("SFX", "THEMES>>sfx");
+	// Directory layout within a DATA directory
+	fmap->addpath("GFX", "DATA>>gfx");
+	fmap->addpath("SFX", "DATA>>sfx");
 
 	// Score files (user and global)
 	fmap->addpath("SCORES", KOBO_SCOREDIR);
 
 	// Configuration files
+#ifdef KOBO_USERDIR
+	// For Un*x systems; typically "~/.koboredux"
 	fmap->addpath("CONFIG", KOBO_USERDIR);
+#endif
 #ifdef KOBO_SYSCONFDIR
-	// System local
+	// System local (custom default configs in official distro packages)
 	fmap->addpath("CONFIG", KOBO_SYSCONFDIR);
 #endif
-	// In current dir (last resort)
-	fmap->addpath("CONFIG", "./");
+	// For Win32, or packaging a custom default config in a Linux bz2 pkg
+	fmap->addpath("CONFIG", "EXE>>");
 }
 
 
@@ -232,14 +236,6 @@ static void add_dirs(prefs_t *p)
 		log_printf(ULOG, "Adding alternate data path \"%s\" (%s)\n",
 				p->data, pth);
 		fmap->addpath("DATA", pth, 1);
-	}
-
-	if(p->themes[0])
-	{
-		char *pth = fmap->sys2fm(p->themes);
-		log_printf(ULOG, "Adding alternate themes path \"%s\" (%s)\n",
-				p->themes, pth);
-		fmap->addpath("THEMES", pth, 1);
 	}
 
 	if(p->scores[0])
