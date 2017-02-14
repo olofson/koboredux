@@ -649,9 +649,23 @@ int KOBO_main::init_display(prefs_t *p)
 	gengine->title("Kobo Redux " KOBO_VERSION, "kobord");
 	gengine->vsync(p->vsync);
 	gengine->cursor(0);
-	gengine->mode((VMM_ModeID)p->videomode, p->fullscreen);
 
 	vmm_Init();
+
+	// Hack to force windowed mode if the config has fullscreen == 0
+	if(!p->fullscreen)
+	{
+		switch((VMM_ModeID)p->videomode)
+		{
+		  case VMID_DESKTOP:
+		  case VMID_FULLWINDOW:
+			gengine->switch_video_mode(KOBO_VIDEOMODE_WINDOWED);
+			break;
+		}
+	}
+
+	gengine->mode((VMM_ModeID)p->videomode, p->fullscreen);
+
 	VMM_Mode *vm = vmm_GetMode(p->videomode);
 	if(vm && (vm->id != VMID_CUSTOM))
 	{
