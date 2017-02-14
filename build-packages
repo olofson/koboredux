@@ -39,7 +39,7 @@ cd ${SOURCEDIR}
 # HAX: Can't get CPack to stop adding those bogus directories...
 for a in ${PKGDIR}/KoboRedux-*-win32.zip ; do
 	echo $a
-	zip -d $a */home/*
+	zip -d $a "*/home/*"
 done
 
 # HAX: No reliable way of selectively flattening archives with CPack. >:-/
