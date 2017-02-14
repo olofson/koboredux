@@ -3,7 +3,7 @@
 
 set -ex
 
-DEMOARC="KoboRedux-Demo-${KRRELEASE}-Data.tar.bz2"
+DEMOARC="KoboRedux-Demo-${DEMO_DATA_RELEASE}-Data.tar.bz2"
 
 if [ ! -d "${WORKDIR}" ]; then
 	mkdir "${WORKDIR}"

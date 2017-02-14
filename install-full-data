@@ -17,14 +17,14 @@ cd ${DLDIR}
 if [ ! -d "koboreduxassets" ]; then
 	git clone git@github.com:olofson/koboreduxassets.git
 	cd koboreduxassets
-	git checkout v${KRRELEASE}
+	git checkout v${FULL_DATA_RELEASE}
 	render=true
 else
 	cd koboreduxassets
-	if ! git checkout v${KRRELEASE} ; then
+	if ! git checkout v${FULL_DATA_RELEASE} ; then
 		git checkout master
 		git pull
-		git checkout v${KRRELEASE}
+		git checkout v${FULL_DATA_RELEASE}
 		render=true
 	fi
 fi

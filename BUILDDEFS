@@ -22,9 +22,9 @@ KOBO_STATIC_LINUX=true
 # --- Kobo Redux ---
 #-------------------
 
-# Current Kobo Redux release
-KRRELEASE=0.7.2
-RELEASETAG=0.7.2.1
+# Demo and full data package versions
+DEMO_DATA_RELEASE=0.7.2
+FULL_DATA_RELEASE=0.7.2
 
 # Kobo Redux source git repository
 KRREPO="https://github.com/olofson/koboredux"
