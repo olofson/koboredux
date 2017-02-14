@@ -1146,11 +1146,11 @@ void KOBO_main::close_js()
 
 void KOBO_main::load_config(prefs_t *p)
 {
-	FILE *f = fmap->fopen(KOBO_USERDIR "/" KOBO_CONFIGFILE, "r");
+	const char *path = "<not set>";
+	FILE *f = fmap->fopen("CONFIG>>" KOBO_CONFIGFILE, "r", &path);
 	if(f)
 	{
-		log_puts(VLOG, "Loading personal configuration from: "
-				KOBO_USERDIR "/" KOBO_CONFIGFILE);
+		log_printf(VLOG, "Loading configuration from \"%s\".\n", path);
 		p->read(f);
 		fclose(f);
 	}
@@ -1189,7 +1189,7 @@ void KOBO_main::load_config(prefs_t *p)
 void KOBO_main::save_config(prefs_t *p)
 {
 	FILE *f;
-#ifndef WIN32
+#ifdef KOBO_USERDIR
 	// Try to create config/userdata directory, if it doesn't exist!
 	fmap->get(KOBO_USERDIR, FM_DIR_CREATE);
 #endif
@@ -1202,9 +1202,11 @@ void KOBO_main::save_config(prefs_t *p)
 		return;
 	}
 #endif
-	f = fmap->fopen(KOBO_USERDIR "/" KOBO_CONFIGFILE, "w");
+	const char *path = "<not set>";
+	f = fmap->fopen("CONFIG>>" KOBO_CONFIGFILE, "w", &path);
 	if(f)
 	{
+		log_printf(VLOG, "Saving configuration to \"%s\".\n", path);
 		p->write(f);
 		fclose(f);
 	}

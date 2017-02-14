@@ -791,7 +791,7 @@ const char *filemapper_t::list_next(int filter, int *kind)
 }
 
 
-FILE *filemapper_t::fopen(const char *ref, const char *mode)
+FILE *filemapper_t::fopen(const char *ref, const char *mode, const char **pth)
 {
 	const char *path = NULL;
 	int md = 0;
@@ -822,7 +822,10 @@ FILE *filemapper_t::fopen(const char *ref, const char *mode)
 		break;
 	}
 	if(path)
+	{
+		*pth = path;
 		return ::fopen(path, mode);
+	}
 	else
 		return NULL;
 }

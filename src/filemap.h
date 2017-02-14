@@ -168,7 +168,8 @@ class filemapper_t
 	const char *list_next(int filter = FM_ANY, int *kind = NULL);
 
 	// Open/create file/dir.
-	FILE *fopen(const char *ref, const char *mode);
+	FILE *fopen(const char *ref, const char *mode,
+			const char **pth = NULL);
 	int mkdir(const char *ref);
 
 	// Print out all registered paths of class 'ref'
