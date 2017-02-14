@@ -1438,7 +1438,12 @@ int KOBO_main::run()
 			if((res = restart_audio()))
 				return res;
 		if(global_status & OS_RELOAD_SOUNDS)
+#if 0
+// FIXME: This is unreliable! A2 bug? See Kobo Redux issue #370.
 			if((res = reload_sounds()))
+#else
+			if((res = restart_audio()))
+#endif
 				return res;
 		if(global_status & OS_RESTART_VIDEO)
 			if((res = restart_video()))
