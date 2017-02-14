@@ -59,9 +59,6 @@ float KOBO_screen::noise_bright = 0.0f;
 float KOBO_screen::noise_depth = 0.0f;
 int KOBO_screen::highlight_y = 0;
 int KOBO_screen::highlight_h = 0;
-int KOBO_screen::hi_sc[10];
-int KOBO_screen::hi_st[10];
-char KOBO_screen::hi_nm[10][20];
 KOBO_Starfield KOBO_screen::stars;
 int KOBO_screen::long_credits_wrap = 0;
 
@@ -217,81 +214,6 @@ void KOBO_screen::title(int t, float fade, int mode)
 		woverlay->center(260, "This is a Work in Progress!");
 		woverlay->center(270, "Check out");
 		woverlay->center(280, "https://olofson.itch.io/kobo-redux");
-	}
-#endif
-}
-
-
-void KOBO_screen::init_highscores()
-{
-	for(unsigned int i = 0; i < 10; ++i)
-		if(i < scorefile.highs)
-		{
-			hi_sc[i] = scorefile.high_tbl[i].score;
-			hi_st[i] = scorefile.high_tbl[i].end_scene;
-			strncpy(hi_nm[i], scorefile.high_tbl[i].name, 19);
-			hi_nm[i][19] = 0;
-		}
-		else
-		{
-			hi_sc[i] = 0;
-			hi_st[i] = 0;
-			strcpy(hi_nm[i], "---");
-		}
-
-}
-
-
-void KOBO_screen::highscores(int t, float fade)
-{
-	int i, y;
-	float mf = (1.0f - fade);
-	mf *= mf * mf * mf * mf;
-	screen.set_highlight(0, 0);
-
-	woverlay->font(B_BIG_FONT);
-	y = (int)(PIXEL2CS(100) * mf) - 256;
-	if(y < 0)
-		y = 0;
-	woverlay->center_fxp(PIXEL2CS(20) - y, "HALL OF FAME");
-	int xo = (int)(60 * 256 * mf);
-	woverlay->sprite_fxp(PIXEL2CS(48) - xo, PIXEL2CS(30),
-			B_PLAYER, (t / 50) % 32);
-	woverlay->sprite_fxp(PIXEL2CS(woverlay->width() - 48) + xo,
-			PIXEL2CS(30), B_PLAYER, 31 - (t / 50) % 32);
-
-	woverlay->font(B_NORMAL_FONT);
-	y = (int)(PIXEL2CS(75) * mf - 0.5f) - 256;
-	if(y < 0)
-		y = 0;
-	woverlay->center_fxp(PIXEL2CS(40) - y, "(Score/Stage/Name)");
-
-	woverlay->font(B_MEDIUM_FONT);
-	float yo = t * (11*18+100) * 256.0 / 12500.0 - PIXEL2CS(110);
-	for(i = 0, y = 65; i < 10; ++i, y += 18)
-	{
-		static char s[20];
-		float cy;
-		int real_y = PIXEL2CS(y) - (int)yo;
-		if(real_y < PIXEL2CS(55) || real_y > PIXEL2CS(165))
-			continue;
-		cy = (PIXEL2CS(y) - yo) - PIXEL2CS(65 + 5*18/2);
-		xo = (int)(cy*cy*cy*cy*cy * 1e-16);
-		snprintf(s, 16, "%d", hi_sc[i]);
-		woverlay->center_token_fxp(PIXEL2CS(70) + xo, real_y, s);
-		snprintf(s, 16, "%d", hi_st[i]);
-		woverlay->center_token_fxp(PIXEL2CS((70 + 125) / 2) + xo,
-				real_y, s, -1);
-		woverlay->string_fxp(PIXEL2CS(125) + xo, real_y, hi_nm[i]);
-	}
-#if 0
-	if(!flashin(t - 1000))
-	{
-		woverlay->font(B_MEDIUM_FONT);
-		woverlay->center(170,
-				"NOTE: Highscores for \"Classic\" only!");
-		woverlay->center(180,
-				"The new skill levels are experimental.");
 	}
 #endif
 }

@@ -37,7 +37,6 @@
 #include "manage.h"
 #include "options.h"
 #include "scenes.h"
-#include "score.h"
 #include "enemies.h"
 #include "myship.h"
 #include "radar.h"
@@ -51,7 +50,11 @@ KOBO_gamestates _manage::gamestate = GS_NONE;
 bool _manage::paused = false;
 int _manage::game_seed;
 int _manage::selected_stage;
-int _manage::score;
+int _manage::last_stage;	// HAX for the start stage selector
+skill_levels_t _manage::selected_skill = KOBO_DEFAULT_SKILL;
+unsigned _manage::highscore = 0;
+unsigned _manage::score;
+unsigned _manage::playtime;
 float _manage::disp_health;
 float _manage::disp_charge;
 int _manage::score_changed = 1;
@@ -60,7 +63,6 @@ int _manage::scroll_jump = 0;
 int _manage::delay_count;
 int _manage::total_cores;
 int _manage::remaining_cores;
-s_hiscore_t _manage::hi;
 int _manage::noise_duration = 0;
 int _manage::noise_timer = 0;
 int _manage::noise_flash = 500;
@@ -235,8 +237,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		gamestate = GS_GETREADY;
 		log_printf(ULOG, "Starting new level, stage %d!\n",
 				selected_stage);
-		game.set(GAME_SINGLE,
-				(skill_levels_t)scorefile.profile()->skill);
+		game.set(GAME_SINGLE, selected_skill);
 		delete replay;
 		replay = new KOBO_replay();
 		replay->stage = selected_stage;
@@ -249,6 +250,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	}
 
 	screen.init_stage(selected_stage, true);
+	last_stage = selected_stage;
 	wradar->mode(RM_RADAR);
 	enemies.init();
 	if(rp)
@@ -287,24 +289,9 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 void _manage::start_new_game()
 {
 	score = 0;
+	playtime = 0;
 	init_game(NULL, true);
 	gamecontrol.clear();
-
-// FIXME: This is totally broken by the replay logic. Need to store this info
-// FIXME: along with the replays if we're going to use it again!
-	hi.clear();
-	hi.skill = game.skill;
-	hi.playtime = 0;
-	hi.gametype = game.type;
-#if 1
-	// We want to mark highscores so they're not mistaken
-	// for official scores from a future finalized version.
-	hi.gametype |= GAME_EXPERIMENTAL;
-#endif
-	hi.saves = 0;
-	hi.loads = 0;
-	hi.start_scene = selected_stage;
-	hi.end_lives = 0;
 }
 
 
@@ -413,7 +400,7 @@ void _manage::put_info()
 {
 	static char s[16];
 
-	snprintf(s, 16, "%d", scorefile.highscore());
+	snprintf(s, 16, "%d", highscore);
 	dhigh->text(s);
 	dhigh->on();
 
@@ -439,7 +426,7 @@ void _manage::put_score()
 		snprintf(s, 16, "%d", score);
 		dscore->text(s);
 		dscore->on();
-		if(score > scorefile.highscore())
+		if(score > highscore)
 		{
 			dhigh->text(s);
 			dhigh->on();
@@ -469,8 +456,7 @@ void _manage::flash_score()
 /****************************************************************************/
 void _manage::init()
 {
-	scorefile.init();
-	selected_stage = -1;
+	last_stage = selected_stage = -1;
 	flash_score_count = 0;
 	delay_count = 0;
 	gamestate = GS_NONE;
@@ -489,7 +475,7 @@ void _manage::run_intro()
 			intro_y + DASHH(MAIN) / 2 +
 			(int)(DASHH(MAIN) * 0.3f * cos(w)));
 	enemies.move_intro();
-	++hi.playtime;
+	++playtime;
 	enemies.put();
 
 	put_player_stats();
@@ -664,7 +650,7 @@ void _manage::run_game()
 	enemies.move();
 	myship.check_base_bolts();
 	update();
-	++hi.playtime;
+	++playtime;
 }
 
 
@@ -729,13 +715,6 @@ void _manage::pause(bool p)
 
 void _manage::lost_myship()
 {
-	if(!prefs->cheats())
-	{
-		hi.score = score;
-		hi.end_scene = selected_stage;
-		hi.end_health = myship.health();
-		scorefile.record(&hi);
-	}
 	gamestate = GS_GAMEOVER;
 	log_printf(ULOG, "Player died at stage %d; score: %d, health: %d, "
 			"charge: %d\n", selected_stage, score, myship.health(),
@@ -771,7 +750,7 @@ void _manage::add_score(int sc)
 		score = GIGA - 1;
 	else if(!prefs->cheats())
 	{
-		if(score >= scorefile.highscore())
+		if(score >= highscore)
 		{
 			if(flash_score_count == 0)
 				flash_score_count = 50;

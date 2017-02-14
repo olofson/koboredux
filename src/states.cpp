@@ -238,12 +238,7 @@ void st_intro_instructions_t::enter()
 	st_introbase_t::enter();
 	duration = INTRO_INSTRUCTIONS_TIME;
 	inext = &st_intro_title;
-#if 0
-	st_intro_title.inext = &st_intro_highscores;
-#else
-	// Dropping highscore screen, as highscores need to be reimplemented!
 	st_intro_title.inext = &st_intro_credits;
-#endif
 	st_intro_title.duration = INTRO_TITLE2_TIME - INTRO_BLANK_TIME;
 	st_intro_title.mode = pubrand.get(1) + 1;
 }
@@ -260,45 +255,6 @@ void st_intro_instructions_t::post_render()
 }
 
 st_intro_instructions_t st_intro_instructions;
-
-
-/*----------------------------------------------------------
-	st_intro_highshores
-----------------------------------------------------------*/
-
-st_intro_highscores_t::st_intro_highscores_t()
-{
-	name = "intro_highscores";
-}
-
-void st_intro_highscores_t::enter()
-{
-	scorefile.gather_high_scores(1);
-	screen.init_highscores();
-	st_introbase_t::enter();
-	duration = INTRO_HIGHSCORE_TIME;
-	inext = &st_intro_title;
-	st_intro_title.inext = &st_intro_credits;
-	st_intro_title.duration = INTRO_TITLE2_TIME - INTRO_BLANK_TIME;
-	st_intro_title.mode = pubrand.get(1) + 1;
-	screen.set_highlight(0, 0);
-}
-
-void st_intro_highscores_t::post_render()
-{
-	if(km.quitting())
-		return;
-	st_introbase_t::post_render();
-	if((timer >= 0) && (timer < duration))
-	{
-		float nt = (float)timer / duration;
-		float snt = 1.0f - sin(nt * M_PI);
-		snt = 1.0f - snt * snt * snt;
-		screen.highscores(timer, snt);
-	}
-}
-
-st_intro_highscores_t st_intro_highscores;
 
 
 /*----------------------------------------------------------
@@ -972,287 +928,6 @@ void st_menu_base_t::press(gc_targets_t button)
 
 
 /*----------------------------------------------------------
-	st_new_player
-----------------------------------------------------------*/
-
-void new_player_t::open()
-{
-	place(woverlay->px(), woverlay->py(),
-			woverlay->width(), woverlay->height());
-	font(B_NORMAL_FONT);
-	foreground(woverlay->map_rgb(255, 255, 255));
-	background(woverlay->map_rgb(0, 0, 0));
-	memset(name, 0, sizeof(name));
-	name[0] = 'A';
-	currentIndex = 0;
-	editing = 1;
-	build_all();
-#if 0
-//FIXME:
-	SDL_EnableUNICODE(1);
-#endif
-}
-
-void new_player_t::close()
-{
-#if 0
-//FIXME:
-	SDL_EnableUNICODE(0);
-#endif
-	clean();
-}
-
-void new_player_t::change(int delta)
-{
-	kobo_form_t::change(delta);
-
-	if(!selected())
-		return;
-
-	selection = selected()->tag;
-}
-
-void new_player_t::build()
-{
-	space(2);
-	label("Use arrows, joystick or keyboard");
-	label("to enter name");
-	space(2);
-	button(name, 1);
-	space(2);
-	button("Ok", MENU_TAG_OK);
-	button("Cancel", MENU_TAG_CANCEL);
-}
-
-void new_player_t::rebuild()
-{
-	int sel = selected_index();
-	build_all();
-	select(sel);
-}
-
-
-st_new_player_t::st_new_player_t()
-{
-	name = "new_player";
-}
-
-kobo_form_t *st_new_player_t::open()
-{
-	menu = new new_player_t(gengine);
-	menu->open();
-	return menu;
-}
-
-void st_new_player_t::frame()
-{
-}
-
-void st_new_player_t::enter()
-{
-	menu->open();
-	sound.ui_play(S_UI_OPEN);
-}
-
-void st_new_player_t::leave()
-{
-	menu->close();
-}
-
-void st_new_player_t::post_render()
-{
-	kobo_basestate_t::post_render();
-	menu->render();
-}
-
-void st_new_player_t::press(gc_targets_t button)
-{
-	if(menu->editing)
-	{
-		switch(button)
-		{
-		  case BTN_EXIT:
-			sound.ui_play(S_UI_OK);
-			menu->editing = 0;
-			menu->next();	// Select the CANCEL option.
-			menu->next();
-			break;
-
-		  case BTN_PRIMARY:
-		  case BTN_SECONDARY:
-			if(!prefs->joystick)
-				break;
-		  case BTN_SELECT:
-			sound.ui_play(S_UI_OK);
-			menu->editing = 0;
-			menu->next();	// Select the OK option.
-			break;
-
-		  case BTN_UP:
-		  case BTN_INC:
-			if(!menu->name[menu->currentIndex])
-				menu->name[menu->currentIndex] = 'A';
-			else if(menu->name[menu->currentIndex] == 'Z')
-				menu->name[menu->currentIndex] = 'a';
-			else if(menu->name[menu->currentIndex] == 'z')
-				menu->name[menu->currentIndex] = 'A';
-			else
-				menu->name[menu->currentIndex]++;
-			sound.ui_play(S_UI_TICK);
-			break;
-
-		  case BTN_DEC:
-		  case BTN_DOWN:
-			if(!menu->name[menu->currentIndex])
-				menu->name[menu->currentIndex] = 'A';
-			else if(menu->name[menu->currentIndex] == 'A')
-				menu->name[menu->currentIndex] = 'z';
-			else if(menu->name[menu->currentIndex] == 'a')
-				menu->name[menu->currentIndex] = 'Z';
-			else
-				menu->name[menu->currentIndex]--;
-			sound.ui_play(S_UI_TICK);
-			break;
-
-		  case BTN_RIGHT:
-			if(menu->currentIndex < sizeof(menu->name) - 2)
-			{
-				menu->currentIndex++;
-				sound.ui_play(S_UI_TICK);
-			}
-			else
-			{
-				sound.ui_play(S_UI_ERROR);
-				break;
-			}
-			if(menu->name[menu->currentIndex] == '\0')
-				menu->name[menu->currentIndex] = 'A';
-			break;
-
-		  case BTN_LEFT:
-		  case BTN_BACK:
-			if(menu->currentIndex > 0)
-			{
-				menu->name[menu->currentIndex] = '\0';
-				menu->currentIndex--;
-				sound.ui_play(S_UI_TICK);
-			}
-			else
-				sound.ui_play(S_UI_ERROR);
-			break;
-
-		  default:
-#if 0
-			if(((unicode >= 'a') && (unicode <= 'z')) ||
-				((unicode >= 'A') && (unicode <= 'Z')))
-			{
-				menu->name[menu->currentIndex] = (char)unicode;
-				if(menu->currentIndex < sizeof(menu->name) - 2)
-				{
-					menu->currentIndex++;
-					sound.ui_play(S_UI_TICK);
-				}
-				else
-					sound.ui_play(S_UI_ERROR);
-			}
-			else
-				sound.ui_play(S_UI_ERROR);
-#endif
-			break;
-		}
-		menu->rebuild();
-	}
-	else
-	{
-		menu->selection = -1;
-
-		switch(button)
-		{
-		  case BTN_EXIT:
-			menu->selection = MENU_TAG_CANCEL;
-			break;
-
-		  case BTN_CLOSE:
-			menu->selection = MENU_TAG_OK;
-			break;
-
-		  case BTN_PRIMARY:
-		  case BTN_SECONDARY:
-		  case BTN_SELECT:
-			menu->change(0);
-			break;
-
-		  case BTN_INC:
-		  case BTN_UP:
-			menu->prev();
-			break;
-
-		  case BTN_DEC:
-		  case BTN_DOWN:
-			menu->next();
-			break;
-
-		  default:
-			break;
-		}
-
-		switch(menu->selection)
-		{
-		  case 1:
-			if(button == BTN_PRIMARY
-					|| button == BTN_SELECT
-					|| button == BTN_SECONDARY)
-			{
-				sound.ui_play(S_UI_OK);
-				menu->editing = 1;
-			}
-			break;
-
-		  case MENU_TAG_OK:
-			switch(scorefile.add_player(menu->name))
-			{
-			  case 0:
-				sound.ui_play(S_UI_OK);
-				prefs->last_profile = scorefile.current_profile();
-				prefs->changed = 1;
-				pop();
-				break;
-			  case -1:
-				sound.ui_play(S_UI_ERROR);
-				st_error.message("Cannot create Player Profile!",
-						"Too many profiles!");
-				gsm.change(&st_error);
-				break;
-			  case -2:
-			  case -3:
-				prefs->last_profile = scorefile.current_profile();
-				sound.ui_play(S_UI_ERROR);
-				st_error.message("Cannot save Player Profile!",
-						"Please, check your installation.");
-				gsm.change(&st_error);
-				break;
-			  default:
-				sound.ui_play(S_UI_ERROR);
-				st_error.message("Cannot create Player Profile!",
-						"Bug or internal error.");
-				gsm.change(&st_error);
-				break;
-			}
-			break;
-
-		  case MENU_TAG_CANCEL:
-			sound.ui_play(S_UI_CANCEL);
-			strcpy(menu->name, "A");
-			pop();
-			break;
-		}
-	}
-}
-
-st_new_player_t st_new_player;
-
-
-/*----------------------------------------------------------
 	st_error
 ----------------------------------------------------------*/
 
@@ -1346,10 +1021,10 @@ st_error_t st_error;
 	st_main_menu
 ----------------------------------------------------------*/
 
-void main_menu_t::buildStartLevel(int profNum)
+void main_menu_t::buildStartLevel()
 {
 	char buf[50];
-	int MaxStartLevel = profNum >= 0 ? scorefile.last_scene(profNum) : 500;
+	int MaxStartLevel = 500;
 	start_level = manage.current_stage();
 	if(start_level > MaxStartLevel)
 		start_level = MaxStartLevel;
@@ -1367,18 +1042,14 @@ void main_menu_t::build()
 {
 	if(!manage.game_in_progress())
 	{
-		prefs->last_profile = scorefile.current_profile();
 		int sc;
 		if(prefs->cheat_startlevel)
 		{
-			if(last_level <= 0)
-				sc = scorefile.last_scene();
-			else
-				sc = last_level;
+			sc = manage.last_played_stage();
+			if(sc < 1)
+				sc = 1;
 		}
 		else
-			sc = 1;
-		if(sc < 1)
 			sc = 1;
 		manage.select_scene(sc);
 	}
@@ -1394,28 +1065,13 @@ void main_menu_t::build()
 	}
 	else
 	{
-#if 0
-		if(scorefile.numProfiles > 0)
-		{
-			button("Start Game!", 1);
-			space();
-			list("Player", &prefs->last_profile, 4);
-			for(int i = 0; i < scorefile.numProfiles; ++i)
-				item(scorefile.name(i), i);
-			buildStartLevel(prefs->last_profile);
-		}
-		else
-			space(2);
-		button("New Player...", 3);
-#else
 		log_printf(WLOG, "Player profiles are disabled!\n");
 		button("Start New Game!", 1);
 		if(prefs->cheat_startlevel)
-			buildStartLevel(-1);
-# ifndef KOBO_DEMO
+			buildStartLevel();
+#ifndef KOBO_DEMO
 		space();
 		button("Load Game", 51);
-# endif
 #endif
 	}
 #ifdef KOBO_DEMO
@@ -1448,18 +1104,6 @@ void main_menu_t::rebuild()
 
 kobo_form_t *st_main_menu_t::open()
 {
-	if(!manage.game_in_progress())
-	{
-		// Moved here, as we want to do it as late as possible, but
-		// *not* as a result of rebuild().
-		if(prefs->last_profile >= scorefile.numProfiles)
-		{
-			prefs->last_profile = 0;
-			prefs->changed = 1;
-		}
-		scorefile.select_profile(prefs->last_profile);
-	}
-
 	menu = new main_menu_t(gengine);
 	menu->open();
 	return menu;
@@ -1478,20 +1122,6 @@ int st_main_menu_t::translate(int tag, int button)
 {
 	switch(tag)
 	{
-	  case 4:
-		// The default translate() filters out the
-		// inc/dec events, and performs the default
-		// action for fire/start/select...
-		switch(button)
-		{
-		  case BTN_PRIMARY:
-		  case BTN_SECONDARY:
-		  case BTN_SELECT:
-			do_default_action = 0;
-			return tag + 10;
-		  default:
-			return tag;
-		}
 	  case 5:
 		return tag;
 	  default:
@@ -1505,7 +1135,7 @@ void st_main_menu_t::select(int tag)
 	{
 	  case 1:
 #ifdef KOBO_DEMO
-		scorefile.profile()->skill = KOBO_DEMO_SKILL;
+		manage.select_skill(KOBO_DEMO_SKILL);
 		gsm.change(&st_game);
 #else
 		gsm.change(&st_skill_menu);
@@ -1513,19 +1143,6 @@ void st_main_menu_t::select(int tag)
 		break;
 	  case 2:
 		gsm.push(&st_options_main);
-		break;
-	  case 3:
-		gsm.push(&st_new_player);
-		break;
-	  case 4:	// Player: Inc/Dec
-		sound.ui_play(S_UI_TICK);
-		prefs->changed = 1;
-		scorefile.select_profile(prefs->last_profile);
-		menu->rebuild();
-		break;
-	  case 14:	// Player: Select
-		// Edit player profile!
-//		menu->rebuild();
 		break;
 	  case 5:	// Start level: Inc/Dec
 		sound.ui_play(S_UI_TICK);
@@ -1617,9 +1234,9 @@ void skill_menu_t::rebuild()
 kobo_form_t *st_skill_menu_t::open()
 {
 	menu = new skill_menu_t(gengine);
-	menu->set_skill(scorefile.profile()->skill);
+	menu->set_skill(manage.current_skill());
 	menu->open();
-	switch(scorefile.profile()->skill)
+	switch(manage.current_skill())
 	{
 	  case SKILL_NEWBIE:
 		menu->select(1);
@@ -1661,7 +1278,7 @@ void st_skill_menu_t::select(int tag)
 {
 	if((tag >= 10) && (tag <= 20))
 	{
-		scorefile.profile()->skill = menu->selected()->tag - 10;
+		manage.select_skill(menu->selected()->tag - 10);
 		gsm.change(&st_game);
 	}
 }

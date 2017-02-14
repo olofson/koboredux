@@ -528,7 +528,7 @@ void cheat_options_t::build()
 	yesno("Invulnerability", &prf->cheat_invulnerability, 0);
 	yesno("Enemies Will Not Fire", &prf->cheat_ceasefire, 0);
 	yesno("Extra Firepower", &prf->cheat_firepower, 0);
-	yesno("Star Level Selector", &prf->cheat_startlevel, 0);
+	yesno("Start Level Selector", &prf->cheat_startlevel, 0);
 	yesno("Broken Triggers", &prf->cheat_brokentrigger, 0);
 	space();
 	list("Game Speed", &prf->cheat_speed, 0);

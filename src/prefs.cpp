@@ -141,19 +141,14 @@ void prefs_t::init()
 
 	section("Paths");
 	key("data", data, ""); desc("Alternate Data Path");
-	key("scores", scores, ""); desc("Alternate Scores Path");
 
 	section("Temporary variables");
-	key("last_profile", last_profile, 0);
-			desc("Last used player profile");
 	key("number_of_joysticks", number_of_joysticks, 0);
 			desc("Number of Connected Joysticks");
 
 	section("Commands");
 	comment(" (Never written to config files!)");
 	command("showcfg", cmd_showcfg); desc("Show Configuration");
-	command("hiscores", cmd_hiscores); desc("List High Scores");
-	command("highscores", cmd_hiscores); desc("List High Scores");
 	command("override", cmd_override); desc("Ignore Configuration File");
 	command("help", cmd_help); desc("Print usage info and exit");
 	command("options_man", cmd_options_man);

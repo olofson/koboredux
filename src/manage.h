@@ -26,7 +26,6 @@
 #define _KOBO_MANAGE_H_
 
 #include "SDL.h"
-#include "score.h"
 #include "replay.h"
 
 enum KOBO_gamestates
@@ -51,7 +50,6 @@ class _manage
 	static int total_cores;
 	static int remaining_cores;
 	static int exit_manage;
-	static s_hiscore_t hi;
 	static int noise_flash;
 	static int noise_duration;
 	static int noise_timer;
@@ -75,7 +73,11 @@ class _manage
 	static void retry();
 
 	static int selected_stage;
-	static int score;
+	static int last_stage;
+	static skill_levels_t selected_skill;
+	static unsigned highscore;
+	static unsigned score;
+	static unsigned playtime;
 	static float disp_health;
 	static float disp_charge;
 	static int flash_score_count;
@@ -104,10 +106,16 @@ class _manage
 
 	// Map management
 	static int current_stage()	{ return selected_stage; }
+	static int last_played_stage()	{ return last_stage; }
 
 	// State management
 	static void start_intro();
 	static void select_scene(int scene, bool radar = false);
+	static void select_skill(int skill)
+	{
+		selected_skill = (skill_levels_t)skill;
+	}
+	static int current_skill()	{ return (int)selected_skill; }
 	static void init_game(KOBO_replay *rp = NULL, bool newship = false);
 	static void start_new_game();
 	static void start_replay();
@@ -141,7 +149,7 @@ class _manage
 			return false;
 		}
 	}
-	static int game_time()		{ return hi.playtime; }
+	static int game_time()		{ return playtime; }
 	static int cores_total()	{ return total_cores; }
 	static int cores_remaining()	{ return remaining_cores; }
 

@@ -109,8 +109,6 @@ class KOBO_screen
 	static void render_background();
 	static void render_fx();
 	static void title(int t, float fade, int mode);
-	static void init_highscores();
-	static void highscores(int t, float fade);
 	static void credits(int t);
 	static void long_credits(int t);
 	static void help(int t);

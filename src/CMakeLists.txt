@@ -9,7 +9,6 @@ set(sources
 	options.cpp
 	prefs.cpp
 	random.cpp
-	score.cpp
 	sound.cpp
 	graphics.cpp
 	cfgparse.cpp
@@ -19,7 +18,6 @@ set(sources
 	gamestate.cpp
 	manage.cpp
 	myship.cpp
-	pfile.cpp
 	radar.cpp
 	scenes.cpp
 	screen.cpp
@@ -126,11 +124,8 @@ check_function_exists(lstat		KOBO_HAVE_LSTAT)
 
 set(CMAKE_EXTRA_INCLUDE_FILES)
 
-if(WIN32)
-	set(KOBO_SCOREDIR "EXE>>scores")
-else(WIN32)
+if(NOT WIN32)
 	set(KOBO_DATADIR "${CMAKE_INSTALL_PREFIX}/share/${KOBO_PACKAGE_NAME}")
-	set(KOBO_SCOREDIR "/var/games/${KOBO_PACKAGE_NAME}/scores")
 	set(KOBO_USERDIR "HOME>>.${KOBO_PACKAGE_NAME}")
 	set(KOBO_SYSCONFDIR "/etc")
 endif(WIN32)

@@ -136,10 +136,8 @@ class prefs_t : public config_parser_t
 
 	// File paths
 	cfg_string_t	data;
-	cfg_string_t	scores;
 
 	// "Hidden" stuff ("to remember until next startup")
-	int	last_profile;		//Last used player profile
 	int	number_of_joysticks;	//no of connected joysticks
 
 	void init();
@@ -147,7 +145,6 @@ class prefs_t : public config_parser_t
 
 	// "Commands" - never written to config files
 	int	cmd_showcfg;
-	int	cmd_hiscores;
 	int	cmd_override;
 	int	cmd_help;	//Show help and exit
 	int	cmd_options_man;//Output OPTIONS doc in Un*x man source format

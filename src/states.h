@@ -89,15 +89,6 @@ class st_intro_instructions_t : public st_introbase_t
 };
 
 
-class st_intro_highscores_t : public st_introbase_t
-{
-  public:
-	st_intro_highscores_t();
-	void enter();
-	void post_render();
-};
-
-
 class st_intro_credits_t : public st_introbase_t
 {
   public:
@@ -298,7 +289,7 @@ class main_menu_t : public menu_base_t
   public:
 	int	start_level;
 	main_menu_t(gfxengine_t *e) : menu_base_t(e) { }
-	virtual void buildStartLevel(int profNum);
+	virtual void buildStartLevel();
 	void build();
 	void rebuild();
 };
@@ -340,38 +331,6 @@ class st_skill_menu_t : public st_menu_base_t
 	kobo_form_t *open();
 	void press(gc_targets_t button);
 	void select(int tag);
-};
-
-
-/*----------------------------------------------------------
-	Enter name
-----------------------------------------------------------*/
-class new_player_t : public kobo_form_t
-{
-  public:
-	int		editing;
-	char		name[60];
-	unsigned	currentIndex;
-	int		selection;
-	new_player_t(gfxengine_t *e) : kobo_form_t(e) { }
-	virtual void change(int delta);
-	virtual void build();
-	void open();
-	void close();
-	void rebuild();
-};
-
-class st_new_player_t : public kobo_basestate_t
-{
-	new_player_t	*menu;
-  public:
-	st_new_player_t();
-	kobo_form_t *open();
-	void enter();
-	void leave();
-	void press(gc_targets_t button);
-	void frame();
-	void post_render();
 };
 
 
@@ -583,7 +542,6 @@ class st_error_t : public kobo_basestate_t
 extern gamestatemanager_t gsm;
 extern st_intro_title_t st_intro_title;
 extern st_intro_instructions_t st_intro_instructions;
-extern st_intro_highscores_t st_intro_highscores;
 extern st_intro_credits_t st_intro_credits;
 extern st_long_credits_t st_long_credits;
 extern st_ask_exit_t st_ask_exit;
@@ -594,7 +552,6 @@ extern st_get_ready_t st_get_ready;
 extern st_game_over_t st_game_over;
 extern st_main_menu_t st_main_menu;
 extern st_skill_menu_t st_skill_menu;
-extern st_new_player_t st_new_player;
 extern st_options_main_t st_options_main;
 extern st_options_system_t st_options_system;
 extern st_options_video_t st_options_video;

@@ -47,7 +47,6 @@
 #include "states.h"
 #include "screen.h"
 #include "manage.h"
-#include "score.h"
 #include "gamectl.h"
 #include "random.h"
 #include "options.h"
@@ -210,9 +209,6 @@ static void setup_dirs(char *xpath)
 	fmap->addpath("GFX", "DATA>>gfx");
 	fmap->addpath("SFX", "DATA>>sfx");
 
-	// Score files (user and global)
-	fmap->addpath("SCORES", KOBO_SCOREDIR);
-
 	// Configuration files
 #ifdef KOBO_USERDIR
 	// For Un*x systems; typically "~/.koboredux"
@@ -236,14 +232,6 @@ static void add_dirs(prefs_t *p)
 		log_printf(ULOG, "Adding alternate data path \"%s\" (%s)\n",
 				p->data, pth);
 		fmap->addpath("DATA", pth, 1);
-	}
-
-	if(p->scores[0])
-	{
-		char *pth = fmap->sys2fm(p->scores);
-		log_printf(ULOG, "Adding alternate scores path \"%s\" (%s)\n",
-				p->scores, pth);
-		fmap->addpath("SCORES", pth, 1);
 	}
 }
 
@@ -1298,7 +1286,7 @@ int KOBO_main::open()
 	{
 		log_printf(ULOG, "Warping to stage %d!\n", prefs->cmd_warp);
 		manage.select_scene(prefs->cmd_warp);
-		scorefile.profile()->skill = prefs->cmd_skill;
+		manage.select_skill((skill_levels_t)prefs->cmd_skill);
 		gsm.push(&st_game);
 	}
 
@@ -2595,13 +2583,6 @@ int main(int argc, char *argv[])
 	}
 
 	add_dirs(prefs);
-
-	if(prefs->cmd_hiscores)
-	{
-		scorefile.gather_high_scores();
-		scorefile.print_high_scores();
-		cmd_exit = 1;
-	}
 
 	if(prefs->cmd_showcfg)
 	{

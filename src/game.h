@@ -105,6 +105,8 @@ enum skill_levels_t
 	SKILL_INSANE
 };
 
+#define	KOBO_DEFAULT_SKILL	SKILL_NORMAL
+
 
 class game_t
 {
