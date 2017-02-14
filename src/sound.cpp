@@ -93,6 +93,13 @@ KOBO_sound::~KOBO_sound()
 bool KOBO_sound::load(unsigned bank, const char *themepath,
 		int (*prog)(const char *msg))
 {
+	if(!iface)
+	{
+		log_printf(WLOG, "KOBO_sound::load(): Audio engine not open! "
+				"Operation ignored.\n");
+		return false;
+	}
+
 	if(bank >= KOBO_SOUND_BANKS)
 	{
 		log_printf(ELOG, "Sound bank %d out of range!\n", bank);
@@ -186,6 +193,9 @@ bool KOBO_sound::load(unsigned bank, const char *themepath,
 
 void KOBO_sound::unload(int bank)
 {
+	if(!iface)
+		return;
+
 	if(bank < 0)
 	{
 		for(int i = 0; i < KOBO_SOUND_BANKS; ++i)
@@ -241,6 +251,8 @@ void KOBO_sound::unload(int bank)
 void KOBO_sound::init_mixer_group(KOBO_mixer_group grp)
 {
 	A2_handle parent;
+	if(!iface)
+		return;
 
 	if(grp == KOBO_MG_ALL)
 	{
@@ -328,8 +340,8 @@ int KOBO_sound::open()
 
 	if(prefs->audiodriver[0] && a2_AddDriver(cfg,
 			a2_NewDriver(A2_AUDIODRIVER, prefs->audiodriver)))
-		log_printf(WLOG, "Couldn't add audio driver \"%s\";"
-				"trying default.\n");
+		log_printf(WLOG, "Couldn't add audio driver \"%s\"; "
+				"trying default.\n", prefs->audiodriver);
 
 	if(!(iface = a2_Open(cfg)))
 	{
