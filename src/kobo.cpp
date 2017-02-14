@@ -661,6 +661,8 @@ int KOBO_main::init_display(prefs_t *p)
 		  case VMID_FULLWINDOW:
 			gengine->switch_video_mode(KOBO_VIDEOMODE_WINDOWED);
 			break;
+		  default:
+			break;
 		}
 	}
 
