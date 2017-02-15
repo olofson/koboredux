@@ -137,6 +137,7 @@ class st_pause_game_t : public kobo_basestate_t
 {
   public:
 	st_pause_game_t();
+	void enter();
 	void press(gc_targets_t button);
 	void frame();
 	void post_render();
@@ -150,6 +151,7 @@ class st_get_ready_t : public kobo_basestate_t
   public:
 	st_get_ready_t();
 	void enter();
+	void reenter();
 	void press(gc_targets_t button);
 	void frame();
 	void post_render();
@@ -163,6 +165,7 @@ class st_game_over_t : public kobo_basestate_t
   public:
 	st_game_over_t();
 	void enter();
+	void reenter();
 	void press(gc_targets_t button);
 	void frame();
 	void post_render();
@@ -301,6 +304,7 @@ class st_main_menu_t : public st_menu_base_t
 	st_main_menu_t()	{	name = "main_menu"; }
 	kobo_form_t *open();
 	void reenter();
+	void press(gc_targets_t button);
 	int translate(int tag, int button);
 	void select(int tag);
 };

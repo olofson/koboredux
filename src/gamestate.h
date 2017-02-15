@@ -31,10 +31,9 @@ class gamestate_t
 {
 	friend class gamestatemanager_t;
   private:
-	gamestate_t		*next;		//LIFO stack
+	gamestate_t		*prev;		//LIFO stack
 	gamestatemanager_t	*manager;
   protected:
-	const char		*name;
 	void pop();
 
 	virtual void press(gc_targets_t button);
@@ -52,8 +51,11 @@ class gamestate_t
 	virtual void pre_render();	//Background rendering
 	virtual void post_render();	//Foreground rendering
   public:
+	const char		*name;
+
 	gamestate_t();
 	virtual ~gamestate_t();
+	gamestate_t *previous()		{ return prev; }
 };
 
 

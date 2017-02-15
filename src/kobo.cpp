@@ -2228,6 +2228,13 @@ void kobo_gfxengine_t::post_render()
 		// Mouse cursor position
 		snprintf(buf, sizeof(buf), "M(%d, %d)", mouse_x, mouse_y);
 		woverlay->string(DASHW(MAIN) - 60, 1, buf);
+
+		// Current map position
+		woverlay->font(B_NORMAL_FONT);
+		snprintf(buf, sizeof(buf), "(%d, %d)",
+				CS2PIXEL(gengine->xoffs(LAYER_BASES)),
+				CS2PIXEL(gengine->yoffs(LAYER_BASES)));
+		woverlay->string(4, DASHH(MAIN) - 10, buf);
 	}
 
 	// Frame rate counter

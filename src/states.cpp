@@ -82,13 +82,21 @@ void kobo_basestate_t::post_render()
 	screen.render_fx();
 	if(prefs->debug)
 	{
-		char buf[32];
+		int y = 1;
+
+		// Current state
 		woverlay->font(B_NORMAL_FONT);
-		woverlay->string(4, 1, name);
-		snprintf(buf, sizeof(buf), "(%d, %d)",
-				CS2PIXEL(gengine->xoffs(LAYER_BASES)),
-				CS2PIXEL(gengine->yoffs(LAYER_BASES)));
-		woverlay->string(4, DASHH(MAIN) - 10, buf);
+		woverlay->string(4, y, name);
+		y += woverlay->fontheight(B_NORMAL_FONT);
+
+		// State stack
+		woverlay->font(B_SMALL_FONT);
+		gamestate_t *s = this;
+		while((s = s->previous()))
+		{
+			woverlay->string(4, y, s->name);
+			y += woverlay->fontheight(B_SMALL_FONT);
+		}
 	}
 }
 
@@ -499,6 +507,22 @@ st_pause_game_t::st_pause_game_t()
 }
 
 
+void st_pause_game_t::enter()
+{
+	// There are certain game states where pausing is redundant
+	switch(manage.state())
+	{
+	  case GS_GETREADY:
+	  case GS_GAMEOVER:
+	  case GS_REPLAY:
+		gsm.pop();
+		return;
+	  default:
+		break;
+	}
+}
+
+
 void st_pause_game_t::press(gc_targets_t button)
 {
 	switch (button)
@@ -548,6 +572,12 @@ st_get_ready_t::st_get_ready_t()
 void st_get_ready_t::enter()
 {
 	sound.ui_play(S_UI_READY);
+	reenter();
+}
+
+
+void st_get_ready_t::reenter()
+{
 	start_time = (int)SDL_GetTicks();
 	frame_time = 0;
 	countdown = prefs->countdown;
@@ -660,6 +690,17 @@ st_game_over_t::st_game_over_t()
 void st_game_over_t::enter()
 {
 	sound.ui_play(S_UI_GAMEOVER);
+	reenter();
+}
+
+
+void st_game_over_t::reenter()
+{
+	if(!manage.game_in_progress())
+	{
+		pop();
+		return;
+	}
 	start_time = (int)SDL_GetTicks();
 	frame_time = 0;
 	countdown = prefs->cont_countdown;
@@ -672,7 +713,7 @@ void st_game_over_t::press(gc_targets_t button)
 	{
 	  case BTN_EXIT:
 	  case BTN_NO:
-		gsm.change(&st_main_menu);
+		gsm.push(&st_main_menu);
 		break;
 	  case BTN_LEFT:
 	  case BTN_RIGHT:
@@ -1114,6 +1155,21 @@ void st_main_menu_t::reenter()
 {
 	menu->rebuild();
 	st_menu_base_t::reenter();
+}
+
+
+void st_main_menu_t::press(gc_targets_t button)
+{
+	switch(button)
+	{
+	  case BTN_EXIT:
+	  case BTN_CLOSE:
+		// We want to treat these the same as "Return to game"
+		select(MENU_TAG_OK);
+	  default:
+		st_menu_base_t::press(button);
+		return;
+	}
 }
 
 

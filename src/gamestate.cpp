@@ -32,7 +32,7 @@
 
 gamestate_t::gamestate_t()
 {
-	next = 0;
+	prev = 0;
 	manager = 0;
 }
 
@@ -88,8 +88,8 @@ void gamestatemanager_t::change(gamestate_t *gs)
 
 	gamestate_t *oldtop = top;
 	if(top)
-		top = top->next;
-	gs->next = top;
+		top = top->prev;
+	gs->prev = top;
 	top = gs;
 
 	if(oldtop)
@@ -109,7 +109,7 @@ void gamestatemanager_t::push(gamestate_t *gs)
 	gs->manager = this;
 
 	gamestate_t *oldtop = top;
-	gs->next = top;
+	gs->prev = top;
 	top = gs;
 
 	if(oldtop)
@@ -125,7 +125,7 @@ void gamestatemanager_t::pop()
 {
 	gamestate_t *oldtop = top;
 	if(top)
-		top = top->next;
+		top = top->prev;
 	if(oldtop)
 	{
 		oldtop->leave();
@@ -146,7 +146,7 @@ gamestate_t *gamestatemanager_t::current()
 gamestate_t *gamestatemanager_t::previous()
 {
 	if(top)
-		return top->next;
+		return top->prev;
 	else
 		return NULL;
 }
