@@ -646,7 +646,7 @@ int KOBO_main::init_display(prefs_t *p)
 
 	gengine->hide();
 
-	gengine->title("Kobo Redux " KOBO_VERSION, "kobord");
+	gengine->title("Kobo Redux " KOBO_VERSION_STRING, "kobord");
 	gengine->vsync(p->vsync);
 	gengine->cursor(0);
 
@@ -2376,7 +2376,7 @@ static void put_usage()
 	maxdeflen += 4;		// Space for [] brackets!
 
 	// Print nicely formatted documentation
-	printf("\nKobo Redux %s\n", KOBO_VERSION);
+	printf("\nKobo Redux %s\n", KOBO_VERSION_STRING);
 	printf("Usage: kobord [<options>]\n");
 	printf("Recognized options:\n");
 	s = -1;

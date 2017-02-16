@@ -186,7 +186,7 @@ void KOBO_screen::title(int t, float fade, int mode)
 	{
 		// Version
 		woverlay->font(B_NORMAL_FONT);
-		woverlay->center(195, KOBO_VERSION);
+		woverlay->center(195, KOBO_VERSION_STRING);
 
 		// Copyright
 		woverlay->font(B_SMALL_FONT);
