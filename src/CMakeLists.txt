@@ -26,6 +26,7 @@ set(sources
 	starfield.cpp
 	themeparser.cpp
 	replay.cpp
+	pfile.cpp
 	openurl.cpp
 	logger.c
 	gfxengine/gfxengine.cpp
