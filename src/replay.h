@@ -19,10 +19,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "myship.h"
+/*
+ * Save/replay versioning
+ *
+ *	KOBO_REPLAY_VERSION
+ *		Integer 8:8:8:8 version code that is bumped to the current game
+ *		version (KOBO_VERSION) whenever a compatibility breaking change
+ *		(that is, basically any change at all) is made to the game
+ *		logic code.
+ *		   Some versions of the game may accept the initial state part
+ *		from older version saves with some restrictions, but replay
+ *		data will just not work, as it's totally dependent on the game
+ *		logic.
+ *
+ *	KOBO_replay.version
+ *		Initialized to KOBO_REPLAY_VERSION as a KOBO_replay is created.
+ *
+ *	KOBO_replay.gameversion
+ *		Initialized to KOBO_VERSION. Intended for debugging purposes,
+ *		and may be checked in special cases, if unintentional
+ *		compatibility breaking changes are discovered.
+ */
 
 #ifndef	_KOBO_REPLAY_H_
 #define	_KOBO_REPLAY_H_
+
+#include "pfile.h"
+#include <time.h>
 
 enum KOBO_player_controls
 {
@@ -40,16 +63,27 @@ enum KOBO_player_controls
 	KOBO_PC_END =			0xff00	// End-of-replay
 };
 
+enum KOBO_replay_compat
+{
+	KOBO_RPCOM_NONE = 0,
+	KOBO_RPCOM_LIMITED,
+	KOBO_RPCOM_FULL
+};
+
 class KOBO_replay
 {
 	int	version;	// Game logic version
+	int	gameversion;	// Version of game binary that generated this
 	Uint32	config;		// Compilation of relevant config options
+	time_t	starttime;	// Level start time
 
 	// Player input log
 	int	bufsize;	// Physical size of buffer
 	int	bufrecord;	// Number of frames recorded
 	int	bufplay;	// Current playback frame
 	Uint8	*buffer;
+
+	KOBO_replay_compat	compat;	// Compatibility status of current data
 
 	Uint32 get_config();
 	void write(Uint8 b);
@@ -68,6 +102,9 @@ class KOBO_replay
 
 	// Record
 	void write(KOBO_player_controls ctrl);	// Record + advance
+
+	// Compatibility check
+	KOBO_replay_compat compatibility()	{ return compat; };
 
 	// Playback
 	void rewind();				// Rewind to start

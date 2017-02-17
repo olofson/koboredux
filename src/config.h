@@ -27,10 +27,13 @@
 
 #define	KOBO_COPYRIGHT	"Copyright 2017 Olofson Arcade. All rights reserved."
 
+// Replay/game logic version. (See replay.h)
+//
 // IMPORTANT: Bump this whenever making any gameplay, map, or AI changes!
-// (Of course, we don't have to bother with this until we actually start saving
-// or sending replay data.)
-#define	KOBO_REPLAY_VERSION	1
+//
+// (This will probably match KOBO_VERSION most of the time, at least until
+// version 1.0.0.)
+#define	KOBO_REPLAY_VERSION	KOBO_MAKE_VERSION(0, 7, 3, 0)
 
 #include "buildconfig.h"
 

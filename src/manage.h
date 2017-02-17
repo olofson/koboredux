@@ -27,6 +27,7 @@
 
 #include "SDL.h"
 #include "replay.h"
+#include "game.h"
 
 enum KOBO_gamestates
 {

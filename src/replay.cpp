@@ -32,7 +32,9 @@
 KOBO_replay::KOBO_replay()
 {
 	version = KOBO_REPLAY_VERSION;
+	gameversion = KOBO_VERSION;
 	config = get_config();
+	starttime = time(NULL);
 
 	bufsize = KOBO_REPLAY_BUFFER;
 	bufrecord = bufplay = 0;
@@ -40,6 +42,8 @@ KOBO_replay::KOBO_replay()
 	if(!buffer)
 		log_printf(ELOG, "Out of memory! Limited save/replay "
 				"capabilities.\n");
+
+	compat = KOBO_RPCOM_FULL;
 }
 
 
@@ -127,17 +131,23 @@ void KOBO_replay::punchin()
 void KOBO_replay::log_dump(int level)
 {
 	log_printf(level, " .- Replay -----------------------\n");
-	log_printf(level, " |  version: %d\n", version);
-	log_printf(level, " |   config: %8.8x\n", config);
-	log_printf(level, " | recorded: %d frames\n", bufrecord);
-	log_printf(level, " | position: %d frames\n", bufplay);
-	log_printf(level, " |    stage: %d\n", stage);
-	log_printf(level, " |     type: %d\n", type);
-	log_printf(level, " |    skill: %d\n", skill);
-	log_printf(level, " |     seed: %u\n", seed);
-	log_printf(level, " |   health: %d\n", health);
-	log_printf(level, " |   charge: %d\n", charge);
-	log_printf(level, " |    score: %d\n", score);
+	log_printf(level, " |     version: %d.%d.%d.%d\n",
+			KOBO_MAJOR(version), KOBO_MINOR(version),
+			KOBO_MICRO(version), KOBO_BUILD(version));
+	log_printf(level, " | gameversion: %d.%d.%d.%d\n",
+			KOBO_MAJOR(gameversion), KOBO_MINOR(gameversion),
+			KOBO_MICRO(gameversion), KOBO_BUILD(gameversion));
+	log_printf(level, " |      config: %8.8x\n", config);
+	log_printf(level, " |   starttime: %s", ctime(&starttime));
+	log_printf(level, " |    recorded: %d frames\n", bufrecord);
+	log_printf(level, " |    position: %d frames\n", bufplay);
+	log_printf(level, " |       stage: %d\n", stage);
+	log_printf(level, " |        type: %d\n", type);
+	log_printf(level, " |       skill: %d\n", skill);
+	log_printf(level, " |        seed: %u\n", seed);
+	log_printf(level, " |      health: %d\n", health);
+	log_printf(level, " |      charge: %d\n", charge);
+	log_printf(level, " |       score: %d\n", score);
 	log_printf(level, " '--------------------------------\n");
 }
 
