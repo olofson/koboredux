@@ -124,6 +124,7 @@ class _manage
 	static void pause(bool p);
 	static bool game_paused()	{ return paused; }
 	static KOBO_gamestates state()	{ return gamestate; }
+	static const char *state_name(KOBO_gamestates st);
 
 	// Replays
 	static float replay_progress()

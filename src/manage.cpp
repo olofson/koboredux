@@ -82,6 +82,23 @@ KOBO_replay *_manage::replay = NULL;
 KOBO_player_controls _manage::lastinput = KOBO_PC_FIRE;
 
 
+const char *_manage::state_name(KOBO_gamestates st)
+{
+	switch(st)
+	{
+	  case GS_NONE:		return "NONE";
+	  case GS_INTRO:	return "INTRO";
+	  case GS_SELECT:	return "SELECT";
+	  case GS_GETREADY:	return "GETREADY";
+	  case GS_PLAYING:	return "PLAYING";
+	  case GS_REPLAY:	return "REPLAY";
+	  case GS_LEVELDONE:	return "LEVELDONE";
+	  case GS_GAMEOVER:	return "GAMEOVER";
+	}
+	return "<illegal gamestate>";
+}
+
+
 void _manage::set_bars()
 {
 	whealth->enable(show_bars);

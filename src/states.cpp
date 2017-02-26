@@ -48,6 +48,7 @@ int last_level = -1;
 kobo_basestate_t::kobo_basestate_t()
 {
 	name = "<unnamed>";
+	info = NULL;
 	song = -1;
 }
 
@@ -82,20 +83,23 @@ void kobo_basestate_t::post_render()
 	screen.render_fx();
 	if(prefs->debug)
 	{
-		int y = 1;
-
-		// Current state
-		woverlay->font(B_NORMAL_FONT);
-		woverlay->string(4, y, name);
-		y += woverlay->fontheight(B_NORMAL_FONT);
-
 		// State stack
-		woverlay->font(B_SMALL_FONT);
+		int y = 1;
 		gamestate_t *s = this;
-		while((s = s->previous()))
+		while(s)
 		{
-			woverlay->string(4, y, s->name);
-			y += woverlay->fontheight(B_SMALL_FONT);
+			if(s->info)
+			{
+				char buf[80];
+				snprintf(buf, sizeof(buf), "%s - %s",
+						s->name, s->info);
+				woverlay->string(4, y, buf);
+			}
+			else
+				woverlay->string(4, y, s->name);
+			y += woverlay->fontheight();
+			woverlay->font(B_SMALL_FONT);
+			s = s->previous();
 		}
 	}
 }
@@ -440,6 +444,8 @@ void st_game_t::press(gc_targets_t button)
 
 void st_game_t::frame()
 {
+	if(prefs->debug)
+		info = manage.state_name(manage.state());
 	switch(manage.state())
 	{
 	  case GS_GETREADY:

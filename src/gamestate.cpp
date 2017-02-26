@@ -34,6 +34,8 @@ gamestate_t::gamestate_t()
 {
 	prev = 0;
 	manager = 0;
+	name = "<unnamed gamestate>";
+	info = NULL;
 }
 
 gamestate_t::~gamestate_t()			{}

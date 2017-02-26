@@ -52,6 +52,7 @@ class gamestate_t
 	virtual void post_render();	//Foreground rendering
   public:
 	const char		*name;
+	const char		*info;
 
 	gamestate_t();
 	virtual ~gamestate_t();
