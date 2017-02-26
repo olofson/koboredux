@@ -30,6 +30,19 @@
 #include "pfile.h"
 
 
+#ifdef WIN32
+time_t timegm(struct tm *brokentime)
+{
+	time_t t;
+	char *tz = getenv("TZ");
+	_putenv_s("TZ", "UTC");
+	t = mktime(brokentime);
+	_putenv_s("TZ", tz);
+	return t;
+}
+#endif
+
+
 /*----------------------------------------------------------
 	Constructor/Destructor
 ----------------------------------------------------------*/

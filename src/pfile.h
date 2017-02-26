@@ -27,8 +27,9 @@
 #include <time.h>
 
 #ifdef WIN32
-# define timegm _mkgmtime
+time_t timegm(struct tm *brokentime);
 #endif
+
 
     ////////////////////////////////////////////////////////////
    // Note that these classes can keep track of only one
