@@ -36,6 +36,9 @@
 # include <sys/stat.h>
 #endif
 
+#ifdef WIN32
+# include <windows.h>
+#endif
 
 fm_object_t::~fm_object_t()
 {
@@ -379,15 +382,16 @@ int filemapper_t::test_file_create(const char *syspath)
 
 int filemapper_t::test_dir_create(const char *syspath)
 {
-#ifdef WIN32
-	return FM_ERROR;	// Not implemented!
-#else
 	if(probe(syspath) == FM_DIR)
 		return FM_DIR;		// Already exists.
+#ifdef WIN32
+	if(!CreateDirectory(syspath, NULL))
+		return FM_ERROR;
+#else
 	if(::mkdir(syspath, 0775))
 		return FM_ERROR;	// Could not create!
-	return FM_DIR_CREATE;		// Created!
 #endif
+	return FM_DIR_CREATE;		// Created!
 }
 
 
@@ -833,11 +837,6 @@ FILE *filemapper_t::fopen(const char *ref, const char *mode, const char **pth)
 
 int filemapper_t::mkdir(const char *ref)
 {
-#ifdef WIN32
-	log_printf(ELOG, "filemapper_t::mkdir() not implemented on this "
-			"platform!\n");
-	return -1;
-#else
 	if(get(ref, FM_DIR))
 		return 0;	// Already exists!
 	const char *path = get(ref, FM_DIR_CREATE);
@@ -851,7 +850,6 @@ int filemapper_t::mkdir(const char *ref)
 	log_printf(ELOG, "filemapper_t::mkdir() Created  directory \"%s\".\n",
 		path);
 	return 0;
-#endif
 }
 
 
