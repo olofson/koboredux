@@ -2,7 +2,7 @@
 ---------------------------------------------------------------------------
 	pfile.h - Portable File Access Toolkit
 ---------------------------------------------------------------------------
- * Copyright 2002, 2009 David Olofson
+ * Copyright 2002, 2009, 2017 David Olofson
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -21,6 +21,14 @@
 
 #ifndef	_PFILE_H_
 #define	_PFILE_H_
+
+#include <stdio.h>
+#include <stdint.h>
+#include <time.h>
+
+#ifdef WIN32
+# define timegm _mkgmtime
+#endif
 
     ////////////////////////////////////////////////////////////
    // Note that these classes can keep track of only one
@@ -88,6 +96,8 @@ class pfile_t
 	int	chunk_id;	//Chunk type ID
 	int	chunk_writing;	//1 if we're building a chunk for writing
 
+	char	fourccbuf[8];
+
 	// Initialize buffer for writing. Subsequent write() calls
 	// will write to the buffer instead of the file.
 	int buffer_init();
@@ -98,7 +108,7 @@ class pfile_t
 	int buffer_read(int len);
 
 	//Unbuffered write operations
-	int write_ub(void *data, int len);
+	int write_ub(const void *data, int len);
 	int write_ub(unsigned int x);
 	int write_ub(int x);
   public:
@@ -113,19 +123,26 @@ class pfile_t
 	int read(void *data, int len);
 	int read(unsigned int &x);
 	int read(int &x);
+	int read(int16_t &x);
+	int read(int8_t &x);
+	int read(struct tm &t);
 
 	void buffer_close();	//Discard the buffer and return to
 				//"direct" operation.
 
 	//These return # of bytes written, or -1 in case of EOF, or an error.
-	int write(void *data, int len);
+	int write(const void *data, int len);
 	int write(unsigned int x);
 	int write(int x);
+	int write(int16_t x);
+	int write(int8_t x);
+	int write(const struct tm *t);
 
 	int buffer_write();	//Write the whole buffer to the file.
 				//This will flush the buffer as well.
 
 	//RIFF style chunk handling
+	const char *fourcc2string(unsigned int c);
 	int chunk_read();
 	int chunk_type()	{ return chunk_id;	}
 	int chunk_size()	{ return bufused;	}
