@@ -53,6 +53,9 @@ pfile_t::pfile_t(FILE *file)
 	_status = 0;
 	bufsize = bufused = bufpos = 0;
 	buffer = NULL;
+	chunk_id = 0;
+	chunk_ver = 0;
+	chunk_writing = false;
 }
 
 
@@ -189,7 +192,7 @@ int pfile_t::status(int new_status)
 	Little endian read/write API
 ----------------------------------------------------------*/
 
-int pfile_t::read(unsigned int &x)
+int pfile_t::read(uint32_t &x)
 {
 	unsigned char b[4];
 	int result = read(&b, 4);
@@ -200,7 +203,7 @@ int pfile_t::read(unsigned int &x)
 }
 
 
-int pfile_t::read(int &x)
+int pfile_t::read(int32_t &x)
 {
 	unsigned char b[4];
 	int result = read(&b, 4);
@@ -230,7 +233,7 @@ int pfile_t::read(int8_t &x)
 }
 
 
-int pfile_t::write(unsigned int x)
+int pfile_t::write(uint32_t x)
 {
 	DBG(log_printf(LOGLEVEL, "    write uint32 %u/0x%x\n", x, x);)
 	unsigned char b[4];
@@ -242,7 +245,7 @@ int pfile_t::write(unsigned int x)
 }
 
 
-int pfile_t::write(int x)
+int pfile_t::write(int32_t x)
 {
 	DBG(log_printf(LOGLEVEL, "    write int32 %d/0x%x\n", x, x);)
 	unsigned char b[4];
@@ -283,7 +286,7 @@ int pfile_t::write_ub(const void *data, int len)
 }
 
 
-int pfile_t::write_ub(unsigned int x)
+int pfile_t::write_ub(uint32_t x)
 {
 	unsigned char b[4];
 	b[0] = x & 0xff;
@@ -294,9 +297,9 @@ int pfile_t::write_ub(unsigned int x)
 }
 
 
-int pfile_t::write_ub(int x)
+int pfile_t::write_ub(int32_t x)
 {
-	return status(write_ub((unsigned int)x));
+	return status(write_ub((uint32_t)x));
 }
 
 
@@ -317,25 +320,29 @@ const char *pfile_t::fourcc2string(unsigned int c)
 
 int pfile_t::chunk_read()
 {
-	unsigned int size;
+	uint32_t size;
 
-	chunk_writing = 0;
+	chunk_writing = false;
 	if(read(chunk_id) != 4)
+		return _status;
+	if(read(chunk_ver) != 4)
 		return _status;
 	if(read(size) != 4)
 		return _status;
 
-	DBG(log_printf(LOGLEVEL, "  reading %s chunk, %d bytes\n",
-			fourcc2string(chunk_id), size));
+	DBG(log_printf(LOGLEVEL, "  reading %sv%d chunk, %d bytes\n",
+			fourcc2string(chunk_id), chunk_ver, size));
 	return buffer_read(size);
 }
 
 
-int pfile_t::chunk_write(int id)
+int pfile_t::chunk_write(uint32_t id, int32_t version)
 {
-	DBG(log_printf(LOGLEVEL, "  writing %s chunk\n", fourcc2string(id)));
-	chunk_writing = 1;
+	DBG(log_printf(LOGLEVEL, "  writing %sv%d chunk\n",
+			fourcc2string(id), version));
+	chunk_writing = true;
 	chunk_id = id;
+	chunk_ver = version;
 	buffer_init();
 	return _status;
 }
@@ -346,6 +353,7 @@ int pfile_t::chunk_end()
 	if(chunk_writing)
 	{
 		write_ub(chunk_id);
+		write_ub(chunk_ver);
 		write_ub(bufused);
 		buffer_write();
 		DBG(log_printf(LOGLEVEL, "  wrote %s chunk, %d bytes\n",

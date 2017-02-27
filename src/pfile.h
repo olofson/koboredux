@@ -88,14 +88,15 @@ time_t timegm(struct tm *brokentime);
 //
 class pfile_t
 {
-	FILE	*f;		//Just a plain file handle...
-	int	_status;	// < 0 if there was an error
-	int	bufsize;	//Actual malloc()ed size of buffer
-	int	bufused;	//Current buffer write position
-	int	bufpos;		//Current buffer read position
-	char	*buffer;	//Read/write buffer
-	int	chunk_id;	//Chunk type ID
-	int	chunk_writing;	//1 if we're building a chunk for writing
+	FILE		*f;		// Just a plain file handle...
+	int		_status;	// < 0 if there was an error
+	int		bufsize;	// Actual malloc()ed size of buffer
+	int		bufused;	// Current buffer write position
+	int		bufpos;		// Current buffer read position
+	char		*buffer;	// Read/write buffer
+	uint32_t	chunk_id;	// Chunk type ID
+	int32_t		chunk_ver;	// Chunk format version
+	bool		chunk_writing;	// true if building a chunk for writing
 
 	char	fourccbuf[8];
 
@@ -110,8 +111,8 @@ class pfile_t
 
 	//Unbuffered write operations
 	int write_ub(const void *data, int len);
-	int write_ub(unsigned int x);
-	int write_ub(int x);
+	int write_ub(uint32_t x);
+	int write_ub(int32_t x);
   public:
 	pfile_t(FILE *file);
 	virtual ~pfile_t();
@@ -122,8 +123,8 @@ class pfile_t
 
 	//These return # of bytes read, or -1 in case of EOF, or an error.
 	int read(void *data, int len);
-	int read(unsigned int &x);
-	int read(int &x);
+	int read(uint32_t &x);
+	int read(int32_t &x);
 	int read(int16_t &x);
 	int read(int8_t &x);
 	int read(struct tm &t);
@@ -133,8 +134,8 @@ class pfile_t
 
 	//These return # of bytes written, or -1 in case of EOF, or an error.
 	int write(const void *data, int len);
-	int write(unsigned int x);
-	int write(int x);
+	int write(uint32_t x);
+	int write(int32_t x);
 	int write(int16_t x);
 	int write(int8_t x);
 	int write(const struct tm *t);
@@ -146,8 +147,9 @@ class pfile_t
 	const char *fourcc2string(unsigned int c);
 	int chunk_read();
 	int chunk_type()	{ return chunk_id;	}
+	int chunk_version()	{ return chunk_ver;	}
 	int chunk_size()	{ return bufused;	}
-	int chunk_write(int id);
+	int chunk_write(uint32_t id, int32_t version);
 	int chunk_end();
 };
 
