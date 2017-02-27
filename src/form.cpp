@@ -170,6 +170,7 @@ void kobo_form_t::begin()
 void kobo_form_t::title(const char *cap)
 {
 	ct_label_t *w = new ct_label_t(engine, cap);
+	w->offset(xoffs, 0);
 	init_widget(w, B_NORMAL_FONT);
 	space(2);
 }
@@ -178,6 +179,7 @@ void kobo_form_t::title(const char *cap)
 void kobo_form_t::label(const char *cap)
 {
 	ct_label_t *w = new ct_label_t(engine, cap);
+	w->offset(xoffs, 0);
 	init_widget(w, B_MEDIUM_FONT);
 }
 
@@ -310,6 +312,7 @@ void kobo_form_t::space(float lines)
 void kobo_form_t::help()
 {
 	help_bar = new ct_label_t(engine, "");
+	help_bar->offset(0.5, 0);
 	init_widget(help_bar, B_SMALL_FONT);
 }
 
