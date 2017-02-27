@@ -30,6 +30,7 @@
 #include "form.h"
 #include "kobo.h"
 #include "options.h"
+#include "campaign.h"
 
 #define	MENU_TAG_OK	99
 #define	MENU_TAG_CANCEL	100
@@ -119,6 +120,9 @@ class st_long_credits_t : public kobo_basestate_t
 	In-game
 ----------------------------------------------------------*/
 
+// NOTE:
+//	Start a new game with manage.start_new_game(), continue_game(), or
+//	start_replay() before entering this st_game, or it will just fail!
 class st_game_t : public kobo_basestate_t
 {
   public:
@@ -306,6 +310,41 @@ class st_main_menu_t : public st_menu_base_t
 	void reenter();
 	void press(gc_targets_t button);
 	int translate(int tag, int button);
+	void select(int tag);
+};
+
+
+/*----------------------------------------------------------
+	Campaign Selector
+----------------------------------------------------------*/
+
+class campaign_menu_t : public menu_base_t
+{
+	KOBO_campaign_info	*cinfo[KOBO_MAX_CAMPAIGN_SLOTS];
+	const char		*header;
+	bool			newgame;
+	char			tdbuf[128];
+  public:
+	campaign_menu_t(gfxengine_t *e);
+	~campaign_menu_t();
+	const char *timedate(time_t *t);
+	void colonalign();
+	void setup(const char *hdr, bool new_game);
+	bool campaign_exists(int ind)	{ return cinfo[ind] != NULL; }
+	void build();
+	void rebuild();
+};
+
+class st_campaign_menu_t : public st_menu_base_t
+{
+	campaign_menu_t	*menu;
+	const char	*header;
+	bool		newgame;
+  public:
+	st_campaign_menu_t()	{	name = "campaign_selector"; }
+	kobo_form_t *open();
+	void setup(const char *header, bool new_game);
+	void press(gc_targets_t button);
 	void select(int tag);
 };
 
@@ -525,6 +564,14 @@ class st_ask_abort_game_t : public st_yesno_base_t
 };
 
 
+class st_ask_overwrite_campaign_t : public st_yesno_base_t
+{
+  public:
+	st_ask_overwrite_campaign_t();
+	void select(int tag);
+};
+
+
 /*----------------------------------------------------------
 	Critical Error Screen
 ----------------------------------------------------------*/
@@ -555,6 +602,8 @@ extern st_pause_game_t st_pause_game;
 extern st_get_ready_t st_get_ready;
 extern st_game_over_t st_game_over;
 extern st_main_menu_t st_main_menu;
+extern st_campaign_menu_t st_campaign_menu;
+extern st_ask_overwrite_campaign_t st_ask_overwrite_campaign;
 extern st_skill_menu_t st_skill_menu;
 extern st_options_main_t st_options_main;
 extern st_options_system_t st_options_system;

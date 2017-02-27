@@ -27,6 +27,7 @@ set(sources
 	themeparser.cpp
 	replay.cpp
 	pfile.cpp
+	campaign.cpp
 	openurl.cpp
 	logger.c
 	gfxengine/gfxengine.cpp

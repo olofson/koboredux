@@ -26,7 +26,7 @@
 #define _KOBO_MANAGE_H_
 
 #include "SDL.h"
-#include "replay.h"
+#include "campaign.h"
 #include "game.h"
 
 enum KOBO_gamestates
@@ -73,6 +73,7 @@ class _manage
 	static void next_scene();
 	static void retry();
 
+	static int selected_slot;
 	static int selected_stage;
 	static int last_stage;
 	static skill_levels_t selected_skill;
@@ -84,8 +85,10 @@ class _manage
 	static int flash_score_count;
 	static int score_changed;
 
-	// Game replays
+	// Campaign and current replay
+	static KOBO_campaign *campaign;
 	static KOBO_replay *replay;
+	static bool owns_replay;
 	static KOBO_player_controls lastinput;
 
 	static void put_player_stats();
@@ -95,11 +98,13 @@ class _manage
 	static void run_noise();
 	static void run_leds();
 	static void set_bars();
+	static void init_game(KOBO_replay *rp = NULL, bool newship = false);
 	static void init_resources_title();
 	static void update();
 	static void run_intro();
 	static void run_pause();
 	static void run_game();
+	static void finalize_replay();
   public:
 
 	static void init();
@@ -110,6 +115,8 @@ class _manage
 	static int last_played_stage()	{ return last_stage; }
 
 	// State management
+	static void select_slot(int sl)	{ selected_slot = sl; }
+	static int current_slot()	{ return selected_slot; }
 	static void start_intro();
 	static void select_scene(int scene, bool radar = false);
 	static void select_skill(int skill)
@@ -117,8 +124,8 @@ class _manage
 		selected_skill = (skill_levels_t)skill;
 	}
 	static int current_skill()	{ return (int)selected_skill; }
-	static void init_game(KOBO_replay *rp = NULL, bool newship = false);
 	static void start_new_game();
+	static bool continue_game();
 	static void start_replay();
 	static void player_ready();
 	static void abort_game();

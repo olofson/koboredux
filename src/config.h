@@ -227,4 +227,7 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	KOBO_DEMO_SKILL		SKILL_NEWBIE
 #define	KOBO_DEMO_LAST_STAGE	5
 
+/* Campaigns */
+#define	KOBO_MAX_CAMPAIGN_SLOTS	10
+
 #endif	/*_KOBO_CONFIG_H_*/

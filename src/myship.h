@@ -94,7 +94,7 @@ class KOBO_myship
 		vx += ix;
 		vy += iy;
 	}
-	static void init(bool newship);
+	static void init(bool newship);		// New game or new stage
 	static void init(int rhealth, int rcharge);	// Replay init
 	static void off();
 	static void move();

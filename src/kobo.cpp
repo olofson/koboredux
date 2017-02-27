@@ -211,8 +211,13 @@ static void setup_dirs(char *xpath)
 
 	// Configuration files
 #ifdef KOBO_USERDIR
-	// For Un*x systems; typically "~/.koboredux"
+	// For Un*x systems; typically "~/.koboredux". Try to create it right
+	// away if it doesn't exist, because the only situation where it won't
+	// be used is if the user just quits without starting a game, and
+	// without touching the options. Also, "SAVES>>" should be in here when
+	// possible, and filemapper_t won't create paths recursively, so...
 	fmap->addpath("CONFIG", KOBO_USERDIR);
+	fmap->mkdir(KOBO_USERDIR);
 #endif
 #ifdef KOBO_SYSCONFDIR
 	// System local (custom default configs in official distro packages)
@@ -220,6 +225,10 @@ static void setup_dirs(char *xpath)
 #endif
 	// For Win32, or packaging a custom default config in a Linux bz2 pkg
 	fmap->addpath("CONFIG", "EXE>>");
+
+	// Campaign and demo saves
+	fmap->addpath("SAVES", "CONFIG>>saves");
+	fmap->mkdir("SAVES>>");
 }
 
 
@@ -1191,10 +1200,6 @@ void KOBO_main::load_config(prefs_t *p)
 void KOBO_main::save_config(prefs_t *p)
 {
 	FILE *f;
-#ifdef KOBO_USERDIR
-	// Try to create config/userdata directory, if it doesn't exist!
-	fmap->get(KOBO_USERDIR, FM_DIR_CREATE);
-#endif
 #if defined(HAVE_GETEGID) && defined(HAVE_SETGID)
 	gid_t oldgid = getegid();
 	if(setgid(getgid()) != 0)

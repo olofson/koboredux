@@ -49,6 +49,7 @@
 KOBO_gamestates _manage::gamestate = GS_NONE;
 bool _manage::paused = false;
 int _manage::game_seed;
+int _manage::selected_slot = 0;
 int _manage::selected_stage;
 int _manage::last_stage;	// HAX for the start stage selector
 skill_levels_t _manage::selected_skill = KOBO_DEFAULT_SKILL;
@@ -78,7 +79,9 @@ int _manage::shake_x = 0;
 int _manage::shake_y = 0;
 int _manage::shake_fade_x = 0;
 int _manage::shake_fade_y = 0;
+KOBO_campaign *_manage::campaign = NULL;
 KOBO_replay *_manage::replay = NULL;
+bool _manage::owns_replay = false;
 KOBO_player_controls _manage::lastinput = KOBO_PC_FIRE;
 
 
@@ -228,25 +231,29 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	scroll_jump = 1;
 	show_bars = 1;
 
+	if(replay && owns_replay)
+		delete replay;
+	replay = NULL;
+	owns_replay = false;
+
 	if(rp)
 	{
 		// Start from replay!
-		gamestate = GS_REPLAY;
+		replay = rp;
+		// Only use replay if compatible, and long enough!
+		if((replay->recorded() >= KOBO_MIN_REPLAY_LENGTH) &&
+				(replay->compatibility() == KOBO_RPCOM_FULL))
+			gamestate = GS_REPLAY;
+		else
+			gamestate = GS_GETREADY;
 		log_printf(ULOG, "Starting at stage %d from replay!\n",
 				replay->stage);
-		if(rp != replay)
-		{
-			delete replay;
-			replay = rp;
-		}
-		replay->log_dump(ULOG);
 		selected_stage = replay->stage;
 		game.set((game_types_t)replay->type,
 				(skill_levels_t)replay->skill);
 		gamerand.init(replay->seed);
 		score = replay->score;
 		replay->rewind();
-		gengine->period(game.speed /* 3*/);
 	}
 	else
 	{
@@ -255,17 +262,20 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		log_printf(ULOG, "Starting new level, stage %d!\n",
 				selected_stage);
 		game.set(GAME_SINGLE, selected_skill);
-		delete replay;
 		replay = new KOBO_replay();
 		replay->stage = selected_stage;
 		replay->type = game.type;
 		replay->skill = game.skill;
 		replay->seed = game_seed = gamerand.get_seed();
 		replay->score = score;
-		replay->log_dump(ULOG);
-		gengine->period(game.speed);
+		replay->modified(true);
+		if(campaign)
+			campaign->add_replay(replay);
+		else
+			owns_replay = true;
 	}
 
+	gengine->period(game.speed);
 	screen.init_stage(selected_stage, true);
 	last_stage = selected_stage;
 	wradar->mode(RM_RADAR);
@@ -281,6 +291,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		myship.init(newship);
 		replay->health = myship.health();
 		replay->charge = myship.charge();
+		replay->modified(true);
 	}
 	total_cores = remaining_cores = screen.prepare();
 	screen.generate_fixed_enemies();
@@ -300,15 +311,51 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_GAME);
 	sound.g_music(selected_stage);
+	replay->log_dump(ULOG);
+	gamecontrol.clear();
+}
+
+
+void _manage::finalize_replay()
+{
+	if(!replay)
+		return;
+	replay->end_health = myship.health();
+	replay->end_charge = myship.charge();
+	replay->end_score = score;
 }
 
 
 void _manage::start_new_game()
 {
+	if(campaign)
+	{
+		log_printf(WLOG, "Someone left a KOBO_campaign around...\n");
+		delete campaign;
+	}
+	campaign = new KOBO_campaign(selected_slot);
 	score = 0;
 	playtime = 0;
 	init_game(NULL, true);
-	gamecontrol.clear();
+}
+
+
+bool _manage::continue_game()
+{
+	if(campaign)
+	{
+		log_printf(WLOG, "Someone left a KOBO_campaign around...\n");
+		delete campaign;
+	}
+	campaign = new KOBO_campaign(selected_slot);
+	if(!campaign->load() || !(replay = campaign->get_replay(-1)))
+	{
+		delete campaign;
+		campaign = NULL;
+		return false;
+	}
+	init_game(replay);
+	return true;
 }
 
 
@@ -328,10 +375,13 @@ void _manage::player_ready()
 
 void _manage::next_scene()
 {
+	finalize_replay();
 	selected_stage++;
 	if(selected_stage >= GIGA - 1)
 		selected_stage = GIGA - 2;
 	init_game();
+	if(campaign)
+		campaign->save();
 	if(selected_stage == km.smsg_stage)
 	{
 		sound.ui_play(S_UI_PAUSE);
@@ -594,9 +644,13 @@ void _manage::run_game()
 		ctrl = replay->read();
 		if(ctrl == KOBO_PC_END)
 		{
-			// Player is dead. Just waiting for another replay, or
-			// game over.
+			// End of replay, but the player is alive. Restart!
+			// (This only happens with campaign save replays.)
+			start_replay();
+			ctrl = replay->read();
+#if 0
 			ctrl = KOBO_PC_NONE;
+#endif
 			sound.g_volume(0.5f);
 			sound.g_pitch();
 		}
@@ -711,12 +765,22 @@ void _manage::run()
 
 void _manage::abort_game()
 {
+	log_printf(ULOG, "Aborting game!\n");
+	finalize_replay();
 	gamestate = GS_NONE;
 	sound.g_new_scene();
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_TITLE);
-	delete replay;
+	if(campaign)
+	{
+		campaign->save();
+		delete campaign;
+		campaign = NULL;
+	}
+	if(replay && owns_replay)
+		delete replay;
 	replay = NULL;
+	owns_replay = false;
 }
 
 
@@ -727,15 +791,26 @@ void _manage::pause(bool p)
 	paused = p;
 	if(paused)
 		stop_screenshake();
+	finalize_replay();
+	if(campaign)
+		campaign->save();
 }
+
 
 
 void _manage::lost_myship()
 {
+	if(replay)
+	{
+		finalize_replay();
+		++replay->deaths;
+	}
 	gamestate = GS_GAMEOVER;
 	log_printf(ULOG, "Player died at stage %d; score: %d, health: %d, "
 			"charge: %d\n", selected_stage, score, myship.health(),
 			myship.charge());
+	if(campaign)
+		campaign->save();
 }
 
 

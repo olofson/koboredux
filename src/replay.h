@@ -45,7 +45,20 @@
 #define	_KOBO_REPLAY_H_
 
 #include "pfile.h"
-#include <time.h>
+#include <stdint.h>
+
+// Replay header
+#define	KOBO_PF_REPH_4CC	MAKE_4CC('R', 'E', 'P', 'H')
+#define	KOBO_PF_REPH_VERSION	1
+
+// Replay data
+#define	KOBO_PF_REPD_4CC	MAKE_4CC('R', 'E', 'P', 'D')
+#define	KOBO_PF_REPD_VERSION	1
+
+// Minimal acceptable length of a replay. (Game logic frames) This is used to
+// determine whether or not a replay is long enough to start the game in replay
+// mode, or if we should just start in "Get Ready" state instead.
+#define	KOBO_MIN_REPLAY_LENGTH	30
 
 enum KOBO_player_controls
 {
@@ -72,39 +85,58 @@ enum KOBO_replay_compat
 
 class KOBO_replay
 {
-	int	version;	// Game logic version
-	int	gameversion;	// Version of game binary that generated this
-	Uint32	config;		// Compilation of relevant config options
-	time_t	starttime;	// Level start time
+	int32_t		version;	// Game logic version
+	int32_t		gameversion;	// Game version that generated this
+	uint32_t	config;		// Relevant config switches
 
 	// Player input log
-	int	bufsize;	// Physical size of buffer
-	int	bufrecord;	// Number of frames recorded
-	int	bufplay;	// Current playback frame
-	Uint8	*buffer;
+	int32_t		bufsize;	// Physical size of buffer
+	int32_t		bufrecord;	// Number of frames recorded
+	int32_t		bufplay;	// Current playback frame
+	uint8_t		*buffer;
 
 	KOBO_replay_compat	compat;	// Compatibility status of current data
 
-	Uint32 get_config();
-	void write(Uint8 b);
+	bool		_modified;
+
+	uint32_t get_config();
+	void write(uint8_t b);
+	void clear();
+	bool load_reph(pfile_t *pf);
+	bool load_repd(pfile_t *pf);
   public:
 	KOBO_replay();
 	virtual ~KOBO_replay();
 
-	// Initial state description
-	int	stage;
-	int	type;		// game_types_t
-	int	skill;		// skill_levels_t
-	Uint32	seed;		// Seed for gamerand
-	int	health;		// Player health
-	int	charge;		// Player secondary weapon accumulator charge
-	int	score;		// Player score
+	bool modified()		{ return _modified; }
+	void modified(bool m)	{ _modified = m; }
+
+	// Game parameters
+	int32_t		stage;
+	int32_t		type;		// game_types_t
+	int32_t		skill;		// skill_levels_t
+
+	// Initial game state
+	time_t		starttime;	// Level start time
+	uint32_t	seed;		// Seed for gamerand
+	int32_t		health;		// Player health
+	int32_t		charge;		// Player secondary weapon accu charge
+	int32_t		score;		// Player score
+
+	// Final game state
+	time_t		endtime;	// End/save time
+	int32_t		end_health;
+	int32_t		end_charge;
+	int32_t		end_score;
+
+	// Total number of deaths/rewinds on this stage during this campaign
+	int32_t		deaths;
 
 	// Record
 	void write(KOBO_player_controls ctrl);	// Record + advance
 
 	// Compatibility check
-	KOBO_replay_compat compatibility()	{ return compat; };
+	KOBO_replay_compat compatibility()	{ return compat; }
 
 	// Playback
 	void rewind();				// Rewind to start
@@ -114,10 +146,17 @@ class KOBO_replay
 	// overwriting any previous data from this point on.)
 	void punchin();
 
-	void log_dump(int level);
+	void log_dump(int level, bool header = true, bool data = true);
 
 	int recorded()		{ return bufrecord; }
 	float progress();
+
+	// Read REPH or REPD chuck from campaign file
+	// NOTE: This call expects chunk_read() to have been called first!
+	bool load(pfile_t *pf);
+
+	// Write REPH and REPD chucks to campaign file
+	bool save(pfile_t *pf);
 };
 
 #endif // _KOBO_REPLAY_H_

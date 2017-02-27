@@ -378,9 +378,6 @@ st_game_t::st_game_t()
 
 void st_game_t::enter()
 {
-	// st_game_over may start_replay() and then go back here!
-	if(!manage.game_in_progress())
-		manage.start_new_game();
 	if(!manage.game_in_progress())
 	{
 		st_error.message("Could not start game!",
@@ -1105,21 +1102,17 @@ void main_menu_t::build()
 	if(manage.game_in_progress())
 	{
 		button("Return to Game", MENU_TAG_OK);
-#ifndef KOBO_DEMO
-		space();
-		button("Save Game", 50);
-#endif
 	}
 	else
 	{
-		log_printf(WLOG, "Player profiles are disabled!\n");
-		button("Start New Game!", 1);
+#ifndef KOBO_DEMO
+// TODO: "Gray" this one if there are no saved campaigns!
+		button("Continue Campaign", 51);
+		space();
+#endif
+		button("New Campaign", 1);
 		if(prefs->cheat_startlevel)
 			buildStartLevel();
-#ifndef KOBO_DEMO
-		space();
-		button("Load Game", 51);
-#endif
 	}
 #ifdef KOBO_DEMO
 	space(2);
@@ -1196,12 +1189,8 @@ void st_main_menu_t::select(int tag)
 	switch(tag)
 	{
 	  case 1:
-#ifdef KOBO_DEMO
-		manage.select_skill(KOBO_DEMO_SKILL);
-		gsm.change(&st_game);
-#else
-		gsm.change(&st_skill_menu);
-#endif
+		st_campaign_menu.setup("Select Save Slot for Campaign", true);
+		gsm.change(&st_campaign_menu);
 		break;
 	  case 2:
 		gsm.push(&st_options_main);
@@ -1224,12 +1213,9 @@ void st_main_menu_t::select(int tag)
 	  case 40:	// Home site link
 		kobo_OpenURL("https://olofson.itch.io/kobo-redux");
 		break;
-	  case 50:	// Save Game
-	  case 51:	// Load Game
-		sound.ui_play(S_UI_ERROR);
-		st_error.message("Saves not yet implemented!",
-				"Tell Dave that you want them.");
-		gsm.push(&st_error);
+	  case 51:	// Continue Campaign
+		st_campaign_menu.setup("Select Campaign to Continue", false);
+		gsm.change(&st_campaign_menu);
 		break;
 	  case 101:
 		gsm.change(&st_ask_abort_game);
@@ -1247,6 +1233,194 @@ void st_main_menu_t::select(int tag)
 }
 
 st_main_menu_t st_main_menu;
+
+
+/*----------------------------------------------------------
+	Campaign Selector
+----------------------------------------------------------*/
+
+campaign_menu_t::campaign_menu_t(gfxengine_t *e) : menu_base_t(e)
+{
+	memset(cinfo, 0, sizeof(cinfo));
+	header = NULL;
+	newgame = false;
+}
+
+
+campaign_menu_t::~campaign_menu_t()
+{
+	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
+		if(cinfo[i])
+			delete cinfo[i];
+}
+
+
+void campaign_menu_t::setup(const char *hdr, bool new_game)
+{
+	header = hdr;
+	newgame = new_game;
+
+	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
+	{
+		if(cinfo[i])
+			delete cinfo[i];
+		cinfo[i] = (new KOBO_campaign(i))->analyze();
+	}
+}
+
+
+const char *campaign_menu_t::timedate(time_t *t)
+{
+	struct tm *tmp = localtime(t);
+	if(!tmp)
+		return "<cannot decode timestamp>";
+	strftime(tdbuf, sizeof(tdbuf), "%a %b %d %T %Y", tmp);
+	return tdbuf;
+}
+
+
+void campaign_menu_t::colonalign()
+{
+	current_widget->token(':');
+	current_widget->halign(ALIGN_CENTER_TOKEN);
+}
+
+
+void campaign_menu_t::build()
+{
+	title(header);
+	xoffs = 0.1;
+	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
+	{
+		char buf[128];
+		if(cinfo[i])
+			snprintf(buf, sizeof(buf), "%d: %s", i,
+					timedate(&cinfo[i]->starttime));
+		else
+			snprintf(buf, sizeof(buf), "%d: <empty>", i);
+		button(buf, i + 10);
+		colonalign();
+		space(.25);
+	}
+	space(1);
+
+	xoffs = 0.3;
+	KOBO_campaign_info *ci = cinfo[manage.current_slot()];
+	if(ci)
+	{
+		char buf[128];
+
+		snprintf(buf, sizeof(buf), "Start: %s",
+				timedate(&ci->starttime));
+		label(buf);
+		colonalign();
+
+		snprintf(buf, sizeof(buf), "End: %s",
+				timedate(&ci->endtime));
+		label(buf);
+		colonalign();
+
+		int s = ci->stage;
+		snprintf(buf, sizeof(buf), "Progress: Region %d/%d "
+				"Level %d/%d (Stage %d)",
+				(s - 1) / 10 % 5 + 1, KOBO_REGIONS,
+				(s - 1) % 10 + 1, KOBO_LEVELS_PER_REGION,
+				s);
+		label(buf);
+		colonalign();
+
+		snprintf(buf, sizeof(buf), "Score: %d", ci->score);
+		label(buf);
+		colonalign();
+
+		snprintf(buf, sizeof(buf), "Health: %d", ci->health);
+		label(buf);
+		colonalign();
+
+		snprintf(buf, sizeof(buf), "Charge: %d", ci->charge);
+		label(buf);
+		colonalign();
+	}
+}
+
+
+void campaign_menu_t::rebuild()
+{
+	int sel = selected_index();
+	build_all();
+	select(sel);
+}
+
+
+kobo_form_t *st_campaign_menu_t::open()
+{
+	menu = new campaign_menu_t(gengine);
+	menu->open();
+	menu->setup(header, newgame);
+	menu->rebuild();
+	return menu;
+}
+
+
+void st_campaign_menu_t::setup(const char *hdr, bool new_game)
+{
+	header = hdr;
+	newgame = new_game;
+}
+
+
+void st_campaign_menu_t::press(gc_targets_t button)
+{
+	st_menu_base_t::press(button);
+	switch (button)
+	{
+	  case BTN_UP:
+	  case BTN_DOWN:
+		manage.select_slot(menu->selected()->tag - 10);
+		menu->rebuild();
+		break;
+	  default:
+		break;
+	}
+}
+
+void st_campaign_menu_t::select(int tag)
+{
+	int slot = tag - 10;
+	if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS))
+	{
+		manage.select_slot(slot);
+		if(newgame)
+		{
+			if(menu->campaign_exists(manage.current_slot()))
+				gsm.change(&st_ask_overwrite_campaign);
+			else
+			{
+#ifdef KOBO_DEMO
+				manage.select_skill(KOBO_DEMO_SKILL);
+				manage.start_new_game();
+				gsm.change(&st_game);
+#else
+				gsm.change(&st_skill_menu);
+#endif
+			}
+		}
+		else
+		{
+			if(manage.continue_game())
+				gsm.change(&st_game);
+			else
+			{
+				sound.ui_play(S_UI_ERROR);
+				st_error.message("Campaign Problem!",
+						"Could not load Campaign.");
+				gsm.push(&st_error);
+			}
+		}
+	}
+}
+
+st_campaign_menu_t st_campaign_menu;
 
 
 /*----------------------------------------------------------
@@ -1341,6 +1515,7 @@ void st_skill_menu_t::select(int tag)
 	if((tag >= 10) && (tag <= 20))
 	{
 		manage.select_skill(menu->selected()->tag - 10);
+		manage.start_new_game();
 		gsm.change(&st_game);
 	}
 }
@@ -1749,3 +1924,36 @@ void st_ask_abort_game_t::select(int tag)
 }
 
 st_ask_abort_game_t st_ask_abort_game;
+
+
+/*----------------------------------------------------------
+	st_ask_overwrite_campaign
+----------------------------------------------------------*/
+
+st_ask_overwrite_campaign_t::st_ask_overwrite_campaign_t()
+{
+	name = "ask_overwrite_campaign";
+	msg = "Overwrite Old Campaign?";
+}
+
+void st_ask_overwrite_campaign_t::select(int tag)
+{
+	switch(tag)
+	{
+	  case MENU_TAG_OK:
+		sound.ui_play(S_UI_OK);
+#ifdef KOBO_DEMO
+		manage.select_skill(KOBO_DEMO_SKILL);
+		manage.start_new_game();
+		gsm.change(&st_game);
+#else
+		gsm.change(&st_skill_menu);
+#endif
+		break;
+	  case MENU_TAG_CANCEL:
+		pop();
+		break;
+	}
+}
+
+st_ask_overwrite_campaign_t st_ask_overwrite_campaign;
