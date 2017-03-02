@@ -199,6 +199,8 @@ float KOBO_replay::progress()
 {
 	if(!bufrecord)
 		return 0.0f;
+	if(bufplay >= bufrecord)
+		return 1.0f;
 	return (float)bufplay / bufrecord;
 }
 

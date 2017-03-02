@@ -80,6 +80,7 @@ class KOBO_campaign
 
 	KOBO_replay *get_replay(int stage);
 	void add_replay(KOBO_replay *replay);
+	int last_stage();
 };
 
 #endif // _KOBO_CAMPAIGN_H_

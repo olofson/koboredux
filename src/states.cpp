@@ -380,8 +380,8 @@ void st_game_t::enter()
 {
 	if(!manage.game_in_progress())
 	{
-		st_error.message("Could not start game!",
-				"Please, check your installation.");
+		st_error.message("INTERNAL ERROR",
+				"Entered st_game with no game in progress!");
 		gsm.change(&st_error);
 		return;
 	}
@@ -452,6 +452,7 @@ void st_game_t::frame()
 		gsm.change(&st_game_over);
 		return;
 	  case GS_NONE:
+		manage.abort_game();
 		pop();
 		return;
 	  default:
@@ -466,38 +467,236 @@ void st_game_t::frame()
 void st_game_t::post_render()
 {
 	kobo_basestate_t::post_render();
-
-	if(manage.state() == GS_REPLAY)
-	{
-		woverlay->foreground(woverlay->map_rgb(48, 48, 48));
-		woverlay->alphamod(128);
-		woverlay->fillrect(0, 0, woverlay->width(),
-				woverlay->height());
-		woverlay->alphamod(255);
-		woverlay->font(B_NORMAL_FONT);
-		float p = manage.replay_progress();
-		float px = p * p;
-		px *= px;
-		int p1 = (int)(px * 128.0f);
-		int p2 = (int)(px * 192.0f);
-		woverlay->foreground(woverlay->map_rgb(
-				128 + p1, 192 - p2, 192 - p2));
-		woverlay->alphamod(64);
-		woverlay->fillrect_fxp(0, PIXEL2CS(300),
-				PIXEL2CS((int)(woverlay->width() * p)),
-				PIXEL2CS(woverlay->fontheight() + 2));
-		woverlay->alphamod(255);
-		if(SDL_GetTicks() & 0x300)
-			woverlay->center_fxp(PIXEL2CS(301), "[ REPLAY ]");
-		woverlay->center_fxp(PIXEL2CS(315),
-				"Stick controls speed.   Fire to take over!");
-	}
-
 	wradar->frame();
 }
 
 
 st_game_t st_game;
+
+
+/*----------------------------------------------------------
+	st_rewind
+----------------------------------------------------------*/
+
+st_rewind_t::st_rewind_t()
+{
+	name = "rewind";
+}
+
+
+void st_rewind_t::enter()
+{
+	if(!manage.game_in_progress())
+	{
+		st_error.message("INTERNAL ERROR",
+				"Entered st_rewind with no game in progress!");
+		gsm.change(&st_error);
+		return;
+	}
+#ifdef KOBO_DEMO
+	if(manage.current_stage() > KOBO_DEMO_LAST_STAGE)
+		gsm.change(&st_demo_over);
+#endif
+}
+
+
+void st_rewind_t::leave()
+{
+	st_intro_title.inext = &st_intro_instructions;
+	st_intro_title.duration = INTRO_TITLE_TIME + 2000;
+	st_intro_title.mode = 0;
+}
+
+
+void st_rewind_t::press(gc_targets_t button)
+{
+	switch (button)
+	{
+	  case BTN_EXIT:
+		gsm.push(&st_main_menu);
+		break;
+	  case BTN_CLOSE:
+		gsm.push(&st_ask_exit);
+		break;
+	  case BTN_SELECT:
+	  case BTN_PAUSE:
+		if(manage.paused())
+			sound.ui_play(S_UI_PLAY);
+		else
+			sound.ui_play(S_UI_PAUSE);
+		manage.pause(!manage.paused());
+		break;
+	  default:
+		break;
+	}
+}
+
+
+void st_rewind_t::frame()
+{
+	if(prefs->debug)
+		info = manage.state_name(manage.state());
+	if(manage.replay_mode() != RPM_REWIND)
+		gsm.change(&st_game);
+	switch(manage.state())
+	{
+	  case GS_NONE:
+		manage.abort_game();
+		pop();
+		return;
+	  default:
+		break;
+	}
+	if(km.quitting())
+		pop();
+}
+
+
+void st_rewind_t::post_render()
+{
+	kobo_basestate_t::post_render();
+
+	// Gray overlay
+	woverlay->foreground(woverlay->map_rgb(48, 48, 48));
+	woverlay->alphamod(128);
+	woverlay->fillrect(0, 0, woverlay->width(), woverlay->height());
+	woverlay->alphamod(255);
+
+	// "Timeout" progress bar
+	woverlay->font(B_NORMAL_FONT);
+	float p = manage.replay_progress();
+	float px = p * p;
+	px *= px;
+	int p1 = (int)(px * 127.0f);
+	int p2 = (int)(px * 192.0f);
+	woverlay->foreground(woverlay->map_rgb(128 + p1, 192 - p2, 192 - p2));
+	woverlay->alphamod(64);
+	woverlay->fillrect_fxp(0, PIXEL2CS(300),
+			PIXEL2CS((int)(woverlay->width() * p)),
+			PIXEL2CS(woverlay->fontheight() + 1));
+	woverlay->alphamod(255);
+	if(SDL_GetTicks() & 0x300)
+		woverlay->center_fxp(PIXEL2CS(301), manage.paused() ?
+				"[ REPLAY (PAUSED) ]" : "[ REPLAY ]");
+
+	// "Take over" instructions
+	woverlay->font(B_SMALL_FONT);
+	woverlay->center_fxp(PIXEL2CS(315),
+			"Stick controls speed.   Fire to take over!");
+
+	wradar->frame();
+}
+
+
+st_rewind_t st_rewind;
+
+
+/*----------------------------------------------------------
+	st_replay
+----------------------------------------------------------*/
+
+st_replay_t::st_replay_t()
+{
+	name = "replay";
+}
+
+
+void st_replay_t::enter()
+{
+	if(!manage.game_in_progress())
+	{
+		st_error.message("INTERNAL ERROR",
+				"Entered st_replay with no game in progress!");
+		gsm.change(&st_error);
+		return;
+	}
+}
+
+
+void st_replay_t::leave()
+{
+	st_intro_title.inext = &st_intro_instructions;
+	st_intro_title.duration = INTRO_TITLE_TIME + 2000;
+	st_intro_title.mode = 0;
+}
+
+
+void st_replay_t::press(gc_targets_t button)
+{
+	switch (button)
+	{
+	  case BTN_EXIT:
+		gsm.push(&st_main_menu);
+		break;
+	  case BTN_CLOSE:
+		gsm.push(&st_ask_exit);
+		break;
+	  case BTN_SELECT:
+	  case BTN_PAUSE:
+		if(manage.paused())
+			sound.ui_play(S_UI_PLAY);
+		else
+			sound.ui_play(S_UI_PAUSE);
+		manage.pause(!manage.paused());
+		break;
+	  default:
+		break;
+	}
+}
+
+
+void st_replay_t::frame()
+{
+	if(prefs->debug)
+		info = manage.state_name(manage.state());
+	if(manage.replay_mode() != RPM_REPLAY)
+		gsm.change(&st_game);
+	switch(manage.state())
+	{
+	  case GS_NONE:
+		manage.abort_game();
+		pop();
+		return;
+	  default:
+		break;
+	}
+	if(km.quitting())
+		pop();
+}
+
+
+void st_replay_t::post_render()
+{
+	kobo_basestate_t::post_render();
+
+	// Thin progress bar
+	woverlay->font(B_SMALL_FONT);
+	float p = manage.replay_progress();
+	woverlay->foreground(woverlay->map_rgb(64, 96, 96));
+	woverlay->alphamod(64);
+	woverlay->fillrect_fxp(0, PIXEL2CS(300),
+			PIXEL2CS((int)(woverlay->width() * p)),
+			PIXEL2CS(woverlay->fontheight() + 1));
+	woverlay->alphamod(128);
+	if(SDL_GetTicks() & 0x300)
+	{
+		char buf[128];
+		snprintf(buf, sizeof(buf), "[ FULL REPLAY - %d/%d %s]",
+				manage.current_stage(), manage.replay_stages(),
+				manage.paused() ? "- (PAUSED) " : "");
+		woverlay->center_fxp(PIXEL2CS(301), buf);
+	}
+
+	// Replay control instructions
+	woverlay->center_fxp(PIXEL2CS(315),
+			"Stick controls speed, and skips stages.");
+	woverlay->alphamod(255);
+
+	wradar->frame();
+}
+
+
+st_replay_t st_replay;
 
 
 /*----------------------------------------------------------
@@ -516,13 +715,17 @@ void st_pause_game_t::enter()
 	switch(manage.state())
 	{
 	  case GS_GETREADY:
+	  case GS_LEVELDONE:
 	  case GS_GAMEOVER:
-	  case GS_REPLAY:
 		gsm.pop();
 		return;
 	  default:
 		break;
 	}
+
+	// The rewind and replay modes have their own pause handling!
+	if(manage.replay_mode() != RPM_PLAY)
+		gsm.pop();
 }
 
 
@@ -733,8 +936,8 @@ void st_game_over_t::press(gc_targets_t button)
 		if(frame_time < 500)
 			break;
 		sound.ui_play(S_UI_OK);
-		manage.start_replay();
-		gsm.change(&st_game);
+		manage.rewind();
+		gsm.change(&st_rewind);
 	  default:
 		break;
 	}
@@ -749,8 +952,8 @@ void st_game_over_t::frame()
 		if(frame_time > 700)
 		{
 			sound.ui_play(S_UI_OK);
-			manage.start_replay();
-			gsm.change(&st_game);
+			manage.rewind();
+			gsm.change(&st_rewind);
 		}
 	}
 	else if(prefs->cont_countdown <= 9)
@@ -767,7 +970,6 @@ void st_game_over_t::frame()
 			pop();
 		}
 	}
-
 }
 
 
@@ -1101,18 +1303,22 @@ void main_menu_t::build()
 	space(2);
 	if(manage.game_in_progress())
 	{
-		button("Return to Game", MENU_TAG_OK);
+		if(manage.replay_mode() == RPM_REPLAY)
+			button("Return to Replay", MENU_TAG_OK);
+		else
+			button("Return to Game", MENU_TAG_OK);
 	}
 	else
 	{
-#ifndef KOBO_DEMO
-// TODO: "Gray" this one if there are no saved campaigns!
 		button("Continue Campaign", 51);
 		space();
-#endif
+
 		button("New Campaign", 1);
 		if(prefs->cheat_startlevel)
 			buildStartLevel();
+
+		space();
+		button("View Replay", 60);
 	}
 #ifdef KOBO_DEMO
 	space(2);
@@ -1124,7 +1330,12 @@ void main_menu_t::build()
 	button("Options", 2);
 	space(2);
 	if(manage.game_in_progress())
-		button("Abort Current Game", 101);
+	{
+		if(manage.replay_mode() == RPM_REPLAY)
+			button("Stop Replay", 102);
+		else
+			button("Abort Current Game", 101);
+	}
 	else
 	{
 		button("Credits & Thanks", 30);
@@ -1217,14 +1428,19 @@ void st_main_menu_t::select(int tag)
 		st_campaign_menu.setup("Select Campaign to Continue", false);
 		gsm.change(&st_campaign_menu);
 		break;
+	  case 60:	// View Replay
+		st_campaign_menu.setup("Select Campaign to View", false, true);
+		gsm.change(&st_campaign_menu);
+		break;
 	  case 101:
 		gsm.change(&st_ask_abort_game);
 		break;
+	  case 102:
+		manage.abort_game();
+		pop();
+		break;
 	  case MENU_TAG_OK:
-		if(manage.game_in_progress())
-			gsm.change(&st_pause_game);
-		else
-			gsm.pop();
+		gsm.change(&st_pause_game);
 		break;
 	  case MENU_TAG_CANCEL:
 		gsm.change(&st_ask_exit);
@@ -1244,6 +1460,7 @@ campaign_menu_t::campaign_menu_t(gfxengine_t *e) : menu_base_t(e)
 	memset(cinfo, 0, sizeof(cinfo));
 	header = NULL;
 	newgame = false;
+	view_replay = false;
 }
 
 
@@ -1255,10 +1472,11 @@ campaign_menu_t::~campaign_menu_t()
 }
 
 
-void campaign_menu_t::setup(const char *hdr, bool new_game)
+void campaign_menu_t::setup(const char *hdr, bool new_game, bool replay)
 {
 	header = hdr;
 	newgame = new_game;
+	view_replay = replay;
 
 	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
 	{
@@ -1356,16 +1574,17 @@ kobo_form_t *st_campaign_menu_t::open()
 {
 	menu = new campaign_menu_t(gengine);
 	menu->open();
-	menu->setup(header, newgame);
+	menu->setup(header, newgame, view_replay);
 	menu->rebuild();
 	return menu;
 }
 
 
-void st_campaign_menu_t::setup(const char *hdr, bool new_game)
+void st_campaign_menu_t::setup(const char *hdr, bool new_game, bool replay)
 {
 	header = hdr;
 	newgame = new_game;
+	view_replay = replay;
 }
 
 
@@ -1390,30 +1609,35 @@ void st_campaign_menu_t::select(int tag)
 	if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS))
 	{
 		manage.select_slot(slot);
-		if(newgame)
+		if(view_replay)
+		{
+			if(manage.start_replay(1))
+				gsm.change(&st_replay);
+			else
+			{
+				sound.ui_play(S_UI_ERROR);
+				st_error.message("Campaign Replay Problem!",
+						"Could not load or start "
+						"replay.");
+				gsm.change(&st_error);
+			}
+		}
+		else if(newgame)
 		{
 			if(menu->campaign_exists(manage.current_slot()))
 				gsm.change(&st_ask_overwrite_campaign);
 			else
-			{
-#ifdef KOBO_DEMO
-				manage.select_skill(KOBO_DEMO_SKILL);
-				manage.start_new_game();
-				gsm.change(&st_game);
-#else
 				gsm.change(&st_skill_menu);
-#endif
-			}
 		}
 		else
 		{
 			if(manage.continue_game())
-				gsm.change(&st_game);
+				gsm.change(&st_rewind);
 			else
 			{
 				sound.ui_play(S_UI_ERROR);
 				st_error.message("Campaign Problem!",
-						"Could not load Campaign.");
+					"Could not continue Campaign.");
 				gsm.push(&st_error);
 			}
 		}
@@ -1464,6 +1688,18 @@ void skill_menu_t::rebuild()
 	int sel = selected_index();
 	build_all();
 	select(sel);
+}
+
+
+void st_skill_menu_t::enter()
+{
+#ifdef KOBO_DEMO
+	manage.select_skill(KOBO_DEMO_SKILL);
+	manage.start_new_game();
+	gsm.change(&st_game);
+#else
+	st_menu_base_t::enter();
+#endif
 }
 
 
@@ -1887,10 +2123,7 @@ void st_ask_exit_t::select(int tag)
 		break;
 	  case MENU_TAG_CANCEL:
 		sound.ui_play(S_UI_CANCEL);
-		if(manage.game_in_progress())
-			gsm.change(&st_pause_game);
-		else
-			pop();
+		gsm.change(&st_pause_game);
 		break;
 	}
 }

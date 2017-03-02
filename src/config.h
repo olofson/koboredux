@@ -230,4 +230,9 @@ static inline int kobo_wrapdist(int a, int b, int w)
 /* Campaigns */
 #define	KOBO_MAX_CAMPAIGN_SLOTS	10
 
+/* Death and end-of-replay sequence timings (logic frames) */
+#define	KOBO_LEVELDONE_TIMEOUT	50
+#define	KOBO_REPLAYEND_TIMEOUT	50
+#define	KOBO_GAMEOVER_TIMEOUT	100
+
 #endif	/*_KOBO_CONFIG_H_*/

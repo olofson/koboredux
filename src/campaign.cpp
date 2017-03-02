@@ -152,8 +152,9 @@ bool KOBO_campaign::load(bool quiet)
 	{
 		int ct = pf->chunk_type();
 		if(prefs->debug && !quiet)
-			log_printf(ULOG, "  [%s, %d bytes]\n",
+			log_printf(ULOG, "  [%sv%d, %d bytes]\n",
 					pf->fourcc2string(ct),
+					pf->chunk_version(),
 					pf->chunk_size());
 		switch(ct)
 		{
@@ -424,4 +425,10 @@ void KOBO_campaign::add_replay(KOBO_replay *replay)
 		replays.push_back(replay);
 	}
 	_modified = true;
+}
+
+
+int KOBO_campaign::last_stage()
+{
+	return replays.size();
 }

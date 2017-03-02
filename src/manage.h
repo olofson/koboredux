@@ -29,6 +29,13 @@
 #include "campaign.h"
 #include "game.h"
 
+enum KOBO_replaymodes
+{
+	RPM_PLAY,	// Playing!
+	RPM_REWIND,	// Rewind/retry
+	RPM_REPLAY	// Pure replay
+};
+
 enum KOBO_gamestates
 {
 	GS_NONE,
@@ -36,15 +43,16 @@ enum KOBO_gamestates
 	GS_SELECT,
 	GS_GETREADY,
 	GS_PLAYING,
-	GS_REPLAY,
 	GS_LEVELDONE,
-	GS_GAMEOVER
+	GS_GAMEOVER,
+	GS_REPLAYEND
 };
 
 class _manage
 {
 	static KOBO_gamestates gamestate;
-	static bool paused;
+	static bool is_paused;
+	static KOBO_replaymodes replaymode;
 	static int blank;
 	static int game_seed;
 	static int scroll_jump;
@@ -105,6 +113,10 @@ class _manage
 	static void run_pause();
 	static void run_game();
 	static void finalize_replay();
+	static void new_campaign();
+	static KOBO_player_controls controls_live();
+	static KOBO_player_controls controls_retry();
+	static KOBO_player_controls controls_replay();
   public:
 
 	static void init();
@@ -126,19 +138,19 @@ class _manage
 	static int current_skill()	{ return (int)selected_skill; }
 	static void start_new_game();
 	static bool continue_game();
-	static void start_replay();
+	static bool start_replay(int stage);
+	static void rewind();
 	static void player_ready();
 	static void abort_game();
 	static void pause(bool p);
-	static bool game_paused()	{ return paused; }
+	static bool paused()		{ return is_paused; }
 	static KOBO_gamestates state()	{ return gamestate; }
 	static const char *state_name(KOBO_gamestates st);
 
 	// Replays
-	static float replay_progress()
-	{
-		return replay ? replay->progress() : 0.0f;
-	}
+	static KOBO_replaymodes replay_mode()	{ return replaymode; }
+	static float replay_progress();
+	static int replay_stages();
 
 	// Running the game
 	static void run();
@@ -150,7 +162,6 @@ class _manage
 		{
 		  case GS_GETREADY:
 		  case GS_PLAYING:
-		  case GS_REPLAY:
 		  case GS_LEVELDONE:
 		  case GS_GAMEOVER:
 			return true;

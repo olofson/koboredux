@@ -120,9 +120,6 @@ class st_long_credits_t : public kobo_basestate_t
 	In-game
 ----------------------------------------------------------*/
 
-// NOTE:
-//	Start a new game with manage.start_new_game(), continue_game(), or
-//	start_replay() before entering this st_game, or it will just fail!
 class st_game_t : public kobo_basestate_t
 {
   public:
@@ -131,6 +128,30 @@ class st_game_t : public kobo_basestate_t
 	void leave();
 	void yield();
 	void reenter();
+	void press(gc_targets_t button);
+	void frame();
+	void post_render();
+};
+
+
+class st_rewind_t : public kobo_basestate_t
+{
+  public:
+	st_rewind_t();
+	void enter();
+	void leave();
+	void press(gc_targets_t button);
+	void frame();
+	void post_render();
+};
+
+
+class st_replay_t : public kobo_basestate_t
+{
+  public:
+	st_replay_t();
+	void enter();
+	void leave();
 	void press(gc_targets_t button);
 	void frame();
 	void post_render();
@@ -323,13 +344,14 @@ class campaign_menu_t : public menu_base_t
 	KOBO_campaign_info	*cinfo[KOBO_MAX_CAMPAIGN_SLOTS];
 	const char		*header;
 	bool			newgame;
+	bool			view_replay;
 	char			tdbuf[128];
   public:
 	campaign_menu_t(gfxengine_t *e);
 	~campaign_menu_t();
 	const char *timedate(time_t *t);
 	void colonalign();
-	void setup(const char *hdr, bool new_game);
+	void setup(const char *hdr, bool new_game, bool view);
 	bool campaign_exists(int ind)	{ return cinfo[ind] != NULL; }
 	void build();
 	void rebuild();
@@ -340,10 +362,11 @@ class st_campaign_menu_t : public st_menu_base_t
 	campaign_menu_t	*menu;
 	const char	*header;
 	bool		newgame;
+	bool		view_replay;
   public:
 	st_campaign_menu_t()	{	name = "campaign_selector"; }
 	kobo_form_t *open();
-	void setup(const char *header, bool new_game);
+	void setup(const char *header, bool new_game, bool view = false);
 	void press(gc_targets_t button);
 	void select(int tag);
 };
@@ -372,6 +395,7 @@ class st_skill_menu_t : public st_menu_base_t
   public:
 	st_skill_menu_t()	{	name = "skill_menu"; }
 	kobo_form_t *open();
+	void enter();
 	void press(gc_targets_t button);
 	void select(int tag);
 };

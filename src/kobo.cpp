@@ -1253,8 +1253,12 @@ void KOBO_main::brutal_quit(bool force)
 
 void KOBO_main::pause_game()
 {
-	if(gsm.current() != &st_pause_game)
-		gsm.pressbtn(BTN_PAUSE);
+	// Only (auto)pause if playing, and not already in the UI pause state!
+	if(gsm.current() == &st_pause_game)
+		return;
+	if(manage.replay_mode() != RPM_PLAY)
+		return;
+	gsm.pressbtn(BTN_PAUSE);
 }
 
 
