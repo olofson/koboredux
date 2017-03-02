@@ -711,21 +711,10 @@ st_pause_game_t::st_pause_game_t()
 
 void st_pause_game_t::enter()
 {
-	// There are certain game states where pausing is redundant
-	switch(manage.state())
-	{
-	  case GS_GETREADY:
-	  case GS_LEVELDONE:
-	  case GS_GAMEOVER:
-		gsm.pop();
-		return;
-	  default:
-		break;
-	}
-
-	// The rewind and replay modes have their own pause handling!
-	if(manage.replay_mode() != RPM_PLAY)
-		gsm.pop();
+	// We should only ever pause if there's an actual game in progress
+	if((manage.state() != GS_PLAYING) ||
+			(manage.replay_mode() != RPM_PLAY))
+		pop();
 }
 
 
