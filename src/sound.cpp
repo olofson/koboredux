@@ -827,6 +827,8 @@ void KOBO_sound::g_volume(float volume)
 	}
 	else
 		volscale = volume;
+	if(!iface)
+		return;
 	a2_Send(iface, groups[KOBO_MG_SFX], 2,
 			pref2vol(prefs->sfx_vol) * volscale,
 			KOBO_SOUND_UPDATE_PERIOD);
