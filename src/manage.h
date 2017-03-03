@@ -79,6 +79,7 @@ class _manage
 	static int delay_count;
 
 	static void next_scene();
+	static void prev_scene();
 	static void retry();
 
 	static int selected_slot;

@@ -451,6 +451,23 @@ void _manage::next_scene()
 }
 
 
+void _manage::prev_scene()
+{
+	if(replaymode != RPM_REPLAY)
+	{
+		log_printf(WLOG, "_manage::prev_scene() used with other "
+				"replay mode than RPM_REPLAY!\n");
+		return;
+	}
+	if(selected_stage <= 1)
+		return;
+	selected_stage--;
+	replay = campaign->get_replay(selected_stage);
+	if(replay)
+		init_game(replay);
+}
+
+
 void _manage::init_resources_title()
 {
 	noise(1000, 800);
@@ -800,12 +817,23 @@ KOBO_player_controls _manage::controls_replay()
 	float rps = 1.0f;
 	float vol = 0.75f;
 	float pch = 0.0f;
+
+	// "Flank triggered"
+	if((ctrlin & KOBO_PC_DIR) != (lastinput & KOBO_PC_DIR))
+		switch(ctrlin & KOBO_PC_DIR)
+		{
+		  case 1:	// Up
+			if(campaign->get_replay(selected_stage + 1))
+				next_scene();
+			break;
+		  case 5:	// Down
+			prev_scene();
+			break;
+		}
+
+	// Continuous
 	switch(ctrlin & KOBO_PC_DIR)
 	{
-	  case 1:	// Up
-		break;
-	  case 5:	// Down
-		break;
 	  case 3:	// Right
 		rps *= 0.5f;
 		vol *= 0.5f;
@@ -820,7 +848,7 @@ KOBO_player_controls _manage::controls_replay()
 	gengine->period(game.speed * rps);
 	sound.g_volume(vol);
 	sound.g_pitch(pch);
-
+	lastinput = ctrlin;
 	return ctrl;
 }
 
