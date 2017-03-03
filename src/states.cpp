@@ -1299,15 +1299,21 @@ void main_menu_t::build()
 	}
 	else
 	{
-		button("Continue Campaign", 51);
-		space();
+		if(savemanager.exists(-1))
+		{
+			button("Continue Campaign", 51);
+			space();
+		}
 
 		button("New Campaign", 1);
 		if(prefs->cheat_startlevel)
 			buildStartLevel();
 
-		space();
-		button("View Replay", 60);
+		if(savemanager.exists(-1))
+		{
+			space();
+			button("View Replay", 60);
+		}
 	}
 #ifdef KOBO_DEMO
 	space(2);
@@ -1446,18 +1452,9 @@ st_main_menu_t st_main_menu;
 
 campaign_menu_t::campaign_menu_t(gfxengine_t *e) : menu_base_t(e)
 {
-	memset(cinfo, 0, sizeof(cinfo));
 	header = NULL;
 	newgame = false;
 	view_replay = false;
-}
-
-
-campaign_menu_t::~campaign_menu_t()
-{
-	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
-		if(cinfo[i])
-			delete cinfo[i];
 }
 
 
@@ -1466,13 +1463,8 @@ void campaign_menu_t::setup(const char *hdr, bool new_game, bool replay)
 	header = hdr;
 	newgame = new_game;
 	view_replay = replay;
-
-	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
-	{
-		if(cinfo[i])
-			delete cinfo[i];
-		cinfo[i] = (new KOBO_campaign(i))->analyze();
-	}
+	savemanager.load(-1);
+	savemanager.analysis(-1, true);
 }
 
 
@@ -1500,11 +1492,12 @@ void campaign_menu_t::build()
 	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
 	{
 		char buf[128];
-		if(cinfo[i])
+		KOBO_campaign_info *ci = savemanager.analysis(i);
+		if(ci)
 			snprintf(buf, sizeof(buf), "%d: %s", i,
-					timedate(&cinfo[i]->starttime));
+					timedate(&ci->starttime));
 		else
-			snprintf(buf, sizeof(buf), "%d: <empty>", i);
+			snprintf(buf, sizeof(buf), "%d: <empty slot>", i);
 		button(buf, i + 10);
 		colonalign();
 		space(.25);
@@ -1512,7 +1505,7 @@ void campaign_menu_t::build()
 	space(1);
 
 	xoffs = 0.3;
-	KOBO_campaign_info *ci = cinfo[manage.current_slot()];
+	KOBO_campaign_info *ci = savemanager.analysis(manage.current_slot());
 	if(ci)
 	{
 		char buf[128];
@@ -1613,7 +1606,7 @@ void st_campaign_menu_t::select(int tag)
 		}
 		else if(newgame)
 		{
-			if(menu->campaign_exists(manage.current_slot()))
+			if(savemanager.exists(manage.current_slot()))
 				gsm.change(&st_ask_overwrite_campaign);
 			else
 				gsm.change(&st_skill_menu);

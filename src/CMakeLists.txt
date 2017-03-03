@@ -28,6 +28,7 @@ set(sources
 	replay.cpp
 	pfile.cpp
 	campaign.cpp
+	savemanager.cpp
 	openurl.cpp
 	logger.c
 	gfxengine/gfxengine.cpp

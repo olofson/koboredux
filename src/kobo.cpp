@@ -70,6 +70,7 @@
 ----------------------------------------------------------*/
 KOBO_sound		sound;
 KOBO_ThemeData		themedata;
+KOBO_save_manager	savemanager;
 
 
 /*----------------------------------------------------------

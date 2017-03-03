@@ -127,7 +127,7 @@ class _manage
 	static int last_played_stage()	{ return last_stage; }
 
 	// State management
-	static void select_slot(int sl)	{ selected_slot = sl; }
+	static void select_slot(int sl);
 	static int current_slot()	{ return selected_slot; }
 	static void start_intro();
 	static void select_scene(int scene, bool radar = false);

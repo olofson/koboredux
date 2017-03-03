@@ -43,37 +43,39 @@ KOBO_campaign_info::~KOBO_campaign_info()
 
 KOBO_campaign::KOBO_campaign(unsigned slot)
 {
-	clear();
-	version = KOBO_REPLAY_VERSION;
-	gameversion = KOBO_VERSION;
-	starttime = time(NULL);
+	clear(false);
 	dat_path = construct_path(slot, "dat");
 	bak_path = construct_path(slot, "bak");
-	_modified = true;
-	if(prefs->debug)
-	{
-		log_printf(ULOG, "KOBO_campaign:\n");
-		log_printf(ULOG, "  slot: %d\n", slot);
-		log_printf(ULOG, "  data: \"%s\"\n", dat_path);
-		log_printf(ULOG, "   bak: \"%s\"\n", bak_path);
-	}
 }
 
 
 KOBO_campaign::~KOBO_campaign()
 {
-	for(unsigned i = 0; i < replays.size(); ++i)
-		if(replays[i])
-			delete replays[i];
+	clear(true);
 	free(dat_path);
 	free(bak_path);
 }
 
 
-void KOBO_campaign::clear()
+void KOBO_campaign::clear(bool to_load)
 {
-	version = gameversion = 0;
-	starttime = 0;
+	for(unsigned i = 0; i < replays.size(); ++i)
+		if(replays[i])
+			delete replays[i];
+	replays.clear();
+	if(to_load)
+	{
+		version = gameversion = 0;
+		starttime = 0;
+	}
+	else
+	{
+		version = KOBO_REPLAY_VERSION;
+		gameversion = KOBO_VERSION;
+		starttime = time(NULL);
+	}
+	_modified = false;
+	_empty = true;
 }
 
 
@@ -98,8 +100,28 @@ bool KOBO_campaign::modified()
 }
 
 
+bool KOBO_campaign::empty()
+{
+	return _empty && (replays.size() == 0);
+}
+
+
+bool KOBO_campaign::exists()
+{
+	return fmap->get(dat_path);
+}
+
+
+void KOBO_campaign::reset()
+{
+	clear(false);
+}
+
+
 bool KOBO_campaign::load_header(pfile_t *pf)
 {
+	_modified = true;
+	_empty = false;
 	pf->read(version);
 	pf->read(gameversion);
 
@@ -129,8 +151,7 @@ bool KOBO_campaign::load(bool quiet)
 	if(!quiet)
 		log_printf(ULOG, "Loading campaign \"%s\"...\n", dat_path);
 
-	clear();
-	_modified = false;
+	clear(true);
 
 	const char *syspath = NULL;
 	FILE *f = fmap->fopen(dat_path, "rb", &syspath);
@@ -144,7 +165,6 @@ bool KOBO_campaign::load(bool quiet)
 		return false;
 	}
 
-	bool loaded = false;
 	pfile_t *pf = new pfile_t(f);
 	KOBO_replay *r = NULL;
 
@@ -175,7 +195,8 @@ bool KOBO_campaign::load(bool quiet)
 				break;
 			}
 			add_replay(r);
-			loaded = true;
+			_modified = true;
+			_empty = false;
 			break;
 		  case KOBO_PF_REPD_4CC:
 			if(!r)
@@ -207,14 +228,15 @@ bool KOBO_campaign::load(bool quiet)
 	if(!quiet)
 		log_printf(ULOG, "Campaign loaded.\n");
 
-	return loaded;
+	return _modified;
 }
 
 
 KOBO_campaign_info *KOBO_campaign::analyze()
 {
-	if(!load(true))
-		return NULL;
+	if(_empty)
+		if(!load(true))
+			return NULL;
 
 	KOBO_campaign_info *ci = new KOBO_campaign_info;
 	ci->starttime = starttime;
@@ -329,7 +351,7 @@ bool KOBO_campaign::backup()
 bool KOBO_campaign::save(bool force)
 {
 	// Only save if forced, or if there are unsaved changes
-	if(!force && !modified())
+	if(!force && (empty() || !modified()))
 		return true;
 
 	backup();
@@ -385,7 +407,6 @@ bool KOBO_campaign::save(bool force)
 			replays[i]->modified(false);
 	return true;
 }
-
 
 
 KOBO_replay *KOBO_campaign::get_replay(int stage)

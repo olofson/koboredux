@@ -36,6 +36,7 @@
 #include "sound.h"
 #include "spinplanet.h"
 #include "themeparser.h"
+#include "savemanager.h"
 
 
 enum kobo_vmswitch_t {
@@ -224,9 +225,10 @@ class KOBO_main
  //	Singletons
 /////////////////////////////////////////////////////////////////////////////
 
-extern KOBO_sound	sound;
-extern KOBO_ThemeData	themedata;
-extern KOBO_main	km;
+extern KOBO_sound		sound;
+extern KOBO_ThemeData		themedata;
+extern KOBO_main		km;
+extern KOBO_save_manager	savemanager;
 
 #define THD(x, y)	(themedata.get(KOBO_D_##x, (y)))
 #define	DASHX(x)	THD(DASH_##x, 0)

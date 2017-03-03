@@ -341,18 +341,15 @@ class st_main_menu_t : public st_menu_base_t
 
 class campaign_menu_t : public menu_base_t
 {
-	KOBO_campaign_info	*cinfo[KOBO_MAX_CAMPAIGN_SLOTS];
 	const char		*header;
 	bool			newgame;
 	bool			view_replay;
 	char			tdbuf[128];
   public:
 	campaign_menu_t(gfxengine_t *e);
-	~campaign_menu_t();
 	const char *timedate(time_t *t);
 	void colonalign();
 	void setup(const char *hdr, bool new_game, bool view);
-	bool campaign_exists(int ind)	{ return cinfo[ind] != NULL; }
 	void build();
 	void rebuild();
 };

@@ -206,6 +206,13 @@ void _manage::start_intro()
 }
 
 
+void _manage::select_slot(int sl)
+{
+	selected_slot = sl;
+	campaign = savemanager.campaign(selected_slot);
+}
+
+
 void _manage::select_scene(int scene, bool radar)
 {
 	selected_stage = scene;
@@ -342,21 +349,11 @@ void _manage::finalize_replay()
 }
 
 
-void _manage::new_campaign()
-{
-	if(campaign)
-	{
-		log_printf(WLOG, "Someone left a KOBO_campaign around!\n");
-		delete campaign;
-	}
-	campaign = new KOBO_campaign(selected_slot);
-}
-
-
 void _manage::start_new_game()
 {
 	replaymode = RPM_PLAY;
-	new_campaign();
+	if(campaign)
+		campaign->reset();
 	score = 0;
 	playtime = 0;
 	init_game(NULL, true);
@@ -366,14 +363,14 @@ void _manage::start_new_game()
 
 bool _manage::continue_game()
 {
-	replaymode = RPM_PLAY;
-	new_campaign();
-	if(!campaign->load() || !(replay = campaign->get_replay(-1)))
-	{
-		delete campaign;
-		campaign = NULL;
+	if(!campaign)
 		return false;
-	}
+
+	replay = campaign->get_replay(-1);
+	if(!replay)
+		return false;
+
+	replaymode = RPM_PLAY;
 	init_game(replay);
 	gamecontrol.clear();
 	return true;
@@ -382,14 +379,14 @@ bool _manage::continue_game()
 
 bool _manage::start_replay(int stage)
 {
-	replaymode = RPM_REPLAY;
-	new_campaign();
-	if(!campaign->load() || !(replay = campaign->get_replay(stage)))
-	{
-		delete campaign;
-		campaign = NULL;
+	if(!campaign)
 		return false;
-	}
+
+	replay = campaign->get_replay(stage);
+	if(!replay)
+		return false;
+
+	replaymode = RPM_REPLAY;
 	init_game(replay);
 	gamecontrol.clear();
 	return true;
@@ -934,7 +931,6 @@ void _manage::abort_game()
 	{
 		if(replaymode == RPM_PLAY)
 			campaign->save();
-		delete campaign;
 		campaign = NULL;
 	}
 	if(replay && owns_replay)

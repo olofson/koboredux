@@ -58,19 +58,25 @@ class KOBO_campaign
 	char		*dat_path;
 	char		*bak_path;
 	bool		_modified;
+	bool		_empty;
 
 	KOBO_replay_compat	compat;	// Full campaign compatibility status
 
-	void clear();
+	void clear(bool to_load);
 	char *construct_path(unsigned slot, const char *ext);
 	bool backup();
-	bool modified();
 	bool load_header(pfile_t *pf);
   public:
 	KOBO_campaign(unsigned slot);
 	virtual ~KOBO_campaign();
 
+	// Status
+	bool modified();	// true if there is unsaved data
+	bool empty();		// true if no data has been recorded or loaded
+
 	// Load/analyze/save
+	bool exists();
+	void reset();
 	bool load(bool quiet = false);
 	KOBO_campaign_info *analyze();
 	bool save(bool force = false);
