@@ -25,8 +25,8 @@
 #include "random.h"
 #include "replay.h"
 
-// Initial buffer size (enough for about an hour at 30 ms/frame)
-#define	KOBO_REPLAY_BUFFER	256	//131072
+// Initial buffer size (enough for about 65 minutes at 30 ms/frame)
+#define	KOBO_REPLAY_BUFFER	131072
 
 
 KOBO_replay::KOBO_replay()
@@ -38,12 +38,9 @@ KOBO_replay::KOBO_replay()
 	config = get_config();
 	endtime = starttime = time(NULL);
 
-	bufsize = KOBO_REPLAY_BUFFER;
+	bufsize = 0;
 	bufrecord = bufplay = 0;
-	buffer = (Uint8 *)malloc(bufsize);
-	if(!buffer)
-		log_printf(ELOG, "Out of memory! Limited save/replay "
-				"capabilities.\n");
+	buffer = NULL;
 
 	compat = KOBO_RPCOM_FULL;
 	_modified = true;
@@ -92,25 +89,35 @@ Uint32 KOBO_replay::get_config()
 
 void KOBO_replay::write(KOBO_player_controls ctrl)
 {
-	// TODO:
-	//	RLE? Although hardly worth the effort, and if we're saving or
-	//	transmitting this data, we'll probably compress it anyway!
-	//
-	if(!buffer)
-		return;
-
 	if(bufrecord >= bufsize)
 	{
 		int nbs = bufsize * 3 / 2;
+		if(nbs < KOBO_REPLAY_BUFFER)
+			nbs = KOBO_REPLAY_BUFFER;
 		Uint8 *nb = (Uint8 *)realloc(buffer, nbs);
 		if(!nb)
+		{
+			log_printf(ELOG, "OOM in KOBO_replay::write()!\n");
 			return;	// OOM...!? Not cool!
-
+		}
 		buffer = nb;
 		bufsize = nbs;
 	}
 	buffer[bufrecord++] = ctrl;
 	_modified = true;
+}
+
+
+void KOBO_replay::compact()
+{
+	Uint8 *nb = (Uint8 *)realloc(buffer, bufrecord);
+	if(!nb && bufrecord)
+	{
+		log_printf(ELOG, "OOM in KOBO_replay::compact()!\n");
+		return;	// Wut? OOM when releasing memory...?
+	}
+	buffer = nb;
+	bufsize = bufrecord;
 }
 
 
@@ -141,6 +148,17 @@ void KOBO_replay::punchin()
 		return;
 	}
 	bufrecord = bufplay;
+	if(bufsize < KOBO_REPLAY_BUFFER)
+	{
+		Uint8 *nb = (Uint8 *)realloc(buffer, KOBO_REPLAY_BUFFER);
+		if(!nb)
+		{
+			log_printf(ELOG, "OOM in KOBO_replay::punchin()!\n");
+			return;
+		}
+		buffer = nb;
+		bufsize = KOBO_REPLAY_BUFFER;
+	}
 }
 
 
@@ -282,6 +300,12 @@ bool KOBO_replay::load_reph(pfile_t *pf)
 bool KOBO_replay::load_repd(pfile_t *pf)
 {
 	pf->read(bufrecord);
+	if(!bufrecord)
+	{
+		log_printf(WLOG, "REPD chunk with no data!\n");
+		pf->chunk_end();
+		return true;
+	}
 	if(bufrecord > bufsize)
 	{
 		Uint8 *nb = (Uint8 *)realloc(buffer, bufrecord);

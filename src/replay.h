@@ -134,6 +134,7 @@ class KOBO_replay
 
 	// Record
 	void write(KOBO_player_controls ctrl);	// Record + advance
+	void compact();		// Drop preallocated buffer space to save RAM
 
 	// Compatibility check
 	KOBO_replay_compat compatibility()	{ return compat; }

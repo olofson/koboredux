@@ -345,6 +345,7 @@ void _manage::finalize_replay()
 		replay->end_health = myship.health();
 		replay->end_charge = myship.charge();
 		replay->end_score = score;
+		replay->compact();
 	}
 }
 
@@ -976,9 +977,11 @@ void _manage::pause(bool p)
 	is_paused = p;
 	if(is_paused)
 		stop_screenshake();
-	finalize_replay();
 	if(campaign && (replaymode == RPM_PLAY))
+	{
+		finalize_replay();
 		campaign->save();
+	}
 }
 
 
