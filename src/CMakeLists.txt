@@ -26,6 +26,7 @@ set(sources
 	starfield.cpp
 	themeparser.cpp
 	replay.cpp
+	replay_gst.cpp
 	pfile.cpp
 	campaign.cpp
 	savemanager.cpp

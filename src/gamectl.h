@@ -83,6 +83,23 @@ enum gc_sources_t
 };
 
 
+enum KOBO_player_controls
+{
+	KOBO_PC_NONE =			0,
+
+	KOBO_PC_DIR =			0x0f,	// Dirs 1..8; 0 is "neutral"
+
+	KOBO_PC_PRIMARY_DOWN =		0x10,	// Primary fire just pressed
+	KOBO_PC_PRIMARY =		0x20,	// Primary fire held down
+	KOBO_PC_SECONDARY_DOWN =	0x40,	// Secondary fire just pressed
+	KOBO_PC_SECONDARY =		0x80,	// Secondary fire held down
+	KOBO_PC_FIRE =		KOBO_PC_PRIMARY_DOWN | KOBO_PC_PRIMARY |
+				KOBO_PC_SECONDARY_DOWN | KOBO_PC_SECONDARY,
+
+	KOBO_PC_END =			0xff00	// End-of-replay
+};
+
+
 class gamecontrol_t
 {
 	static unsigned state[BTN__COUNT];	// Current state

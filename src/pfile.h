@@ -26,6 +26,8 @@
 #include <stdint.h>
 #include <time.h>
 
+#define	PFILE_ALIGN	4
+
 #ifdef WIN32
 time_t timegm(struct tm *brokentime);
 #endif
@@ -48,43 +50,47 @@ time_t timegm(struct tm *brokentime);
   ////////////////////////////////////////////////////////////
  // pfile_t - Portable File Access Base Class
 ////////////////////////////////////////////////////////////
-// Handles the reading and writing of data from/to file
-// via the internal buffer.
+// Handles the reading and writing of data from/to file via
+// the internal buffer.
 //
 // Reading can be done either directly from the file, or
 // through the internal buffer.
 //
-// To read through the buffer, the desired number of
-// bytes (for example, all bytes of a chunk) must be
-// read into the buffer using read_buffer(). Subsequent
-// reads will be from the buffer, and end-of-buffer is
-// treated like EOF.
+// To read through the buffer, the desired number of bytes
+// (for example, all bytes of a chunk) must be read into the
+// buffer using read_buffer(). Subsequent reads will be from
+// the buffer, and end-of-buffer is treated like EOF.
 //
-// Writing is always done to the buffer. To actually
-// write data to file, call write_buffer().
+// Writing is always done to the buffer. To actually write
+// data to file, call write_buffer().
+//
+// Chunks are 4 byte aligned when written, with zero padding
+// before the FourCC. The pad bytes are NOT included in the
+// size of the previous chunk. Instead, chunk_read() will
+// start by skipping bytes until it finds a non-zero byte,
+// or hits EOF, so alignment changes will not break
+// compatibility.
 //
 // IMPORTANT:
-//	Written data is *lost* if the pfile object
-//	is destroyed before write_buffer() is called!
+//	Written data is LOST if the pfile object is destroyed
+//	before write_buffer() is called!
 //
 // Reading RIFF style chunks:
-//	Use chunk_read() to read the entire chunk into
-//	the internal buffer. If this succeeds,
-//	chunk_type() and chunk_size() will return
-//	information about the chunk, and subsequent
-//	read() calls will read from the data section of
-//	the chunk. Use chunk_end() to stop reading, and
-//	discard the buffer. The next read() will start
-//	at the first byte after the end of the chunk.
+//	Use chunk_read() to read the entire chunk into the
+//	internal buffer. If this succeeds, chunk_type() and
+//	chunk_size() will return information about the chunk,
+//	and subsequent read() calls will read from the data
+//	section of the chunk. Use chunk_end() to stop reading,
+//	and discard the buffer. The next read() will start  at
+//	the first byte after the end of the chunk.
 //
 // Writing RIFF style chunks:
-//	Use chunk_write() to set the type of the chunk
-//	to write. Subsequent write()ing will be done to
-//	the internal buffer, which will grow as needed.
-//	Use chunk_end() to write the whole chunk, with
-//	the correct size and all data. chunk_end() will
-//	discard the buffer and return the object to
-//	"direct" operation.
+//	Use chunk_write() to set the type of the chunk to
+//	write. Subsequent write()ing will be done to the
+//	internal buffer, which will grow as needed. Use
+//	chunk_end() to write the whole chunk, with the correct
+//	size and all data. chunk_end() will discard the buffer
+//	and return the object to "direct" operation.
 //
 class pfile_t
 {
@@ -113,6 +119,7 @@ class pfile_t
 	int write_ub(const void *data, int len);
 	int write_ub(uint32_t x);
 	int write_ub(int32_t x);
+	int write_ub_align(int alignment);
   public:
 	pfile_t(FILE *file);
 	virtual ~pfile_t();

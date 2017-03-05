@@ -1465,6 +1465,10 @@ void campaign_menu_t::setup(const char *hdr, bool new_game, bool replay)
 	view_replay = replay;
 	savemanager.load(-1);
 	savemanager.analysis(-1, true);
+
+	// Timestamp reset, because loading might take a few frames.
+	// Or much longer than that, if debug log output is enabled!
+	sound.timestamp_reset();
 }
 
 

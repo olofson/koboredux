@@ -114,6 +114,7 @@ void prefs_t::init()
 	yesno("show_hit", show_hit, 0); desc("Show Hit Zones");
 	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
 	yesno("soundtools", soundtools, 0); desc("Sound Design Tools");
+	yesno("replaydebug", replaydebug, 0); desc("Replay Debug Data");
 	key("toolstheme", toolstheme, ""); desc("Authoring Tools Theme");
 	yesno("force_fallback_gfxtheme", force_fallback_gfxtheme, 0);
 			desc("Force Load Fallback Graphics Theme");

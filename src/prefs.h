@@ -106,6 +106,7 @@ class prefs_t : public config_parser_t
 	int	show_hit;
 	int	tsdebug;	//Timestamp debugging
 	int	soundtools;
+	int	replaydebug;
 	cfg_string_t	toolstheme;
 
 	// Cheat/test

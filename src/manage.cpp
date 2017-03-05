@@ -298,6 +298,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 			owns_replay = true;
 	}
 
+	playtime = 0;
 	gengine->period(game.speed);
 	screen.init_stage(selected_stage, true);
 	last_stage = selected_stage;
@@ -334,7 +335,8 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_GAME);
 	sound.g_music(selected_stage);
-	replay->log_dump(ULOG);
+	if(prefs->debug)
+		replay->log_dump(ULOG);
 }
 
 
@@ -356,7 +358,6 @@ void _manage::start_new_game()
 	if(campaign)
 		campaign->reset();
 	score = 0;
-	playtime = 0;
 	init_game(NULL, true);
 	gamecontrol.clear();
 }
@@ -728,17 +729,7 @@ KOBO_player_controls _manage::controls_live()
 KOBO_player_controls _manage::controls_retry()
 {
 	KOBO_player_controls ctrlin = myship.decode_input();
-	KOBO_player_controls ctrl = replay->read();
-	if(ctrl == KOBO_PC_END)
-	{
-		ctrl = KOBO_PC_NONE;
-		if(myship.alive())
-		{
-			gamestate = GS_REPLAYEND;
-			delay_count = KOBO_REPLAYEND_TIMEOUT;
-		}
-	}
-	else if((ctrlin & KOBO_PC_FIRE) && !(lastinput & KOBO_PC_FIRE))
+	if((ctrlin & KOBO_PC_FIRE) && !(lastinput & KOBO_PC_FIRE))
 	{
 		// Player takes over control! Replay recording must be
 		// resumed at exactly this frame, overwriting any
@@ -750,6 +741,19 @@ KOBO_player_controls _manage::controls_retry()
 		gengine->period(game.speed);
 		sound.g_volume();
 		sound.g_pitch();
+		return ctrlin;
+	}
+	lastinput = ctrlin;	// Must release controls first!
+
+	KOBO_player_controls ctrl = replay->read();
+	if(ctrl == KOBO_PC_END)
+	{
+		ctrl = KOBO_PC_NONE;
+		if(myship.alive())
+		{
+			gamestate = GS_REPLAYEND;
+			delay_count = KOBO_REPLAYEND_TIMEOUT;
+		}
 	}
 	else
 	{
@@ -790,7 +794,6 @@ KOBO_player_controls _manage::controls_retry()
 			sound.g_pitch(log2f(1.0f / rps));
 		}
 	}
-	lastinput = ctrlin;	// Must release controls first!
 	return ctrl;
 }
 
@@ -873,6 +876,17 @@ void _manage::run_game()
 	myship.move();
 	enemies.move();
 	myship.check_base_bolts();
+	if(replay && prefs->replaydebug)
+		switch(replaymode)
+		{
+		  case RPM_PLAY:
+			replay->record_state();
+			break;
+		  case RPM_REWIND:
+		  case RPM_REPLAY:
+			replay->verify_state();
+			break;
+		}
 	update();
 	++playtime;
 }

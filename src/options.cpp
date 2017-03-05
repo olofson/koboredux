@@ -567,6 +567,7 @@ void debug_options_t::build()
 	yesno("Show Hit Zones", &prf->show_hit, 0);
 	yesno("Timestamp Debug Output", &prf->tsdebug, 0);
 	yesno("Sound Design Tools", &prf->soundtools, 0);
+	yesno("Replay Debug Data (Huge Saves!)", &prf->replaydebug, 0);
 	yesno("Force Fallback Graphics theme", &prf->force_fallback_gfxtheme,
 			OS_RELOAD_GRAPHICS);
 	yesno("Force Fallback Sound Theme", &prf->force_fallback_sfxtheme,

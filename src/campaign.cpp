@@ -188,8 +188,9 @@ bool KOBO_campaign::load(bool quiet)
 				if(!quiet)
 					log_printf(ELOG,
 							"KOBO_campaign::load()"
-							" failed to load REPH "
-							"chunk! Skipping.\n");
+							" failed to load %s "
+							"chunk! Skipping.\n",
+							pf->fourcc2string(ct));
 				delete r;
 				r = NULL;
 				break;
@@ -199,19 +200,22 @@ bool KOBO_campaign::load(bool quiet)
 			_empty = false;
 			break;
 		  case KOBO_PF_REPD_4CC:
+		  case KOBO_PF_GSTD_4CC:
 			if(!r)
 			{
 				if(!quiet)
 					log_printf(ELOG,
 							"KOBO_campaign::load()"
-							"skipping orphan REPD "
-							"chunk.\n");
+							"skipping orphan %s "
+							"chunk.\n",
+							pf->fourcc2string(ct));
 				break;
 			}
 			if(!r->load(pf) && !quiet)
 				log_printf(ELOG, "KOBO_campaign::load() failed"
-						" to load REPD chunk! "
-						"Ignoring.\n");
+						" to load %s chunk! "
+						"Ignoring.\n",
+						pf->fourcc2string(ct));
 			break;
 		  default:
 			if(!quiet)

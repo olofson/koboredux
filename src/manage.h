@@ -170,9 +170,10 @@ class _manage
 			return false;
 		}
 	}
-	static int game_time()		{ return playtime; }
+	static unsigned game_time()	{ return playtime; }
 	static int cores_total()	{ return total_cores; }
 	static int cores_remaining()	{ return remaining_cores; }
+	static unsigned current_score()	{ return score; }
 
 	// Player input
 	static void key_down(SDL_Keycode sym);

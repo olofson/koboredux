@@ -3,7 +3,7 @@
    Kobo Redux - Replay/gamesave logger
 ------------------------------------------------------------
  * Copyright 2017 David Olofson
- * 
+ *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
  * Free Software Foundation;  either version 2 of the License,  or (at your
@@ -31,16 +31,15 @@
 
 KOBO_replay::KOBO_replay()
 {
+	buffer = NULL;
+	gst_first = gst_last = gst_current = NULL;
+
 	clear();
 
 	version = KOBO_REPLAY_VERSION;
 	gameversion = KOBO_VERSION;
 	config = get_config();
 	endtime = starttime = time(NULL);
-
-	bufsize = 0;
-	bufrecord = bufplay = 0;
-	buffer = NULL;
 
 	compat = KOBO_RPCOM_FULL;
 	_modified = true;
@@ -49,7 +48,7 @@ KOBO_replay::KOBO_replay()
 
 KOBO_replay::~KOBO_replay()
 {
-	free(buffer);
+	clear();
 }
 
 
@@ -57,6 +56,20 @@ void KOBO_replay::clear()
 {
 	version = gameversion = 0;
 	config = 0;
+
+	free(buffer);
+	buffer = NULL;
+	bufsize = 0;
+	bufrecord = bufplay = 0;
+
+	while(gst_first)
+	{
+		KOBO_replay_gst *gst = gst_first;
+		gst_first = gst->next;
+		delete gst;
+	}
+	gst_last = gst_current = NULL;
+
 	starttime = endtime = 0;
 	stage = type = skill = 0;
 	seed = 0;
@@ -124,6 +137,7 @@ void KOBO_replay::compact()
 void KOBO_replay::rewind()
 {
 	bufplay = 0;
+	gst_current = gst_first;
 }
 
 
@@ -134,7 +148,6 @@ KOBO_player_controls KOBO_replay::read()
 		++bufplay;
 		return KOBO_PC_END;
 	}
-
 	return (KOBO_player_controls)buffer[bufplay++];
 }
 
@@ -147,6 +160,37 @@ void KOBO_replay::punchin()
 				"end of replay data!\n");
 		return;
 	}
+
+	if(prefs->debug)
+		log_printf(ULOG, "KOBO_replay::punchin() at frame %d\n",
+				manage.game_time());
+
+	// Discard any game state snapshots for this frame and on
+	KOBO_replay_gst *p = NULL;
+	gst_last = gst_first;
+	while(gst_last)
+	{
+		if(gst_last->frame >= manage.game_time())
+		{
+			KOBO_replay_gst *d = gst_last;
+			gst_last = gst_current = p;
+			if(p)
+				p->next = NULL;
+			else
+				gst_first = NULL;
+			while(d)
+			{
+				p = d;
+				d = d->next;
+				delete p;
+			}
+			break;
+		}
+		p = gst_last;
+		gst_last = gst_last->next;
+	}
+
+	// Truncate replay data, and make sure we have a properly sized buffer
 	bufrecord = bufplay;
 	if(bufsize < KOBO_REPLAY_BUFFER)
 	{
@@ -162,14 +206,31 @@ void KOBO_replay::punchin()
 }
 
 
-void KOBO_replay::log_dump(int level, bool header, bool data)
+void KOBO_replay::log_dump(int level, KOBO_replay_logdump rld)
 {
-	if(header && data)
+	bool header = false;
+	bool replay = false;
+	bool gstd = false;
+	switch(rld)
+	{
+	  case KOBO_RLD_ALL:
+		header = replay = gstd = true;
 		log_printf(level, " .- Replay -----------------------\n");
-	else if(header)
+		break;
+	  case KOBO_RLD_HEADER:
+		header = true;
 		log_printf(level, " .- Replay Header ----------------\n");
-	else
+		break;
+	  case KOBO_RLD_REPLAY:
+		replay = true;
 		log_printf(level, " .- Replay Data ------------------\n");
+		break;
+	  case KOBO_RLD_GAMESTATE:
+		gstd = true;
+		log_printf(level, " .- Game State Data --------------\n");
+		break;
+	}
+
 	if(header)
 	{
 		log_printf(level, " |     version: %d.%d.%d.%d\n",
@@ -203,11 +264,19 @@ void KOBO_replay::log_dump(int level, bool header, bool data)
 		log_printf(level, " |      compat: %s\n", cmp);
 	}
 
-	if(header && data)
+	if(header && (replay || gstd))
 		log_printf(level, " |- Data -------------------------\n");
 
-	if(data)
+	if(replay)
 		log_printf(level, " |    recorded: %d frames\n", bufrecord);
+
+	if(gstd)
+	{
+		int n = 0;
+		for(KOBO_replay_gst *gst = gst_first; gst; gst = gst->next)
+			++n;
+		log_printf(level, " |  Game State: %d snapshots\n", n);
+	}
 
 	log_printf(level, " '--------------------------------\n");
 }
@@ -221,6 +290,37 @@ float KOBO_replay::progress()
 		return 1.0f;
 	return (float)bufplay / bufrecord;
 }
+
+
+bool KOBO_replay::record_state()
+{
+	KOBO_replay_gst *gst = new KOBO_replay_gst;
+	if(gst_last)
+	{
+		gst_last->next = gst;
+		gst_last = gst;
+	}
+	else
+		gst_last = gst_first = gst_current = gst;
+	return gst->record();
+}
+
+
+bool KOBO_replay::verify_state()
+{
+	while(gst_current && (manage.game_time() > gst_current->frame))
+		gst_current = gst_current->next;
+	if(!gst_current)
+		return true;
+	if(manage.game_time() != gst_current->frame)
+{
+log_printf(ULOG, "(((frame %d missing!)))\n", manage.game_time());
+		return true;
+}
+	return gst_current->verify();
+}
+
+
 
 
 bool KOBO_replay::load_reph(pfile_t *pf)
@@ -240,9 +340,9 @@ bool KOBO_replay::load_reph(pfile_t *pf)
 	{
 		// This is from a newer version, so we can't safely load this!
 		compat = KOBO_RPCOM_NONE;
+		pf->chunk_end();
 		if(prefs->debug)
 			log_dump(ULOG);
-		pf->chunk_end();
 		return false;
 	}
 	else
@@ -291,7 +391,7 @@ bool KOBO_replay::load_reph(pfile_t *pf)
 	pf->chunk_end();
 
 	if(prefs->debug)
-		log_dump(ULOG, true, false);
+		log_dump(ULOG, KOBO_RLD_HEADER);
 
 	return !pf->status();
 }
@@ -327,9 +427,23 @@ bool KOBO_replay::load_repd(pfile_t *pf)
 	pf->chunk_end();
 
 	if(prefs->debug)
-		log_dump(ULOG, false, true);
+		log_dump(ULOG, KOBO_RLD_REPLAY);
 
 	return !pf->status();
+}
+
+
+bool KOBO_replay::load_gstd(pfile_t *pf)
+{
+	KOBO_replay_gst *gst = new KOBO_replay_gst;
+	if(gst_last)
+	{
+		gst_last->next = gst;
+		gst_last = gst;
+	}
+	else
+		gst_last = gst_first = gst_current = gst;
+	return gst->load(pf);
 }
 
 
@@ -341,6 +455,15 @@ bool KOBO_replay::load(pfile_t *pf)
 		return load_reph(pf);
 	  case KOBO_PF_REPD_4CC:
 		return load_repd(pf);
+	  case KOBO_PF_GSTD_4CC:
+		if(prefs->replaydebug)
+			return load_gstd(pf);
+		else
+		{
+			// Feature disabled - skip these chunks!
+			pf->chunk_end();
+			return true;
+		}
 	  default:
 		return false;
 	}
@@ -350,6 +473,9 @@ bool KOBO_replay::load(pfile_t *pf)
 bool KOBO_replay::save(pfile_t *pf)
 {
 	endtime = time(NULL);
+
+	if(prefs->debug)
+		log_dump(ULOG);
 
 	//
 	// REPH (header)
@@ -398,6 +524,13 @@ bool KOBO_replay::save(pfile_t *pf)
 
 		pf->chunk_end();
 	}
+
+	//
+	// GSTD (debug/verification data)
+	//
+	if(prefs->replaydebug)
+		for(KOBO_replay_gst *gst = gst_first; gst; gst = gst->next)
+			gst->save(pf);
 
 	return !pf->status();
 }

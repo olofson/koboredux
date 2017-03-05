@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "kobo.h"
 #include "kobolog.h"
 #include "pfile.h"
 
@@ -85,7 +86,8 @@ int pfile_t::buffer_init()
 
 int pfile_t::buffer_write()
 {
-	DBG(log_printf(LOGLEVEL, "pfile_t::buffer_write() %d bytes\n", bufused);)
+	DBG(log_printf(LOGLEVEL, "pfile_t::buffer_write() %d bytes\n",
+			bufused);)
 	if(fwrite(buffer, bufused, 1, f) != 1)
 		return status(-1);
 
@@ -303,6 +305,30 @@ int pfile_t::write_ub(int32_t x)
 }
 
 
+int pfile_t::write_ub_align(int alignment)
+{
+	if(alignment <= 1)
+		return 0;
+
+	int a = ftell(f);
+	if(a < 0)
+		return status(a);
+
+	a = alignment - a % alignment;
+	if(a != alignment)
+	{
+		if(prefs->debug)
+			log_printf(LOGLEVEL, "pfile_t::write_ub_align(): "
+					"%d pad byte%s\n",
+					a, a > 1 ? "s" : "");
+		while(a--)
+			if(putc(0, f) < 0)
+				return status(-1);
+	}
+	return _status;
+}
+
+
 /*----------------------------------------------------------
 	RIFF style chunk API
 ----------------------------------------------------------*/
@@ -320,13 +346,23 @@ const char *pfile_t::fourcc2string(unsigned int c)
 
 int pfile_t::chunk_read()
 {
-	uint32_t size;
-
 	chunk_writing = false;
-	if(read(chunk_id) != 4)
-		return _status;
+
+	// Read FourCC, skipping any leading zero pad bytes
+	int8_t buf[4];
+	buf[0] = 0;
+	while(!buf[0])
+		if(read(buf[0]) != 1)
+			return _status;
+	for(int i = 1; i < 4; ++i)
+		if(read(buf[i]) != 1)
+			return _status;
+	chunk_id = MAKE_4CC(buf[0], buf[1], buf[2], buf[3]);
+
 	if(read(chunk_ver) != 4)
 		return _status;
+
+	uint32_t size;
 	if(read(size) != 4)
 		return _status;
 
@@ -340,6 +376,11 @@ int pfile_t::chunk_write(uint32_t id, int32_t version)
 {
 	DBG(log_printf(LOGLEVEL, "  writing %sv%d chunk\n",
 			fourcc2string(id), version));
+	if(!(id & 0xff))
+	{
+		log_printf(ELOG, "Illegal FourCC; must not start with 0!\n");
+		return status(-1);
+	}
 	chunk_writing = true;
 	chunk_id = id;
 	chunk_ver = version;
@@ -350,12 +391,19 @@ int pfile_t::chunk_write(uint32_t id, int32_t version)
 
 int pfile_t::chunk_end()
 {
+	if(!buffer)
+	{
+		log_printf(ELOG, "pfile_t::chunk_end() with no chunk!\n");
+		return status(-1);
+	}
 	if(chunk_writing)
 	{
+		write_ub_align(PFILE_ALIGN);
 		write_ub(chunk_id);
 		write_ub(chunk_ver);
 		write_ub(bufused);
 		buffer_write();
+		chunk_writing = false;
 		DBG(log_printf(LOGLEVEL, "  wrote %s chunk, %d bytes\n",
 				fourcc2string(chunk_id), bufused));
 	}

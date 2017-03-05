@@ -27,7 +27,7 @@
 #include "config.h"
 #include "gfxengine.h"
 #include "game.h"
-#include "replay.h"
+#include "gamectl.h"
 
 enum KOBO_myship_state
 {
