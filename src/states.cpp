@@ -1495,6 +1495,9 @@ void campaign_menu_t::build()
 	xoffs = 0.1;
 	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
 	{
+		if((view_replay || !newgame) && !savemanager.exists(i))
+			continue;
+
 		char buf[128];
 		KOBO_campaign_info *ci = savemanager.analysis(i);
 		if(ci)
