@@ -154,23 +154,25 @@ KOBO_player_controls KOBO_replay::read()
 
 void KOBO_replay::punchin()
 {
-	if(bufplay > bufrecord)
+	unsigned punchframe = manage.game_time();
+
+	if(punchframe > bufrecord)
 	{
-		log_printf(ELOG, "WARNING: KOBO_replay::punchin() beyond "
-				"end of replay data!\n");
+		log_printf(ELOG, "KOBO_replay::punchin() beyond end of replay "
+				"data! This will break replay.\n");
 		return;
 	}
 
 	if(prefs->debug)
 		log_printf(ULOG, "KOBO_replay::punchin() at frame %d\n",
-				manage.game_time());
+				punchframe);
 
 	// Discard any game state snapshots for this frame and on
 	KOBO_replay_gst *p = NULL;
 	gst_last = gst_first;
 	while(gst_last)
 	{
-		if(gst_last->frame >= manage.game_time())
+		if(gst_last->frame >= punchframe)
 		{
 			KOBO_replay_gst *d = gst_last;
 			gst_last = gst_current = p;
@@ -191,7 +193,7 @@ void KOBO_replay::punchin()
 	}
 
 	// Truncate replay data, and make sure we have a properly sized buffer
-	bufrecord = bufplay;
+	bufrecord = punchframe;
 	if(bufsize < KOBO_REPLAY_BUFFER)
 	{
 		Uint8 *nb = (Uint8 *)realloc(buffer, KOBO_REPLAY_BUFFER);

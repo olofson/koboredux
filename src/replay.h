@@ -83,9 +83,9 @@ class KOBO_replay
 	uint32_t	config;		// Relevant config switches
 
 	// Player input log
-	int32_t		bufsize;	// Physical size of buffer
-	int32_t		bufrecord;	// Number of frames recorded
-	int32_t		bufplay;	// Current playback frame
+	uint32_t	bufsize;	// Physical size of buffer
+	uint32_t	bufrecord;	// Number of frames recorded
+	uint32_t	bufplay;	// Current playback frame
 	uint8_t		*buffer;
 
 	KOBO_replay_gst	*gst_first;	// List head
