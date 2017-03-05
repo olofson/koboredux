@@ -148,22 +148,22 @@ bool KOBO_campaign::load_header(pfile_t *pf)
 
 bool KOBO_campaign::load(bool quiet)
 {
-	if(!quiet)
-		log_printf(ULOG, "Loading campaign \"%s\"...\n", dat_path);
-
-	clear(true);
-
 	const char *syspath = NULL;
 	FILE *f = fmap->fopen(dat_path, "rb", &syspath);
 	if(!f)
 	{
-		if(!quiet)
+		if(prefs->debug && !quiet)
 			log_printf(ELOG, "Could not open campaign file \"%s\" "
 					"(\"%s\") for reading!\n",
 					dat_path,
 					syspath ? syspath : "<unresolved>");
 		return false;
 	}
+
+	clear(true);
+
+	if(!quiet)
+		log_printf(ULOG, "Loading campaign \"%s\"...\n", dat_path);
 
 	pfile_t *pf = new pfile_t(f);
 	KOBO_replay *r = NULL;

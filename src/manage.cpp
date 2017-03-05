@@ -210,6 +210,8 @@ void _manage::select_slot(int sl)
 {
 	selected_slot = sl;
 	campaign = savemanager.campaign(selected_slot);
+	log_printf(ULOG, "Selected%s campaign slot %d.\n",
+			!campaign->exists() ? " empty" : "", selected_slot);
 }
 
 

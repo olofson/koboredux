@@ -669,7 +669,9 @@ const char *filemapper_t::get(const char *ref, int kind, const char *defprefix)
 	}
 	else
 	{
-		log_printf(WLOG, "filemapper_t::get(\"%s\") failed!\n", ref);
+		if(prefs->debug)
+			log_printf(WLOG, "filemapper_t::get(\"%s\") failed!\n",
+					ref);
 		return NULL;
 	}
 }
