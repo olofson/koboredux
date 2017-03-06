@@ -78,10 +78,6 @@ class _manage
 	// Timing
 	static int delay_count;
 
-	static void next_scene();
-	static void prev_scene();
-	static void retry();
-
 	static int selected_slot;
 	static int selected_stage;
 	static int last_stage;
@@ -98,7 +94,8 @@ class _manage
 	static KOBO_campaign *campaign;
 	static KOBO_replay *replay;
 	static bool owns_replay;
-	static KOBO_player_controls lastinput;
+	static KOBO_player_controls lastctrl;	// Previous control input state
+	static unsigned ctrltimer;	// Frames since last input change
 
 	static void put_player_stats();
 	static void put_info();
@@ -107,17 +104,24 @@ class _manage
 	static void run_noise();
 	static void run_leds();
 	static void set_bars();
-	static void init_game(KOBO_replay *rp = NULL, bool newship = false);
+
+	static void next_bookmark();
+	static void prev_bookmark();
+	static void next_scene();
+	static void prev_scene();
+
 	static void init_resources_title();
+	static void init_game(KOBO_replay *rp = NULL, bool newship = false);
+	static void retry();
 	static void update();
 	static void run_intro();
 	static void run_pause();
 	static void run_game();
 	static void finalize_replay();
-	static void new_campaign();
-	static KOBO_player_controls controls_live();
-	static KOBO_player_controls controls_retry();
-	static KOBO_player_controls controls_replay();
+
+	static KOBO_player_controls controls_live(KOBO_player_controls ctrl);
+	static KOBO_player_controls controls_retry(KOBO_player_controls ctrl);
+	static KOBO_player_controls controls_replay(KOBO_player_controls ctrl);
   public:
 
 	static void init();
@@ -141,6 +145,7 @@ class _manage
 	static bool continue_game();
 	static bool start_replay(int stage);
 	static void rewind();
+	static void seek(int frame);
 	static void player_ready();
 	static void abort_game();
 	static void pause(bool p);
@@ -185,6 +190,7 @@ class _manage
 	static void noise_damage(float amt);
 	static void screenshake(float mag_x, float mag_y, float fade);
 	static void stop_screenshake();
+	static void kill_screenshake();
 
 	// Game logic interface
 	static void lost_myship();

@@ -83,7 +83,8 @@ int _manage::shake_fade_y = 0;
 KOBO_campaign *_manage::campaign = NULL;
 KOBO_replay *_manage::replay = NULL;
 bool _manage::owns_replay = false;
-KOBO_player_controls _manage::lastinput = KOBO_PC_FIRE;
+KOBO_player_controls _manage::lastctrl = KOBO_PC_FIRE;
+unsigned _manage::ctrltimer = 0;
 
 
 const char *_manage::state_name(KOBO_gamestates st)
@@ -229,10 +230,9 @@ void _manage::select_scene(int scene, bool radar)
 void _manage::init_game(KOBO_replay *rp, bool newship)
 {
 	sound.g_new_scene(100);
-	stop_screenshake();
+	sound.g_music(selected_stage);
 	noise(400, 300);
-
-	lastinput = KOBO_PC_FIRE;
+	stop_screenshake();
 	disp_health = 0.0f;
 	disp_charge = 0.0f;
 	flash_score_count = 0;
@@ -240,6 +240,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	delay_count = 0;
 	scroll_jump = 1;
 	show_bars = 1;
+	lastctrl = KOBO_PC_FIRE;
 
 	if(replay && owns_replay)
 		delete replay;
@@ -326,17 +327,12 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	gengine->camfilter(KOBO_CAM_FILTER);
 	set_bars();
 	put_player_stats();
-	myship.put();
-	gengine->scroll(myship.get_csx() - PIXEL2CS((int)DASHW(MAIN) / 2),
-			myship.get_csy() - PIXEL2CS((int)DASHH(MAIN) / 2));
-	gengine->force_scroll();
 	pxtop->fx(PFX_OFF);
 	pxbottom->fx(PFX_OFF);
 	pxleft->fx(PFX_OFF);
 	pxright->fx(PFX_OFF);
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_GAME);
-	sound.g_music(selected_stage);
 	if(prefs->debug)
 		replay->log_dump(ULOG);
 }
@@ -376,6 +372,7 @@ bool _manage::continue_game()
 
 	replaymode = RPM_PLAY;
 	init_game(replay);
+	seek(-KOBO_REPLAY_REWIND);
 	gamecontrol.clear();
 	return true;
 }
@@ -400,9 +397,55 @@ bool _manage::start_replay(int stage)
 void _manage::rewind()
 {
 	if(!replay)
+	{
 		log_printf(WLOG, "_manage::rewind() called with no replay!\n");
-	// Start replay of the current stage
+		return;
+	}
 	init_game(replay);
+	seek(-KOBO_REPLAY_REWIND);
+}
+
+
+void _manage::seek(int frame)
+{
+	if(!replay)
+	{
+		log_printf(WLOG, "_manage::seek() called with no replay!\n");
+		return;
+	}
+
+	KOBO_replaymodes replaymode_save = replaymode;
+	replaymode = RPM_REPLAY;
+
+	enemies.detach_sounds();
+	sound.g_new_scene(50);
+
+	if(frame < 0)
+		frame = replay->recorded() + frame;
+
+	if(frame < (int)replay->position())
+		init_game(replay);
+
+	while((int)replay->position() < frame)
+	{
+		KOBO_player_controls rpctrl = replay->read();
+		if(rpctrl == KOBO_PC_END)
+			rpctrl = KOBO_PC_NONE;
+		myship.control(rpctrl);
+		myship.move();
+		enemies.move();
+		myship.check_base_bolts();
+		if(prefs->replaydebug)
+			replay->verify_state();
+		++playtime;
+	}
+	kill_screenshake();
+	scroll_jump = 1;
+	update();
+	sound.timestamp_reset();
+	sound.g_volume(KOBO_REPLAY_NORMAL_VOL);
+	enemies.restart_sounds();
+	replaymode = replaymode_save;
 }
 
 
@@ -410,6 +453,18 @@ void _manage::player_ready()
 {
 	if(gamestate == GS_GETREADY)
 		gamestate = GS_PLAYING;
+}
+
+
+void _manage::next_bookmark()
+{
+	seek(playtime + KOBO_REPLAY_SKIP);
+}
+
+
+void _manage::prev_bookmark()
+{
+	seek(playtime > KOBO_REPLAY_SKIP ? playtime - KOBO_REPLAY_SKIP : 0);
 }
 
 
@@ -646,11 +701,23 @@ void _manage::stop_screenshake()
 }
 
 
+void _manage::kill_screenshake()
+{
+	shake_x = shake_y = 0;
+}
+
+
 void _manage::update()
 {
 	// Update sprite positions
 	myship.put();
 	enemies.put();
+
+	if(scroll_jump)
+	{
+		myship.force_position();
+		enemies.force_positions();
+	}
 
 	// Render effects, displays, and LEDs
 	run_noise();
@@ -714,9 +781,8 @@ void _manage::update()
 //	Use and record the control input! Stop recording the moment the player
 //	dies, to keep the replay progress bar accurate.
 //
-KOBO_player_controls _manage::controls_live()
+KOBO_player_controls _manage::controls_live(KOBO_player_controls ctrl)
 {
-	KOBO_player_controls ctrl = myship.decode_input();
 	if(replay && myship.alive())
 		replay->write(ctrl);
 	return ctrl;
@@ -728,75 +794,70 @@ KOBO_player_controls _manage::controls_live()
 //	Control input is used for controlling the rewind/replay playback, and
 //	also allows the player can take over and start playing at any point.
 //
-KOBO_player_controls _manage::controls_retry()
+KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 {
-	KOBO_player_controls ctrlin = myship.decode_input();
-	if((ctrlin & KOBO_PC_FIRE) && !(lastinput & KOBO_PC_FIRE))
+	// Playback skip controls
+	if(((ctrl & KOBO_PC_DIR) != (lastctrl & KOBO_PC_DIR)) &&
+			(ctrltimer >= KOBO_REPLAY_SKIP_INHIBIT))
+		switch(ctrl & KOBO_PC_DIR)
+		{
+		  case 1:	// Up
+			next_bookmark();
+			break;
+		  case 5:	// Down
+			prev_bookmark();
+			break;
+		}
+
+	if((ctrl & KOBO_PC_FIRE) && !(lastctrl & KOBO_PC_FIRE))
 	{
 		// Player takes over control! Replay recording must be
 		// resumed at exactly this frame, overwriting any
 		// subsequent data.
 		replay->punchin();
-		replay->write(ctrlin);
+		replay->write(ctrl);
 		replaymode = RPM_PLAY;
 		sound.ui_countdown(0);
 		gengine->period(game.speed);
 		sound.g_volume();
 		sound.g_pitch();
-		return ctrlin;
+		return ctrl;
 	}
-	lastinput = ctrlin;	// Must release controls first!
 
-	KOBO_player_controls ctrl = replay->read();
-	if(ctrl == KOBO_PC_END)
+	KOBO_player_controls rpctrl = replay->read();
+	if(rpctrl == KOBO_PC_END)
 	{
-		ctrl = KOBO_PC_NONE;
+		rpctrl = KOBO_PC_NONE;
 		if(myship.alive())
 		{
 			gamestate = GS_REPLAYEND;
 			delay_count = KOBO_REPLAYEND_TIMEOUT;
 		}
+		return rpctrl;
 	}
-	else
+
+	// Control the replay playback speed
+	float rps = KOBO_REPLAY_NORMAL_RATE;
+	float vol = KOBO_REPLAY_NORMAL_VOL;
+	float pch = KOBO_REPLAY_NORMAL_PITCH;
+	switch(ctrl & KOBO_PC_DIR)
 	{
-		// Control the replay playback speed
-		float m = 50.0f;
-		if(replay->recorded() < 100)
-			m = 0.5f;
-		else
-		{
-			m = 50.0f / replay->recorded();
-			if(m < 0.1f)
-				m = 0.1f;
-		}
-		float rps = m + (1.0f - m) * replay->progress();
-		switch(ctrlin & KOBO_PC_DIR)
-		{
-		  case 1:
-		  case 2:
-		  case 3:
-			rps *= 0.25f;
-			break;
-		  case 5:
-		  case 6:
-		  case 7:
-			rps = 1.0f;
-			break;
-		}
-		gengine->period(game.speed * rps);
-		if(rps < 0.25f)
-		{
-			sound.g_volume(0.0f);
-			sound.g_pitch(2.0f);
-		}
-		else
-		{
-			float v = 1.0f - (rps - 0.25f) / 0.75f * 0.5f;
-			sound.g_volume(1.0f - v * v);
-			sound.g_pitch(log2f(1.0f / rps));
-		}
+	  case 3:	// Right
+		rps = KOBO_REPLAY_FAST_RATE;
+		vol = KOBO_REPLAY_FAST_VOL;
+		pch = KOBO_REPLAY_FAST_PITCH;
+		break;
+	  case 7:	// Left
+		rps = KOBO_REPLAY_SLOW_RATE;
+		vol = KOBO_REPLAY_SLOW_VOL;
+		pch = KOBO_REPLAY_SLOW_PITCH;
+		break;
 	}
-	return ctrl;
+	gengine->period(game.speed * rps);
+	sound.g_volume(vol);
+	sound.g_pitch(pch);
+
+	return rpctrl;
 }
 
 
@@ -805,28 +866,12 @@ KOBO_player_controls _manage::controls_retry()
 //	Control input is used only for controlling the replay speed, and to
 //	skip back and forth between stages in the campaign.
 //
-KOBO_player_controls _manage::controls_replay()
+KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 {
-	KOBO_player_controls ctrl = replay ? replay->read() : KOBO_PC_END;
-	if(ctrl == KOBO_PC_END)
-	{
-		ctrl = KOBO_PC_NONE;
-		if(myship.alive())
-		{
-			gamestate = GS_REPLAYEND;
-			delay_count = KOBO_REPLAYEND_TIMEOUT;
-		}
-	}
-
-	// Control the replay playback speed
-	KOBO_player_controls ctrlin = myship.decode_input();
-	float rps = 1.0f;
-	float vol = 0.75f;
-	float pch = 0.0f;
-
-	// "Flank triggered"
-	if((ctrlin & KOBO_PC_DIR) != (lastinput & KOBO_PC_DIR))
-		switch(ctrlin & KOBO_PC_DIR)
+	// Playback skip controls
+	if(((ctrl & KOBO_PC_DIR) != (lastctrl & KOBO_PC_DIR)) &&
+			(ctrltimer >= KOBO_REPLAY_SKIP_INHIBIT))
+		switch(ctrl & KOBO_PC_DIR)
 		{
 		  case 1:	// Up
 			if(campaign->get_replay(selected_stage + 1))
@@ -837,41 +882,56 @@ KOBO_player_controls _manage::controls_replay()
 			break;
 		}
 
-	// Continuous
-	switch(ctrlin & KOBO_PC_DIR)
+	KOBO_player_controls rpctrl = replay ? replay->read() : KOBO_PC_END;
+	if(rpctrl == KOBO_PC_END)
+	{
+		rpctrl = KOBO_PC_NONE;
+		if(myship.alive())
+		{
+			gamestate = GS_REPLAYEND;
+			delay_count = KOBO_REPLAYEND_TIMEOUT;
+		}
+	}
+
+	// Control the replay playback speed
+	float rps = KOBO_REPLAY_NORMAL_RATE;
+	float vol = KOBO_REPLAY_NORMAL_VOL;
+	float pch = KOBO_REPLAY_NORMAL_PITCH;
+	switch(ctrl & KOBO_PC_DIR)
 	{
 	  case 3:	// Right
-		rps *= 0.5f;
-		vol *= 0.5f;
-		pch += 1.0f;
+		rps = KOBO_REPLAY_FAST_RATE;
+		vol = KOBO_REPLAY_FAST_VOL;
+		pch = KOBO_REPLAY_FAST_PITCH;
 		break;
 	  case 7:	// Left
-		rps *= 2.0f;
-		vol *= 0.5f;
-		pch -= 1.0f;
+		rps = KOBO_REPLAY_SLOW_RATE;
+		vol = KOBO_REPLAY_SLOW_VOL;
+		pch = KOBO_REPLAY_SLOW_PITCH;
 		break;
 	}
 	gengine->period(game.speed * rps);
 	sound.g_volume(vol);
 	sound.g_pitch(pch);
-	lastinput = ctrlin;
-	return ctrl;
+
+	return rpctrl;
 }
 
 
 void _manage::run_game()
 {
+	KOBO_player_controls ctrlin = myship.decode_input();
 	KOBO_player_controls ctrl = KOBO_PC_NONE;
 	switch(replaymode)
 	{
 	  case RPM_PLAY:
-		ctrl = controls_live();
+		ctrl = controls_live(ctrlin);
 		break;
 	  case RPM_REWIND:
-		ctrl = controls_retry();
+		ctrl = controls_retry(ctrlin);
 		break;
 	  case RPM_REPLAY:
-		ctrl = controls_replay();
+		ctrl = controls_replay(ctrlin);
 		break;
 	}
 	myship.control(ctrl);
@@ -891,6 +951,13 @@ void _manage::run_game()
 		}
 	update();
 	++playtime;
+	if(lastctrl == ctrlin)
+		++ctrltimer;
+	else
+	{
+		lastctrl = ctrlin;
+		ctrltimer = 0;
+	}
 }
 
 

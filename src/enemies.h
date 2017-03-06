@@ -146,6 +146,7 @@ class KOBO_enemy
 	inline void move();
 	inline void move_intro();
 	inline void put();
+	inline void force_position();
 	inline void set_bank(int new_bank);
 	inline int make(const KOBO_enemy_kind *k,
 			int px, int py, int h1, int v1, int dir = 0);
@@ -163,6 +164,7 @@ class KOBO_enemy
 	inline void startsound(KOBO_sounds si);
 	inline void controlsound(unsigned ctrl, float val);
 	inline void stopsound();
+	void detachsound();
 	void restartsound();
 
 	void kill_default();	// Default explosion anim + sfx
@@ -254,8 +256,10 @@ class KOBO_enemies
 	static void off();
 	static void move();
 	static void move_intro();
+	static void detach_sounds();
 	static void restart_sounds();
 	static void put();
+	static void force_positions();
 	static void render_hit_zones();
 	static int make(const KOBO_enemy_kind * ek,
 			int x, int y, int h = 0, int v = 0, int di = 0);
@@ -524,6 +528,12 @@ inline void KOBO_enemy::put()
 	object->point.v.x = x;
 	object->point.v.y = y;
 	cs_obj_image(object, actual_bank, frame + di - 1);
+}
+
+inline void KOBO_enemy::force_position()
+{
+	if((_state == moving) && object)
+		cs_point_force(&object->point);
 }
 
 inline int KOBO_enemy::realize()

@@ -99,6 +99,7 @@ class KOBO_myship
 	static void off();
 	static void move();
 	static int put();
+	static void force_position();
 	static void render();
 	static void nose_fire();
 	static void tail_fire();

@@ -78,6 +78,11 @@ void KOBO_enemy::state(KOBO_state s)
 	_state = s;
 }
 
+void KOBO_enemy::detachsound()
+{
+	soundhandle = 0;
+}
+
 void KOBO_enemy::restartsound()
 {
 	soundhandle = 0;
@@ -134,6 +139,14 @@ void KOBO_enemies::move_intro()
 		enemyp->move_intro();
 }
 
+void KOBO_enemies::detach_sounds()
+{
+	KOBO_enemy *enemyp;
+	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
+		if(enemyp->in_use())
+			enemyp->detachsound();
+}
+
 void KOBO_enemies::restart_sounds()
 {
 	KOBO_enemy *enemyp;
@@ -147,6 +160,13 @@ void KOBO_enemies::put()
 	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
 		enemyp->put();
+}
+
+void KOBO_enemies::force_positions()
+{
+	KOBO_enemy *enemyp;
+	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
+		enemyp->force_position();
 }
 
 void KOBO_enemies::render_hit_zones()

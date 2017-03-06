@@ -167,15 +167,29 @@ bool KOBO_campaign::load(bool quiet)
 
 	pfile_t *pf = new pfile_t(f);
 	KOBO_replay *r = NULL;
+	int gstd_count = 0;
 
 	while(pf->chunk_read() >= 0)
 	{
 		int ct = pf->chunk_type();
-		if(prefs->debug && !quiet)
+
+		if(ct == KOBO_PF_GSTD_4CC)
+			++gstd_count;
+		else if(gstd_count)
+		{
+			if(prefs->debug && !quiet)
+				log_printf(ULOG, "      x %d\n", gstd_count);
+			gstd_count = 0;
+		}
+
+		if(prefs->debug && !quiet &&
+				((ct != KOBO_PF_GSTD_4CC) ||
+				(gstd_count == 1)))
 			log_printf(ULOG, "  [%sv%d, %d bytes]\n",
 					pf->fourcc2string(ct),
 					pf->chunk_version(),
 					pf->chunk_size());
+
 		switch(ct)
 		{
 		  case KOBO_PF_CPGN_4CC:
@@ -226,6 +240,8 @@ bool KOBO_campaign::load(bool quiet)
 			break;
 		}
 	}
+	if(gstd_count && prefs->debug && !quiet)
+		log_printf(ULOG, "      x %d\n", gstd_count);
 
 	delete pf;
 	fclose(f);

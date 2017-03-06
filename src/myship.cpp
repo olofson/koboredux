@@ -606,6 +606,30 @@ int KOBO_myship::put()
 }
 
 
+void KOBO_myship::force_position()
+{
+	// Player
+	if(object)
+	{
+		apply_position();
+		cs_point_force(&object->point);
+	}
+
+	// Bullets
+	for(int i = 0; i < MAX_BOLTS; i++)
+	{
+		if(!bolts[i].object)
+			continue;
+		if(bolts[i].state)
+		{
+			bolts[i].object->point.v.x = bolts[i].x;
+			bolts[i].object->point.v.y = bolts[i].y;
+			cs_point_force(&bolts[i].object->point);
+		}
+	}
+}
+
+
 void KOBO_myship::render()
 {
 	if(!myship.object)

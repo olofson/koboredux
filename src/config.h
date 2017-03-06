@@ -235,4 +235,21 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	KOBO_REPLAYEND_TIMEOUT	50
 #define	KOBO_GAMEOVER_TIMEOUT	100
 
+/* Replay viewer */
+#define	KOBO_REPLAY_NORMAL_RATE		1.0f
+#define	KOBO_REPLAY_NORMAL_VOL		0.75f
+#define	KOBO_REPLAY_NORMAL_PITCH	0.0f
+
+#define	KOBO_REPLAY_FAST_RATE		0.5f
+#define	KOBO_REPLAY_FAST_VOL		0.5f
+#define	KOBO_REPLAY_FAST_PITCH		1.0f
+
+#define	KOBO_REPLAY_SLOW_RATE		2.0f
+#define	KOBO_REPLAY_SLOW_VOL		0.5f
+#define	KOBO_REPLAY_SLOW_PITCH		-1.0f
+
+#define	KOBO_REPLAY_REWIND		300
+#define	KOBO_REPLAY_SKIP		100
+#define	KOBO_REPLAY_SKIP_INHIBIT	2
+
 #endif	/*_KOBO_CONFIG_H_*/

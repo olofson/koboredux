@@ -147,8 +147,10 @@ class KOBO_replay
 
 	void log_dump(int level, KOBO_replay_logdump rld = KOBO_RLD_ALL);
 
-	int recorded()		{ return bufrecord; }
+	// Status
+	unsigned position()		{ return bufplay; }
 	float progress();
+	unsigned recorded()		{ return bufrecord; }
 
 	// Game state snapshots
 	bool record_state();	// Record snapshot of current game state
