@@ -52,6 +52,7 @@ class _manage
 {
 	static KOBO_gamestates gamestate;
 	static bool is_paused;
+	static bool in_background;
 	static KOBO_replaymodes replaymode;
 	static int blank;
 	static int game_seed;
@@ -148,8 +149,13 @@ class _manage
 	static void seek(int frame);
 	static void player_ready();
 	static void abort_game();
+
 	static void pause(bool p);
 	static bool paused()		{ return is_paused; }
+
+	static void background(bool bg);
+	static bool background()	{ return in_background; }
+
 	static KOBO_gamestates state()	{ return gamestate; }
 	static const char *state_name(KOBO_gamestates st);
 

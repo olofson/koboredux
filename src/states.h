@@ -140,6 +140,8 @@ class st_rewind_t : public kobo_basestate_t
 	st_rewind_t();
 	void enter();
 	void leave();
+	void yield();
+	void reenter();
 	void press(gc_targets_t button);
 	void frame();
 	void post_render();
@@ -152,6 +154,8 @@ class st_replay_t : public kobo_basestate_t
 	st_replay_t();
 	void enter();
 	void leave();
+	void yield();
+	void reenter();
 	void press(gc_targets_t button);
 	void frame();
 	void post_render();

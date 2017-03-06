@@ -48,6 +48,7 @@
 
 KOBO_gamestates _manage::gamestate = GS_NONE;
 bool _manage::is_paused = false;
+bool _manage::in_background = false;
 KOBO_replaymodes _manage::replaymode = RPM_PLAY;
 int _manage::game_seed;
 int _manage::selected_slot = 0;
@@ -920,7 +921,8 @@ KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 
 void _manage::run_game()
 {
-	KOBO_player_controls ctrlin = myship.decode_input();
+	KOBO_player_controls ctrlin = in_background ? KOBO_PC_NONE :
+			myship.decode_input();
 	KOBO_player_controls ctrl = KOBO_PC_NONE;
 	switch(replaymode)
 	{
@@ -1020,6 +1022,7 @@ float _manage::replay_progress()
 {
 	if(!replay)
 		return 0.0f;
+
 	return replay->progress();
 }
 
@@ -1028,6 +1031,7 @@ int _manage::replay_stages()
 {
 	if(!campaign)
 		return 0;
+
 	return campaign->last_stage();
 }
 
@@ -1057,6 +1061,7 @@ void _manage::pause(bool p)
 {
 	if(p == is_paused)
 		return;
+
 	is_paused = p;
 	if(is_paused)
 	{
@@ -1066,6 +1071,28 @@ void _manage::pause(bool p)
 			finalize_replay();
 			campaign->save();
 		}
+	}
+}
+
+
+void _manage::background(bool bg)
+{
+	if(bg == in_background)
+		return;
+
+	in_background = bg;
+	if(in_background)
+	{
+		if(replaymode == RPM_PLAY)
+			switch(gamestate)
+			{
+			  case GS_PLAYING:
+			  case GS_LEVELDONE:
+				pause(true);
+				break;
+			  default:
+				break;
+			}
 	}
 }
 

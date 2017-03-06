@@ -388,6 +388,8 @@ void st_game_t::enter()
 	if(prefs->mousecapture)
 		if(!SDL_GetRelativeMouseMode())
 			SDL_SetRelativeMouseMode(SDL_TRUE);
+	manage.background(false);
+	manage.pause(false);
 }
 
 
@@ -398,23 +400,25 @@ void st_game_t::leave()
 	st_intro_title.inext = &st_intro_instructions;
 	st_intro_title.duration = INTRO_TITLE_TIME + 2000;
 	st_intro_title.mode = 0;
+	manage.background(true);
 }
 
 
 void st_game_t::yield()
 {
-	manage.pause(true);
 	if(SDL_GetRelativeMouseMode())
 		SDL_SetRelativeMouseMode(SDL_FALSE);
+	manage.background(true);
 }
 
 
 void st_game_t::reenter()
 {
+	manage.background(false);
+	manage.pause(false);
 	if(prefs->mousecapture)
 		if(!SDL_GetRelativeMouseMode())
 			SDL_SetRelativeMouseMode(SDL_TRUE);
-	manage.pause(false);
 }
 
 
@@ -493,6 +497,7 @@ void st_rewind_t::enter()
 		gsm.change(&st_error);
 		return;
 	}
+	manage.background(false);
 #ifdef KOBO_DEMO
 	if(manage.current_stage() > KOBO_DEMO_LAST_STAGE)
 		gsm.change(&st_demo_over);
@@ -505,6 +510,19 @@ void st_rewind_t::leave()
 	st_intro_title.inext = &st_intro_instructions;
 	st_intro_title.duration = INTRO_TITLE_TIME + 2000;
 	st_intro_title.mode = 0;
+	manage.background(true);
+}
+
+
+void st_rewind_t::yield()
+{
+	manage.background(true);
+}
+
+
+void st_rewind_t::reenter()
+{
+	manage.background(false);
 }
 
 
@@ -610,6 +628,7 @@ void st_replay_t::enter()
 		gsm.change(&st_error);
 		return;
 	}
+	manage.background(false);
 }
 
 
@@ -618,6 +637,19 @@ void st_replay_t::leave()
 	st_intro_title.inext = &st_intro_instructions;
 	st_intro_title.duration = INTRO_TITLE_TIME + 2000;
 	st_intro_title.mode = 0;
+	manage.background(true);
+}
+
+
+void st_replay_t::yield()
+{
+	manage.background(true);
+}
+
+
+void st_replay_t::reenter()
+{
+	manage.background(false);
 }
 
 
