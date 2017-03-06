@@ -1059,11 +1059,13 @@ void _manage::pause(bool p)
 		return;
 	is_paused = p;
 	if(is_paused)
-		stop_screenshake();
-	if(campaign && (replaymode == RPM_PLAY))
 	{
-		finalize_replay();
-		campaign->save();
+		stop_screenshake();
+		if(campaign && (replaymode == RPM_PLAY))
+		{
+			finalize_replay();
+			campaign->save();
+		}
 	}
 }
 
