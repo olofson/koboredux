@@ -446,7 +446,7 @@ void st_game_t::press(gc_targets_t button)
 void st_game_t::frame()
 {
 	if(prefs->debug)
-		info = manage.state_name(manage.state());
+		info = enumstr(manage.state());
 	switch(manage.state())
 	{
 	  case GS_GETREADY:
@@ -490,6 +490,8 @@ st_rewind_t::st_rewind_t()
 
 void st_rewind_t::enter()
 {
+fprintf(stderr, ">>>>> %s\n", enumstr(manage.state()));
+fprintf(stderr, ">>>>> %s\n", enumstr(manage.replay_mode()));
 	if(!manage.game_in_progress())
 	{
 		st_error.message("INTERNAL ERROR",
@@ -553,7 +555,7 @@ void st_rewind_t::press(gc_targets_t button)
 void st_rewind_t::frame()
 {
 	if(prefs->debug)
-		info = manage.state_name(manage.state());
+		info = enumstr(manage.state());
 	if(manage.replay_mode() != RPM_REWIND)
 		gsm.change(&st_game);
 	switch(manage.state())
@@ -680,7 +682,7 @@ void st_replay_t::press(gc_targets_t button)
 void st_replay_t::frame()
 {
 	if(prefs->debug)
-		info = manage.state_name(manage.state());
+		info = enumstr(manage.state());
 	if(manage.replay_mode() != RPM_REPLAY)
 		gsm.change(&st_game);
 	switch(manage.state())
@@ -1093,7 +1095,7 @@ void st_menu_base_t::post_render()
 	kobo_basestate_t::post_render();
 	if(form)
 		form->render();
-	if(manage.game_in_progress())
+	if(manage.state() != GS_INTRO)
 		wradar->frame();
 }
 

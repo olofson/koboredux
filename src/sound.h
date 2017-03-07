@@ -259,6 +259,9 @@ class KOBO_sound
 	// Stop sound 'h', previously started with g_start().
 	static void g_stop(int h);
 
+	// Release handle 'h'
+	static void g_release(int h);
+
 	// Various sound effects
 	static void g_player_fire();
 	static void g_player_fire_denied();
@@ -279,8 +282,10 @@ class KOBO_sound
 	//	all sound effects respond correctly to program pP arguments,
 	//	and npP arguments of the 3() message handlers.
 	//
-	static void g_volume(float volume = 1.0f);
-	static void g_pitch(float pitch = 0.0f);
+	static void g_volume(float volume);
+	static float g_volume()		{ return volscale; }
+	static void g_pitch(float pitch);
+	static float g_pitch()		{ return pitchshift; }
 
 	/*--------------------------------------------------
 		UI sound effects

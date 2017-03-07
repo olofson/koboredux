@@ -324,13 +324,13 @@ inline void KOBO_enemy::startsound(KOBO_sounds si)
 
 inline void KOBO_enemy::controlsound(unsigned ctrl, float val)
 {
-	if(soundhandle)
+	if(soundhandle > 0)
 		sound.g_control(soundhandle, ctrl, val);
 }
 
 inline void KOBO_enemy::stopsound()
 {
-	if(soundhandle)
+	if(soundhandle > 0)
 	{
 		sound.g_stop(soundhandle);
 		soundhandle = 0;
