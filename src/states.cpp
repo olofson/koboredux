@@ -446,7 +446,7 @@ void st_game_t::press(gc_targets_t button)
 void st_game_t::frame()
 {
 	if(prefs->debug)
-		info = manage.state_name(manage.state());
+		info = enumstr(manage.state());
 	switch(manage.state())
 	{
 	  case GS_GETREADY:
@@ -553,7 +553,7 @@ void st_rewind_t::press(gc_targets_t button)
 void st_rewind_t::frame()
 {
 	if(prefs->debug)
-		info = manage.state_name(manage.state());
+		info = enumstr(manage.state());
 	if(manage.replay_mode() != RPM_REWIND)
 		gsm.change(&st_game);
 	switch(manage.state())
@@ -621,10 +621,11 @@ st_replay_t::st_replay_t()
 
 void st_replay_t::enter()
 {
-	if(!manage.game_in_progress())
+	if(manage.replay_mode() != RPM_REPLAY)
 	{
 		st_error.message("INTERNAL ERROR",
-				"Entered st_replay with no game in progress!");
+				"Entered st_replay with no replay in "
+				"progress!");
 		gsm.change(&st_error);
 		return;
 	}
@@ -680,7 +681,7 @@ void st_replay_t::press(gc_targets_t button)
 void st_replay_t::frame()
 {
 	if(prefs->debug)
-		info = manage.state_name(manage.state());
+		info = enumstr(manage.state());
 	if(manage.replay_mode() != RPM_REPLAY)
 		gsm.change(&st_game);
 	switch(manage.state())
@@ -1093,7 +1094,7 @@ void st_menu_base_t::post_render()
 	kobo_basestate_t::post_render();
 	if(form)
 		form->render();
-	if(manage.game_in_progress())
+	if(manage.state() != GS_INTRO)
 		wradar->frame();
 }
 

@@ -48,6 +48,9 @@ enum KOBO_gamestates
 	GS_REPLAYEND
 };
 
+const char *enumstr(KOBO_replaymodes rpm);
+const char *enumstr(KOBO_gamestates gst);
+
 class _manage
 {
 	static KOBO_gamestates gamestate;
@@ -111,6 +114,7 @@ class _manage
 	static void next_scene();
 	static void prev_scene();
 
+	static void state(KOBO_gamestates gst);
 	static void init_resources_title();
 	static void init_game(KOBO_replay *rp = NULL, bool newship = false);
 	static void retry();
@@ -146,7 +150,7 @@ class _manage
 	static bool continue_game();
 	static bool start_replay(int stage);
 	static void rewind();
-	static void seek(int frame);
+	static void advance(int frame);
 	static void player_ready();
 	static void abort_game();
 
@@ -157,7 +161,6 @@ class _manage
 	static bool background()	{ return in_background; }
 
 	static KOBO_gamestates state()	{ return gamestate; }
-	static const char *state_name(KOBO_gamestates st);
 
 	// Replays
 	static KOBO_replaymodes replay_mode()	{ return replaymode; }
@@ -170,12 +173,16 @@ class _manage
 	// State info
 	static bool game_in_progress()
 	{
+		// Return true only if an ACTUAL, live game is in progress!
+		if(replaymode == RPM_REPLAY)
+			return false;
 		switch(state())
 		{
 		  case GS_GETREADY:
 		  case GS_PLAYING:
 		  case GS_LEVELDONE:
 		  case GS_GAMEOVER:
+		  case GS_REPLAYEND:
 			return true;
 		  default:
 			return false;

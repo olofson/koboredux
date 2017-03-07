@@ -80,12 +80,16 @@ void KOBO_enemy::state(KOBO_state s)
 
 void KOBO_enemy::detachsound()
 {
-	soundhandle = 0;
+	if(soundhandle > 0)
+	{
+		sound.g_release(soundhandle);
+		soundhandle = 0;
+	}
 }
 
 void KOBO_enemy::restartsound()
 {
-	soundhandle = 0;
+	stopsound();
 	if(ek->sound)
 		startsound(ek->sound);
 }

@@ -365,8 +365,8 @@ int KOBO_sound::open()
 
 	g_wrap(WORLD_SIZEX, WORLD_SIZEY);
 	g_scale(VIEWLIMIT, VIEWLIMIT);
-	g_volume();
-	g_pitch();
+	g_volume(1.0f);
+	g_pitch(0.0f);
 	return 0;
 }
 
@@ -665,6 +665,7 @@ int KOBO_sound::g_start(unsigned wid, int x, int y)
 			pitchshift, vol, pan);
 }
 
+
 void KOBO_sound::g_move(int h, int x, int y)
 {
 	if(!iface || h <= 0)
@@ -674,6 +675,7 @@ void KOBO_sound::g_move(int h, int x, int y)
 	a2_Send(iface, h, 3, pitchshift, vol, pan, KOBO_SOUND_UPDATE_PERIOD);
 }
 
+
 void KOBO_sound::g_control(int h, int c, float v)
 {
 	if(!iface || h <= 0)
@@ -681,11 +683,20 @@ void KOBO_sound::g_control(int h, int c, float v)
 	a2_Send(iface, h, c, v);
 }
 
+
 void KOBO_sound::g_stop(int h)
 {
 	if(!iface || h <= 0)
 		return;
 	a2_Send(iface, h, 1);
+	a2_Release(iface, h);
+}
+
+
+void KOBO_sound::g_release(int h)
+{
+	if(!iface || h <= 0)
+		return;
 	a2_Release(iface, h);
 }
 
@@ -798,6 +809,10 @@ void KOBO_sound::g_new_scene(int fadetime)
 	if(!fadetime)
 		fadetime = KOBO_SFX_XFADE_TIME;
 
+	// Detach all continuous sounds, as they're now invalid
+	enemies.detach_sounds();
+	gunhandle = 0;
+
 	// Fade out, then kill the current SFX group
 	a2_Send(iface, groups[KOBO_MG_SFX], 2, 0, (float)fadetime);
 	A2_timestamp t = a2_TimestampBump(iface, a2_ms2Timestamp(iface,
@@ -811,8 +826,6 @@ void KOBO_sound::g_new_scene(int fadetime)
 	a2_Send(iface, groups[KOBO_MG_SFX], 2, 0, 0);
 	a2_Send(iface, groups[KOBO_MG_SFX], 2,
 			pref2vol(prefs->sfx_vol) * volscale, (float)fadetime);
-
-	gunhandle = 0;	// This one gets killed too, so we'll need a new one!
 }
 
 
