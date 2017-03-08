@@ -46,6 +46,16 @@ enum kobo_vmswitch_t {
 	KOBO_VIDEOMODE_SAFE
 };
 
+enum KOBO_TransitionStyle {
+	KOBO_TRS_INSTANT,
+	KOBO_TRS_FULLSCREEN_SLOW,
+	KOBO_TRS_FULLSCREEN_FAST,
+	KOBO_TRS_FULLSCREEN_IN_ONLY,
+	KOBO_TRS_GAME_SLOW,
+	KOBO_TRS_GAME_FAST,
+	KOBO_TRS_GAME_NOISE
+};
+
 class kobo_gfxengine_t : public gfxengine_t
 {
 #ifdef ENABLE_TOUCHSCREEN

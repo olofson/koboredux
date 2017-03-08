@@ -36,67 +36,93 @@
 #define	MENU_TAG_CANCEL	100
 
 
+extern gamestatemanager_t gsm;
+
+
 class kobo_basestate_t : public gamestate_t
 {
   protected:
 	int		song;
-  public:
+public:
 	kobo_basestate_t();
 	void enter();
 	void reenter();
+	void pre_render();
+	void post_render();
+
+	// Smooth transition alternatives to change(), push(), and pop().
+	// These will initiate a visual transition effect, and then push a
+	// delay state, which forwards rendering calls to the current state, so
+	// that it keeps running behind the transition effect layer. When the
+	// transition is "closed" (screen covered), the actual change(),
+	// push(), or pop() is performed, and then the "opening" part of the
+	// transition runs on top of the new state.
+	void transition_change(gamestate_t *to, KOBO_TransitionStyle trs);
+	void transition_push(gamestate_t *to, KOBO_TransitionStyle trs);
+	void transition_pop(KOBO_TransitionStyle trs);
+};
+
+
+/*----------------------------------------------------------
+	Transition Delay (for the transition_*() methods)
+----------------------------------------------------------*/
+
+class st_transition_delay_t : public kobo_basestate_t
+{
+	Uint32		timeout;
+	gamestate_t	*to_state;	// Where to go when "faded" out
+	bool		change_to;	// true: change(); false: push()
+	KOBO_TransitionStyle trstyle;
+  public:
+	st_transition_delay_t();
+	void enter();
 	void frame();
 	void pre_render();
 	void post_render();
+	void start_transition(KOBO_TransitionStyle trs);
+	void start_change(gamestate_t *to);
+	void start_push(gamestate_t *to);
+	void start_pop();
 };
+
+extern st_transition_delay_t st_transition_delay;
 
 
 /*----------------------------------------------------------
 	Intro
 ----------------------------------------------------------*/
 
-class st_introbase_t : public kobo_basestate_t
+enum KOBO_IntroPages
 {
-  protected:
-	int		timer, start_time;
+	KOBO_IP_TITLE = 0,
+	KOBO_IP_INSTRUCTIONS,
+	KOBO_IP_TITLE2,
+	KOBO_IP_CREDITS,
+	KOBO_IP__COUNT
+};
+
+extern int kobo_intro_durations[KOBO_IP__COUNT];
+
+class st_intro_t : public kobo_basestate_t
+{
+	int	page;
+	int	timer, start_time;
+	int	duration;
+	void init_page();
   public:
-	int		duration;
-	st_introbase_t	*inext;
-	st_introbase_t();
+	st_intro_t();
+	void set_page(KOBO_IntroPages pg)	{ page = pg; }
 	void enter();
+	void yield();
 	void reenter();
+	void leave();
 	void press(gc_targets_t button);
 	void frame();
 	void pre_render();
 	void post_render();
 };
 
-
-class st_intro_title_t : public st_introbase_t
-{
-  public:
-	int	mode;
-	st_intro_title_t();
-	void enter();
-	void post_render();
-};
-
-
-class st_intro_instructions_t : public st_introbase_t
-{
-  public:
-	st_intro_instructions_t();
-	void enter();
-	void post_render();
-};
-
-
-class st_intro_credits_t : public st_introbase_t
-{
-  public:
-	st_intro_credits_t();
-	void enter();
-	void post_render();
-};
+extern st_intro_t st_intro;
 
 
 /*----------------------------------------------------------
@@ -110,10 +136,13 @@ class st_long_credits_t : public kobo_basestate_t
   public:
 	st_long_credits_t();
 	void enter();
+	void leave();
 	void press(gc_targets_t button);
 	void pre_render();
 	void post_render();
 };
+
+extern st_long_credits_t st_long_credits;
 
 
 /*----------------------------------------------------------
@@ -122,8 +151,12 @@ class st_long_credits_t : public kobo_basestate_t
 
 class st_game_t : public kobo_basestate_t
 {
+	int	g_slot;
+	int	g_skill;
   public:
 	st_game_t();
+	void set_slot(int slot)		{ g_slot = slot; }
+	void set_skill(int skill)	{ g_skill = skill; }
 	void enter();
 	void leave();
 	void yield();
@@ -132,6 +165,8 @@ class st_game_t : public kobo_basestate_t
 	void frame();
 	void post_render();
 };
+
+extern st_game_t st_game;
 
 
 class st_rewind_t : public kobo_basestate_t
@@ -147,11 +182,20 @@ class st_rewind_t : public kobo_basestate_t
 	void post_render();
 };
 
+extern st_rewind_t st_rewind;
+
 
 class st_replay_t : public kobo_basestate_t
 {
+	int	rp_slot;
+	int	rp_stage;
   public:
 	st_replay_t();
+	void setup(int slot, int stage)
+	{
+		rp_slot = slot;
+		rp_stage = stage;
+	}
 	void enter();
 	void leave();
 	void yield();
@@ -160,6 +204,8 @@ class st_replay_t : public kobo_basestate_t
 	void frame();
 	void post_render();
 };
+
+extern st_replay_t st_replay;
 
 
 class st_pause_game_t : public kobo_basestate_t
@@ -171,6 +217,8 @@ class st_pause_game_t : public kobo_basestate_t
 	void frame();
 	void post_render();
 };
+
+extern st_pause_game_t st_pause_game;
 
 
 class st_get_ready_t : public kobo_basestate_t
@@ -186,6 +234,8 @@ class st_get_ready_t : public kobo_basestate_t
 	void post_render();
 };
 
+extern st_get_ready_t st_get_ready;
+
 
 class st_game_over_t : public kobo_basestate_t
 {
@@ -199,6 +249,8 @@ class st_game_over_t : public kobo_basestate_t
 	void frame();
 	void post_render();
 };
+
+extern st_game_over_t st_game_over;
 
 
 /*----------------------------------------------------------
@@ -338,6 +390,8 @@ class st_main_menu_t : public st_menu_base_t
 	void select(int tag);
 };
 
+extern st_main_menu_t st_main_menu;
+
 
 /*----------------------------------------------------------
 	Campaign Selector
@@ -372,6 +426,8 @@ class st_campaign_menu_t : public st_menu_base_t
 	void select(int tag);
 };
 
+extern st_campaign_menu_t st_campaign_menu;
+
 
 /*----------------------------------------------------------
 	Skill Menu
@@ -401,6 +457,8 @@ class st_skill_menu_t : public st_menu_base_t
 	void select(int tag);
 };
 
+extern st_skill_menu_t st_skill_menu;
+
 
 /*----------------------------------------------------------
 	Options Main
@@ -419,6 +477,8 @@ class st_options_main_t : public st_menu_base_t
 	kobo_form_t *open();
 	void select(int tag);
 };
+
+extern st_options_main_t st_options_main;
 
 
 /*----------------------------------------------------------
@@ -453,6 +513,9 @@ class st_options_system_t : public st_options_base_t
 	config_form_t *oopen()	{ return new system_options_t(gengine); }
 };
 
+extern st_options_system_t st_options_system;
+
+
 class st_options_video_t : public st_options_base_t
 {
   public:
@@ -460,12 +523,18 @@ class st_options_video_t : public st_options_base_t
 	config_form_t *oopen()	{ return new video_options_t(gengine); }
 };
 
+extern st_options_video_t st_options_video;
+
+
 class st_options_controls_t : public st_options_base_t
 {
   public:
 	st_options_controls_t()	{ name = "options_controls"; }
 	config_form_t *oopen()	{ return new controls_options_t(gengine); }
 };
+
+extern st_options_controls_t st_options_controls;
+
 
 // NOTE: The "Sound" category is covered by the Audio menu
 class st_options_audio_t : public st_options_base_t
@@ -475,12 +544,18 @@ class st_options_audio_t : public st_options_base_t
 	config_form_t *oopen()	{ return new audio_options_t(gengine); }
 };
 
+extern st_options_audio_t st_options_audio;
+
+
 class st_options_interface_t : public st_options_base_t
 {
   public:
 	st_options_interface_t()	{ name = "options_interface"; }
 	config_form_t *oopen()	{ return new interface_options_t(gengine); }
 };
+
+extern st_options_interface_t st_options_interface;
+
 
 class st_options_game_t : public st_options_base_t
 {
@@ -489,6 +564,9 @@ class st_options_game_t : public st_options_base_t
 	config_form_t *oopen()	{ return new game_options_t(gengine); }
 };
 
+extern st_options_game_t st_options_game;
+
+
 class st_options_cheat_t : public st_options_base_t
 {
   public:
@@ -496,12 +574,17 @@ class st_options_cheat_t : public st_options_base_t
 	config_form_t *oopen()	{ return new cheat_options_t(gengine); }
 };
 
+extern st_options_cheat_t st_options_cheat;
+
+
 class st_options_debug_t : public st_options_base_t
 {
   public:
 	st_options_debug_t()	{ name = "options_debug"; }
 	config_form_t *oopen()	{ return new debug_options_t(gengine); }
 };
+
+extern st_options_debug_t st_options_debug;
 
 
 /*----------------------------------------------------------
@@ -521,6 +604,8 @@ class st_options_more_t : public st_menu_base_t
 	kobo_form_t *open();
 	void select(int tag);
 };
+
+extern st_options_more_t st_options_more;
 
 
 /*----------------------------------------------------------
@@ -574,6 +659,17 @@ class st_yesno_base_t : public st_menu_base_t
 	void post_render();
 };
 
+
+class st_exit_t : public kobo_basestate_t
+{
+  public:
+	st_exit_t() { };
+	void enter();
+};
+
+extern st_exit_t st_exit;
+
+
 class st_ask_exit_t : public st_yesno_base_t
 {
   public:
@@ -581,12 +677,18 @@ class st_ask_exit_t : public st_yesno_base_t
 	void select(int tag);
 };
 
+extern st_ask_exit_t st_ask_exit;
+
+
 class st_ask_abort_game_t : public st_yesno_base_t
 {
   public:
 	st_ask_abort_game_t();
+	void leave();
 	void select(int tag);
 };
+
+extern st_ask_abort_game_t st_ask_abort_game;
 
 
 class st_ask_overwrite_campaign_t : public st_yesno_base_t
@@ -595,6 +697,8 @@ class st_ask_overwrite_campaign_t : public st_yesno_base_t
 	st_ask_overwrite_campaign_t();
 	void select(int tag);
 };
+
+extern st_ask_overwrite_campaign_t st_ask_overwrite_campaign;
 
 
 /*----------------------------------------------------------
@@ -614,32 +718,6 @@ class st_error_t : public kobo_basestate_t
 	void post_render();
 };
 
-
-extern gamestatemanager_t gsm;
-extern st_intro_title_t st_intro_title;
-extern st_intro_instructions_t st_intro_instructions;
-extern st_intro_credits_t st_intro_credits;
-extern st_long_credits_t st_long_credits;
-extern st_ask_exit_t st_ask_exit;
-extern st_game_t st_game;
-extern st_ask_abort_game_t st_ask_abort_game;
-extern st_pause_game_t st_pause_game;
-extern st_get_ready_t st_get_ready;
-extern st_game_over_t st_game_over;
-extern st_main_menu_t st_main_menu;
-extern st_campaign_menu_t st_campaign_menu;
-extern st_ask_overwrite_campaign_t st_ask_overwrite_campaign;
-extern st_skill_menu_t st_skill_menu;
-extern st_options_main_t st_options_main;
-extern st_options_system_t st_options_system;
-extern st_options_video_t st_options_video;
-extern st_options_controls_t st_options_controls;
-extern st_options_audio_t st_options_audio;
-extern st_options_interface_t st_options_interface;
-extern st_options_game_t st_options_game;
-extern st_options_cheat_t st_options_cheat;
-extern st_options_debug_t st_options_debug;
-extern st_options_more_t st_options_more;
 extern st_error_t st_error;
 
 #endif	//_KOBO_STATES_H_

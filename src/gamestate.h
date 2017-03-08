@@ -33,8 +33,10 @@ class gamestate_t
   private:
 	gamestate_t		*prev;		//LIFO stack
 	gamestatemanager_t	*manager;
+	bool			pushed;
   protected:
 	void pop();
+	void tail_pop();
 
 	virtual void press(gc_targets_t button);
 	virtual void release(gc_targets_t button);
@@ -47,9 +49,6 @@ class gamestate_t
 	virtual void reenter();
 	virtual void rebuild();
 
-	virtual void frame();		//Control system stuff
-	virtual void pre_render();	//Background rendering
-	virtual void post_render();	//Foreground rendering
   public:
 	const char		*name;
 	const char		*info;
@@ -57,13 +56,19 @@ class gamestate_t
 	gamestate_t();
 	virtual ~gamestate_t();
 	gamestate_t *previous()		{ return prev; }
+	virtual void frame();		//Control system stuff
+	virtual void pre_render();	//Background rendering
+	virtual void post_render();	//Foreground rendering
 };
 
 
 class gamestatemanager_t
 {
+	friend class gamestate_t;
   private:
 	gamestate_t	*top;		//Stack top
+  protected:
+	void tail_pop();
   public:
 	gamestatemanager_t();
 	~gamestatemanager_t();
@@ -85,6 +90,7 @@ class gamestatemanager_t
 	// State management
 	void change(gamestate_t *gs);
 	void push(gamestate_t *gs);
+	void tail_push(gamestate_t *gs);
 	void pop();
 	gamestate_t *current();
 	gamestate_t *previous();

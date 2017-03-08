@@ -248,8 +248,12 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	KOBO_REPLAY_SLOW_VOL		0.5f
 #define	KOBO_REPLAY_SLOW_PITCH		-1.0f
 
-#define	KOBO_REPLAY_REWIND		300
-#define	KOBO_REPLAY_SKIP		100
-#define	KOBO_REPLAY_SKIP_INHIBIT	2
+/* Rewind/retry */
+#define	KOBO_RETRY_SKIP			300
+#define	KOBO_RETRY_REWIND		300
+
+/* Grid transition effect timings (ms) */
+#define	KOBO_ENTER_STAGE_FXTIME		300
+#define	KOBO_ENTER_TITLE_FXTIME		1000
 
 #endif	/*_KOBO_CONFIG_H_*/

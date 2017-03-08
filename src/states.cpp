@@ -45,6 +45,10 @@ gamestatemanager_t gsm;
 int last_level = -1;
 
 
+/*----------------------------------------------------------
+	kobo_basestate_t
+----------------------------------------------------------*/
+
 kobo_basestate_t::kobo_basestate_t()
 {
 	name = "<unnamed>";
@@ -67,11 +71,6 @@ void kobo_basestate_t::reenter()
 }
 
 
-void kobo_basestate_t::frame()
-{
-}
-
-
 void kobo_basestate_t::pre_render()
 {
 	screen.render_background();
@@ -80,7 +79,10 @@ void kobo_basestate_t::pre_render()
 
 void kobo_basestate_t::post_render()
 {
+	// CRT noise, rewind/retry gray tint, lower curtains, GUI focus FX
 	screen.render_fx();
+
+	// Debug overlay
 	if(prefs->debug)
 	{
 		// State stack
@@ -104,51 +106,242 @@ void kobo_basestate_t::post_render()
 	}
 }
 
+void kobo_basestate_t::transition_change(gamestate_t *to,
+		KOBO_TransitionStyle trs)
+{
+	st_transition_delay.start_transition(trs);
+	st_transition_delay.start_change(to);
+}
+
+
+void kobo_basestate_t::transition_push(gamestate_t *to,
+		KOBO_TransitionStyle trs)
+{
+	st_transition_delay.start_transition(trs);
+	st_transition_delay.start_push(to);
+}
+
+
+void kobo_basestate_t::transition_pop(KOBO_TransitionStyle trs)
+{
+	st_transition_delay.start_transition(trs);
+	st_transition_delay.start_pop();
+}
+
 
 /*----------------------------------------------------------
-	st_introbase
+	st_transition_delay_t
 ----------------------------------------------------------*/
 
-st_introbase_t::st_introbase_t()
+st_transition_delay_t::st_transition_delay_t()
+{
+	name = "transition_delay";
+}
+
+
+void st_transition_delay_t::enter()
+{
+	timeout = SDL_GetTicks() + 10000;
+}
+
+
+void st_transition_delay_t::frame()
+{
+	bool tmo = SDL_TICKS_PASSED(SDL_GetTicks(), timeout);
+	bool done = false;
+	switch(trstyle)
+	{
+	  case KOBO_TRS_INSTANT:
+	  case KOBO_TRS_FULLSCREEN_IN_ONLY:
+	  case KOBO_TRS_GAME_NOISE:
+		done = true;
+		break;
+	  case KOBO_TRS_FULLSCREEN_SLOW:
+	  case KOBO_TRS_FULLSCREEN_FAST:
+		done = !wdash->busy();
+		break;
+	  case KOBO_TRS_GAME_SLOW:
+	  case KOBO_TRS_GAME_FAST:
+		done = screen.curtains();
+		break;
+	}
+	if(tmo || done)
+	{
+		if(tmo)
+			log_printf(ELOG, "Timeout in transition_delay!\n");
+		tail_pop();
+		switch(trstyle)
+		{
+		  case KOBO_TRS_INSTANT:
+		  case KOBO_TRS_GAME_NOISE:
+		  case KOBO_TRS_FULLSCREEN_IN_ONLY:
+		  case KOBO_TRS_FULLSCREEN_SLOW:
+		  case KOBO_TRS_FULLSCREEN_FAST:
+			break;
+		  case KOBO_TRS_GAME_SLOW:
+			screen.curtains(false,
+					KOBO_ENTER_TITLE_FXTIME * 0.001f);
+			break;
+		  case KOBO_TRS_GAME_FAST:
+			screen.curtains(false,
+					KOBO_ENTER_STAGE_FXTIME * 0.001f);
+			break;
+		}
+		if(to_state)
+		{
+			if(change_to)
+				gsm.change(to_state);
+			else
+				gsm.push(to_state);
+		}
+		else
+			gsm.pop();
+	}
+}
+
+
+void st_transition_delay_t::pre_render()
+{
+	if(previous())
+		previous()->pre_render();
+	else
+		kobo_basestate_t::pre_render();
+}
+
+
+void st_transition_delay_t::post_render()
+{
+	if(previous())
+		previous()->post_render();
+	else
+		kobo_basestate_t::post_render();
+}
+
+
+void st_transition_delay_t::start_transition(KOBO_TransitionStyle trs)
+{
+	trstyle = trs;
+	switch(trs)
+	{
+	  case KOBO_TRS_INSTANT:
+		break;
+	  case KOBO_TRS_FULLSCREEN_SLOW:
+		break;
+	  case KOBO_TRS_FULLSCREEN_FAST:
+		break;
+	  case KOBO_TRS_FULLSCREEN_IN_ONLY:
+		break;
+	  case KOBO_TRS_GAME_SLOW:
+		screen.curtains(true, KOBO_ENTER_TITLE_FXTIME * 0.001f, true);
+		break;
+	  case KOBO_TRS_GAME_FAST:
+		screen.curtains(true, KOBO_ENTER_STAGE_FXTIME * 0.001f, true);
+		break;
+	  case KOBO_TRS_GAME_NOISE:
+		manage.noise_glitch();
+		break;
+	}
+}
+
+
+void st_transition_delay_t::start_change(gamestate_t *to)
+{
+	to_state = to;
+	change_to = true;
+	gsm.tail_push(this);
+}
+
+
+void st_transition_delay_t::start_push(gamestate_t *to)
+{
+	to_state = to;
+	change_to = false;
+	gsm.tail_push(this);
+}
+
+
+void st_transition_delay_t::start_pop()
+{
+	to_state = NULL;
+	gsm.tail_push(this);
+}
+
+
+st_transition_delay_t st_transition_delay;
+
+
+/*----------------------------------------------------------
+	st_intro
+----------------------------------------------------------*/
+
+int kobo_intro_durations[KOBO_IP__COUNT] = 
+{
+	INTRO_TITLE_TIME,		// KOBO_IP_TITLE
+	INTRO_INSTRUCTIONS_TIME,	// KOBO_IP_INSTRUCTIONS
+	INTRO_TITLE2_TIME,		// KOBO_IP_TITLE2
+	INTRO_CREDITS_TIME		// KOBO_IP_CREDITS
+};
+
+
+st_intro_t::st_intro_t()
 {
 	name = "intro";
-	inext = NULL;
+	page = KOBO_IP_TITLE;
 	duration = 0;
 	timer = 0;
 	song = S_TITLESONG;
 }
 
 
-void st_introbase_t::enter()
+void st_intro_t::init_page()
 {
-	kobo_basestate_t::enter();
-	if(manage.state() != GS_INTRO)
-		manage.start_intro();
-	if(!km.quitting())
-		sound.music(song);
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
 	timer = 0;
+	if(page >= KOBO_IP__COUNT)
+		page = 0;
+	else if(page < 0)
+		page = KOBO_IP__COUNT - 1;
+	duration = kobo_intro_durations[page];
 }
 
 
-void st_introbase_t::reenter()
+void st_intro_t::enter()
 {
-	kobo_basestate_t::reenter();
-	if(manage.state() != GS_INTRO)
-		manage.start_intro();
+	kobo_basestate_t::enter();
+	manage.show_stage(KOBO_TITLE_LEVEL, GS_TITLE);
 	if(!km.quitting())
 		sound.music(song);
-	gsm.change(&st_intro_title);
+	init_page();
+	screen.set_highlight(0, 0);
 }
 
 
-void st_introbase_t::press(gc_targets_t button)
+void st_intro_t::yield()
+{
+	kobo_basestate_t::yield();
+	screen.set_highlight(0, 0);
+}
+
+
+void st_intro_t::reenter()
+{
+	kobo_basestate_t::reenter();
+	enter();
+}
+
+
+void st_intro_t::leave()
+{
+	kobo_basestate_t::leave();
+	screen.set_highlight(0, 0);
+}
+
+
+void st_intro_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
 	  case BTN_EXIT:
-//		gsm.push(&st_ask_exit);
-//		break;
 	  case BTN_CLOSE:
 		gsm.push(&st_main_menu);
 		break;
@@ -156,20 +349,17 @@ void st_introbase_t::press(gc_targets_t button)
 	  case BTN_SECONDARY:
 	  case BTN_SELECT:
 		gsm.push(&st_main_menu);
-#if 0
-		if(scorefile.numProfiles <= 0)
-			gsm.push(&st_new_player);
-#endif
 		break;
 	  case BTN_BACK:
 	  case BTN_UP:
 	  case BTN_LEFT:
-		gsm.change(&st_intro_title);
+		--page;
+		init_page();
 		break;
 	  case BTN_DOWN:
 	  case BTN_RIGHT:
-		if(inext)
-			gsm.change(inext);
+		++page;
+		init_page();
 		break;
 	  default:
 		break;
@@ -177,129 +367,58 @@ void st_introbase_t::press(gc_targets_t button)
 }
 
 
-void st_introbase_t::frame()
+void st_intro_t::frame()
 {
-	if((timer > duration) && inext)
-		gsm.change(inext);
+	if(timer > duration)
+	{
+		++page;
+		init_page();
+	}
 }
 
 
-void st_introbase_t::pre_render()
+void st_intro_t::pre_render()
 {
 	kobo_basestate_t::pre_render();
 	timer = (int)SDL_GetTicks() - start_time;
 }
 
 
-void st_introbase_t::post_render()
+void st_intro_t::post_render()
 {
 	kobo_basestate_t::post_render();
-#if 0
-	screen.scroller();
-#endif
-}
-
-
-/*----------------------------------------------------------
-	st_intro_title
-----------------------------------------------------------*/
-
-st_intro_title_t::st_intro_title_t()
-{
-	name = "intro_title";
-}
-
-void st_intro_title_t::enter()
-{
-	st_introbase_t::enter();
-	if(!duration)
-		duration = INTRO_TITLE_TIME + 2000 - INTRO_BLANK_TIME;
-	if(!inext)
-		inext = &st_intro_instructions;
-	screen.set_highlight(0, 0);
-}
-
-void st_intro_title_t::post_render()
-{
-	if(km.quitting())
-		return;
-	st_introbase_t::post_render();
 	if((timer >= 0) && (timer < duration))
 	{
-		float nt = (float)timer / duration;
-		float snt = 1.0f - sin(nt * M_PI);
-		snt = 1.0f - snt * snt * snt;
-		screen.title(timer, snt, mode);
+		switch((KOBO_IntroPages)page)
+		{
+		  case KOBO_IP__COUNT:
+		  case KOBO_IP_TITLE:
+		  case KOBO_IP_TITLE2:
+		  {
+			float nt = (float)timer / duration;
+			float snt = 1.0f - sin(nt * M_PI);
+			snt = 1.0f - snt * snt * snt;
+			screen.title(timer, snt);
+			break;
+		  }
+		  case KOBO_IP_INSTRUCTIONS:
+		  {
+			screen.help(timer);
+			break;
+		  }
+		  case KOBO_IP_CREDITS:
+		  {
+			screen.credits(timer);
+			break;
+		  }
+		}
 	}
-}
-
-st_intro_title_t st_intro_title;
-
-
-/*----------------------------------------------------------
-	st_intro_instructions
-----------------------------------------------------------*/
-
-st_intro_instructions_t::st_intro_instructions_t()
-{
-	name = "intro_instructions";
-}
-
-void st_intro_instructions_t::enter()
-{
-	st_introbase_t::enter();
-	duration = INTRO_INSTRUCTIONS_TIME;
-	inext = &st_intro_title;
-	st_intro_title.inext = &st_intro_credits;
-	st_intro_title.duration = INTRO_TITLE2_TIME - INTRO_BLANK_TIME;
-	st_intro_title.mode = pubrand.get(1) + 1;
-}
-
-void st_intro_instructions_t::post_render()
-{
-	if(km.quitting())
-		return;
-	st_introbase_t::post_render();
-	if((timer >= 0) && (timer < duration))
-		screen.help(timer);
 	else
 		screen.set_highlight(0, 0);
 }
 
-st_intro_instructions_t st_intro_instructions;
 
-
-/*----------------------------------------------------------
-	st_intro_credits
-----------------------------------------------------------*/
-
-st_intro_credits_t::st_intro_credits_t()
-{
-	name = "intro_credits";
-}
-
-void st_intro_credits_t::enter()
-{
-	st_introbase_t::enter();
-	duration = INTRO_CREDITS_TIME;
-	inext = &st_intro_title;
-	st_intro_title.inext = &st_intro_instructions;
-	st_intro_title.duration = INTRO_TITLE_TIME - INTRO_BLANK_TIME;
-	st_intro_title.mode = 0;
-}
-
-void st_intro_credits_t::post_render()
-{
-	if(km.quitting())
-		return;
-	st_introbase_t::post_render();
-	if((timer >= 0) && (timer < duration))
-		screen.credits(timer);
-	else
-		screen.set_highlight(0, 0);
-}
-
-st_intro_credits_t st_intro_credits;
+st_intro_t st_intro;
 
 
 /*----------------------------------------------------------
@@ -317,12 +436,17 @@ st_long_credits_t::st_long_credits_t()
 void st_long_credits_t::enter()
 {
 	kobo_basestate_t::enter();
-	if(!manage.game_in_progress())
-		manage.select_scene(KOBO_CREDITS_BACKGROUND_LEVEL);
+	manage.select_stage(KOBO_CREDITS_BACKGROUND_LEVEL);
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
 	timer = 0;
 }
 
+
+void st_long_credits_t::leave()
+{
+	// Avoid the st_intro show_stage()! (Different transition effect.)
+	manage.select_stage(KOBO_TITLE_LEVEL, GS_TITLE);
+}
 
 void st_long_credits_t::press(gc_targets_t button)
 {
@@ -334,16 +458,8 @@ void st_long_credits_t::press(gc_targets_t button)
 	  case BTN_SECONDARY:
 	  case BTN_SELECT:
 	  case BTN_BACK:
-		gsm.pop();
+		transition_pop(KOBO_TRS_GAME_SLOW);
 		break;
-#if 0
-	  case BTN_UP:
-	  case BTN_LEFT:
-		break;
-	  case BTN_DOWN:
-	  case BTN_RIGHT:
-		break;
-#endif
 	  default:
 		break;
 	}
@@ -363,6 +479,7 @@ void st_long_credits_t::post_render()
 	screen.long_credits(timer);
 }
 
+
 st_long_credits_t st_long_credits;
 
 
@@ -380,8 +497,18 @@ void st_game_t::enter()
 {
 	if(!manage.game_in_progress())
 	{
-		st_error.message("INTERNAL ERROR",
-				"Entered st_game with no game in progress!");
+		manage.select_slot(g_slot);
+		manage.select_skill(g_skill);
+		manage.start_new_game();
+	}
+	else
+	{
+		g_slot = manage.current_slot();
+		g_skill = manage.current_skill();
+	}
+	if(!manage.game_in_progress())
+	{
+		st_error.message("INTERNAL ERROR", "Could not start game!");
 		gsm.change(&st_error);
 		return;
 	}
@@ -390,6 +517,7 @@ void st_game_t::enter()
 			SDL_SetRelativeMouseMode(SDL_TRUE);
 	manage.background(false);
 	manage.pause(false);
+	st_intro.set_page(KOBO_IP_TITLE);
 }
 
 
@@ -397,9 +525,6 @@ void st_game_t::leave()
 {
 	if(SDL_GetRelativeMouseMode())
 		SDL_SetRelativeMouseMode(SDL_FALSE);
-	st_intro_title.inext = &st_intro_instructions;
-	st_intro_title.duration = INTRO_TITLE_TIME + 2000;
-	st_intro_title.mode = 0;
 	manage.background(true);
 }
 
@@ -414,8 +539,13 @@ void st_game_t::yield()
 
 void st_game_t::reenter()
 {
-	manage.background(false);
 	manage.pause(false);
+	if(!manage.game_in_progress())
+	{
+		pop();	// Game aborted by st_ask_abort_game, most likely!
+		return;
+	}
+	manage.background(false);
 	if(prefs->mousecapture)
 		if(!SDL_GetRelativeMouseMode())
 			SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -453,11 +583,11 @@ void st_game_t::frame()
 		gsm.push(&st_get_ready);
 		return;
 	  case GS_GAMEOVER:
+		st_intro.set_page(KOBO_IP_INSTRUCTIONS);
 		gsm.change(&st_game_over);
 		return;
 	  case GS_NONE:
-		manage.abort_game();
-		pop();
+		transition_pop(KOBO_TRS_GAME_SLOW);
 		return;
 	  default:
 		last_level = manage.current_stage();
@@ -507,9 +637,7 @@ void st_rewind_t::enter()
 
 void st_rewind_t::leave()
 {
-	st_intro_title.inext = &st_intro_instructions;
-	st_intro_title.duration = INTRO_TITLE_TIME + 2000;
-	st_intro_title.mode = 0;
+	st_intro.set_page(KOBO_IP_TITLE);
 	manage.background(true);
 }
 
@@ -522,6 +650,11 @@ void st_rewind_t::yield()
 
 void st_rewind_t::reenter()
 {
+	if(!manage.game_in_progress())
+	{
+		pop();	// Game aborted by st_ask_abort_game, most likely!
+		return;
+	}
 	manage.background(false);
 }
 
@@ -554,13 +687,12 @@ void st_rewind_t::frame()
 {
 	if(prefs->debug)
 		info = enumstr(manage.state());
-	if(manage.replay_mode() != RPM_REWIND)
+	if(manage.replay_mode() != RPM_RETRY)
 		gsm.change(&st_game);
 	switch(manage.state())
 	{
 	  case GS_NONE:
-		manage.abort_game();
-		pop();
+		transition_pop(KOBO_TRS_GAME_FAST);
 		return;
 	  default:
 		break;
@@ -573,12 +705,6 @@ void st_rewind_t::frame()
 void st_rewind_t::post_render()
 {
 	kobo_basestate_t::post_render();
-
-	// Gray overlay
-	woverlay->foreground(woverlay->map_rgb(48, 48, 48));
-	woverlay->alphamod(128);
-	woverlay->fillrect(0, 0, woverlay->width(), woverlay->height());
-	woverlay->alphamod(255);
 
 	// "Timeout" progress bar
 	woverlay->font(B_NORMAL_FONT);
@@ -621,11 +747,12 @@ st_replay_t::st_replay_t()
 
 void st_replay_t::enter()
 {
-	if(manage.replay_mode() != RPM_REPLAY)
+	manage.select_slot(rp_slot);
+	if(!manage.start_replay(rp_stage))
 	{
-		st_error.message("INTERNAL ERROR",
-				"Entered st_replay with no replay in "
-				"progress!");
+		sound.ui_play(S_UI_ERROR);
+		st_error.message("Campaign Replay Problem!",
+				"Could not load or start replay.");
 		gsm.change(&st_error);
 		return;
 	}
@@ -635,9 +762,8 @@ void st_replay_t::enter()
 
 void st_replay_t::leave()
 {
-	st_intro_title.inext = &st_intro_instructions;
-	st_intro_title.duration = INTRO_TITLE_TIME + 2000;
-	st_intro_title.mode = 0;
+	st_intro.set_page(KOBO_IP_TITLE);
+	manage.abort_game();
 	manage.background(true);
 }
 
@@ -682,19 +808,21 @@ void st_replay_t::frame()
 {
 	if(prefs->debug)
 		info = enumstr(manage.state());
-	if(manage.replay_mode() != RPM_REPLAY)
-		gsm.change(&st_game);
+	if(km.quitting())
+		pop();
 	switch(manage.state())
 	{
+	  case GS_GAMEOVER:
+	  case GS_REPLAYEND:
+		if(manage.time_remaining() > KOBO_ENTER_TITLE_FXTIME)
+			return;
+		// Fall-through
 	  case GS_NONE:
-		manage.abort_game();
-		pop();
+		transition_pop(KOBO_TRS_GAME_SLOW);
 		return;
 	  default:
 		break;
 	}
-	if(km.quitting())
-		pop();
 }
 
 
@@ -782,6 +910,7 @@ void st_pause_game_t::post_render()
 
 	wradar->frame();
 }
+
 
 st_pause_game_t st_pause_game;
 
@@ -902,6 +1031,7 @@ void st_get_ready_t::post_render()
 	wradar->frame();
 }
 
+
 st_get_ready_t st_get_ready;
 
 
@@ -1010,6 +1140,7 @@ void st_game_over_t::post_render()
 	wradar->frame();
 }
 
+
 st_game_over_t st_game_over;
 
 
@@ -1029,6 +1160,7 @@ void menu_base_t::open()
 	background(woverlay->map_rgb(0x000000));
 	build_all();
 }
+
 
 void menu_base_t::close()
 {
@@ -1074,29 +1206,23 @@ void st_menu_base_t::leave()
 	close();
 	delete form;
 	form = NULL;
-#if 0
-	if(manage.game_stopped())
-	{
-		manage.init_resources_title();
-		st_intro_title.inext = &st_intro_instructions;
-		st_intro_title.duration = INTRO_TITLE_TIME + 2000;
-		st_intro_title.mode = 0;
-	}
-#endif
 }
+
 
 void st_menu_base_t::frame()
 {
 }
+
 
 void st_menu_base_t::post_render()
 {
 	kobo_basestate_t::post_render();
 	if(form)
 		form->render();
-	if(manage.state() != GS_INTRO)
+	if(manage.state() != GS_SHOW)
 		wradar->frame();
 }
+
 
 int st_menu_base_t::translate(int tag, int button)
 {
@@ -1111,6 +1237,7 @@ int st_menu_base_t::translate(int tag, int button)
 		return tag ? tag : -1;
 	}
 }
+
 
 void st_menu_base_t::press(gc_targets_t button)
 {
@@ -1282,6 +1409,7 @@ void st_error_t::post_render()
 	}
 }
 
+
 st_error_t st_error;
 
 
@@ -1306,9 +1434,10 @@ void main_menu_t::buildStartLevel()
 	}
 }
 
+
 void main_menu_t::build()
 {
-	if(!manage.game_in_progress())
+	if(manage.ok_to_switch())
 	{
 		int sc;
 		if(prefs->cheat_startlevel)
@@ -1319,17 +1448,14 @@ void main_menu_t::build()
 		}
 		else
 			sc = 1;
-		manage.select_scene(sc);
+		manage.show_stage(sc, GS_SHOW);
 	}
 
 	space(2);
 	if(manage.game_in_progress())
-	{
-		if(manage.replay_mode() == RPM_REPLAY)
-			button("Return to Replay", MENU_TAG_OK);
-		else
-			button("Return to Game", MENU_TAG_OK);
-	}
+		button("Return to Game", MENU_TAG_OK);
+	else if(manage.replay_mode() == RPM_REPLAY)
+		button("Return to Replay", MENU_TAG_OK);
 	else
 	{
 		if(savemanager.exists(-1))
@@ -1354,16 +1480,15 @@ void main_menu_t::build()
 	label("https://olofson.itch.io/kobo-redux");
 #endif
 	space(2);
+#if 0
 	button("Showcase", 20);
+#endif
 	button("Options", 2);
 	space(2);
 	if(manage.game_in_progress())
-	{
-		if(manage.replay_mode() == RPM_REPLAY)
-			button("Stop Replay", 102);
-		else
-			button("Abort Current Game", 101);
-	}
+		button("Abort Current Game", 101);
+	else if(manage.replay_mode() == RPM_REPLAY)
+		button("Stop Replay", 102);
 	else
 	{
 		button("Credits & Thanks", 30);
@@ -1372,6 +1497,7 @@ void main_menu_t::build()
 	}
 	button("Quit Kobo Redux", MENU_TAG_CANCEL);
 }
+
 
 void main_menu_t::rebuild()
 {
@@ -1423,6 +1549,7 @@ int st_main_menu_t::translate(int tag, int button)
 	}
 }
 
+
 void st_main_menu_t::select(int tag)
 {
 	switch(tag)
@@ -1432,11 +1559,11 @@ void st_main_menu_t::select(int tag)
 		gsm.change(&st_campaign_menu);
 		break;
 	  case 2:
-		gsm.push(&st_options_main);
+		gsm.change(&st_options_main);
 		break;
 	  case 5:	// Start level: Inc/Dec
 		sound.ui_play(S_UI_TICK);
-		manage.select_scene(menu->start_level, true);
+		manage.show_stage(menu->start_level, GS_SHOW);
 		break;
 	  case 20:	// Showcase
 		sound.ui_play(S_UI_ERROR);
@@ -1447,7 +1574,7 @@ void st_main_menu_t::select(int tag)
 		gsm.push(&st_error);
 		break;
 	  case 30:	// Credits & Thanks
-		gsm.push(&st_long_credits);
+		transition_change(&st_long_credits, KOBO_TRS_GAME_SLOW);
 		break;
 	  case 40:	// Home site link
 		kobo_OpenURL("https://olofson.itch.io/kobo-redux");
@@ -1464,8 +1591,8 @@ void st_main_menu_t::select(int tag)
 		gsm.change(&st_ask_abort_game);
 		break;
 	  case 102:
-		manage.abort_game();
 		pop();
+		transition_pop(KOBO_TRS_GAME_SLOW);
 		break;
 	  case MENU_TAG_OK:
 		gsm.change(&st_pause_game);
@@ -1475,6 +1602,7 @@ void st_main_menu_t::select(int tag)
 		break;
 	}
 }
+
 
 st_main_menu_t st_main_menu;
 
@@ -1625,34 +1753,28 @@ void st_campaign_menu_t::press(gc_targets_t button)
 	}
 }
 
+
 void st_campaign_menu_t::select(int tag)
 {
 	int slot = tag - 10;
 	if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS))
 	{
-		manage.select_slot(slot);
 		if(view_replay)
 		{
-			if(manage.start_replay(1))
-				gsm.change(&st_replay);
-			else
-			{
-				sound.ui_play(S_UI_ERROR);
-				st_error.message("Campaign Replay Problem!",
-						"Could not load or start "
-						"replay.");
-				gsm.change(&st_error);
-			}
+			st_replay.setup(slot, 1);
+			transition_change(&st_replay, KOBO_TRS_GAME_FAST);
 		}
 		else if(newgame)
 		{
-			if(savemanager.exists(manage.current_slot()))
+			st_game.set_slot(slot);
+			if(savemanager.exists(slot))
 				gsm.change(&st_ask_overwrite_campaign);
 			else
 				gsm.change(&st_skill_menu);
 		}
 		else
 		{
+			manage.select_slot(slot);
 			if(manage.continue_game())
 				gsm.change(&st_rewind);
 			else
@@ -1665,6 +1787,7 @@ void st_campaign_menu_t::select(int tag)
 		}
 	}
 }
+
 
 st_campaign_menu_t st_campaign_menu;
 
@@ -1704,6 +1827,7 @@ void skill_menu_t::build()
 		break;
 	}
 }
+
 
 void skill_menu_t::rebuild()
 {
@@ -1768,15 +1892,16 @@ void st_skill_menu_t::press(gc_targets_t button)
 	}
 }
 
+
 void st_skill_menu_t::select(int tag)
 {
 	if((tag >= 10) && (tag <= 20))
 	{
-		manage.select_skill(menu->selected()->tag - 10);
-		manage.start_new_game();
-		gsm.change(&st_game);
+		st_game.set_skill(menu->selected()->tag - 10);
+		transition_change(&st_game, KOBO_TRS_GAME_SLOW);
 	}
 }
+
 
 st_skill_menu_t st_skill_menu;
 
@@ -1805,14 +1930,18 @@ void options_main_t::build()
 	button("DONE!", MENU_TAG_OK);
 }
 
+
 kobo_form_t *st_options_main_t::open()
 {
 	options_main_t *m = new options_main_t(gengine);
 	m->open();
-	if(!manage.game_in_progress())
-		manage.select_scene(KOBO_OPTIONS_BACKGROUND_LEVEL);
+	if(manage.ok_to_switch() &&
+			(manage.current_stage() !=
+			KOBO_OPTIONS_BACKGROUND_LEVEL))
+		manage.show_stage(KOBO_OPTIONS_BACKGROUND_LEVEL, GS_SHOW);
 	return m;
 }
+
 
 void st_options_main_t::select(int tag)
 {
@@ -1863,10 +1992,11 @@ void st_options_main_t::select(int tag)
 		break;
 
 	  case MENU_TAG_OK:
-		gsm.pop();
+		pop();
 		break;
 	}
 }
+
 
 st_options_main_t st_options_main;
 
@@ -1883,6 +2013,7 @@ kobo_form_t *st_options_base_t::open()
 	return cfg_form;
 }
 
+
 void st_options_base_t::close()
 {
 	check_update();
@@ -1890,11 +2021,13 @@ void st_options_base_t::close()
 	cfg_form = NULL;
 }
 
+
 void st_options_base_t::enter()
 {
 	sound.ui_play(S_UI_OPEN);
 	st_menu_base_t::enter();
 }
+
 
 void st_options_base_t::check_update()
 {
@@ -1912,6 +2045,7 @@ void st_options_base_t::check_update()
 	cfg_form->clearstatus(OS_UPDATE);
 }
 
+
 void st_options_base_t::select(int tag)
 {
 	if(cfg_form->status() & OS_CANCEL)
@@ -1928,6 +2062,7 @@ void st_options_base_t::select(int tag)
 	}
 }
 
+
 void st_options_base_t::press(gc_targets_t button)
 {
 	// NOTE:
@@ -1940,6 +2075,7 @@ void st_options_base_t::press(gc_targets_t button)
 		check_update();
 }
 
+
 void st_options_base_t::escape()
 {
 	sound.ui_play(S_UI_CANCEL);
@@ -1951,6 +2087,7 @@ void st_options_base_t::escape()
 /*----------------------------------------------------------
 	Options...
 ----------------------------------------------------------*/
+
 st_options_system_t st_options_system;
 st_options_video_t st_options_video;
 st_options_controls_t st_options_controls;
@@ -1964,6 +2101,7 @@ st_options_debug_t st_options_debug;
 /*----------------------------------------------------------
 	More Options
 ----------------------------------------------------------*/
+
 void options_more_t::build()
 {
 	title("More Options");
@@ -1981,12 +2119,14 @@ void options_more_t::build()
 	button("CANCEL", MENU_TAG_CANCEL);
 }
 
+
 kobo_form_t *st_options_more_t::open()
 {
 	options_more_t *m = new options_more_t(gengine);
 	m->open();
 	return m;
 }
+
 
 void st_options_more_t::select(int tag)
 {
@@ -1997,7 +2137,7 @@ void st_options_more_t::select(int tag)
 		break;
 	  case MENU_TAG_OK:
 	  case MENU_TAG_CANCEL:
-		gsm.pop();
+		pop();
 		break;
 	}
 }
@@ -2031,12 +2171,14 @@ void demo_over_t::build()
 	button("Back To Title", MENU_TAG_OK);
 }
 
+
 kobo_form_t *st_demo_over_t::open()
 {
 	demo_over_t *m = new demo_over_t(gengine);
 	m->open();
 	return m;
 }
+
 
 void st_demo_over_t::select(int tag)
 {
@@ -2047,7 +2189,7 @@ void st_demo_over_t::select(int tag)
 		break;
 	  case MENU_TAG_OK:
 	  case MENU_TAG_CANCEL:
-		gsm.pop();
+		pop();
 		break;
 	}
 }
@@ -2060,12 +2202,14 @@ st_demo_over_t st_demo_over;
 /*----------------------------------------------------------
 	Requesters
 ----------------------------------------------------------*/
+
 void yesno_menu_t::build()
 {
 	space(-130);
 	button("YES", MENU_TAG_OK);
 	button("NO", MENU_TAG_CANCEL);
 }
+
 
 void yesno_menu_t::rebuild()
 {
@@ -2087,12 +2231,14 @@ kobo_form_t *st_yesno_base_t::open()
 	return menu;
 }
 
+
 void st_yesno_base_t::reenter()
 {
 	menu->rebuild();
 	menu->select(1);
 	st_menu_base_t::reenter();
 }
+
 
 void st_yesno_base_t::press(gc_targets_t button)
 {
@@ -2109,9 +2255,11 @@ void st_yesno_base_t::press(gc_targets_t button)
 	}
 }
 
+
 void st_yesno_base_t::frame()
 {
 }
+
 
 void st_yesno_base_t::post_render()
 {
@@ -2125,6 +2273,19 @@ void st_yesno_base_t::post_render()
 
 
 /*----------------------------------------------------------
+	st_exit
+----------------------------------------------------------*/
+
+void st_exit_t::enter()
+{
+	km.quit();
+}
+
+
+st_exit_t st_exit;
+
+
+/*----------------------------------------------------------
 	st_ask_exit
 ----------------------------------------------------------*/
 
@@ -2134,14 +2295,23 @@ st_ask_exit_t::st_ask_exit_t()
 	msg = "Quit Kobo Redux?";
 }
 
+
 void st_ask_exit_t::select(int tag)
 {
 	switch(tag)
 	{
 	  case MENU_TAG_OK:
-		sound.ui_play(S_UI_OK);
-		km.quit();
-		pop();
+		if(!(prefs->quickstart || prefs->cmd_warp))
+		{
+			sound.ui_play(S_UI_OK);
+			wdash->mode(DASHBOARD_BLACK, DASHBOARD_FAST);
+			transition_change(&st_exit, KOBO_TRS_FULLSCREEN_SLOW);
+		}
+		else
+		{
+			pop();
+			km.quit();
+		}
 		break;
 	  case MENU_TAG_CANCEL:
 		sound.ui_play(S_UI_CANCEL);
@@ -2149,6 +2319,7 @@ void st_ask_exit_t::select(int tag)
 		break;
 	}
 }
+
 
 st_ask_exit_t st_ask_exit;
 
@@ -2163,20 +2334,27 @@ st_ask_abort_game_t::st_ask_abort_game_t()
 	msg = "Abort Game?";
 }
 
+
+void st_ask_abort_game_t::leave()
+{
+	manage.abort_game();
+}
+
+
 void st_ask_abort_game_t::select(int tag)
 {
 	switch(tag)
 	{
 	  case MENU_TAG_OK:
 		sound.ui_play(S_UI_OK);
-		manage.abort_game();
-		pop();
+		transition_pop(KOBO_TRS_GAME_SLOW);
 		break;
 	  case MENU_TAG_CANCEL:
 		gsm.change(&st_pause_game);
 		break;
 	}
 }
+
 
 st_ask_abort_game_t st_ask_abort_game;
 
@@ -2190,6 +2368,7 @@ st_ask_overwrite_campaign_t::st_ask_overwrite_campaign_t()
 	name = "ask_overwrite_campaign";
 	msg = "Overwrite Old Campaign?";
 }
+
 
 void st_ask_overwrite_campaign_t::select(int tag)
 {
@@ -2210,5 +2389,6 @@ void st_ask_overwrite_campaign_t::select(int tag)
 		break;
 	}
 }
+
 
 st_ask_overwrite_campaign_t st_ask_overwrite_campaign;

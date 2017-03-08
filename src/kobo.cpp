@@ -1283,22 +1283,26 @@ int KOBO_main::open()
 
 	if(!(prefs->quickstart || prefs->cmd_warp))
 		sound.jingle(S_OAJINGLE);
-	int jtime = SDL_GetTicks() + 5000;
+	int jtime = SDL_GetTicks() + 4000;
 
 	if(load_graphics() < 0)
 		return -2;
 
 	wdash->progress_done();
-	wdash->mode(DASHBOARD_JINGLE);
 
 	if(!(prefs->quickstart || prefs->cmd_warp))
 	{
+		wdash->mode(DASHBOARD_JINGLE);
 		while(!SDL_TICKS_PASSED(SDL_GetTicks(), jtime) &&
 				!skip_requested())
 			gengine->present();
 
-		noiseburst();
+		wdash->mode(DASHBOARD_TITLE, DASHBOARD_SLOW);
+		while(wdash->busy())
+			gengine->present();
 	}
+	else
+		wdash->mode(DASHBOARD_TITLE);
 
 	init_dash_layout();
 	ct_engine.render_highlight = kobo_render_highlight;
@@ -1308,13 +1312,15 @@ int KOBO_main::open()
 	gamecontrol.init();
 	manage.init();
 
-	gsm.push(&st_intro_title);
+	gsm.push(&st_intro);
 
 	if(prefs->cmd_warp)
 	{
 		log_printf(ULOG, "Warping to stage %d!\n", prefs->cmd_warp);
-		manage.select_scene(prefs->cmd_warp);
+		manage.select_slot(-1);		// No saves!
 		manage.select_skill((skill_levels_t)prefs->cmd_skill);
+		manage.select_stage(prefs->cmd_warp);
+		manage.start_new_game();
 		gsm.push(&st_game);
 	}
 
@@ -1354,11 +1360,11 @@ int KOBO_main::restart_audio()
 		return 4;
 	load_sounds();
 	wdash->progress_done();
+	dashboard_modes_t dmd = wdash->mode();
 	wdash->mode(DASHBOARD_BLACK);
 	log_printf(ULOG, "--- Audio restarted.\n");
 	wdash->fade(1.0f);
-	wdash->mode(manage.game_in_progress() ?
-			DASHBOARD_GAME : DASHBOARD_TITLE);
+	wdash->mode(dmd);
 	wradar->mode(RM__REINIT);
 	enemies.restart_sounds();
 	return 0;
@@ -1419,6 +1425,7 @@ int KOBO_main::reload_sounds()
 
 int KOBO_main::reload_graphics()
 {
+	dashboard_modes_t dmd = wdash->mode();
 	if(!(global_status & OS_RESTART_VIDEO))
 		wdash->mode(DASHBOARD_BLACK);
 	gengine->unload();
@@ -1429,8 +1436,7 @@ int KOBO_main::reload_graphics()
 	init_dash_layout();
 	screen.init_graphics();
 	wdash->fade(1.0f);
-	wdash->mode(manage.game_in_progress() ?
-			DASHBOARD_GAME : DASHBOARD_TITLE);
+	wdash->mode(dmd);
 	wradar->mode(RM__REINIT);
 	gsm.rebuild();
 	log_printf(ULOG, "--- Graphics reloaded.\n");
@@ -2218,6 +2224,8 @@ void kobo_gfxengine_t::post_render()
 	}
 
 	gsm.post_render();
+	::screen.render_curtains();
+	wdash->render_final();	// Well, almost... Debug + fps still on top!
 
 	if(prefs->debug)
 	{
@@ -2645,7 +2653,14 @@ int main(int argc, char *argv[])
 		main_cleanup();
 		return 0;
 	}
-
+#if 1
+	if(prefs->cmd_warp)
+	{
+		log_printf(WLOG, "The -warp switch is currently broken and "
+				"has been disabled!\n");
+		prefs->cmd_warp = 0;
+	}
+#endif
 	if(km.open() < 0)
 	{
 		km.close_logging();
@@ -2656,7 +2671,15 @@ int main(int argc, char *argv[])
 	km.run();
 
 	sound.music(-1);
+	if(!(prefs->quickstart || prefs->cmd_warp))
+	{
+#if 0
 	km.noiseburst();
+#else
+		while(wdash->busy(true))
+			gengine->present();
+#endif
+	}
 
 	km.close();
 

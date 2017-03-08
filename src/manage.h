@@ -32,15 +32,15 @@
 enum KOBO_replaymodes
 {
 	RPM_PLAY,	// Playing!
-	RPM_REWIND,	// Rewind/retry
+	RPM_RETRY,	// Rewind and retry
 	RPM_REPLAY	// Pure replay
 };
 
 enum KOBO_gamestates
 {
 	GS_NONE,
-	GS_INTRO,
-	GS_SELECT,
+	GS_TITLE,
+	GS_SHOW,
 	GS_GETREADY,
 	GS_PLAYING,
 	GS_LEVELDONE,
@@ -53,23 +53,53 @@ const char *enumstr(KOBO_gamestates gst);
 
 class _manage
 {
+	// Engine state
 	static KOBO_gamestates gamestate;
-	static bool is_paused;
-	static bool in_background;
 	static KOBO_replaymodes replaymode;
-	static int blank;
+	static bool is_paused;
+
+	// Campaign and current replay
+	static KOBO_campaign *campaign;
+	static KOBO_replay *replay;
+	static bool owns_replay;
+	static KOBO_player_controls lastctrl;	// Previous control input state
+	static unsigned ctrltimer;	// Frames since last input change
+
+	// User interface
+	static bool in_background;
+	static bool show_bars;
+	static float disp_health;
+	static float disp_charge;
+	static int flash_score_count;
+	static bool score_changed;
+	static int intro_x;
+	static int intro_y;
+
+	// Game logic
 	static int game_seed;
-	static int scroll_jump;
 	static int total_cores;
 	static int remaining_cores;
-	static int exit_manage;
+	static int selected_slot;
+	static int selected_stage;
+	static int last_stage;
+	static skill_levels_t selected_skill;
+	static unsigned highscore;
+	static unsigned score;
+	static unsigned playtime;
+
+	// Transition effects
+	static bool scroll_jump;
 	static int noise_flash;
 	static int noise_duration;
 	static int noise_timer;
 	static float noise_level;
-	static int intro_x;
-	static int intro_y;
-	static int show_bars;
+
+	// Asynchronous stage selection with transition effect
+	static int delayed_stage;
+	static KOBO_gamestates delayed_gamestate;
+
+	// Delayed skips with transition effect
+	static int retry_skip;
 
 	// Camera lead
 	static int cam_lead_x, cam_lead_y;
@@ -82,25 +112,6 @@ class _manage
 	// Timing
 	static int delay_count;
 
-	static int selected_slot;
-	static int selected_stage;
-	static int last_stage;
-	static skill_levels_t selected_skill;
-	static unsigned highscore;
-	static unsigned score;
-	static unsigned playtime;
-	static float disp_health;
-	static float disp_charge;
-	static int flash_score_count;
-	static int score_changed;
-
-	// Campaign and current replay
-	static KOBO_campaign *campaign;
-	static KOBO_replay *replay;
-	static bool owns_replay;
-	static KOBO_player_controls lastctrl;	// Previous control input state
-	static unsigned ctrltimer;	// Frames since last input change
-
 	static void put_player_stats();
 	static void put_info();
 	static void put_score();
@@ -111,11 +122,10 @@ class _manage
 
 	static void next_bookmark();
 	static void prev_bookmark();
-	static void next_scene();
-	static void prev_scene();
+	static void next_stage();
+	static void prev_stage();
 
 	static void state(KOBO_gamestates gst);
-	static void init_resources_title();
 	static void init_game(KOBO_replay *rp = NULL, bool newship = false);
 	static void retry();
 	static void update();
@@ -124,7 +134,8 @@ class _manage
 	static void run_game();
 	static void finalize_replay();
 
-	static KOBO_player_controls controls_live(KOBO_player_controls ctrl);
+	static KOBO_player_controls controls_play(KOBO_player_controls ctrl);
+	static void controls_retry_skip(KOBO_player_controls ctrl);
 	static KOBO_player_controls controls_retry(KOBO_player_controls ctrl);
 	static KOBO_player_controls controls_replay(KOBO_player_controls ctrl);
   public:
@@ -140,7 +151,8 @@ class _manage
 	static void select_slot(int sl);
 	static int current_slot()	{ return selected_slot; }
 	static void start_intro();
-	static void select_scene(int scene, bool radar = false);
+	static void show_stage(int stage, KOBO_gamestates gs);
+	static void select_stage(int stage, KOBO_gamestates gs = GS_SHOW);
 	static void select_skill(int skill)
 	{
 		selected_skill = (skill_levels_t)skill;
@@ -188,7 +200,23 @@ class _manage
 			return false;
 		}
 	}
+	static bool ok_to_switch()
+	{
+		// Return true if it's OK to switch level for the nice scenery
+		if(replaymode == RPM_REPLAY)
+			return false;
+		switch(state())
+		{
+		  case GS_NONE:
+		  case GS_SHOW:
+		  case GS_TITLE:
+			return true;
+		  default:
+			return false;
+		}
+	}
 	static unsigned game_time()	{ return playtime; }
+	static int time_remaining();
 	static int cores_total()	{ return total_cores; }
 	static int cores_remaining()	{ return remaining_cores; }
 	static unsigned current_score()	{ return score; }
@@ -198,8 +226,7 @@ class _manage
 	static void key_up(SDL_Keycode sym);
 
 	// Effects
-	static void noise(int duration, int flash);
-	static void noise_out(int duration);
+	static void noise_glitch();
 	static void noise_damage(float amt);
 	static void screenshake(float mag_x, float mag_y, float fade);
 	static void stop_screenshake();

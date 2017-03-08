@@ -25,6 +25,7 @@
 
 #include "window.h"
 #include "starfield.h"
+#include "gridtfx.h"
 
 
 // "Screen" window; takes care of the border, if any
@@ -48,6 +49,13 @@ enum dashboard_modes_t {
 	DASHBOARD_JINGLE
 };
 
+enum dashboard_transitions_t {
+	DASHBOARD_INSTANT = 0,
+	DASHBOARD_SLOW,
+	DASHBOARD_FAST,
+	DASHBOARD_IN_ONLY
+};
+
 
 // Dashboard window; dashboard or loading screen
 class dashboard_window_t : public window_t
@@ -55,16 +63,23 @@ class dashboard_window_t : public window_t
 	char			*_msg;
 	float			_percent;
 	dashboard_modes_t	_mode;
+	dashboard_modes_t	new_mode;
+	dashboard_transitions_t trmode;
+	bool			transitioning;
 	float			_fade;
 	KOBO_Starfield		jingelstars;
+	KOBO_GridTFX		gridtfx;
 	Uint32			last_update;
 	void render_progress();
 	void update(bool force);
   public:
 	dashboard_window_t(gfxengine_t *e);
 	~dashboard_window_t();
-	void mode(dashboard_modes_t m);
+	void transition(dashboard_transitions_t tr);
+	void mode(dashboard_modes_t m,
+			dashboard_transitions_t tr = DASHBOARD_INSTANT);
 	dashboard_modes_t mode()	{ return _mode; }
+	bool busy(bool trans = false);
 	void fade(float f)
 	{
 		if(f <= 0.0f)
@@ -80,6 +95,7 @@ class dashboard_window_t : public window_t
 	void progress(float done);
 	void progress_done();
 	void refresh(SDL_Rect *r);
+	void render_final();
 };
 
 

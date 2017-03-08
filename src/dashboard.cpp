@@ -78,9 +78,11 @@ dashboard_window_t::dashboard_window_t(gfxengine_t *e) : window_t(e)
 {
 	_msg = NULL;
 	_percent = 0.0f;
-	_mode = DASHBOARD_BLACK;
+	_mode = new_mode = DASHBOARD_BLACK;
+	transitioning = false;
 	_fade = 1.0f;
 	last_update = SDL_GetTicks();
+	gridtfx.Target(this);	// Note: Init later, when the theme is loaded!
 }
 
 
@@ -101,8 +103,40 @@ void dashboard_window_t::update(bool force)
 }
 
 
-void dashboard_window_t::mode(dashboard_modes_t m)
+void dashboard_window_t::transition(dashboard_transitions_t tr)
 {
+	trmode = tr;
+	gridtfx.Tiles(B_FS_GRIDTFXTILES,
+			themedata.get(KOBO_D_FS_GRIDTFXLEVELS));
+	switch(tr)
+	{
+	  case DASHBOARD_INSTANT:
+		transitioning = false;
+		break;
+	  case DASHBOARD_SLOW:
+		gridtfx.State(true, themedata.get(KOBO_D_FS_GRIDTFX_SLOW));
+		transitioning = true;
+		break;
+	  case DASHBOARD_IN_ONLY:
+		gridtfx.State(true, 0.0f);
+		gridtfx.State(false, themedata.get(KOBO_D_FS_GRIDTFX_SLOW));
+		transitioning = false;
+		break;
+	  case DASHBOARD_FAST:
+		gridtfx.State(true, themedata.get(KOBO_D_FS_GRIDTFX_FAST));
+		transitioning = true;
+		return;
+	}
+}
+
+
+void dashboard_window_t::mode(dashboard_modes_t m, dashboard_transitions_t tr)
+{
+	new_mode = m;
+	transition(tr);
+	if(transitioning)
+		return;
+
 	const int psize = 288;
 	int main = 0;
 	int score = 0;
@@ -144,9 +178,6 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 			break;
 	  case DASHBOARD_LOADING:
 		km.place(wplanet, KOBO_D_DASH_LOADER_PLANET);
-//		wplanet->place(wdash->px() + DASHX(LOADER_PLANET),
-//				wdash->py() + DASHY(LOADER_PLANET),
-//				DASHW(LOADER_PLANET), DASHH(LOADER_PLANET));
 		wplanet->resetmod();
 		wplanet->colormod(128, 128, 128);
 		wplanet->track_speed(1.0f, 1.0f);
@@ -161,13 +192,10 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		break;
 	  default:
 		km.place(wplanet, KOBO_D_DASH_MAIN);
-//		wplanet->place(wdash->px() + DASHX(MAIN),
-//				wdash->py() + DASHY(MAIN),
-//				DASHW(MAIN), DASHH(MAIN));
 		break;
 	}
 
-	_mode = m;
+	_mode = new_mode = m;
 	switch(m)
 	{
 	  case DASHBOARD_OFF:
@@ -176,6 +204,15 @@ void dashboard_window_t::mode(dashboard_modes_t m)
 		update(true);
 		break;
 	}
+}
+
+
+bool dashboard_window_t::busy(bool trans)
+{
+	if(trans)
+		return transitioning || !gridtfx.Done();
+	else
+		return transitioning;
 }
 
 
@@ -257,6 +294,26 @@ void dashboard_window_t::render_progress()
 
 void dashboard_window_t::refresh(SDL_Rect *r)
 {
+	if(transitioning && gridtfx.Done())
+	{
+		switch(trmode)
+		{
+		  case DASHBOARD_INSTANT:
+		  case DASHBOARD_IN_ONLY:
+			break;
+		  case DASHBOARD_SLOW:
+			gridtfx.State(false,
+					themedata.get(KOBO_D_FS_GRIDTFX_SLOW));
+			break;
+		  case DASHBOARD_FAST:
+			gridtfx.State(false,
+					themedata.get(KOBO_D_FS_GRIDTFX_FAST));
+			break;
+		}
+		mode(new_mode);
+		transitioning = false;
+	}
+
 	double t = SDL_GetTicks() * 15;
 	resetmod();
 	switch(_mode)
@@ -301,6 +358,13 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 			render_progress();
 		break;
 	}
+}
+
+
+void dashboard_window_t::render_final()
+{
+	if(_mode != DASHBOARD_OFF)
+		gridtfx.Render();
 }
 
 

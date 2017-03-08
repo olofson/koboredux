@@ -27,6 +27,7 @@
 #include "map.h"
 #include "radar.h"
 #include "starfield.h"
+#include "gridtfx.h"
 
 class window_t;
 
@@ -62,14 +63,13 @@ class KOBO_screen
 	static int hi_st[10];
 	static char hi_nm[10][20];
 	static int long_credits_wrap;
-
 	static KOBO_Starfield stars;
+
+	static KOBO_GridTFX gridtfx;
+	static bool curtains_below;
 
 	static void render_noise();
 	static void render_highlight();
-	static void render_title_plasma(int t, float fade, int y, int h);
-	static void render_title_noise(float fade, int y, int h,
-			int bank, int frame);
 	static void render_bases(KOBO_map &map, int tileset, int vx, int vy);
 	static void clean_scrap_tile(int x, int y)
 	{
@@ -108,14 +108,16 @@ class KOBO_screen
 			float depth);
 	static void render_background();
 	static void render_fx();
-	static void title(int t, float fade, int mode);
+	static void title(int t, float fade);
 	static void credits(int t);
 	static void long_credits(int t);
 	static void help(int t);
-	static void scroller();
 	static void fps(float f);
 	static float fps()	{ return _fps; }
 	static void noise(int on);
+	static void curtains(bool st, float dur = 1.0f, bool on_top = false);
+	static bool curtains();
+	static void render_curtains();
 	static void render_countdown(int y, float t, int timeout,
 			int countdown);
 };

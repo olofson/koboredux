@@ -20,8 +20,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#define	DBG(x)
-
 #include <stdio.h>
 #include "logger.h"
 #include "gamestate.h"
@@ -32,27 +30,43 @@
 
 gamestate_t::gamestate_t()
 {
-	prev = 0;
-	manager = 0;
+	prev = NULL;
+	manager = NULL;
 	name = "<unnamed gamestate>";
 	info = NULL;
+	pushed = false;
 }
+
 
 gamestate_t::~gamestate_t()			{}
 
+
 void gamestate_t::pop()
 {
-	if(!manager)
-		return;
-	//This is far from fool-proof, but it should
-	//handle the most common cases of "trying to
-	//pop 'this' more than once"...
-	if(manager->current() == this)
-		manager->pop();
-	else
-		log_printf(WLOG, "GameStateManager: "
-				"WARNING: Tried to pop state more than once!\n");
+	gamestatemanager_t *mgr = manager;
+	tail_pop();
+	if(mgr->current())
+		mgr->current()->reenter();
 }
+
+
+void gamestate_t::tail_pop()
+{
+	if(!pushed)
+	{
+		log_printf(ELOG, "GameStateManager: Tried to pop state '%s', "
+				"which is not on the stack!\n", name);
+		return;
+	}
+	if(manager->current() != this)
+	{
+		log_printf(ELOG, "GameStateManager: Tried to pop state '%s', "
+				"which is not on top of the stack!\n", name);
+		return;
+	}
+	manager->tail_pop();
+}
+
 
 void gamestate_t::enter()			{}
 void gamestate_t::leave()			{}
@@ -75,7 +89,7 @@ void gamestate_t::post_render()			{}
 
 gamestatemanager_t::gamestatemanager_t()
 {
-	top = 0;
+	top = NULL;
 }
 
 
@@ -86,44 +100,81 @@ gamestatemanager_t::~gamestatemanager_t()
 
 void gamestatemanager_t::change(gamestate_t *gs)
 {
-	gs->manager = this;
+	if(gs->pushed)
+	{
+		log_printf(ELOG, "GameStateManager: Tried to change to state "
+				"'%s', which is already on the stack!\n",
+				gs->name);
+		return;
+	}
+
+	gs->manager = this;	// NOTE: May well be NULL if 'this' is static!
+	gs->pushed = true;
 
 	gamestate_t *oldtop = top;
 	if(top)
 		top = top->prev;
 	gs->prev = top;
 	top = gs;
+	log_printf(DLOG, "GameStateManager: Switched to '%s'\n", gs->name);
 
 	if(oldtop)
 	{
 		oldtop->leave();
-		oldtop->manager = 0;
+		oldtop->manager = NULL;
+		oldtop->pushed = false;
 	}
 	if(top)
 		top->enter();
-
-	log_printf(DLOG, "GameStateManager: Switched to '%s'\n", gs->name);
 }
 
 
+void gamestatemanager_t::tail_push(gamestate_t *gs)
+{
+	if(gs->pushed)
+	{
+		log_printf(ELOG, "GameStateManager: Tried to push state '%s' "
+				"more than once!\n", gs->name);
+		return;
+	}
+
+	gs->manager = this;
+	gs->pushed = true;
+
+	gs->prev = top;
+	top = gs;
+	log_printf(DLOG, "GameStateManager: Tail pushed state '%s'\n",
+			gs->name);
+
+	if(top)
+		top->enter();
+}
+
 void gamestatemanager_t::push(gamestate_t *gs)
 {
+	if(gs->pushed)
+	{
+		log_printf(ELOG, "GameStateManager: Tried to push state '%s' "
+				"more than once!\n", gs->name);
+		return;
+	}
+
 	gs->manager = this;
+	gs->pushed = true;
 
 	gamestate_t *oldtop = top;
 	gs->prev = top;
 	top = gs;
+	log_printf(DLOG, "GameStateManager: Pushed state '%s'\n", gs->name);
 
 	if(oldtop)
 		oldtop->yield();
 	if(top)
 		top->enter();
-
-	log_printf(DLOG, "GameStateManager: Pushed state '%s'\n", gs->name);
 }
 
 
-void gamestatemanager_t::pop()
+void gamestatemanager_t::tail_pop()
 {
 	gamestate_t *oldtop = top;
 	if(top)
@@ -131,9 +182,17 @@ void gamestatemanager_t::pop()
 	if(oldtop)
 	{
 		oldtop->leave();
-		oldtop->manager = 0;
-		log_printf(DLOG, "GameStateManager: Popped state '%s'\n", oldtop->name);
+		oldtop->manager = NULL;
+		oldtop->pushed = false;
+		log_printf(DLOG, "GameStateManager: Popped state '%s'\n",
+				oldtop->name);
 	}
+}
+
+
+void gamestatemanager_t::pop()
+{
+	tail_pop();
 	if(top)
 		top->reenter();
 }

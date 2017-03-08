@@ -24,6 +24,7 @@ set(sources
 	states.cpp
 	spinplanet.cpp
 	starfield.cpp
+	gridtfx.cpp
 	themeparser.cpp
 	replay.cpp
 	replay_gst.cpp

@@ -47,45 +47,57 @@
 #define GIGA             1000000000
 
 KOBO_gamestates _manage::gamestate = GS_NONE;
-bool _manage::is_paused = false;
-bool _manage::in_background = false;
 KOBO_replaymodes _manage::replaymode = RPM_PLAY;
-int _manage::game_seed;
-int _manage::selected_slot = 0;
-int _manage::selected_stage;
-int _manage::last_stage;	// HAX for the start stage selector
-skill_levels_t _manage::selected_skill = KOBO_DEFAULT_SKILL;
-unsigned _manage::highscore = 0;
-unsigned _manage::score;
-unsigned _manage::playtime;
-float _manage::disp_health;
-float _manage::disp_charge;
-int _manage::score_changed = 1;
-int _manage::flash_score_count = 0;
-int _manage::scroll_jump = 0;
-int _manage::delay_count;
-int _manage::total_cores;
-int _manage::remaining_cores;
-int _manage::noise_duration = 0;
-int _manage::noise_timer = 0;
-int _manage::noise_flash = 500;
-float _manage::noise_level = 0.0f;
-int _manage::intro_x = TILE_SIZEX * (64 - 18);
-int _manage::intro_y = TILE_SIZEY * (64 - 7);
-int _manage::show_bars = 0;
-int _manage::cam_lead_x = 0;
-int _manage::cam_lead_y = 0;
-int _manage::cam_lead_xf = 0;
-int _manage::cam_lead_yf = 0;
-int _manage::shake_x = 0;
-int _manage::shake_y = 0;
-int _manage::shake_fade_x = 0;
-int _manage::shake_fade_y = 0;
+bool _manage::is_paused = false;
+
 KOBO_campaign *_manage::campaign = NULL;
 KOBO_replay *_manage::replay = NULL;
 bool _manage::owns_replay = false;
 KOBO_player_controls _manage::lastctrl = KOBO_PC_FIRE;
 unsigned _manage::ctrltimer = 0;
+
+bool _manage::in_background = false;
+bool _manage::show_bars = false;
+float _manage::disp_health;
+float _manage::disp_charge;
+int _manage::flash_score_count = 0;
+bool _manage::score_changed = true;
+int _manage::intro_x = TILE_SIZEX * (64 - 18);
+int _manage::intro_y = TILE_SIZEY * (64 - 7);
+
+int _manage::game_seed;
+int _manage::total_cores;
+int _manage::remaining_cores;
+int _manage::selected_slot = 0;
+int _manage::selected_stage = -1;
+int _manage::last_stage;	// HAX for the start stage selector
+skill_levels_t _manage::selected_skill = KOBO_DEFAULT_SKILL;
+unsigned _manage::highscore = 0;
+unsigned _manage::score;
+unsigned _manage::playtime;
+
+bool _manage::scroll_jump = false;
+int _manage::noise_flash = 500;
+int _manage::noise_duration = 0;
+int _manage::noise_timer = 0;
+float _manage::noise_level = 0.0f;
+
+int _manage::delayed_stage = -1;
+KOBO_gamestates _manage::delayed_gamestate = GS_NONE;
+
+int _manage::retry_skip = 0;
+
+int _manage::cam_lead_x = 0;
+int _manage::cam_lead_y = 0;
+int _manage::cam_lead_xf = 0;
+int _manage::cam_lead_yf = 0;
+
+int _manage::shake_x = 0;
+int _manage::shake_y = 0;
+int _manage::shake_fade_x = 0;
+int _manage::shake_fade_y = 0;
+
+int _manage::delay_count;
 
 
 const char *enumstr(KOBO_replaymodes rpm)
@@ -93,7 +105,7 @@ const char *enumstr(KOBO_replaymodes rpm)
 	switch(rpm)
 	{
 	  case RPM_PLAY:	return "RPM_PLAY";
-	  case RPM_REWIND:	return "RPM_REWIND";
+	  case RPM_RETRY:	return "RPM_RETRY";
 	  case RPM_REPLAY:	return "RPM_REPLAY";
 	}
 	return "<illegal KOBO_replaymodes value>";
@@ -105,8 +117,8 @@ const char *enumstr(KOBO_gamestates gst)
 	switch(gst)
 	{
 	  case GS_NONE:		return "GS_NONE";
-	  case GS_INTRO:	return "GS_INTRO";
-	  case GS_SELECT:	return "GS_SELECT";
+	  case GS_TITLE:	return "GS_TITLE";
+	  case GS_SHOW:		return "GS_SHOW";
 	  case GS_GETREADY:	return "GS_GETREADY";
 	  case GS_PLAYING:	return "GS_PLAYING";
 	  case GS_LEVELDONE:	return "GS_LEVELDONE";
@@ -124,11 +136,6 @@ void _manage::set_bars()
 }
 
 
-// NOTE:
-//	After a noise out has faded out the sound effects, it's the
-//	noise/interference effect when the playfield is reinitialized
-//	that "accidentally" restores volume!
-//
 void _manage::run_noise()
 {
 	if(noise_flash == -2)
@@ -177,19 +184,12 @@ void _manage::run_noise()
 }
 
 
-void _manage::noise(int duration, int flash)
+void _manage::noise_glitch()
 {
-	noise_flash = flash;
-	noise_duration = noise_timer = duration;
-	screen.set_noise(B_NOISE, 1.0f, 0.0f, 1.0f);
+	noise_duration = noise_timer = 100;
 	noise_level = 1.0f;
-}
-
-
-void _manage::noise_out(int duration)
-{
-	noise_flash = -1;
-	noise_duration = noise_timer = duration;
+	noise_flash = 0;
+	screen.set_noise(B_NOISE, 1.0f, 0.0f, 1.0f);
 	screen.noise(1);
 }
 
@@ -221,30 +221,66 @@ void _manage::state(KOBO_gamestates gst)
 }
 
 
-void _manage::start_intro()
-{
-	init_resources_title();
-	state(GS_INTRO);
-}
-
-
 void _manage::select_slot(int sl)
 {
 	selected_slot = sl;
+	if(selected_slot < 0)
+	{
+		campaign = NULL;
+		return;
+	}
 	campaign = savemanager.campaign(selected_slot);
 	log_printf(ULOG, "Selected%s campaign slot %d.\n",
 			!campaign->exists() ? " empty" : "", selected_slot);
 }
 
 
-void _manage::select_scene(int scene, bool radar)
+void _manage::select_stage(int stage, KOBO_gamestates gs)
 {
-	selected_stage = scene;
-	screen.init_stage(scene, false);
-	wradar->mode(radar ? RM_SHOW : RM_OFF);
+	delayed_stage = -1;	// Cancel any pending stage change!
+	selected_stage = stage;
+	gamerand.init();
+	screen.init_stage(stage, false);
+	if(gs == GS_SHOW)
+	{
+		wradar->mode(RM_SHOW);
+	}
+	else if(gs == GS_TITLE)
+	{
+		wradar->mode(RM_OFF);
+		enemies.init();
+		enemies.is_intro = 1;
+		myship.init(true);
+		myship.off();
+		screen.prepare();
+		screen.generate_fixed_enemies();
+		gengine->camfilter(0);
+		gengine->force_scroll();
+		show_bars = false;
+		set_bars();
+		pxtop->fx(PFX_SCAN, PCOLOR_CORE);
+		pxbottom->fx(PFX_SCANREV, PCOLOR_CORE);
+		pxleft->fx(PFX_SCANREV, PCOLOR_CORE);
+		pxright->fx(PFX_SCAN, PCOLOR_CORE);
+		wdash->fade(1.0f);
+		wdash->mode(DASHBOARD_TITLE);
+		stop_screenshake();
+	}
 	put_info();
-	noise(150, 0);
-	state(GS_SELECT);
+	state(gs);
+}
+
+
+void _manage::show_stage(int stage, KOBO_gamestates gs)
+{
+	if(selected_stage < 0)
+		select_stage(stage, gs);
+	else if(stage != selected_stage)
+	{
+		delayed_stage = stage;
+		delayed_gamestate = gs;
+		screen.curtains(true, KOBO_ENTER_STAGE_FXTIME * 0.001f);
+	}
 }
 
 
@@ -252,17 +288,17 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 {
 	sound.g_new_scene(100);
 	sound.g_music(selected_stage);
-	noise(400, 300);
 	stop_screenshake();
 
 	disp_health = 0.0f;
 	disp_charge = 0.0f;
 	flash_score_count = 0;
-	score_changed = 1;
+	score_changed = true;
 	delay_count = 0;
-	scroll_jump = 1;
-	show_bars = 1;
+	scroll_jump = true;
+	show_bars = true;
 	lastctrl = KOBO_PC_FIRE;
+	retry_skip = 0;
 
 	if(replay && owns_replay)
 		delete replay;
@@ -279,7 +315,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		{
 			state(GS_PLAYING);
 			if(replaymode == RPM_PLAY)
-				replaymode = RPM_REWIND;
+				replaymode = RPM_RETRY;
 		}
 		else
 		{
@@ -296,6 +332,8 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		}
 		log_printf(ULOG, "Starting at stage %d from replay!\n",
 				replay->stage);
+		if(prefs->debug)
+			replay->log_dump(ULOG);
 		selected_stage = replay->stage;
 		game.set((game_types_t)replay->type,
 				(skill_levels_t)replay->skill);
@@ -394,7 +432,7 @@ bool _manage::continue_game()
 
 	replaymode = RPM_PLAY;
 	init_game(replay);
-	advance(-KOBO_REPLAY_REWIND);
+	advance(-KOBO_RETRY_REWIND);
 	gamecontrol.clear();
 	return true;
 }
@@ -423,8 +461,9 @@ void _manage::rewind()
 		log_printf(ELOG, "_manage::rewind() called with no replay!\n");
 		return;
 	}
+	noise_glitch();
 	init_game(replay);
-	advance(-KOBO_REPLAY_REWIND);
+	advance(-KOBO_RETRY_REWIND);
 }
 
 
@@ -469,7 +508,7 @@ void _manage::advance(int frame)
 		++playtime;
 	}
 	kill_screenshake();
-	scroll_jump = 1;
+	scroll_jump = true;
 	update();
 	sound.g_volume(volume_save);
 	replaymode = replaymode_save;
@@ -491,7 +530,7 @@ void _manage::next_bookmark()
 		return;
 	}
 	sound.g_new_scene(100);
-	advance(playtime + KOBO_REPLAY_SKIP);
+	advance(playtime + KOBO_RETRY_SKIP);
 }
 
 
@@ -502,15 +541,19 @@ void _manage::prev_bookmark()
 		log_printf(ELOG, "_manage::prev_bookmark() with no replay!\n");
 		return;
 	}
-	unsigned target = playtime > KOBO_REPLAY_SKIP ?
-			playtime - KOBO_REPLAY_SKIP : 0;
+	unsigned target = playtime > KOBO_RETRY_SKIP ?
+			playtime - KOBO_RETRY_SKIP : 0;
 	init_game(replay);
 	advance(target);
 }
 
 
-void _manage::next_scene()
+void _manage::next_stage()
 {
+	if(screen.curtains())
+		screen.curtains(false, KOBO_ENTER_STAGE_FXTIME * 0.001f);
+	else
+		noise_glitch();
 	finalize_replay();
 	selected_stage++;
 	if(selected_stage >= GIGA - 1)
@@ -532,9 +575,9 @@ void _manage::next_scene()
 			gsm.change(&st_demo_over);
 #endif
 		break;
-	  case RPM_REWIND:
+	  case RPM_RETRY:
 		// Wut? We're not supposed to get GS_LEVELDONE in this mode!
-		log_printf(WLOG, "_manage::next_scene() during RPM_REWIND!\n");
+		log_printf(WLOG, "_manage::next_stage() during RPM_RETRY!\n");
 		break;
 	  case RPM_REPLAY:
 		// Full replay! Move to next stage.
@@ -551,51 +594,21 @@ void _manage::next_scene()
 }
 
 
-void _manage::prev_scene()
+void _manage::prev_stage()
 {
 	if(replaymode != RPM_REPLAY)
 	{
-		log_printf(WLOG, "_manage::prev_scene() used with other "
+		log_printf(WLOG, "_manage::prev_stage() used with other "
 				"replay mode than RPM_REPLAY!\n");
 		return;
 	}
 	if(selected_stage <= 1)
 		return;
+	noise_glitch();
 	selected_stage--;
 	replay = campaign->get_replay(selected_stage);
 	if(replay)
 		init_game(replay);
-}
-
-
-void _manage::init_resources_title()
-{
-	noise(1000, 800);
-	gamerand.init();
-	screen.init_stage(KOBO_TITLE_LEVEL, false);
-	wradar->mode(RM_OFF);
-	gengine->period(30);
-	enemies.init();
-	enemies.is_intro = 1;
-	myship.init(true);
-	myship.off();
-	screen.prepare();
-	screen.generate_fixed_enemies();
-	put_info();
-	put_score();
-	put_player_stats();
-	run_intro();
-	gengine->camfilter(0);
-	gengine->force_scroll();
-	show_bars = 0;
-	set_bars();
-	pxtop->fx(PFX_SCAN, PCOLOR_CORE);
-	pxbottom->fx(PFX_SCANREV, PCOLOR_CORE);
-	pxleft->fx(PFX_SCANREV, PCOLOR_CORE);
-	pxright->fx(PFX_SCAN, PCOLOR_CORE);
-	wdash->fade(1.0f);
-	wdash->mode(DASHBOARD_TITLE);
-	stop_screenshake();
 }
 
 
@@ -652,7 +665,7 @@ void _manage::put_info()
 	dlevel->text(s);
 	dlevel->on();
 
-	score_changed = 1;
+	score_changed = true;
 }
 
 
@@ -669,7 +682,7 @@ void _manage::put_score()
 			dhigh->text(s);
 			dhigh->on();
 		}
-		score_changed = 0;
+		score_changed = false;
 	}
 	if(flash_score_count > 0)
 		flash_score();
@@ -700,29 +713,6 @@ void _manage::init()
 }
 
 
-void _manage::run_intro()
-{
-	gengine->scroll(PIXEL2CS(intro_x), PIXEL2CS(intro_y));
-	intro_y -= 1;
-	intro_x &= WORLD_SIZEX - 1;
-	intro_y &= WORLD_SIZEY - 1;
-	float w = intro_y * M_PI * 2.0f * 3.0f / WORLD_SIZEX;
-	myship.set_position(intro_x + DASHW(MAIN) / 2 +
-			(int)(DASHW(MAIN) * 0.3f * sin(w)),
-			intro_y + DASHH(MAIN) / 2 +
-			(int)(DASHH(MAIN) * 0.3f * cos(w)));
-	enemies.move_intro();
-	++playtime;
-	enemies.put();
-
-	put_player_stats();
-	put_score();
-
-	run_noise();
-	run_leds();
-}
-
-
 void _manage::screenshake(float mag_x, float mag_y, float fade)
 {
 	int nsx = mag_x * 256.0f;
@@ -745,6 +735,36 @@ void _manage::stop_screenshake()
 void _manage::kill_screenshake()
 {
 	shake_x = shake_y = 0;
+}
+
+
+void _manage::run_intro()
+{
+	intro_y -= 1;
+	intro_x &= WORLD_SIZEX - 1;
+	intro_y &= WORLD_SIZEY - 1;
+	float w = intro_y * M_PI * 2.0f * 3.0f / WORLD_SIZEX;
+	myship.set_position(intro_x + DASHW(MAIN) / 2 +
+			(int)(DASHW(MAIN) * 0.3f * sin(w)),
+			intro_y + DASHH(MAIN) / 2 +
+			(int)(DASHH(MAIN) * 0.3f * cos(w)));
+	enemies.move_intro();
+	++playtime;
+	enemies.put();
+
+	gengine->scroll(PIXEL2CS(intro_x), PIXEL2CS(intro_y));
+	if(scroll_jump)
+	{
+		enemies.force_positions();
+		gengine->force_scroll();
+		scroll_jump = false;
+	}
+
+	put_player_stats();
+	put_score();
+
+	run_noise();
+	run_leds();
 }
 
 
@@ -812,7 +832,51 @@ void _manage::update()
 	if(scroll_jump)
 	{
 		gengine->force_scroll();
-		scroll_jump = 0;
+		scroll_jump = false;
+	}
+}
+
+
+void _manage::run_game()
+{
+	KOBO_player_controls ctrlin = in_background ? KOBO_PC_NONE :
+			myship.decode_input();
+	KOBO_player_controls ctrl = KOBO_PC_NONE;
+	switch(replaymode)
+	{
+	  case RPM_PLAY:
+		ctrl = controls_play(ctrlin);
+		break;
+	  case RPM_RETRY:
+		ctrl = controls_retry(ctrlin);
+		break;
+	  case RPM_REPLAY:
+		ctrl = controls_replay(ctrlin);
+		break;
+	}
+	myship.control(ctrl);
+	myship.move();
+	enemies.move();
+	myship.check_base_bolts();
+	if(replay && prefs->replaydebug)
+		switch(replaymode)
+		{
+		  case RPM_PLAY:
+			replay->record_state();
+			break;
+		  case RPM_RETRY:
+		  case RPM_REPLAY:
+			replay->verify_state();
+			break;
+		}
+	update();
+	++playtime;
+	if(lastctrl == ctrlin)
+		++ctrltimer;
+	else
+	{
+		lastctrl = ctrlin;
+		ctrltimer = 0;
 	}
 }
 
@@ -822,7 +886,7 @@ void _manage::update()
 //	Use and record the control input! Stop recording the moment the player
 //	dies, to keep the replay progress bar accurate.
 //
-KOBO_player_controls _manage::controls_live(KOBO_player_controls ctrl)
+KOBO_player_controls _manage::controls_play(KOBO_player_controls ctrl)
 {
 	if(replay && myship.alive())
 		replay->write(ctrl);
@@ -835,20 +899,26 @@ KOBO_player_controls _manage::controls_live(KOBO_player_controls ctrl)
 //	Control input is used for controlling the rewind/replay playback, and
 //	also allows the player can take over and start playing at any point.
 //
-KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
+void _manage::controls_retry_skip(KOBO_player_controls ctrl)
 {
-	// Playback skip controls
-	if(((ctrl & KOBO_PC_DIR) != (lastctrl & KOBO_PC_DIR)) &&
-			(ctrltimer >= KOBO_REPLAY_SKIP_INHIBIT))
+	if((ctrl & KOBO_PC_DIR) != (lastctrl & KOBO_PC_DIR))
 		switch(ctrl & KOBO_PC_DIR)
 		{
 		  case 1:	// Up
+			noise_glitch();
 			next_bookmark();
 			break;
 		  case 5:	// Down
+			noise_glitch();
 			prev_bookmark();
 			break;
 		}
+}
+
+
+KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
+{
+	controls_retry_skip(ctrl);
 
 	if((ctrl & KOBO_PC_FIRE) && !(lastctrl & KOBO_PC_FIRE))
 	{
@@ -910,16 +980,15 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 {
 	// Playback skip controls
-	if(((ctrl & KOBO_PC_DIR) != (lastctrl & KOBO_PC_DIR)) &&
-			(ctrltimer >= KOBO_REPLAY_SKIP_INHIBIT))
+	if((ctrl & KOBO_PC_DIR) != (lastctrl & KOBO_PC_DIR))
 		switch(ctrl & KOBO_PC_DIR)
 		{
 		  case 1:	// Up
 			if(campaign->get_replay(selected_stage + 1))
-				next_scene();
+				next_stage();
 			break;
 		  case 5:	// Down
-			prev_scene();
+			prev_stage();
 			break;
 		}
 
@@ -959,52 +1028,16 @@ KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 }
 
 
-void _manage::run_game()
-{
-	KOBO_player_controls ctrlin = in_background ? KOBO_PC_NONE :
-			myship.decode_input();
-	KOBO_player_controls ctrl = KOBO_PC_NONE;
-	switch(replaymode)
-	{
-	  case RPM_PLAY:
-		ctrl = controls_live(ctrlin);
-		break;
-	  case RPM_REWIND:
-		ctrl = controls_retry(ctrlin);
-		break;
-	  case RPM_REPLAY:
-		ctrl = controls_replay(ctrlin);
-		break;
-	}
-	myship.control(ctrl);
-	myship.move();
-	enemies.move();
-	myship.check_base_bolts();
-	if(replay && prefs->replaydebug)
-		switch(replaymode)
-		{
-		  case RPM_PLAY:
-			replay->record_state();
-			break;
-		  case RPM_REWIND:
-		  case RPM_REPLAY:
-			replay->verify_state();
-			break;
-		}
-	update();
-	++playtime;
-	if(lastctrl == ctrlin)
-		++ctrltimer;
-	else
-	{
-		lastctrl = ctrlin;
-		ctrltimer = 0;
-	}
-}
-
-
 void _manage::run()
 {
+	// Delayed stage selection
+	if((delayed_stage > 0) && screen.curtains())
+	{
+		select_stage(delayed_stage, delayed_gamestate);
+		screen.curtains(false, KOBO_ENTER_STAGE_FXTIME * 0.001f);
+		scroll_jump = true;
+	}
+
 	if(is_paused)
 	{
 		update();
@@ -1014,8 +1047,8 @@ void _manage::run()
 	{
 	  case GS_NONE:
 		break;
-	  case GS_INTRO:
-	  case GS_SELECT:
+	  case GS_SHOW:
+	  case GS_TITLE:
 		run_intro();
 		break;
 	  case GS_GETREADY:
@@ -1032,7 +1065,7 @@ void _manage::run()
 			  case RPM_REPLAY:
 				state(GS_NONE);
 				break;
-			  case RPM_REWIND:
+			  case RPM_RETRY:
 				rewind();
 				break;
 			  default:
@@ -1041,7 +1074,11 @@ void _manage::run()
 		if(gamestate == GS_GAMEOVER)
 			run_game();
 		else
+		{
+			if((replaymode == RPM_RETRY) && !in_background)
+				controls_retry_skip(myship.decode_input());
 			update();
+		}
 		break;
 	  case GS_LEVELDONE:
 		if(delay_count && !enemies.exist_pipe())
@@ -1049,7 +1086,7 @@ void _manage::run()
 		if(delay_count == 1)
 		{
 			put_info();
-			next_scene();
+			next_stage();
 		}
 		else
 			run_game();
@@ -1067,6 +1104,12 @@ float _manage::replay_progress()
 }
 
 
+int _manage::time_remaining()
+{
+	return delay_count * gengine->period();
+}
+
+
 int _manage::replay_stages()
 {
 	if(!campaign)
@@ -1079,7 +1122,8 @@ int _manage::replay_stages()
 void _manage::abort_game()
 {
 	log_printf(ULOG, "Aborting game!\n");
-	finalize_replay();
+	if(replaymode == RPM_PLAY)
+		finalize_replay();
 	sound.g_new_scene();
 	wdash->fade(1.0f);
 	wdash->mode(DASHBOARD_TITLE);
@@ -1094,6 +1138,7 @@ void _manage::abort_game()
 	replay = NULL;
 	owns_replay = false;
 	state(GS_NONE);
+	replaymode = RPM_PLAY;
 }
 
 
@@ -1126,6 +1171,7 @@ void _manage::background(bool bg)
 		if(replaymode == RPM_PLAY)
 			switch(gamestate)
 			{
+			  case GS_GETREADY:
 			  case GS_PLAYING:
 			  case GS_LEVELDONE:
 				pause(true);
@@ -1145,11 +1191,13 @@ void _manage::lost_myship()
 	log_printf(ULOG, "Player died at stage %d; score: %d, health: %d, "
 			"charge: %d\n", selected_stage, score, myship.health(),
 			myship.charge());
-	if(campaign && (replaymode == RPM_PLAY))
+	if(replaymode == RPM_PLAY)
 	{
-		finalize_replay();
 		if(replay)
+		{
+			finalize_replay();
 			++replay->deaths;
+		}
 		if(campaign)
 			campaign->save();
 	}
@@ -1171,7 +1219,7 @@ void _manage::destroyed_a_core()
 		myship.state(SHIP_INVULNERABLE);
 
 		// Don't try to leave if we're in rewind!
-		if(replaymode != RPM_REWIND)
+		if(replaymode != RPM_RETRY)
 		{
 			state(GS_LEVELDONE);
 			delay_count = KOBO_LEVELDONE_TIMEOUT;
@@ -1195,7 +1243,7 @@ void _manage::add_score(int sc)
 				flash_score_count = 50;
 		}
 	}
-	score_changed = 1;
+	score_changed = true;
 }
 
 

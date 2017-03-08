@@ -60,67 +60,18 @@ float KOBO_screen::noise_depth = 0.0f;
 int KOBO_screen::highlight_y = 0;
 int KOBO_screen::highlight_h = 0;
 KOBO_Starfield KOBO_screen::stars;
+KOBO_GridTFX KOBO_screen::gridtfx;
+bool KOBO_screen::curtains_below = true;
 int KOBO_screen::long_credits_wrap = 0;
 
 
 void KOBO_screen::init_graphics()
 {
 	stars.set_target(wmain, KOBO_P_MAIN_STARS);
+	gridtfx.Target(wmain);
+	gridtfx.Tiles(B_GRIDTFXTILES, themedata.get(KOBO_D_GRIDTFXLEVELS));
 	noise_h = DASHH(MAIN);
 	highlight_y = DASHH(MAIN) / 2;
-}
-
-
-void KOBO_screen::render_title_plasma(int t, float fade, int y, int h)
-{
-#if 0
-	s_sprite_t *s = gengine->get_sprite(B_FOCUSFX, 0);
-	if(!s || !s->surface)
-		return;
-	SDL_Surface *fx = s->surface;
-	SDL_Rect sr;
-	sr.x = 0;
-	sr.w = fx->w;
-	sr.h = 1;
-	for(int ty = 0; ty < h; ++ty)
-	{
-		float sy = (float)ty / (h - 1);
-		float shape = sin(M_PI * sy);
-		float plasma = 0.5f + 0.5f * sin(t * 0.004f +
-				sin(t * 0.00017f) * sy * 18.0f);
-		float plasma2 = 0.5f + 0.5f * sin(t * 0.001f +
-				sin(t * 0.00013f) * sy * 12.0f);
-		int i = (int)((fx->h - 1) * (0.3f * plasma + 0.7f * shape) * fade);
-		int xo = (int)(8192 * plasma2 * gengine->xscale() / 256);
-		xo -= (int)(xo / fx->w) * fx->w;
-		int xmax = woverlay->phys_rect.x + woverlay->phys_rect.w;
-		for(int x = -xo; x < xmax; x += fx->w)
-		{
-			sr.y = i;
-			RGN_Blit(fx, &sr, x, y + ty);
-		}
-	}
-#endif
-}
-
-
-void KOBO_screen::render_title_noise(float fade, int y, int h, int bank, int frame)
-{
-#if 0
-	for(int ty = 0; ty < h; )
-	{
-		int xo = (int)(pubrand.get(16) * gengine->xscale()) / 256;
-		s_sprite_t *s = gengine->get_sprite(bank, pubrand.get(4));
-		if(!s || !s->surface)
-			continue;
-		SDL_Surface *fx = s->surface;
-		xo -= (int)(xo / fx->w) * fx->w;
-		int xmax = woverlay->phys_rect.x + woverlay->phys_rect.w;
-		for(int x = -xo; x < xmax; x += fx->w)
-			RGN_Blit(fx, NULL, x, y + ty);
-		ty += fx->h;
-	}
-#endif
 }
 
 
@@ -135,7 +86,7 @@ static int flashin(int t)
 }
 
 
-void KOBO_screen::title(int t, float fade, int mode)
+void KOBO_screen::title(int t, float fade)
 {
 	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), B_LOGO);
 	if(!b)
@@ -251,14 +202,6 @@ void KOBO_screen::credits(int t)
 						"XKobo - The Original Game");
 			break;
 		}
-#if 0
-	if(!flashin(t - 7000))
-	{
-		woverlay->font(B_MEDIUM_FONT);
-		woverlay->center(170, "Additional Credits & Thanks");
-		woverlay->center(180, "in the scroller below");
-	}
-#endif
 }
 
 
@@ -543,130 +486,6 @@ void KOBO_screen::help(int t)
 }
 
 
-void KOBO_screen::scroller()
-{
-	if(do_noise)
-		return;
-
-	/*
-	 * Adjust scroller speed according to
-	 * frame rate, for readability.
-	 */
-	if(_fps < 30)
-		target_speed = SCROLLER_SPEED / 2;
-	else if(_fps > 40)
-		target_speed = SCROLLER_SPEED;
-
-	scroller_speed += (target_speed - scroller_speed) * 0.05;
-
-	static const char scrolltext[] =
-			"Welcome to KOBO REDUX, a revival of the old "
-			"KOBO DELUXE, which was an enhanced version of "
-			"Akira Higuchi's fabulous X-Window game XKOBO. "
-			"     "
-			"KOBO REDUX uses SDL 2, the Simple DirectMedia Layer "
-			"(www.libsdl.org) for graphics and input, and "
-			"Audiality 2 (audiality.org) for sound and music. "
-			"     "
-			"KOBO DELUXE has been known to hinder productivity on: "
-			"     "
-			"  -  "
-			"Windows 95/98/ME  -  "
-			"Windows 2000/XP  -  "
-			"Mac OS X (PPC)  -  "
-			"BeOS (x86, PPC)  -  "
-			"AmigaOS (68k, PPC)  -  "
-			"Solaris (x86, SPARC)  -  "
-			"QNX (x86)  -  "
-			"GNU/Linux (x86, x86_64, PPC, PPC64)  -  "
-			"OpenBSD (x86, PPC, SPARC, SPARC64)  -  "
-			"FreeBSD (x86)  -  "
-			"NetBSD (x86)  -  "
-			"IRIX  -  "
-			"OS/2  -  "
-			"PlayStation 2/PS2Linux -  "
-			"Xbox  -  "
-			"Syllable  -  "
-			"ITOS (Nokia internet tablets)  -  "
-			"     "
-			"Any help in the Cause of Infiltrating Further "
-			"Platforms is Greatly Appreciated! "
-			"                        "
-			"Additional Credits & Thanks to: "
-			"      Torsten Giebl (Slackware)"
-			"      David Andersson (Some Good Ideas)"
-			"      Samuel Hart (Joystick Support)"
-			"      Max Horn (Mac OS X)"
-			"      Jeremy Sheeley (Player Profiles)"
-			"      Tsuyoshi Iguchi (FreeBSD, NetBSD)"
-			"      G. Low (Solaris)"
-			"      Gerry Jo \"Trick\" Jellestad (Testing & Ideas)"
-			"      \"Riki\" (Intel Compiler)"
-			"      Andreas Spaangberg (Sun Compiler)"
-			"      \"SixK\" (Amiga Port)"
-			"      Joey Hess (Debian)"
-			"      Martijn van Oosterhout (FPS limiter)"
-			"      Antonio Messina (Stage 1601+, Always Fire)"
-			"      Hans de Goede (Audio bug)"
-			"      Marianne Ibbotson (\"Autopause\")"
-			"      Sam Palmer (Windows testing)"
-			"      Michael Sterrett (glSDL issues)"
-			"      Sam Lantinga & Others (SDL)"
-			"      Members of the SDL Mailing List"
-			"                        "
-			"Additional Thanks from Akira Higuchi Go To: "
-			"      Bruce Cheng"
-			"      Christoph Lameter"
-			"      Davide Rossi"
-			"      Eduard Martinescu"
-			"      Elan Feingold"
-			"      Helmut Hoenig"
-			"      Jeff Epler"
-			"      Joe Ramey"
-			"      Joey Hess"
-			"      Michael Sterrett"
-			"      Mihail Iotov"
-			"      Shoichi Nakayama"
-			"      Thomas Marsh"
-			"      Torsten Wolnik"
-			"                        "
-			"And as we said in the old days... "
-			"                        "
-			"         <WRAP>         ";
-// FIXME: Nasty static state variables...
-	static const char *stp = scrolltext;
-	static int pos = PIXEL2CS((int)SCREEN_WIDTH);
-	static int t = 0;
-	int nt = (int)SDL_GetTicks();
-	int dt = nt - t;
-	t = nt;
-	if(dt > 100)
-		dt = 100;
-	static int fdt = 0;
-	fdt += ((dt<<8) - fdt) >> 3;
-	pos -= (fdt * PIXEL2CS((int)scroller_speed) + 128000) / 256000;
-	woverlay->font(B_BIG_FONT);
-	woverlay->string_fxp(pos, PIXEL2CS(312), stp);
-
-	/*
-	 * Chop away characters at the left edge
-	 */
-	char buf[2] = {*stp, 0};
-	int cw = woverlay->textwidth_fxp(buf);
-	if(-pos > cw)
-	{
-		pos += cw;
-		++stp;
-		if(*stp == 0)
-		{
-			// Wrap!
-			pos = PIXEL2CS((int)SCREEN_WIDTH);
-			stp = scrolltext;
-		}
-	}
-}
-
-
 void KOBO_screen::init_stage(int st, bool ingame)
 {
 	wplanet->resetmod();
@@ -868,6 +687,33 @@ void KOBO_screen::set_noise(int source, float fade, float bright, float depth)
 	noise_fade = fade;
 	noise_bright = bright;
 	noise_depth = depth;
+}
+
+
+void KOBO_screen::curtains(bool st, float dur, bool on_top)
+{
+	if(gridtfx.Done() && !gridtfx.State())
+		curtains_below = !on_top;
+	gridtfx.State(st, dur);
+}
+
+
+bool KOBO_screen::curtains()
+{
+	return gridtfx.State();
+}
+
+
+void KOBO_screen::render_curtains()
+{
+	if(!curtains_below)
+	{
+		wmain->resetmod();
+		int cm = 255.0f * themedata.get(KOBO_D_GRIDTFX_COLORMOD, 0);
+		wmain->colormod(cm, cm, cm);
+		gridtfx.Render();
+		wmain->resetmod();
+	}
 }
 
 
@@ -1179,12 +1025,33 @@ void KOBO_screen::render_background()
 	cm = 255.0f * themedata.get(KOBO_D_BASES_COLORMOD, show_title ? 3 : 2);
 	wmain->colormod(cm, cm, cm);
 	render_bases(map[0], B_R1_TILES + region, vx, vy);
+	wmain->resetmod();
 }
 
 
 void KOBO_screen::render_fx()
 {
+	wmain->resetmod();
 	render_noise();
+
+	// Gray overlay when in rewind/retry mode
+	if(manage.replay_mode() == RPM_RETRY)
+	{
+		woverlay->foreground(woverlay->map_rgb(48, 48, 48));
+		woverlay->alphamod(128);
+		woverlay->fillrect(0, 0, woverlay->width(),
+				woverlay->height());
+		woverlay->alphamod(255);
+	}
+
+	if(curtains_below)
+	{
+		int cm = 255.0f * themedata.get(KOBO_D_GRIDTFX_COLORMOD, 1);
+		wmain->colormod(cm, cm, cm);
+		gridtfx.Render();
+		wmain->resetmod();
+	}
+
 	render_highlight();
 }
 

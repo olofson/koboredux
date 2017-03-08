@@ -209,3 +209,14 @@ sprites B_SHIELDFX "shieldfx3.png" 32 32 CENTER
 image B_FOCUSFX "gridfx2.png"
 set D_FOCUSFX_GRID	65	205	// horizon near
 set D_FOCUSFX_ALPHA	1
+
+// Fullscreen grid transition effect
+set D_FS_GRIDTFXLEVELS	32
+set D_FS_GRIDTFX_SLOW	2.5
+set D_FS_GRIDTFX_FAST	1
+sprites B_FS_GRIDTFXTILES "fs-gridtfx-tiles.png" 40 40
+
+// Grid transition effect for dashboard windows
+set D_GRIDTFXLEVELS	16
+sprites B_GRIDTFXTILES "gridtfx-tiles-blue.png" 16 16
+set D_GRIDTFX_COLORMOD	1 .5	// front/below
