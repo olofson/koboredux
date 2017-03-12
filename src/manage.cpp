@@ -86,6 +86,7 @@ int _manage::delayed_stage = -1;
 KOBO_gamestates _manage::delayed_gamestate = GS_NONE;
 
 int _manage::retry_skip = 0;
+bool _manage::retry_rewind = false;
 
 int _manage::cam_lead_x = 0;
 int _manage::cam_lead_y = 0;
@@ -462,9 +463,8 @@ void _manage::rewind()
 		log_printf(ELOG, "_manage::rewind() called with no replay!\n");
 		return;
 	}
-	noise_glitch();
-	init_game(replay);
-	advance(-KOBO_RETRY_REWIND);
+	retry_rewind = true;
+	screen.curtains(true, KOBO_RETRY_SKIP_FXTIME * 0.001f);
 }
 
 
@@ -922,15 +922,6 @@ void _manage::controls_retry_skip(KOBO_player_controls ctrl)
 		screen.curtains(retry_skip != 0,
 				KOBO_RETRY_SKIP_FXTIME * 0.001f);
 	}
-	if(screen.curtains())
-	{
-		if(retry_skip > 0)
-			next_bookmark();
-		else if(retry_skip < 0)
-			prev_bookmark();
-		retry_skip = 0;
-		screen.curtains(false, KOBO_RETRY_SKIP_FXTIME * 0.001f);
-	}
 }
 
 KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
@@ -1048,14 +1039,37 @@ KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 
 void _manage::run()
 {
-	// Delayed stage selection
-	if((delayed_stage > 0) && screen.curtains())
+	if(screen.curtains())
 	{
-		select_stage(delayed_stage, delayed_gamestate);
-		screen.curtains(false, KOBO_ENTER_STAGE_FXTIME * 0.001f);
-		scroll_jump = true;
+		if(delayed_stage > 0)
+		{
+			// Delayed stage selection
+			select_stage(delayed_stage, delayed_gamestate);
+			screen.curtains(false,
+					KOBO_ENTER_STAGE_FXTIME * 0.001f);
+			scroll_jump = true;
+		}
+		if(retry_skip)
+		{
+			// Delayed skip
+			if(retry_skip > 0)
+				next_bookmark();
+			else if(retry_skip < 0)
+				prev_bookmark();
+			retry_skip = 0;
+			screen.curtains(false,
+					KOBO_RETRY_SKIP_FXTIME * 0.001f);
+		}
+		if(retry_rewind)
+		{
+			// Delayed rewind
+			init_game(replay);
+			advance(-KOBO_RETRY_REWIND);
+			retry_rewind = false;
+			screen.curtains(false,
+					KOBO_RETRY_SKIP_FXTIME * 0.001f);
+		}
 	}
-
 	if(is_paused)
 	{
 		update();

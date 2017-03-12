@@ -98,8 +98,9 @@ class _manage
 	static int delayed_stage;
 	static KOBO_gamestates delayed_gamestate;
 
-	// Delayed skips with transition effect
-	static int retry_skip;
+	// Delayed skips and rewinds with transition effect
+	static int retry_skip;	// -1/0/+1
+	static bool retry_rewind;
 
 	// Camera lead
 	static int cam_lead_x, cam_lead_y;
