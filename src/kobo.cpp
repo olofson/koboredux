@@ -857,6 +857,7 @@ void KOBO_main::noiseburst()
 	if(prefs->quickstart || prefs->cmd_warp)
 		return;
 
+	sound.timestamp_reset();
 	sound.ui_noise(S_UI_LOADER);
 	wdash->fade(0.0f);
 	wdash->mode(DASHBOARD_NOISE);
@@ -871,6 +872,7 @@ void KOBO_main::noiseburst()
 		gengine->present();
 	}
 	wdash->fade(0.0f);
+	sound.timestamp_reset();
 	sound.ui_noise(0);
 }
 
@@ -1304,6 +1306,7 @@ int KOBO_main::open()
 	else
 		wdash->mode(DASHBOARD_TITLE);
 
+	sound.timestamp_reset();
 	init_dash_layout();
 	ct_engine.render_highlight = kobo_render_highlight;
 	wradar->mode(RM_NOISE);

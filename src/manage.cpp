@@ -286,6 +286,7 @@ void _manage::show_stage(int stage, KOBO_gamestates gs)
 
 void _manage::init_game(KOBO_replay *rp, bool newship)
 {
+	sound.timestamp_reset();
 	sound.g_new_scene(100);
 	sound.g_music(selected_stage);
 	stop_screenshake();
@@ -506,10 +507,12 @@ void _manage::advance(int frame)
 		if(prefs->replaydebug)
 			replay->verify_state();
 		++playtime;
+		sound.timestamp_reset();
 	}
 	kill_screenshake();
 	scroll_jump = true;
 	update();
+	sound.timestamp_reset();
 	sound.g_volume(volume_save);
 	replaymode = replaymode_save;
 }
