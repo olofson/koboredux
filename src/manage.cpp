@@ -963,9 +963,12 @@ void _manage::controls_retry_skip(KOBO_player_controls ctrl)
 
 KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 {
+	// Skip back/forth controls always work!
 	controls_retry_skip(ctrl);
 
-	if((ctrl & KOBO_PC_FIRE) && !(lastctrl & KOBO_PC_FIRE))
+	// Dive back into the game?
+	if(myship.alive() && (ctrl & KOBO_PC_FIRE) &&
+			!(lastctrl & KOBO_PC_FIRE))
 	{
 		// Player takes over control! Replay recording must be
 		// resumed at exactly this frame, overwriting any
@@ -981,6 +984,7 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 		return ctrl;
 	}
 
+	// Handle end-of-replay/player death
 	KOBO_player_controls rpctrl = replay->read();
 	if(rpctrl == KOBO_PC_END)
 	{
@@ -1144,6 +1148,7 @@ void _manage::run()
 			run_game();
 		else
 		{
+			// Special case: We want skip controls to work here!
 			if((replaymode == RPM_RETRY) && !in_background)
 				controls_retry_skip(myship.decode_input());
 			update();
