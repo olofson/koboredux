@@ -445,7 +445,8 @@ bool _manage::start_replay(int stage)
 	if(!campaign)
 		return false;
 
-	replay = campaign->get_replay(stage);
+	selected_stage = stage;
+	find_replay_forward();
 	if(!replay)
 		return false;
 
@@ -551,6 +552,34 @@ void _manage::prev_bookmark()
 }
 
 
+void _manage::find_replay_forward()
+{
+	while(selected_stage <= campaign->last_stage())
+	{
+		replay = campaign->get_replay(selected_stage);
+		if(replay)
+			return;
+		log_printf(WLOG, "Campaign has no replay for stage "
+				"%d!\n", selected_stage);
+		++selected_stage;
+	}
+}
+
+
+void _manage::find_replay_reverse()
+{
+	while(selected_stage >= 1)
+	{
+		replay = campaign->get_replay(selected_stage);
+		if(replay)
+			return;
+		log_printf(WLOG, "Campaign has no replay for stage "
+				"%d!\n", selected_stage);
+		--selected_stage;
+	}
+}
+
+
 void _manage::next_stage()
 {
 	if(screen.curtains())
@@ -584,7 +613,7 @@ void _manage::next_stage()
 		break;
 	  case RPM_REPLAY:
 		// Full replay! Move to next stage.
-		replay = campaign->get_replay(selected_stage);
+		find_replay_forward();
 		if(replay)
 			init_game(replay);
 		else
@@ -607,11 +636,19 @@ void _manage::prev_stage()
 	}
 	if(selected_stage <= 1)
 		return;
-	noise_glitch();
+	int st = selected_stage;
 	selected_stage--;
-	replay = campaign->get_replay(selected_stage);
-	if(replay)
+	find_replay_reverse();
+	if(!replay)
+	{
+		selected_stage = st;
+		replay = campaign->get_replay(selected_stage);
+	}
+	if(replay && (st != selected_stage))
+	{
+		noise_glitch();
 		init_game(replay);
+	}
 }
 
 

@@ -123,6 +123,8 @@ class _manage
 
 	static void next_bookmark();
 	static void prev_bookmark();
+	static void find_replay_forward();
+	static void find_replay_reverse();
 	static void next_stage();
 	static void prev_stage();
 
