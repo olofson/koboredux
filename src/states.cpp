@@ -815,6 +815,8 @@ void st_replay_t::frame()
 	{
 	  case GS_GAMEOVER:
 	  case GS_REPLAYEND:
+		if(prefs->loopreplays)
+			break;
 		if(manage.time_remaining() > KOBO_ENTER_TITLE_FXTIME)
 			return;
 		// Fall-through

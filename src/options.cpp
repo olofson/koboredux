@@ -50,6 +50,9 @@ void system_options_t::build()
 		item("More Debug", 4);
 		item("Everything", 5);
 
+	space();
+	yesno("Loop Campaign Replays", &prf->loopreplays, 0);
+
 	xoffs = 0.5;
 	space(2);
 	button("ACCEPT", OS_CLOSE);

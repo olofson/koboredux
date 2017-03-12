@@ -42,6 +42,7 @@ void prefs_t::init()
 	key("logformat", logformat, 0); desc("Log File Format");
 	key("logverbosity", logverbosity, 2); desc("Log Verbosity Level");
 	yesno("quickstart", quickstart, 0); desc("Quick Startup");
+	yesno("loopreplays", loopreplays, 0); desc("Loop Campaign Replays");
 
 	section("Video");
 	yesno("fullscreen", fullscreen, 1); desc("Fullscreen Display");

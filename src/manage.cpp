@@ -1132,11 +1132,22 @@ void _manage::run()
 		break;
 	  case GS_GAMEOVER:
 	  case GS_REPLAYEND:
+		if((replaymode == RPM_REPLAY) && prefs->loopreplays &&
+				(time_remaining() <= KOBO_ENTER_TITLE_FXTIME))
+			screen.curtains(true, KOBO_RETRY_SKIP_FXTIME * 0.001f);
 		if(delay_count && !--delay_count)
 			switch(replaymode)
 			{
 			  case RPM_REPLAY:
-				state(GS_NONE);
+				if(prefs->loopreplays)
+				{
+					start_replay(1);
+					screen.curtains(false,
+							KOBO_RETRY_SKIP_FXTIME
+							* 0.001f);
+				}
+				else
+					state(GS_NONE);
 				break;
 			  case RPM_RETRY:
 				rewind();
