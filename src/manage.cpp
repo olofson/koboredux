@@ -902,19 +902,33 @@ KOBO_player_controls _manage::controls_play(KOBO_player_controls ctrl)
 void _manage::controls_retry_skip(KOBO_player_controls ctrl)
 {
 	if((ctrl & KOBO_PC_DIR) != (lastctrl & KOBO_PC_DIR))
+	{
 		switch(ctrl & KOBO_PC_DIR)
 		{
 		  case 1:	// Up
-			noise_glitch();
-			next_bookmark();
+			++retry_skip;
+			if(retry_skip > 1)
+				retry_skip = 1;
 			break;
 		  case 5:	// Down
-			noise_glitch();
-			prev_bookmark();
+			--retry_skip;
+			if(retry_skip < -1)
+				retry_skip = -1;
 			break;
 		}
+		screen.curtains(retry_skip != 0,
+				KOBO_RETRY_SKIP_FXTIME * 0.001f);
+	}
+	if(screen.curtains())
+	{
+		if(retry_skip > 0)
+			next_bookmark();
+		else if(retry_skip < 0)
+			prev_bookmark();
+		retry_skip = 0;
+		screen.curtains(false, KOBO_RETRY_SKIP_FXTIME * 0.001f);
+	}
 }
-
 
 KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 {
@@ -925,6 +939,7 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 		// Player takes over control! Replay recording must be
 		// resumed at exactly this frame, overwriting any
 		// subsequent data.
+		screen.curtains(false, KOBO_RETRY_SKIP_FXTIME * 0.001f);
 		replay->punchin();
 		replay->write(ctrl);
 		replaymode = RPM_PLAY;
