@@ -1294,6 +1294,8 @@ void _manage::destroyed_a_core()
 			delay_count = KOBO_LEVELDONE_TIMEOUT;
 		}
 	}
+	else
+		myship.state(SHIP_SHIELD);
 	screen.generate_fixed_enemies();
 	screenshake(0.5f, 0.5f, 0.95f);
 }

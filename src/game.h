@@ -52,6 +52,10 @@
 #define HIT_MYSHIP_NORMAL	5
 #define HIT_MYSHIP_SHIELD	14
 
+// Player shield timings (logic frames)
+#define	MYSHIP_SHIELD_DURATION	100
+#define	MYSHIP_SHIELD_WARNING	30
+
 // Player bolt hit rect size
 #define HIT_BOLT		5
 

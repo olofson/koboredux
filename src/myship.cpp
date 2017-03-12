@@ -32,6 +32,7 @@
 #include "sound.h"
 
 KOBO_myship_state KOBO_myship::_state;
+int KOBO_myship::shield_timer = 0;
 KOBO_player_controls KOBO_myship::ctrl;
 int KOBO_myship::di;
 int KOBO_myship::fdi;
@@ -67,6 +68,7 @@ void KOBO_myship::state(KOBO_myship_state s)
 {
 	if(prefs->cheat_shield && (s == SHIP_NORMAL))
 		s = SHIP_INVULNERABLE;
+	shield_timer = 0;
 	switch (s)
 	{
 	  case SHIP_DEAD:
@@ -74,6 +76,9 @@ void KOBO_myship::state(KOBO_myship_state s)
 			gengine->free_obj(object);
 		object = NULL;
 		break;
+	  case SHIP_SHIELD:
+		shield_timer = MYSHIP_SHIELD_DURATION;
+		// Fall-through
 	  case SHIP_INVULNERABLE:
 	  case SHIP_NORMAL:
 		if(!object)
@@ -309,6 +314,11 @@ void KOBO_myship::move()
 		}
 	}
 
+	// Shield timing
+	if(_state == SHIP_SHIELD)
+		if(--shield_timer <= 0)
+			state(SHIP_NORMAL);
+
 	// Hitrect/bounding circle size
 	switch(_state)
 	{
@@ -317,6 +327,7 @@ void KOBO_myship::move()
 		if(hitsize > HIT_MYSHIP_NORMAL)
 			--hitsize;
 		break;
+	  case SHIP_SHIELD:
 	  case SHIP_INVULNERABLE:
 		if(hitsize < HIT_MYSHIP_SHIELD)
 			++hitsize;
@@ -327,6 +338,7 @@ void KOBO_myship::move()
 	switch(_state)
 	{
 	  case SHIP_NORMAL:
+	  case SHIP_SHIELD:
 	  case SHIP_INVULNERABLE:
 		handle_controls();
 		update_position();
@@ -383,11 +395,14 @@ void KOBO_myship::hit(int dmg)
 	if(!dmg)
 		return;
 
-	if(_state != SHIP_NORMAL)
+	switch(_state)
 	{
-		if(_state == SHIP_INVULNERABLE)
-			sound.g_player_damage(0.5f);
+	  case SHIP_SHIELD:
+	  case SHIP_INVULNERABLE:
+		sound.g_player_damage(0.5f);
 		return;
+	  default:
+		break;
 	}
 
 	if(!prefs->cheat_invulnerability)
@@ -662,9 +677,19 @@ void KOBO_myship::render()
 	}
 
 	// Render shield
-	if(_state == SHIP_INVULNERABLE)
+	switch(_state)
+	{
+	  case SHIP_SHIELD:
+		if(shield_timer < MYSHIP_SHIELD_WARNING)
+			if(shield_timer & 2)
+				break;
+		// Fall-through
+	  case SHIP_INVULNERABLE:
 		wmain->sprite_fxp(object->point.gx, object->point.gy,
 				B_SHIELDFX, manage.game_time() % 8);
+	  default:
+		break;
+	}
 
 	if(prefs->show_hit)
 	{

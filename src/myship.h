@@ -32,6 +32,7 @@
 enum KOBO_myship_state
 {
 	SHIP_NORMAL,
+	SHIP_SHIELD,
 	SHIP_INVULNERABLE,
 	SHIP_DEAD
 };
@@ -47,6 +48,7 @@ struct KOBO_player_bolt
 class KOBO_myship
 {
 	static KOBO_myship_state _state;
+	static int shield_timer;
 	static KOBO_player_controls ctrl;
 	static int di;		// Direction (1: N, 2: NE, 3: W etc)
 	static int fdi;		// Filtered direction (sprite frames, 24:8)

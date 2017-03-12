@@ -223,6 +223,7 @@ static const char *kobo_credits[] = {
 	"",
 	"Andreas Spaangberg",
 	"Antonio Messina",
+	"Avi Hayun",
 	"Bruce Cheng",
 	"Christoph Lameter",
 	"David Andersson",
