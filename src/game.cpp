@@ -68,7 +68,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	vdmg_linear = 128;
 	vdmg_quadratic = 128;
 
-	// Player guns: Primary
+	// Player guns: Primary (Nose + Tail)
 	bolt_speed = 12;
 	bolt_range = (VIEWLIMIT >> 1) + 16 + 32;
 	bolt_drain = 15;
@@ -77,12 +77,18 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	else
 		noseloadtime = tailloadtime = 1;
 
-	// Player guns: Secondary
-	charge_min = 200;
-	charge_max = 500;
-	charge_drain = 10;
-	charge_spread = 3;
-	charge_cooldown = 10;
+	// Player guns: Secondary (Charged Blast)
+	charged_min = 200;
+	charged_max = 500;
+	charged_drain = 10;
+	charged_spread = 3;
+	charged_cooldown = 10;
+
+	// Player guns: Tertiary (Fire Blossom)
+	blossom_min = 750;
+	blossom_max = 750;
+	blossom_drain = 5;
+	blossom_cooldown = 10;
 
 	switch(skill)
 	{

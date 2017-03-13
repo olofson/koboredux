@@ -151,7 +151,7 @@ class game_t
 	int	charge;		// Initial/full charge
 	int	charge_rate;	// Boost capacitor charge rate
 
-	// Player guns: Primary
+	// Player guns: Primary (Nose + Tail)
 	int	bolt_speed;	// Nominal bolt speed
 	int	bolt_damage;	// Damage inflicted by player fire bolt
 	int	bolt_drain;	// Normal bolt capacitor drain
@@ -159,12 +159,18 @@ class game_t
 	int	noseloadtime;	// logic frames per nose shot
 	int	tailloadtime;	// logic frames per tail shot
 
-	// Player guns: Secondary
-	int	charge_min;	// Minium power of one charged shot
-	int	charge_max;	// Maximum power of one charged shot
-	int	charge_drain;	// Charge fire capacitor drain (per bolt)
-	int	charge_spread;	// Charge fire spread (degrees)
-	int	charge_cooldown;// Charge fire cooldown time (logic frames)
+	// Player guns: Secondary (Charged Blast)
+	int	charged_min;	// Minium power of one charged shot
+	int	charged_max;	// Maximum power of one charged shot
+	int	charged_drain;	// Charge fire capacitor drain (per bolt)
+	int	charged_spread;	// Charge fire spread (degrees)
+	int	charged_cooldown;// Charge fire cooldown time (logic frames)
+
+	// Player guns: Tertiary (Fire Blossom)
+	int	blossom_min;	// Minimum power of fire blossom
+	int	blossom_max;	// Maximum power of fire blossom
+	int	blossom_drain;	// Blossom capacitor drain (per bolt)
+	int	blossom_cooldown;// Fire blossom cooldown time (logic frames)
 
 	// Enemies
 	int	rock_health;

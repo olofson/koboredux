@@ -60,7 +60,8 @@ class KOBO_myship
 	static int _health;
 	static int _charge;	// Weapon boost capacitor charge
 	static float charge_blipp_granularity;
-	static int charge_cool;	// Charge cooldown timer
+	static int charged_cooltimer;	// Charged Blast cooldown timer
+	static int blossom_cooltimer;	// Fire Blossom cooldown timer
 	static int health_time;
 	static int explo_time;
 	static int nose_reload_timer;
@@ -72,7 +73,10 @@ class KOBO_myship
 
 	static void shot_single(float dir, int loffset, int hoffset,
 			int speed = 65536);
+	static void nose_fire();
+	static void tail_fire();
 	static void charged_fire(int dir);
+	static void fire_blossom();
 	static void apply_position();
 	static void explode();
 	static void fire_control();
@@ -103,8 +107,6 @@ class KOBO_myship
 	static int put();
 	static void force_position();
 	static void render();
-	static void nose_fire();
-	static void tail_fire();
 	static int hit_bolt(int ex, int ey, int hitsize, int health);
 	static void check_base_bolts();
 	static void hit(int dmg);

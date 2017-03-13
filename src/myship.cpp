@@ -47,7 +47,8 @@ int KOBO_myship::hitsize;
 int KOBO_myship::_health;
 int KOBO_myship::_charge;
 float KOBO_myship::charge_blipp_granularity;
-int KOBO_myship::charge_cool;
+int KOBO_myship::charged_cooltimer;
+int KOBO_myship::blossom_cooltimer;
 int KOBO_myship::health_time;
 int KOBO_myship::explo_time;
 int KOBO_myship::nose_reload_timer;
@@ -137,7 +138,7 @@ void KOBO_myship::init(bool newship)
 	}
 	charge_blipp_granularity = (float)wcharge->led_count() / game.charge;
 
-	health_time = explo_time = charge_cool = 0;
+	health_time = explo_time = charged_cooltimer = blossom_cooltimer = 0;
 	nose_reload_timer = tail_reload_timer = 0;
 
 	int i;
@@ -246,10 +247,12 @@ void KOBO_myship::fire_control()
 	_charge += game.charge_rate;
 	if(_charge > game.charge)
 		_charge = game.charge;
-	if(charge_cool)
-		--charge_cool;
+	if(charged_cooltimer)
+		--charged_cooltimer;
+	if(blossom_cooltimer)
+		--blossom_cooltimer;
 
-	// Primary fire + "tap for secondary" logic
+	// Primary fire logic
 	if(ctrl & (KOBO_PC_PRIMARY_DOWN | KOBO_PC_PRIMARY))
 	{
 		int fired = 0;
@@ -285,7 +288,12 @@ void KOBO_myship::fire_control()
 
 	// Secondary fire (no autofire!)
 	if(ctrl & KOBO_PC_SECONDARY_DOWN)
-		charged_fire(di);
+	{
+		if(ctrl & KOBO_PC_DIR)
+			charged_fire(di);
+		else
+			fire_blossom();
+	}
 
 	// Charge bar blipps
 	if(ceil(_charge * charge_blipp_granularity) >
@@ -751,26 +759,53 @@ void KOBO_myship::tail_fire()
 
 void KOBO_myship::charged_fire(int dir)
 {
-	if(charge_cool || _charge < game.charge_min)
+	if(charged_cooltimer || _charge < game.charged_min)
 	{
 		sound.g_player_fire_denied();
 		return;
 	}
 
-	int power = _charge > game.charge_max ? game.charge_max : _charge;
-	int maxbolts = game.charge_max / game.charge_drain;
-	sound.g_player_charged_fire((float)power / game.charge_max);
-	for(int b = 0; power >= game.charge_drain; ++b)
+	int power = _charge > game.charged_max ? game.charged_max : _charge;
+	int maxbolts = game.charged_max / game.charged_drain;
+	sound.g_player_charged_fire((float)power / game.charged_max);
+	for(int b = 0; power >= game.charged_drain; ++b)
 	{
-		power -= game.charge_drain;
-		_charge -= game.charge_drain;
+		power -= game.charged_drain;
+		_charge -= game.charged_drain;
 		float spread = gamerand.get(16) * (8.0f / 65536.0f) - 4.0f;
-		spread *= game.charge_spread * (1.0f / 360.0f);
+		spread *= game.charged_spread * (1.0f / 360.0f);
 		int cx = gamerand.get(3) - 4;
 		shot_single(dir + spread, GUN_NOSE_Y - labs(cx), cx,
 				(b + maxbolts * 2) * 16384 / maxbolts);
 	}
-	charge_cool = game.charge_cooldown;
+	charged_cooltimer = game.charged_cooldown;
+}
+
+
+void KOBO_myship::fire_blossom()
+{
+	if(blossom_cooltimer || _charge < game.blossom_min)
+	{
+		sound.g_player_fire_denied();
+		return;
+	}
+
+	int power = _charge > game.blossom_max ? game.blossom_max : _charge;
+	sound.g_player_charged_fire((float)power / game.blossom_max);
+	int n = power / game.blossom_drain;
+	if(!n)
+	{
+		log_printf(WLOG, "fire_blossom() with no bolts! "
+				"Game parameter bug?\n");
+		return;
+	}
+	float dir = 1.0f;
+	float spread = 8.0f / n;
+	for(int b = 0; b < n; ++b, dir += spread)
+		shot_single(dir, GUN_BLOSSOM_R, 0,
+				(gamerand.get(3) + 8) << 12);
+	_charge -= game.blossom_drain * n;
+	blossom_cooltimer = game.blossom_cooldown;
 }
 
 
