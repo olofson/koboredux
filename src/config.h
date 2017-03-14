@@ -256,7 +256,7 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	KOBO_RETRY_SKIP_FXTIME		200
 
 /* Grid transition effect timings (ms) */
-#define	KOBO_ENTER_STAGE_FXTIME		300
-#define	KOBO_ENTER_TITLE_FXTIME		1000
+#define	KOBO_ENTER_STAGE_FXTIME		500
+#define	KOBO_ENTER_TITLE_FXTIME		1500
 
 #endif	/*_KOBO_CONFIG_H_*/
