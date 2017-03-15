@@ -1322,7 +1322,7 @@ int KOBO_main::open()
 		log_printf(ULOG, "Warping to stage %d!\n", prefs->cmd_warp);
 		manage.select_slot(-1);		// No saves!
 		manage.select_skill((skill_levels_t)prefs->cmd_skill);
-		manage.select_stage(prefs->cmd_warp);
+		manage.select_stage(prefs->cmd_warp, GS_SHOW);
 		manage.start_new_game();
 		gsm.push(&st_game);
 	}

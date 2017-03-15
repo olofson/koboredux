@@ -155,7 +155,7 @@ class _manage
 	static int current_slot()	{ return selected_slot; }
 	static void start_intro();
 	static void show_stage(int stage, KOBO_gamestates gs);
-	static void select_stage(int stage, KOBO_gamestates gs = GS_SHOW);
+	static void select_stage(int stage, KOBO_gamestates gs);
 	static void select_skill(int skill)
 	{
 		selected_skill = (skill_levels_t)skill;

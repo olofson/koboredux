@@ -436,7 +436,7 @@ st_long_credits_t::st_long_credits_t()
 void st_long_credits_t::enter()
 {
 	kobo_basestate_t::enter();
-	manage.select_stage(KOBO_CREDITS_BACKGROUND_LEVEL);
+	manage.select_stage(KOBO_CREDITS_BACKGROUND_LEVEL, GS_TITLE);
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
 	timer = 0;
 }
@@ -1941,7 +1941,7 @@ kobo_form_t *st_options_main_t::open()
 	if(manage.ok_to_switch() &&
 			(manage.current_stage() !=
 			KOBO_OPTIONS_BACKGROUND_LEVEL))
-		manage.show_stage(KOBO_OPTIONS_BACKGROUND_LEVEL, GS_SHOW);
+		manage.show_stage(KOBO_OPTIONS_BACKGROUND_LEVEL, GS_TITLE);
 	return m;
 }
 
