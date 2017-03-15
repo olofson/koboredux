@@ -31,6 +31,33 @@
 #define MAX_PROGRESS	1000
 
 
+const char *enumstr(dashboard_modes_t dbm)
+{
+	switch(dbm)
+	{
+	  case DASHBOARD_OFF:		return "DASHBOARD_OFF";
+	  case DASHBOARD_BLACK:		return "DASHBOARD_BLACK";
+	  case DASHBOARD_NOISE:		return "DASHBOARD_NOISE";
+	  case DASHBOARD_TITLE:		return "DASHBOARD_TITLE";
+	  case DASHBOARD_GAME:		return "DASHBOARD_GAME";
+	  case DASHBOARD_LOADING:	return "DASHBOARD_LOADING";
+	  case DASHBOARD_JINGLE:	return "DASHBOARD_JINGLE";
+	}
+}
+
+
+const char *enumstr(dashboard_transitions_t dbt)
+{
+	switch(dbt)
+	{
+	  case DASHBOARD_INSTANT:	return "DASHBOARD_INSTANT";
+	  case DASHBOARD_SLOW:		return "DASHBOARD_SLOW";
+	  case DASHBOARD_FAST:		return "DASHBOARD_FAST";
+	  case DASHBOARD_IN_ONLY:	return "DASHBOARD_IN_ONLY";
+	}
+}
+
+
 /*----------------------------------------------------------
 	Screen
 ----------------------------------------------------------*/
@@ -105,6 +132,9 @@ void dashboard_window_t::update(bool force)
 
 void dashboard_window_t::transition(dashboard_transitions_t tr)
 {
+	if(prefs->debug)
+		log_printf(ULOG, "Dashboard: Started transition to %s.\n",
+				enumstr(tr));
 	trmode = tr;
 	gridtfx.Tiles(B_FS_GRIDTFXTILES,
 			themedata.get(KOBO_D_FS_GRIDTFXLEVELS));
@@ -132,11 +162,16 @@ void dashboard_window_t::transition(dashboard_transitions_t tr)
 
 void dashboard_window_t::mode(dashboard_modes_t m, dashboard_transitions_t tr)
 {
+	if(prefs->debug)
+		log_printf(ULOG, "Dashboard: Requested mode %d, transition "
+				"%s.\n", enumstr(m), enumstr(tr));
 	new_mode = m;
 	transition(tr);
 	if(transitioning)
 		return;
 
+	if(prefs->debug)
+		log_printf(ULOG, "Dashboard: Switching to %s.\n", enumstr(m));
 	const int psize = 288;
 	int main = 0;
 	int score = 0;

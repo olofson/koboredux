@@ -56,6 +56,8 @@ enum dashboard_transitions_t {
 	DASHBOARD_IN_ONLY
 };
 
+const char *enumstr(dashboard_modes_t dbm);
+const char *enumstr(dashboard_transitions_t dbt);
 
 // Dashboard window; dashboard or loading screen
 class dashboard_window_t : public window_t

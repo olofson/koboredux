@@ -1428,9 +1428,7 @@ int KOBO_main::reload_sounds()
 
 int KOBO_main::reload_graphics()
 {
-	dashboard_modes_t dmd = wdash->mode();
-	if(!(global_status & OS_RESTART_VIDEO))
-		wdash->mode(DASHBOARD_BLACK);
+	wdash->mode(DASHBOARD_BLACK);
 	gengine->unload();
 	log_printf(ULOG, "--- Reloading graphics...\n");
 	if(load_graphics() < 0)
@@ -1438,8 +1436,6 @@ int KOBO_main::reload_graphics()
 	wdash->progress_done();
 	init_dash_layout();
 	screen.init_graphics();
-	wdash->fade(1.0f);
-	wdash->mode(dmd);
 	wradar->mode(RM__REINIT);
 	gsm.rebuild();
 	log_printf(ULOG, "--- Graphics reloaded.\n");
@@ -1471,6 +1467,8 @@ int KOBO_main::run()
 		// Restart and reload stuff as needed
 		int res;
 		sound.ui_noise(0);
+		dashboard_modes_t dmd = wdash->mode();
+
 		if(global_status & OS_RESTART_AUDIO)
 			if((res = restart_audio()))
 				return res;
@@ -1496,6 +1494,12 @@ int KOBO_main::run()
 		}
 		if(global_status & OS_RESTART_LOGGER)
 			open_logging(prefs);
+
+		if(dmd != wdash->mode())
+		{
+			wdash->fade(1.0f);
+			wdash->mode(dmd);
+		}
 
 		// Prepare to reenter the main loop
 		km.pause_game();
