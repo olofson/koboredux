@@ -311,6 +311,9 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	{
 		// Start from replay!
 		replay = rp;
+		log_printf(ULOG, "Starting at stage %d from replay!\n",
+				replay->stage);
+
 		// Only use replay if compatible, and long enough!
 		if((replay->recorded() >= KOBO_MIN_REPLAY_LENGTH) &&
 				(replay->compatibility() == KOBO_RPCOM_FULL))
@@ -321,6 +324,8 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		}
 		else
 		{
+			log_printf(ULOG, "Too short replay! Starting from "
+					"level entry point.\n");
 			if(replaymode == RPM_REPLAY)
 			{
 				state(GS_REPLAYEND);
@@ -332,8 +337,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 				state(GS_GETREADY);
 			}
 		}
-		log_printf(ULOG, "Starting at stage %d from replay!\n",
-				replay->stage);
+
 		if(prefs->debug)
 			replay->log_dump(ULOG);
 		selected_stage = replay->stage;
@@ -367,6 +371,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	gengine->period(game.speed);
 	screen.init_stage(selected_stage, true);
 	last_stage = selected_stage;
+	is_paused = false;
 	wradar->mode(RM_RADAR);
 	enemies.init();
 	if(rp)

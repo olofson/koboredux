@@ -627,6 +627,12 @@ void st_rewind_t::enter()
 		gsm.change(&st_error);
 		return;
 	}
+	if(manage.state() == GS_GETREADY)
+	{
+		// Too short replay, probably! Switch directly to st_game.
+		gsm.change(&st_game);
+		return;
+	}
 	manage.background(false);
 #ifdef KOBO_DEMO
 	if(manage.current_stage() > KOBO_DEMO_LAST_STAGE)
