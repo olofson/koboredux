@@ -43,6 +43,7 @@ const char *enumstr(dashboard_modes_t dbm)
 	  case DASHBOARD_LOADING:	return "DASHBOARD_LOADING";
 	  case DASHBOARD_JINGLE:	return "DASHBOARD_JINGLE";
 	}
+	return "<illegal dashboard_modes_t value>";
 }
 
 
@@ -55,6 +56,7 @@ const char *enumstr(dashboard_transitions_t dbt)
 	  case DASHBOARD_FAST:		return "DASHBOARD_FAST";
 	  case DASHBOARD_IN_ONLY:	return "DASHBOARD_IN_ONLY";
 	}
+	return "<illegal dashboard_transitions_t value>";
 }
 
 

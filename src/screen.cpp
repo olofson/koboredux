@@ -385,36 +385,69 @@ void KOBO_screen::help(int t)
 	{
 		if(t > INST_TIME_FIRE - INST_TIME_HL_OUT)
 			screen.set_highlight(0, 0);
+
+		// Primary guns
+		int cx1 = cx + 20;
+		int cy = 105;
 		woverlay->font(B_MEDIUM_FONT);
 		woverlay->center(80, "Primary Weapon: SHIFT or X");
-		woverlay->sprite(cx, 105, B_PLAYER,
+		woverlay->sprite(cx1, cy, B_PLAYER,
 				gengine->get_nframes(B_PLAYER) / 4);
 		int i;
-		int txo = t * cx / 8 / 15 % (cx / 8);
+		int txo = t * cx1 / 8 / 15 % (cx1 / 8);
 		for(i = 0; i < 8; ++i)
 		{
 			// NOTE: GUN_*_DIR constants ignored here...
-			int st = (cx * i / 8 + txo) / 5;
-			woverlay->sprite(cx - GUN_NOSE_Y - cx * i / 8 - txo,
-					105,
-					B_BOLT, myship.bolt_frame(7, st));
-			woverlay->sprite(cx + GUN_TAIL_Y + cx * i / 8 + txo,
-					105,
-					B_BOLT, myship.bolt_frame(3, st));
+			int st = (cx1 * i / 8 + txo) / 5;
+			woverlay->sprite(cx1 - GUN_NOSE_Y - cx1 * i / 8 - txo,
+					cy, B_BOLT, myship.bolt_frame(7, st));
+			woverlay->sprite(cx1 + GUN_TAIL_Y + cx1 * i / 8 + txo,
+					cy, B_BOLT, myship.bolt_frame(3, st));
 		}
-		int cx2 = cx - 40;
-		woverlay->sprite(cx2, 135, B_PLAYER,
+
+		// Charged Blast and Death Blossom (alternating)
+		int cx2 = cx - 30;
+		cy = 130;
+		woverlay->sprite(cx2, cy, B_PLAYER,
 				gengine->get_nframes(B_PLAYER) / 4);
-		txo = t % 1000 / 3;
-		for(i = 0; i < 40; ++i)
+		if(t % 2000 < 1000)
 		{
-			int st = (cx2 * i / 8 + txo) / 5;
-			woverlay->sprite(cx2 + GUN_TAIL_Y + txo + i,
-					135 + sin(i * i * 0.02f +
-					txo * 0.05f) * 4,
-					B_BOLT, myship.bolt_frame(3, st + i));
+			// Charged Blast
+			int z = t % 1000 / 3;
+			for(i = 0; i < 40; ++i)
+			{
+				int st = (cx2 * i / 8 + z) / 5;
+				woverlay->sprite(cx2 + GUN_TAIL_Y + z + i,
+						cy + sin(i * i * 0.02f +
+						z * 0.05f) * 4, B_BOLT,
+						myship.bolt_frame(3, st + i));
+			}
 		}
-		woverlay->center(150, "Secondary Weapon: CTRL or SPACE");
+		else
+		{
+			// Death Blossom
+			const int BULLETS = 100;
+			int z = t % 1000 / 5 + GUN_NOSE_Y;
+			int st = t % 1000 / 50;
+			for(i = 0; i < BULLETS; ++i)
+			{
+				float a = i * 8.0f / BULLETS;
+				float vx = sin(M_PI * a / 4.0f);
+				float vy = -cos(M_PI * a / 4.0f);
+				int zz = z + 5 + 5 * sin(i * i);
+				int f;
+				if(st < 16)
+					f = myship.bolt_frame(a + 1.5f, st);
+				else
+					f = myship.bolt_frame_fade(a + 1.5f,
+							st - 16);
+				woverlay->sprite(cx2 + vx * zz, cy + vy * zz,
+						B_BOLT, f);
+			}
+		}
+		woverlay->center(150,
+				"Charged Blast: Direction + CTRL or SPACE");
+		woverlay->center(160, "Death Blossom: CTRL or SPACE");
 	}
 	else if(t < INST_TIME_FIRE)
 		return;

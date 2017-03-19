@@ -130,6 +130,10 @@ class KOBO_myship
 			return 32 + ((dir - 1) & 3) * 8 +
 					animtab[(frame - 4) & 7];
 	}
+	static inline int bolt_frame_fade(int dir, int frame)
+	{
+		return 32 + 4 + ((dir - 1) & 3) * 8;
+	}
 };
 
 extern KOBO_myship myship;
