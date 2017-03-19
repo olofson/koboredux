@@ -33,7 +33,7 @@
 //
 // (This will probably match KOBO_VERSION most of the time, at least until
 // version 1.0.0.)
-#define	KOBO_REPLAY_VERSION	KOBO_MAKE_VERSION(0, 7, 3, 0)
+#define	KOBO_REPLAY_VERSION	KOBO_MAKE_VERSION(0, 7, 4, 0)
 
 #include "buildconfig.h"
 
