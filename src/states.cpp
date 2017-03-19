@@ -2183,6 +2183,12 @@ kobo_form_t *st_demo_over_t::open()
 }
 
 
+void st_demo_over_t::leave()
+{
+	manage.abort_game();
+}
+
+
 void st_demo_over_t::select(int tag)
 {
 	switch(tag)
@@ -2192,7 +2198,7 @@ void st_demo_over_t::select(int tag)
 		break;
 	  case MENU_TAG_OK:
 	  case MENU_TAG_CANCEL:
-		pop();
+		transition_pop(KOBO_TRS_GAME_SLOW);
 		break;
 	}
 }

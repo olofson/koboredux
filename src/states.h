@@ -626,6 +626,7 @@ class st_demo_over_t : public st_menu_base_t
   public:
 	st_demo_over_t()	{ name = "demo_over"; }
 	kobo_form_t *open();
+	void leave();
 	void select(int tag);
 };
 

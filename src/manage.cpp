@@ -1224,6 +1224,7 @@ void _manage::abort_game()
 	owns_replay = false;
 	state(GS_NONE);
 	replaymode = RPM_PLAY;
+	is_paused = false;
 }
 
 
