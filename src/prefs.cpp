@@ -175,15 +175,12 @@ void prefs_t::postload()
 	sfxtheme[0] = 0;
 	toolstheme[0] = 0;
 
-	debug = 0;
-	show_fps = 0;
 	force_fallback_gfxtheme = 0;
 	force_fallback_sfxtheme = 0;
 	show_map_border = 0;
 	show_coordinates = 0;
 	show_tiles = 0;
 	show_hit = 0;
-	tsdebug = 0;
 	soundtools = 0;
 
 	cheat_pushmove = 0;
