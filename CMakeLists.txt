@@ -4,7 +4,7 @@ project(KOBOREDUX)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 7)
-set(VERSION_PATCH 3)
+set(VERSION_PATCH 4)
 set(VERSION_BUILD 0)
 
 option(DEMO_BUILD "Build Kobo Redux demo." OFF)

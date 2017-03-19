@@ -14,8 +14,8 @@ else
 fi
 
 ./install-libs
-./install-demo-data
-./install-full-data
+./install-data "v${FULL_DATA_RELEASE}" "full-data"
+./install-data "demo-${DEMO_DATA_RELEASE}" "demo-data"
 ./install-win32-redist
 
 ./configure "${FILTER}"

@@ -5,6 +5,20 @@
 #
 . ./BUILDDEFS
 
+if [ $# -eq 2 ]; then
+	TAG="$1"
+	DATADIR="$2"
+else
+	echo "Usage: install-data <tag> <data-directory>"
+	exit 1
+fi
+
+if [ -d "${WORKDIR}/${DATADIR}" ]; then
+	# TODO: Check if it's the right version. If not, overwrite!
+	echo "Data directory ${DATADIR} already exists!"
+	exit 0
+fi
+
 set -ex
 
 render=false
@@ -17,30 +31,27 @@ cd ${DLDIR}
 if [ ! -d "koboreduxassets" ]; then
 	git clone git@github.com:olofson/koboreduxassets.git
 	cd koboreduxassets
-	git checkout v${FULL_DATA_RELEASE}
+	git checkout ${TAG}
 	render=true
 else
 	cd koboreduxassets
-	if ! git checkout v${FULL_DATA_RELEASE} ; then
+	if ! git checkout ${TAG} ; then
 		git checkout master
 		git pull
-		git checkout v${FULL_DATA_RELEASE}
+		git checkout ${TAG}
 		render=true
 	fi
+	git clean -d -x -f
 fi
 
 # Render the TIPE sprites
-if "$render" == true || [ ! -f "data/gfx/redux/sprites/bigship.png" ]; then
-	cd src
-	eel render-sprites
-	cd ..
-fi
+cd src
+eel render-sprites
+cd ..
 
-# Make sure we have a link to the actual data directories
+# Copy the checked out and rendered data to the destination directory
 if [ ! -d "${WORKDIR}" ]; then
 	mkdir "${WORKDIR}"
 fi
-cd ${WORKDIR}
-if [ ! -L "${WORKDIR}/full-data" ]; then
-	ln -s "${DLDIR}/koboreduxassets/data" "${WORKDIR}/full-data"
-fi
+cp -r "${DLDIR}/koboreduxassets/data" "${WORKDIR}/${DATADIR}"
+echo ${TAG} > "${WORKDIR}/${DATADIR}/DATAVERSION"
