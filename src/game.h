@@ -38,7 +38,7 @@
 #define ENEMY_MAX		2048
 
 // Max number of player bolts in... space at once
-#define MAX_BOLTS		150
+#define MAX_BOLTS		200
 
 // In XKobo, WSIZE was used where VIEWLIMIT is used now; in the game logic
 // code. The original value was 224.
