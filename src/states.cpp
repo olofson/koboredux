@@ -1638,10 +1638,12 @@ void campaign_menu_t::setup(const char *hdr, bool new_game, bool replay)
 
 const char *campaign_menu_t::timedate(time_t *t)
 {
-	struct tm *tmp = localtime(t);
-	if(!tmp)
+	const struct tm *lt = localtime(t);
+	if(!lt)
 		return "<cannot decode timestamp>";
-	strftime(tdbuf, sizeof(tdbuf), "%a %b %d %T %Y", tmp);
+	struct tm tmp = *lt;
+	if(!strftime(tdbuf, sizeof(tdbuf), "%a %b %d %H:%M:%S %Y", &tmp))
+		return "<strftime() failed>";
 	return tdbuf;
 }
 
