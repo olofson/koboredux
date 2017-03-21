@@ -490,6 +490,8 @@ st_long_credits_t st_long_credits;
 st_game_t::st_game_t()
 {
 	name = "game";
+	g_slot = 0;
+	g_skill = KOBO_DEFAULT_SKILL;
 }
 
 
@@ -498,12 +500,14 @@ void st_game_t::enter()
 	if(!manage.game_in_progress())
 	{
 		manage.select_slot(g_slot);
+		manage.select_stage(g_stage, GS_NONE);
 		manage.select_skill(g_skill);
 		manage.start_new_game();
 	}
 	else
 	{
 		g_slot = manage.current_slot();
+		g_stage = manage.current_stage();
 		g_skill = manage.current_skill();
 	}
 #ifdef KOBO_DEMO
@@ -759,6 +763,8 @@ st_rewind_t st_rewind;
 st_replay_t::st_replay_t()
 {
 	name = "replay";
+	rp_slot = 0;
+	rp_stage = 1;
 }
 
 
@@ -1468,6 +1474,7 @@ void main_menu_t::build()
 		else
 			sc = 1;
 		manage.show_stage(sc, GS_SHOW);
+		st_game.set_stage(sc);
 	}
 
 	space(2);
@@ -1583,6 +1590,7 @@ void st_main_menu_t::select(int tag)
 	  case 5:	// Start level: Inc/Dec
 		sound.ui_play(S_UI_TICK);
 		manage.show_stage(menu->start_level, GS_SHOW);
+		st_game.set_stage(menu->start_level);
 		break;
 	  case 20:	// Showcase
 		sound.ui_play(S_UI_ERROR);

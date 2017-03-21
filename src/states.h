@@ -152,10 +152,12 @@ extern st_long_credits_t st_long_credits;
 class st_game_t : public kobo_basestate_t
 {
 	int	g_slot;
+	int	g_stage;
 	int	g_skill;
   public:
 	st_game_t();
 	void set_slot(int slot)		{ g_slot = slot; }
+	void set_stage(int stage)	{ g_stage = stage; }
 	void set_skill(int skill)	{ g_skill = skill; }
 	void enter();
 	void leave();
