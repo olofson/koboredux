@@ -564,17 +564,23 @@ void debug_options_t::build()
 	xoffs = 0.6;
 	yesno("General Debug Features", &prf->debug, 0);
 	yesno("Show FPS Counter", &prf->show_fps, 0);
+#ifndef KOBO_DEMO
 	yesno("Show Map Border", &prf->show_map_border, 0);
 	yesno("Show Coordinates", &prf->show_coordinates, 0);
 	yesno("Show Tile/Sprite Edges", &prf->show_tiles, OS_RELOAD_GRAPHICS);
 	yesno("Show Hit Zones", &prf->show_hit, 0);
+#endif
 	yesno("Timestamp Debug Output", &prf->tsdebug, 0);
+#ifndef KOBO_DEMO
 	yesno("Sound Design Tools", &prf->soundtools, 0);
+#endif
 	yesno("Replay Debug Data (Huge Saves!)", &prf->replaydebug, 0);
+#ifndef KOBO_DEMO
 	yesno("Force Fallback Graphics theme", &prf->force_fallback_gfxtheme,
 			OS_RELOAD_GRAPHICS);
 	yesno("Force Fallback Sound Theme", &prf->force_fallback_sfxtheme,
 			OS_RELOAD_SOUNDS);
+#endif
 
 	xoffs = 0.5;
 	space(2);

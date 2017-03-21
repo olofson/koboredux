@@ -1998,7 +1998,6 @@ void st_options_main_t::select(int tag)
 
 #ifdef KOBO_DEMO
 	  case 20:
-	  case 21:
 		sound.ui_play(S_UI_ERROR);
 		st_error.message("Not available in this demo!",
 				"These options are not available\n"
@@ -2012,10 +2011,10 @@ void st_options_main_t::select(int tag)
 	  case 20:
 		gsm.push(&st_options_cheat);
 		break;
+#endif
 	  case 21:
 		gsm.push(&st_options_debug);
 		break;
-#endif
 	  case 22:
 		gsm.push(&st_options_more);
 		break;
