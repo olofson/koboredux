@@ -508,7 +508,10 @@ void st_game_t::enter()
 	}
 #ifdef KOBO_DEMO
 	if(manage.current_stage() > KOBO_DEMO_LAST_STAGE)
+	{
 		gsm.change(&st_demo_over);
+		return;
+	}
 #endif
 	if(!manage.game_in_progress())
 	{
@@ -626,7 +629,10 @@ void st_rewind_t::enter()
 {
 #ifdef KOBO_DEMO
 	if(manage.current_stage() > KOBO_DEMO_LAST_STAGE)
+	{
 		gsm.change(&st_demo_over);
+		return;
+	}
 #endif
 	if(!manage.game_in_progress())
 	{
