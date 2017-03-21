@@ -1869,8 +1869,8 @@ void skill_menu_t::rebuild()
 void st_skill_menu_t::enter()
 {
 #ifdef KOBO_DEMO
-	manage.select_skill(KOBO_DEMO_SKILL);
-	manage.start_new_game();
+	st_game.set_stage(1);
+	st_game.set_skill(KOBO_DEMO_SKILL);
 	gsm.change(&st_game);
 #else
 	st_menu_base_t::enter();
@@ -2411,8 +2411,8 @@ void st_ask_overwrite_campaign_t::select(int tag)
 	  case MENU_TAG_OK:
 		sound.ui_play(S_UI_OK);
 #ifdef KOBO_DEMO
-		manage.select_skill(KOBO_DEMO_SKILL);
-		manage.start_new_game();
+		st_game.set_stage(1);
+		st_game.set_skill(KOBO_DEMO_SKILL);
 		gsm.change(&st_game);
 #else
 		gsm.change(&st_skill_menu);
