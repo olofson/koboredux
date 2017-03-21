@@ -708,7 +708,8 @@ void st_rewind_t::frame()
 	if(prefs->debug)
 		info = enumstr(manage.state());
 	if((manage.replay_mode() != RPM_RETRY) &&
-			(manage.state() == GS_PLAYING))
+			(manage.state() == GS_PLAYING ||
+			manage.state() == GS_GETREADY))
 		gsm.change(&st_game);
 	switch(manage.state())
 	{
