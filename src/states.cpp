@@ -506,6 +506,10 @@ void st_game_t::enter()
 		g_slot = manage.current_slot();
 		g_skill = manage.current_skill();
 	}
+#ifdef KOBO_DEMO
+	if(manage.current_stage() > KOBO_DEMO_LAST_STAGE)
+		gsm.change(&st_demo_over);
+#endif
 	if(!manage.game_in_progress())
 	{
 		st_error.message("INTERNAL ERROR", "Could not start game!");
@@ -620,6 +624,10 @@ st_rewind_t::st_rewind_t()
 
 void st_rewind_t::enter()
 {
+#ifdef KOBO_DEMO
+	if(manage.current_stage() > KOBO_DEMO_LAST_STAGE)
+		gsm.change(&st_demo_over);
+#endif
 	if(!manage.game_in_progress())
 	{
 		st_error.message("INTERNAL ERROR",
@@ -634,10 +642,6 @@ void st_rewind_t::enter()
 		return;
 	}
 	manage.background(false);
-#ifdef KOBO_DEMO
-	if(manage.current_stage() > KOBO_DEMO_LAST_STAGE)
-		gsm.change(&st_demo_over);
-#endif
 }
 
 
