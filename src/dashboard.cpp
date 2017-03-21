@@ -165,7 +165,7 @@ void dashboard_window_t::transition(dashboard_transitions_t tr)
 void dashboard_window_t::mode(dashboard_modes_t m, dashboard_transitions_t tr)
 {
 	if(prefs->debug)
-		log_printf(ULOG, "Dashboard: Requested mode %d, transition "
+		log_printf(ULOG, "Dashboard: Requested mode %s, transition "
 				"%s.\n", enumstr(m), enumstr(tr));
 	new_mode = m;
 	transition(tr);

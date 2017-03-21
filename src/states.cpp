@@ -2166,7 +2166,7 @@ st_options_more_t st_options_more;
 void demo_over_t::build()
 {
 	space(2);
-	font(B_BIG_FONT); label("Thank You For Playing!");; font();
+	font(B_BIG_FONT); label("Thank You For Playing!"); font();
 	space(2);
 	label("You've reached the end of the");
 	space();
