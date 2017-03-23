@@ -119,6 +119,7 @@ class KOBO_main
 	static int		js_start;
 
 	static FILE		*logfile;
+	static FILE		*userlogfile;
 
 	static Uint32		esc_tick;
 	static int		esc_count;
@@ -169,7 +170,7 @@ class KOBO_main
 	static int run();
 
 	static int open_logging(prefs_t *p);
-	static void close_logging();
+	static void close_logging(bool final = false);
 	static void load_config(prefs_t *p);
 	static void save_config(prefs_t *p);
 

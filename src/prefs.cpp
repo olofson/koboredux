@@ -40,6 +40,8 @@ void prefs_t::init()
 	section("System");
 	yesno("logfile", logfile, 0); desc("Log To File");
 	key("logformat", logformat, 0); desc("Log File Format");
+	yesno("logconsole", logconsole, 1); desc("Log To Console");
+	key("conlogformat", conlogformat, 0); desc("Console Log Format");
 	key("logverbosity", logverbosity, 2); desc("Log Verbosity Level");
 	yesno("quickstart", quickstart, 0); desc("Quick Startup");
 	yesno("loopreplays", loopreplays, 0); desc("Loop Campaign Replays");

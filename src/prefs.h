@@ -34,6 +34,8 @@ class prefs_t : public config_parser_t
 	// System options
 	int	logfile;	//Log messages to log.txt/html
 	int	logformat;	//0: text, 1: ANSI, 2: HTML
+	int	logconsole;	//Log messages to console (stdout/stderr)
+	int	conlogformat;	//0: text, 1: ANSI
 	int	logverbosity;
 	int	quickstart;	//Skip jingle, loader noise effects etc
 	int	loopreplays;	//Loop campaign replays indefinitely

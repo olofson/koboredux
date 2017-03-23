@@ -2,7 +2,7 @@
 ---------------------------------------------------------------------------
 	logger.h - Simple logger with redirection
 ---------------------------------------------------------------------------
- * Copyright (C) 2003, 2009 David Olofson
+ * Copyright 2003, 2009, 2017 David Olofson
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -28,11 +28,6 @@
 extern "C" {
 #endif
 
-/*
-TODO: Levels sending to multiple targets.
-TODO: Printing to multiple levels.
-*/
-
 #define	LOG_TARGETS	8
 #define	LOG_LEVELS	32
 
@@ -48,9 +43,13 @@ TODO: Printing to multiple levels.
 
 typedef enum
 {
-	LOG_ANSI =	0x00000001,	/* Use ANSI escape codes */
-	LOG_HTML =	0x00000002,	/* Use HTML formatting tags */
-	LOG_TIMESTAMP =	0x00000100	/* Timestamp messages */
+	/* For log_open() */
+	LOG_RESET_TIME =	0x00010000,
+
+	/* For log_set_target_flags() */
+	LOG_ANSI =		0x00000001,	/* Use ANSI escape codes */
+	LOG_HTML =		0x00000002,	/* Use HTML formatting tags */
+	LOG_TIMESTAMP =		0x00000100	/* Timestamp messages */
 } LOG_flags;
 
 
@@ -75,19 +74,18 @@ typedef enum
 /*
  * The usual open/close calls...
  *
- * Note that log_close() may write footers and stuff to files,
- * so you may get slightly broken log files if you exit
- * without calling it!
+ * Note that log_close() may write footers and stuff to files, so you may get
+ * slightly broken log files if you exit without calling it!
  *
  * log_open() returns a negative value in case of failure.
  */
-int log_open(void);
+int log_open(int flags);
 void log_close(void);
 
 
 /*
- * Send output through 'target' to 'stream'. 'stream' must be
- * a valid stdio stream opened for output.
+ * Send output through 'target' to 'stream'. 'stream' must be a valid stdio
+ * stream opened for output.
  *
  * If 'target' is -1, all targets are changed.
  */
@@ -95,17 +93,15 @@ void log_set_target_stream(int target, FILE *stream);
 
 
 /*
- * Send output through 'target' to 'callback'. The callback
- * will receive the value passed as 'handle' as it's first
- * argument, followed by the data to output. (NULL terminated
- * string.) The callback should return the number of bytes
- * successfully handled, or, in case of failure, a negative
- * value.
+ * Send output through 'target' to 'callback'. The callback will receive the
+ * 'handle' pointer as its first argument, followed by the null terminated
+ * string to output. The callback should return the number of bytes
+ * successfully handled, or, in case of failure, a negative value.
  *
  * If 'target' is -1, all targets are changed.
  */
 void log_set_target_callback(int target,
-		int (*callback)(int handle, const char *data), int handle);
+		int (*callback)(void *handle, const char *data), void *handle);
 
 
 /*
@@ -117,12 +113,14 @@ void log_set_target_flags(int target, unsigned flags);
 
 
 /*
- * Send output through 'level' to 'target'. 'levels' is a bit
- * mask with one bit for each log level.
+ * Enable/disable sending of output through 'level' to 'target'.
  *
  * If 'level' is -1, all levels are changed.
+ *
+ * If 'target' is -1, all target are changed on the specified level(s).
  */
-void log_set_level_target(int level, int target);
+void log_enable_level_target(int level, int target);
+void log_disable_level_target(int level, int target);
 
 
 /*

@@ -58,8 +58,8 @@ typedef struct
 	FILE		*stream;
 
 	/* Callback output */
-	int		handle;
-	int (*callback)(int handle, const char *data);
+	void		*handle;
+	int (*callback)(void *handle, const char *data);
 
 	/* Formatting control */
 	unsigned	flags;
@@ -70,9 +70,9 @@ typedef struct
 typedef struct
 {
 	/* Output */
-	int		target;
+	unsigned	targets;
 
-	/* Atributes */
+	/* Attributes */
 	unsigned	attr;
 } LOG_level;
 
@@ -81,12 +81,30 @@ static LOG_level *l_levels = NULL;
 static LOG_target *l_targets = NULL;
 static char *l_buffer = NULL;
 
-Uint32 start_time;
+Uint32 start_time = 0;
 
 
 /*--------------------------------------------------------------------
 	Low level internal stuff
 --------------------------------------------------------------------*/
+
+static inline int target_is_active(int target)
+{
+	return l_targets[target].use_stream || l_targets[target].callback;
+}
+
+
+static inline int level_is_active(int level)
+{
+	int t;
+	if(!l_levels[level].targets)
+		return 0;
+	for(t = 0; t < LOG_TARGETS; ++t)
+		if(target_is_active(t))
+			return 1;
+	return 0;
+}
+
 
 /* Write stuff without any translation */
 static inline int log_write_raw(int target, const char *text)
@@ -97,13 +115,27 @@ static inline int log_write_raw(int target, const char *text)
 		return l_targets[target].callback(
 				l_targets[target].handle, text);
 	else
-	{
-		/* We should never get here. */
-		assert(0);
-
-		/* ...but some compilers are retarded about assert(). */
 		return 0;
-	}
+}
+
+
+static void write_html_header(int target)
+{
+	log_write_raw(target, "<!DOCTYPE HTML PUBLIC "
+			"\"-//W3C//DTD HTML 4.01 Transitional//EN\" "
+			"\"http://www.w3.org/TR/REC-html40/loose.dtd\">\n");
+	log_write_raw(target, "<HTML>\n\t<HEAD>\n");
+	log_write_raw(target, "\t\t<TITLE>Log File</TITLE>\n");
+	log_write_raw(target, "\t\t<meta http-equiv=\"Content-Type\" "
+			"content=\"text/html; charset=ISO-8859-1\">\n");
+	log_write_raw(target, "\t</HEAD>\n");
+	log_write_raw(target, "\t<BODY BGCOLOR=#000000 TEXT=#999999>\n");
+}
+
+
+static void write_html_footer(int target)
+{
+	log_write_raw(target, "\t</BODY>\n</HTML>\n");
 }
 
 
@@ -114,17 +146,7 @@ static inline void check_header(int target)
 		return;
 
 	if(l_targets[target].flags & LOG_HTML)
-	{
-		log_write_raw(target, "<!DOCTYPE HTML PUBLIC "
-				"\"-//W3C//DTD HTML 4.01 Transitional//EN\" "
-				"\"http://www.w3.org/TR/REC-html40/loose.dtd\">\n");
-		log_write_raw(target, "<HTML>\n\t<HEAD>\n");
-		log_write_raw(target, "\t\t<TITLE>Log File</TITLE>\n");
-		log_write_raw(target, "\t\t<meta http-equiv=\"Content-Type\" "
-				"content=\"text/html; charset=ISO-8859-1\">\n");
-		log_write_raw(target, "\t</HEAD>\n");
-		log_write_raw(target, "\t<BODY BGCOLOR=#000000 TEXT=#999999>\n");
-	}
+		write_html_header(target);
 	l_targets[target].written = 1;
 }
 
@@ -136,7 +158,7 @@ static inline void check_footer(int target)
 		return;
 
 	if(l_targets[target].flags & LOG_HTML)
-		log_write_raw(target, "\t</BODY>\n</HTML>\n");
+		write_html_footer(target);
 }
 
 
@@ -187,127 +209,137 @@ FIXME: Optimize this a little, maybe. :-)
 }
 
 
-static inline void put_timestamp(int level)
+static inline int put_timestamp(int target)
 {
-	if(l_targets[l_levels[level].target].flags & LOG_TIMESTAMP)
-	{
-		char buf[16];
-		snprintf(buf, sizeof(buf)-1, "[%d] ", SDL_GetTicks() - start_time);
-		log_write_raw(l_levels[level].target, buf);
-	}
+	char buf[16];
+	if(!(l_targets[target].flags & LOG_TIMESTAMP))
+		return 0;
+	snprintf(buf, sizeof(buf) - 1, "[%d] ", SDL_GetTicks() - start_time);
+	return log_write_raw(target, buf);
 }
 
 
 #define	ANSI_SUPPORTED_FLAGS	(LOG_COLORS | LOG_BRIGHT | LOG_STRONG | LOG_BLINK)
 #define	HTML_SUPPORTED_FLAGS	(LOG_COLORS | LOG_BRIGHT | LOG_STRONG | LOG_BLINK)
 
-static inline void set_attr(int level)
+static inline void begin_ansi_attr(unsigned a, int target)
 {
-	unsigned a = l_levels[level].attr;
-	if(l_targets[l_levels[level].target].flags & LOG_ANSI)
-	{
+	int pos = 0;
+	char buf[24];
+	if(!(a & ANSI_SUPPORTED_FLAGS))
+		return;
+
 #define	SEP	if('[' != buf[pos - 1]) buf[pos++] = ';'
-		int pos = 0;
-		char buf[24];
-		if(!(a & ANSI_SUPPORTED_FLAGS))
-			return;
-
-		buf[pos++] = '\033';
-		buf[pos++] = '[';
-		if(a & LOG_COLORS)
-		{
-			buf[pos++] = '3';
-			buf[pos++] = '0' + (a & LOG_COLORS) - 1;
-		}
-		if(a & LOG_BRIGHT)
-		{
-			SEP;
-			buf[pos++] = '1';
-		}
-		if(a & LOG_STRONG)
-		{
-			SEP;
-			buf[pos++] = '4';
-		}
-		if(a & LOG_BLINK)
-		{
-			SEP;
-			buf[pos++] = '5';
-		}
-		buf[pos++] = 'm';
-		buf[pos++] = '\0';
-		log_write_raw(l_levels[level].target, buf);
+	buf[pos++] = '\033';
+	buf[pos++] = '[';
+	if(a & LOG_COLORS)
+	{
+		buf[pos++] = '3';
+		buf[pos++] = '0' + (a & LOG_COLORS) - 1;
+	}
+	if(a & LOG_BRIGHT)
+	{
+		SEP;
+		buf[pos++] = '1';
+	}
+	if(a & LOG_STRONG)
+	{
+		SEP;
+		buf[pos++] = '4';
+	}
+	if(a & LOG_BLINK)
+	{
+		SEP;
+		buf[pos++] = '5';
+	}
+	buf[pos++] = 'm';
+	buf[pos++] = '\0';
+	log_write_raw(target, buf);
 #undef SEP
-	}
-	else if(l_targets[l_levels[level].target].flags & LOG_HTML)
+}
+
+
+static inline void end_ansi_attr(unsigned a, int target)
+{
+	if(a & ANSI_SUPPORTED_FLAGS)
+		log_write_raw(target, "\033[0m");
+}
+
+
+static inline void begin_html_attr(unsigned a, int target)
+{
+	if(a & LOG_COLORS)
 	{
-		if(a & LOG_COLORS)
-		{
-			const char *sel;
-			if(a & LOG_BRIGHT)
-				switch( (a & LOG_COLORS) - 1)
-				{
-				  case 0: sel = "<FONT COLOR=#333333>"; break;
-				  case 1: sel = "<FONT COLOR=#990000>"; break;
-				  case 2: sel = "<FONT COLOR=#009900>"; break;
-				  case 3: sel = "<FONT COLOR=#999900>"; break;
-				  case 4: sel = "<FONT COLOR=#000099>"; break;
-				  case 5: sel = "<FONT COLOR=#990099>"; break;
-				  case 6: sel = "<FONT COLOR=#009999>"; break;
-				  case 7:
-				  default:
-				  	sel = "<FONT COLOR=#999999>"; break;
-				}
-			else
-				switch( (a & LOG_COLORS) - 1)
-				{
-				  case 0: sel = "<FONT COLOR=#666666>"; break;
-				  case 1: sel = "<FONT COLOR=#ff0000>"; break;
-				  case 2: sel = "<FONT COLOR=#00ff00>"; break;
-				  case 3: sel = "<FONT COLOR=#ffff00>"; break;
-				  case 4: sel = "<FONT COLOR=#0000ff>"; break;
-				  case 5: sel = "<FONT COLOR=#ff00ff>"; break;
-				  case 6: sel = "<FONT COLOR=#00ffff>"; break;
-				  case 7:
-				  default:
-				  	sel = "<FONT COLOR=#ffffff>"; break;
-				}
-			log_write_raw(l_levels[level].target, sel);
-		}
-		if(a & LOG_STRONG)
-			log_write_raw(l_levels[level].target, "<STRONG>");
-		if(a & LOG_BLINK)
-			log_write_raw(l_levels[level].target, "<BLINK>");
+		const char *sel;
+		if(a & LOG_BRIGHT)
+			switch( (a & LOG_COLORS) - 1)
+			{
+			  case 0: sel = "<FONT COLOR=#333333>"; break;
+			  case 1: sel = "<FONT COLOR=#990000>"; break;
+			  case 2: sel = "<FONT COLOR=#009900>"; break;
+			  case 3: sel = "<FONT COLOR=#999900>"; break;
+			  case 4: sel = "<FONT COLOR=#000099>"; break;
+			  case 5: sel = "<FONT COLOR=#990099>"; break;
+			  case 6: sel = "<FONT COLOR=#009999>"; break;
+			  case 7:
+			  default:
+				sel = "<FONT COLOR=#999999>"; break;
+			}
+		else
+			switch( (a & LOG_COLORS) - 1)
+			{
+			  case 0: sel = "<FONT COLOR=#666666>"; break;
+			  case 1: sel = "<FONT COLOR=#ff0000>"; break;
+			  case 2: sel = "<FONT COLOR=#00ff00>"; break;
+			  case 3: sel = "<FONT COLOR=#ffff00>"; break;
+			  case 4: sel = "<FONT COLOR=#0000ff>"; break;
+			  case 5: sel = "<FONT COLOR=#ff00ff>"; break;
+			  case 6: sel = "<FONT COLOR=#00ffff>"; break;
+			  case 7:
+			  default:
+				sel = "<FONT COLOR=#ffffff>"; break;
+			}
+		log_write_raw(target, sel);
+	}
+	if(a & LOG_STRONG)
+		log_write_raw(target, "<STRONG>");
+	if(a & LOG_BLINK)
+		log_write_raw(target, "<BLINK>");
+}
+
+
+static inline void end_html_attr(unsigned a, int target)
+{
+	if(a & LOG_BLINK)
+		log_write_raw(target, "</BLINK>");
+	if(a & LOG_STRONG)
+		log_write_raw(target, "</STRONG>");
+	if(a & LOG_COLORS)
+		log_write_raw(target, "</FONT>");
+}
+
+
+static inline void set_attr(int level, int target)
+{
+	if(l_levels[level].targets & (1 << target))
+	{
+		if(l_targets[target].flags & LOG_ANSI)
+			begin_ansi_attr(l_levels[level].attr, target);
+		else if(l_targets[target].flags & LOG_HTML)
+			begin_html_attr(l_levels[level].attr, target);
 	}
 }
 
 
-static inline void reset_attr(int level)
+static inline void reset_attr(int level, int target)
 {
-	unsigned a = l_levels[level].attr;
-	if(l_targets[l_levels[level].target].flags & LOG_ANSI)
+	if(l_levels[level].targets & (1 << target))
 	{
-		if(!(a & ANSI_SUPPORTED_FLAGS))
-			return;
-
-		log_write_raw(l_levels[level].target, "\033[0m");
+		if(l_targets[target].flags & LOG_ANSI)
+			end_ansi_attr(l_levels[level].attr, target);
+		else if(l_targets[target].flags & LOG_HTML)
+			end_html_attr(l_levels[level].attr, target);
 	}
-	else if(l_targets[l_levels[level].target].flags & LOG_HTML)
-	{
-		if(a & LOG_BLINK)
-			log_write_raw(l_levels[level].target, "</BLINK>");
-		if(a & LOG_STRONG)
-			log_write_raw(l_levels[level].target, "</STRONG>");
-		if(a & LOG_COLORS)
-			log_write_raw(l_levels[level].target, "</FONT>");
-	}
-}
-
-
-static inline int is_active(int level)
-{
-	LOG_target *t = &l_targets[l_levels[level].target];
-	return (t->use_stream || t->callback);
 }
 
 
@@ -315,7 +347,7 @@ static inline int is_active(int level)
 	API entry points
 --------------------------------------------------------------------*/
 
-int log_open(void)
+int log_open(int flags)
 {
 	if(l_levels)
 		return 0;
@@ -340,10 +372,12 @@ int log_open(void)
 	log_set_target_stream(-1, stdout);
 	log_set_target_flags(-1, 0);
 
-	log_set_level_target(-1, 0);
+	log_enable_level_target(-1, 0);
 	log_set_level_attr(-1, LOG_NOCOLOR);
 
-	start_time = SDL_GetTicks();
+	if(flags & LOG_RESET_TIME)
+		start_time = SDL_GetTicks();
+
 	return 0;
 }
 
@@ -353,11 +387,11 @@ int log_open(void)
 
 void log_close(void)
 {
-	int i;
+	int t;
 	if(CHECK_INIT < 0)
 		return;
-	for(i = 0; i < LOG_TARGETS; ++i)
-		check_footer(i);
+	for(t = 0; t < LOG_TARGETS; ++t)
+		check_footer(t);
 	free(l_targets);
 	l_targets = NULL;
 	free(l_levels);
@@ -383,7 +417,7 @@ void log_set_target_stream(int target, FILE *stream)
 
 
 void log_set_target_callback(int target,
-		int (*callback)(int handle, const char *data), int handle)
+		int (*callback)(void *handle, const char *data), void *handle)
 {
 	int i;
 	if(CHECK_INIT < 0)
@@ -409,14 +443,31 @@ void log_set_target_flags(int target, unsigned flags)
 }
 
 
-void log_set_level_target(int level, int target)
+void log_enable_level_target(int level, int target)
 {
 	int i;
 	if(CHECK_INIT < 0)
 		return;
 
 	for_one_or_all(i, level, LOG_LEVELS)
-		l_levels[i].target = target;
+		if(target == -1)
+			l_levels[i].targets = 0xffffffff;
+		else
+			l_levels[i].targets |= 1 << target;
+}
+
+
+void log_disable_level_target(int level, int target)
+{
+	int i;
+	if(CHECK_INIT < 0)
+		return;
+
+	for_one_or_all(i, level, LOG_LEVELS)
+		if(target == -1)
+			l_levels[i].targets = 0;
+		else
+			l_levels[i].targets &= ~(1 << target);
 }
 
 
@@ -431,9 +482,10 @@ void log_set_level_attr(int level, unsigned attr)
 }
 
 
-int log_puts(int level, const char *text)
+static inline int log_print(int level, const char *text)
 {
-	int result, result2;
+	int t;
+	int result = 0;
 
 	if(CHECK_INIT < 0)
 		return -1;
@@ -441,22 +493,40 @@ int log_puts(int level, const char *text)
 	if(level < 0 || level >= LOG_LEVELS)
 		return -2;
 
-	if(!is_active(level))
+	if(!l_levels[level].targets)
 		return 0;
 
-	check_header(l_levels[level].target);
-	set_attr(level);
-	put_timestamp(level);
-
-	result = log_write(l_levels[level].target, text);
-	if(result >= 0)
+	for(t = 0; t < LOG_TARGETS; ++t)
 	{
-		result2 = log_write_raw(l_levels[level].target, "\n");
-		if(result2 >= 0)
-			result += result2;
+		int r;
+		if(!(l_levels[level].targets & (1 << t)))
+			continue;
+
+		if(!target_is_active(t))
+			continue;
+
+		check_header(t);
+		set_attr(level, t);
+		put_timestamp(t);
+		r = log_write(t, text);
+		if(r > 0)
+			result += r;
+		reset_attr(level, t);
 	}
-	reset_attr(level);
 	return result;
+}
+
+
+int log_puts(int level, const char *text)
+{
+	if(CHECK_INIT < 0)
+	{
+		fputs(text, stderr);
+		fputs("\n[Logging not yet initialized!]\n", stderr);
+		return -1;
+	}
+	snprintf(l_buffer, LOG_BUFFER - 1, "%s\n", text);
+	return log_print(level, l_buffer);
 }
 
 
@@ -466,23 +536,25 @@ int log_printf(int level, const char *format, ...)
 	int result;
 
 	if(CHECK_INIT < 0)
+	{
+		va_start(args, format);
+		vfprintf(stderr, format, args);
+		va_end(args);
+		fputs("[Logging not yet initialized!]\n", stderr);
 		return -1;
+	}
 
 	if(level < 0 || level >= LOG_LEVELS)
 		return -2;
 
-	if(!is_active(level))
+	if(!level_is_active(level))
 		return 0;
 
-	check_header(l_levels[level].target);
-	set_attr(level);
-	put_timestamp(level);
-
 	va_start(args, format);
-	result = vsnprintf(l_buffer, LOG_BUFFER-1, format, args);
+	result = vsnprintf(l_buffer, LOG_BUFFER - 1, format, args);
 	va_end(args);
-	if(result >= 0)
-		result = log_write(l_levels[level].target, l_buffer);
-	reset_attr(level);
-	return result;
+	if(result > 0)
+		return log_print(level, l_buffer);
+	else
+		return 0;
 }

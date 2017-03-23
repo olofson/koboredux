@@ -62,6 +62,9 @@
 #define vsnprintf _vsnprintf
 #endif
 
+//Ever-present debug log file
+#define	KOBO_DEBUGLOGFILE		"LOG>>debuglog.txt"
+
 // Default and fallback graphics themes
 #define	KOBO_LOADER_GFX_THEME		"GFX>>loader"
 #define	KOBO_FALLBACK_GFX_THEME		"GFX>>mono"

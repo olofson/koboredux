@@ -183,6 +183,7 @@ static int main_init()
 
 static void main_cleanup()
 {
+	km.close_logging(true);
 	delete gengine;
 	gengine = NULL;
 	delete fmap;
@@ -230,6 +231,10 @@ static void setup_dirs(char *xpath)
 	// Campaign and demo saves
 	fmap->addpath("SAVES", "CONFIG>>saves");
 	fmap->mkdir("SAVES>>");
+
+	// Log files
+	fmap->addpath("LOG", "CONFIG>>log");
+	fmap->mkdir("LOG>>");
 }
 
 
@@ -254,6 +259,7 @@ int		KOBO_main::js_secondary = DEFAULT_JOY_SECONDARY;
 int		KOBO_main::js_start = DEFAULT_JOY_START;
 
 FILE		*KOBO_main::logfile = NULL;
+FILE		*KOBO_main::userlogfile = NULL;
 
 Uint32		KOBO_main::esc_tick = 0;
 int		KOBO_main::esc_count = 0;
@@ -445,12 +451,22 @@ bool KOBO_main::skip_requested()
 }
 
 
-void KOBO_main::close_logging()
+void KOBO_main::close_logging(bool final)
 {
-	/* Flush logs to disk, close log files etc. */
+	// Flush logs to disk, close log files etc.
 	log_close();
 
-	if(logfile)
+	if(userlogfile)
+	{
+		fclose(userlogfile);
+		userlogfile = NULL;
+	}
+
+	// NOTE: We do NOT close 'logfile' here until we're about to quit the
+	// application, because we don't want the debug log to be flushed when
+	// the log config is changed, and there are no options that affect this
+	// file anyway.
+	if(final && logfile)
 	{
 		fclose(logfile);
 		logfile = NULL;
@@ -460,57 +476,89 @@ void KOBO_main::close_logging()
 
 int KOBO_main::open_logging(prefs_t *p)
 {
+	bool force_console = false;
+
 	close_logging();
 
-	if(log_open() < 0)
+	if(log_open(p ? 0 : LOG_RESET_TIME) < 0)
 		return -1;
 
-	if(p && p->logfile)
-		switch (p->logformat)
-		{
-		  case 2:
-			logfile = fopen("log.html", "wb");
-			break;
-		  default:
-			logfile = fopen("log.txt", "wb");
-			break;
-		}
+	// Disable everything!
+	log_disable_level_target(-1, -1);
 
-	if(logfile)
-	{
-		log_set_target_stream(0, logfile);
-		log_set_target_stream(1, logfile);
-	}
-	else
-	{
-		log_set_target_stream(0, stdout);
-		log_set_target_stream(1, stderr);
-	}
+	// Set up stdout and stderr
+	log_set_target_stream(KOBO_LOG_TARGET_STDOUT, stdout);
+	log_set_target_stream(KOBO_LOG_TARGET_STDERR, stderr);
 
-	log_set_target_stream(2, NULL);
+	// All levels output to stdout...
+	log_enable_level_target(-1, KOBO_LOG_TARGET_STDOUT);
+
+	// ...except these, that output to stderr.
+	log_disable_level_target(ELOG, KOBO_LOG_TARGET_STDOUT);
+	log_enable_level_target(ELOG, KOBO_LOG_TARGET_STDERR);
+	log_disable_level_target(CELOG, KOBO_LOG_TARGET_STDOUT);
+	log_enable_level_target(CELOG, KOBO_LOG_TARGET_STDERR);
 
 	if(p)
-		switch(p->logformat)
+	{
+		// Set console log format
+		int clf;
+		switch(p->conlogformat)
 		{
 		  default:
-			log_set_target_flags(-1, LOG_TIMESTAMP);
+			clf = LOG_TIMESTAMP;
 			break;
 		  case 1:
-			log_set_target_flags(-1, LOG_ANSI | LOG_TIMESTAMP);
+			clf = LOG_ANSI | LOG_TIMESTAMP;
 			break;
 		  case 2:
-			log_set_target_flags(-1, LOG_HTML | LOG_TIMESTAMP);
+			clf = LOG_HTML | LOG_TIMESTAMP;
 			break;
 		}
+		log_set_target_flags(KOBO_LOG_TARGET_STDOUT, clf);
+		log_set_target_flags(KOBO_LOG_TARGET_STDERR, clf);
 
-	/* All levels output to stdout... */
-	log_set_level_target(-1, 0);
+		// Set up user log file
+		if(p->logfile)
+		{
+			switch (p->logformat)
+			{
+			  case 2:
+				userlogfile = fopen("log.html", "wb");
+				break;
+			  default:
+				userlogfile = fopen("log.txt", "wb");
+				break;
+			}
+		}
+		if(userlogfile)
+		{
+			log_set_target_stream(KOBO_LOG_TARGET_USER,
+					userlogfile);
+			switch(p->logformat)
+			{
+			  default:
+				clf = LOG_TIMESTAMP;
+				break;
+			  case 1:
+				clf = LOG_ANSI | LOG_TIMESTAMP;
+				break;
+			  case 2:
+				clf = LOG_HTML | LOG_TIMESTAMP;
+				break;
+			}
+			log_set_target_flags(KOBO_LOG_TARGET_USER, clf);
+			log_enable_level_target(-1, KOBO_LOG_TARGET_USER);
+		}
+		else if(p->logfile)
+		{
+			// No user log file! Fall back to stdout/stderr.
+			log_printf(ELOG, "Couldn't open user log file!\n");
+			force_console = true;
+		}
+	}
 
-	/* ...except these, that output to stderr. */
-	log_set_level_target(ELOG, 1);
-	log_set_level_target(CELOG, 1);
-
-	/* Some fancy colors... */
+	// Some fancy colors...
 	log_set_level_attr(ULOG, LOG_YELLOW);
 	log_set_level_attr(WLOG, LOG_YELLOW | LOG_BRIGHT);
 	log_set_level_attr(ELOG, LOG_RED | LOG_BRIGHT);
@@ -519,26 +567,45 @@ int KOBO_main::open_logging(prefs_t *p)
 	log_set_level_attr(D2LOG, LOG_BLUE | LOG_BRIGHT);
 	log_set_level_attr(D3LOG, LOG_BLUE);
 
-	/* Disable levels as desired */
 	if(p)
+	{
+		// Disable console output if disabled in config, unless forced!
+		if(!(p->logconsole || force_console))
+		{
+			log_disable_level_target(-1, KOBO_LOG_TARGET_STDOUT);
+			log_disable_level_target(-1, KOBO_LOG_TARGET_STDERR);
+		}
+
+		// Disable levels as desired
 		switch(p->logverbosity)
 		{
 		  case 0:
-			log_set_level_target(ELOG, 2);
+			log_disable_level_target(ELOG, -1);
 		  case 1:
-			log_set_level_target(WLOG, 2);
+			log_disable_level_target(WLOG, -1);
 		  case 2:
-			log_set_level_target(DLOG, 2);
+			log_disable_level_target(DLOG, -1);
 		  case 3:
-			log_set_level_target(D2LOG, 2);
+			log_disable_level_target(D2LOG, -1);
 		  case 4:
-			log_set_level_target(D3LOG, 2);
+			log_disable_level_target(D3LOG, -1);
 		  case 5:
 			break;
 		}
 
-	if(p && p->logfile && !logfile)
-		log_printf(ELOG, "Couldn't open log file!\n");
+		// Set up the hardwired debug log
+		if(!logfile)
+			logfile = fmap->fopen(KOBO_DEBUGLOGFILE, "wb");
+		if(logfile)
+		{
+			log_set_target_flags(KOBO_LOG_TARGET_DEBUG,
+					LOG_TIMESTAMP);
+			log_set_target_stream(KOBO_LOG_TARGET_DEBUG, logfile);
+			log_enable_level_target(-1, KOBO_LOG_TARGET_DEBUG);
+		}
+		else
+			log_printf(ELOG, "Couldn't open debug log file!\n");
+	}
 
 	return 0;
 }
@@ -1244,7 +1311,7 @@ void KOBO_main::brutal_quit(bool force)
 		log_printf(ULOG, "Second try quitting; using brutal "
 				"method!\n");
 		atexit(SDL_Quit);
-		close_logging();
+		close_logging(true);
 		exit(1);
 	}
 
@@ -2656,7 +2723,6 @@ int main(int argc, char *argv[])
 
 	if(cmd_exit)
 	{
-		km.close_logging();
 		main_cleanup();
 		return 0;
 	}
@@ -2670,7 +2736,6 @@ int main(int argc, char *argv[])
 #endif
 	if(km.open() < 0)
 	{
-		km.close_logging();
 		main_cleanup();
 		return 1;
 	}
@@ -2701,7 +2766,6 @@ int main(int argc, char *argv[])
 	if(prefs->show_fps && km.fps_results)
 		km.print_fps_results();
 
-	km.close_logging();
 	main_cleanup();
 	return 0;
 }

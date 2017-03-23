@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - Logger definitions
 ------------------------------------------------------------
- * Copyright 2003, 2009 David Olofson
+ * Copyright 2003, 2009, 2017 David Olofson
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -40,5 +40,13 @@ extern "C" {
 #ifdef __cplusplus
 };
 #endif
+
+// Logger targets (streams/files/callbacks)
+enum {
+	KOBO_LOG_TARGET_STDOUT = 0,	// stdout
+	KOBO_LOG_TARGET_STDERR,		// stderr
+	KOBO_LOG_TARGET_DEBUG,		// Debug log file
+	KOBO_LOG_TARGET_USER		// User log file (if used)
+};
 
 #endif	/* KOBOLOG_H */

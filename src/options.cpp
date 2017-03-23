@@ -38,11 +38,16 @@ void system_options_t::build()
 
 	space();
 	yesno("Log Messages to File", &prf->logfile, OS_RESTART_LOGGER);
-	list("Log Output Format", &prf->logformat, 0);
+	yesno("Log Messages to Console", &prf->logconsole, OS_RESTART_LOGGER);
+	list("Log File Output Format", &prf->logformat, OS_RESTART_LOGGER);
 		item("Plain Text", 0);
 		item("ANSI Coloring", 1);
 		item("HTML", 2);
-	list("Log Verbosity", &prf->logverbosity, 0);
+	list("Console Log Output Format", &prf->conlogformat,
+			OS_RESTART_LOGGER);
+		item("Plain Text", 0);
+		item("ANSI Coloring", 1);
+	list("Log Verbosity", &prf->logverbosity, OS_RESTART_LOGGER);
 		item("Critical Errors Only", 0);
 		item("Errors Only", 1);
 		item("Errors & Warnings", 2);
