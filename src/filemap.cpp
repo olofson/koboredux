@@ -461,7 +461,7 @@ char *filemapper_t::fm2sys(const char *path)
 // Try the specified operation on a path. The path must be in *system* format.
 int filemapper_t::try_get(const char *path, int kind)
 {
-	if(prefs->debug)
+	if(prefs->debug || (prefs->logverbosity >= 4))
 		log_printf(ULOG, "filemapper_t::try_get(\"%s\")\n", path);
 	switch (kind)
 	{
@@ -662,14 +662,14 @@ const char *filemapper_t::get(const char *ref, int kind, const char *defprefix)
 	char *buffer = salloc();
 	if(recurse_get(buffer, ref, kind, 1, 0))
 	{
-		if(prefs->debug)
+		if(prefs->debug || (prefs->logverbosity >= 4))
 			log_printf(ULOG, "filemapper_t::get(\"%s\") ==> "
 					"\"%s\"\n", ref, buffer);
 		return buffer;
 	}
 	else
 	{
-		if(prefs->debug)
+		if(prefs->debug || (prefs->logverbosity >= 4))
 			log_printf(WLOG, "filemapper_t::get(\"%s\") failed!\n",
 					ref);
 		return NULL;
