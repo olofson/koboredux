@@ -829,7 +829,8 @@ FILE *filemapper_t::fopen(const char *ref, const char *mode, const char **pth)
 	}
 	if(path)
 	{
-		*pth = path;
+		if(pth)
+			*pth = path;
 		return ::fopen(path, mode);
 	}
 	else
