@@ -251,6 +251,7 @@ void controls_options_t::build()
 		}
 	}
 	space();
+	yesno("Use Tertiary Fire Button", &prf->tertiary_button, 0);
 	yesno("Broken NumPad Diagonals", &prf->broken_numdia, 0);
 	list("Diagonals Emphasis Filter", &prf->dia_emphasis, 0);
 		item("OFF", 0);

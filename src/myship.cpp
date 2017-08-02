@@ -186,14 +186,28 @@ KOBO_player_controls KOBO_myship::decode_input()
 	int c = 0;
 	if(gamecontrol.dir_push())
 		c |= gamecontrol.dir();
-	if(gamecontrol.pressed(BTN_PRIMARY))
-		c |= KOBO_PC_PRIMARY_DOWN;
-	if(gamecontrol.down(BTN_PRIMARY))
+	if(gamecontrol.pressed(BTN_PRIMARY) || gamecontrol.down(BTN_PRIMARY))
 		c |= KOBO_PC_PRIMARY;
-	if(gamecontrol.pressed(BTN_SECONDARY))
-		c |= KOBO_PC_SECONDARY_DOWN;
-	if(gamecontrol.down(BTN_SECONDARY))
-		c |= KOBO_PC_SECONDARY;
+	if(prefs->tertiary_button)
+	{
+		// Triple fire button mode: Separate secondary/tertiary
+		if(gamecontrol.pressed(BTN_SECONDARY))
+			c |= KOBO_PC_SECONDARY;
+		if(gamecontrol.pressed(BTN_TERTIARY))
+			c |= KOBO_PC_TERTIARY;
+	}
+	else
+	{
+		// Dual fire button mode: Release stick to fire tertiary
+		if(gamecontrol.pressed(BTN_SECONDARY) ||
+				gamecontrol.pressed(BTN_TERTIARY))
+		{
+			if(gamecontrol.dir_push())
+				c |= KOBO_PC_SECONDARY;
+			else
+				c |= KOBO_PC_TERTIARY;
+		}
+	}
 	return (KOBO_player_controls)c;
 }
 
@@ -253,7 +267,7 @@ void KOBO_myship::fire_control()
 		--blossom_cooltimer;
 
 	// Primary fire logic
-	if(ctrl & (KOBO_PC_PRIMARY_DOWN | KOBO_PC_PRIMARY))
+	if(ctrl & KOBO_PC_PRIMARY)
 	{
 		int fired = 0;
 		if(tail_reload_timer > 0)
@@ -287,13 +301,12 @@ void KOBO_myship::fire_control()
 	}
 
 	// Secondary fire (no autofire!)
-	if(ctrl & KOBO_PC_SECONDARY_DOWN)
-	{
-		if(ctrl & KOBO_PC_DIR)
-			charged_fire(di);
-		else
-			fire_blossom();
-	}
+	if(ctrl & KOBO_PC_SECONDARY)
+		charged_fire(di);
+
+	// Tertiary fire (no autofire!)
+	if(ctrl & KOBO_PC_TERTIARY)
+		fire_blossom();
 
 	// Charge bar blipps
 	if(ceil(_charge * charge_blipp_granularity) >

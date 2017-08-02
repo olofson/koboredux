@@ -69,6 +69,8 @@ void prefs_t::init()
 	key("dia_emphasis", dia_emphasis, 1);
 			desc("Diagonals Emphasis Filter");
 	yesno("mousecapture", mousecapture, 1); desc("In-game Mouse Capture");
+	yesno("tertiary_button", tertiary_button, 1);
+			desc("Use Tertiary Fire Button");
 
 	section("Audio");
 	yesno("sound", sound, 1); desc("Enable Sound");

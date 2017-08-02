@@ -52,6 +52,7 @@ enum gc_targets_t
 
 	BTN_PRIMARY,	// Primary fire (ctrl, fire button, LMB,...)
 	BTN_SECONDARY,	// Secondary fire (shift, space, mouse button,...
+	BTN_TERTIARY,	// Tertiary fire
 	BTN_SELECT,	// Return, enter,...
 	BTN_EXIT,	// ESC
 	BTN_PAUSE,	// Pause or P; also used as an internal event.
@@ -89,12 +90,12 @@ enum KOBO_player_controls
 
 	KOBO_PC_DIR =			0x0f,	// Dirs 1..8; 0 is "neutral"
 
-	KOBO_PC_PRIMARY_DOWN =		0x10,	// Primary fire just pressed
-	KOBO_PC_PRIMARY =		0x20,	// Primary fire held down
-	KOBO_PC_SECONDARY_DOWN =	0x40,	// Secondary fire just pressed
-	KOBO_PC_SECONDARY =		0x80,	// Secondary fire held down
-	KOBO_PC_FIRE =		KOBO_PC_PRIMARY_DOWN | KOBO_PC_PRIMARY |
-				KOBO_PC_SECONDARY_DOWN | KOBO_PC_SECONDARY,
+	KOBO_PC_PRIMARY =		0x10,	// Fire primary weapon
+	KOBO_PC_SECONDARY =		0x20,	// Fire secondary weapon
+	KOBO_PC_TERTIARY =		0x40,	// Fire tertiary weapon
+	KOBO_PC_QUATERNARY =		0x80,	// Fire quaternary weapon
+	KOBO_PC_FIRE =		KOBO_PC_PRIMARY | KOBO_PC_SECONDARY |
+				KOBO_PC_TERTIARY | KOBO_PC_QUATERNARY,
 
 	KOBO_PC_END =			0xff00	// End-of-replay
 };

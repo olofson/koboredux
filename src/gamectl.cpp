@@ -146,10 +146,18 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 		++src;
 	  case SDLK_RCTRL:
 		++src;
-	  case SDLK_SPACE:
-		++src;
 	  case SDLK_x:
 		return BTN_SECONDARY;
+
+	  // Tertiary fire
+	  case SDLK_LALT:
+		++src;
+	  case SDLK_RALT:
+		++src;
+	  case SDLK_SPACE:
+		++src;
+	  case SDLK_c:
+		return BTN_TERTIARY;
 
 	  // Exit
 	  case SDLK_ESCAPE:

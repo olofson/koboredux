@@ -61,6 +61,7 @@ class prefs_t : public config_parser_t
 	int	broken_numdia;
 	int	dia_emphasis;
 	int	mousecapture;
+	int	tertiary_button;
 
 	// Audio
 	cfg_string_t	audiodriver;	//Name/options for a2_NewDriver()
