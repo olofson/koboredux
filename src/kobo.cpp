@@ -1096,8 +1096,13 @@ int KOBO_main::load_graphics()
 		log_printf(ULOG, "Loading fallback graphics theme '%s'...\n",
 				KOBO_FALLBACK_GFX_THEME);
 		if(!tp.load(KOBO_FALLBACK_GFX_THEME))
+		{
 			log_printf(WLOG, "Couldn't load fallback graphics "
 					"theme!\n");
+			gengine->messagebox("CRITICAL: Could not load game"
+					" graphics!");
+			return -2;
+		}
 	}
 
 	// Try to load graphics theme for authoring tools
