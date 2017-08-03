@@ -63,6 +63,7 @@ endif(DEMO_BUILD)
 
 pkg_search_module(SDL2 REQUIRED sdl2)
 include_directories(${SDL2_INCLUDE_DIRS})
+link_directories(${SDL2_LIBDIR})
 
 pkg_search_module(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
 include_directories(${SDL2IMAGE_INCLUDE_DIRS})
