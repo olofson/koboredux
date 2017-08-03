@@ -29,7 +29,11 @@ spinplanet_t::spinplanet_t(gfxengine_t *e) : stream_window_t(e)
 {
 	sbank = -1;
 	sframe = 0;
+	psize = msize = msizemask = 0;
 	mode = SPINPLANET_OFF;
+	lastx = lasty = -1;
+	lastnx = lastny = -1.0f;
+	wox = woy = 0.0f;
 	dither = SPINPLANET_DITHER_RAW;
 	lens = NULL;
 	source = NULL;
@@ -55,6 +59,9 @@ spinplanet_t::~spinplanet_t()
 
 void spinplanet_t::clear()
 {
+	if(!width() || !height())
+		return;
+
 	Uint32 *buffer;
 	int pitch = lock(NULL, &buffer);
 	if(!pitch)
@@ -525,17 +532,17 @@ inline void spinplanet_t::dth_ordered(uint8_t *s, int sp, Uint32 *d,
 
 void spinplanet_t::refresh(SDL_Rect *r)
 {
+	if((sbank < 0) || !width() || !height())
+	{
+		set_mode(SPINPLANET_OFF);
+		return;
+	}
+
 	if(needs_prepare)
 	{
 		dth_prepare();
 		init_lens();
 		needs_prepare = false;
-	}
-
-	if(sbank < 0)
-	{
-		set_mode(SPINPLANET_OFF);
-		return;
 	}
 
 	// "Rotation"
