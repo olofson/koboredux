@@ -11,12 +11,13 @@ option(DEMO_BUILD "Build Kobo Redux demo." OFF)
 option(WIN32_ZIP_BUILD "Build flat Win32 ZIP archive." OFF)
 option(WORKDIR "Top level build/staging directory."
 	"${KOBOREDUX_SOURCE_DIR}/build")
-option(KOBO_EXTRA_LIBRARIES "Extra libraries to link with." "")
+set(KOBO_EXTRA_LIBRARIES "" CACHE STRING "Extra libraries to link with.")
 
 message(".-----------------------------------------")
-message("|      DEMO_BUILD: ${DEMO_BUILD}")
-message("| WIN32_ZIP_BUILD: ${WIN32_ZIP_BUILD}")
-message("|         WORKDIR: ${WORKDIR}")
+message("|           DEMO_BUILD: ${DEMO_BUILD}")
+message("|      WIN32_ZIP_BUILD: ${WIN32_ZIP_BUILD}")
+message("|              WORKDIR: ${WORKDIR}")
+message("| KOBO_EXTRA_LIBRARIES: ${KOBO_EXTRA_LIBRARIES}")
 message("'-----------------------------------------")
 
 if(DEMO_BUILD)
