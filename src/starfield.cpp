@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -105,6 +105,9 @@ void KOBO_Starfield::render(int xo, int yo)
 {
 	int w = target->width() * 256;
 	int h = target->height() * 256;
+	if(!w || !h)
+		return;
+
 	int xc = w / 2;
 	int yc = h / 2;
 	int pivot8 = pivot << 8;	// Rotation pivot z coordinate
