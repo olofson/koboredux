@@ -69,7 +69,7 @@ class ct_widget_t : public window_t
 	void transparency(int t);
 	void highlight(int hl);
 	void color(Uint32 _cl);
-	virtual void change(double delta);
+	virtual void change(int delta);
 	virtual void value(double val);
 	virtual void value(const char *str);
 	virtual double value();
@@ -111,7 +111,7 @@ class ct_label_t : public ct_widget_t
 	ct_label_t(gfxengine_t *e, const char *cap = NULL);
 	void caption(const char *cap);
 	const char *caption()	{ return _caption; }
-	virtual void halign(ct_align_t ha);
+	void halign(ct_align_t ha);
 };
 
 
@@ -159,8 +159,8 @@ class ct_list_t : public ct_label_t
 	void value(const char *val);
 	double value();
 	const char *stringvalue();
-	void change(double delta);
-	virtual void halign(ct_align_t ha);
+	void change(int delta);
+	void halign(ct_align_t ha);
 };
 
 
@@ -174,8 +174,7 @@ class ct_spin_t : public ct_label_t
   public:
 	ct_spin_t(gfxengine_t *e, const char *cap = NULL, int _min = 0,
 			int _max = 99999, const char *__unit = NULL);
-	void value(int val);
-	void change(int delta);
+	void value(double val);
 	void unit(const char *txt);
 	const char *unit()	{ return _unit; }
 };
@@ -187,7 +186,6 @@ class ct_button_t : public ct_label_t
 	void render();
   public:
 	ct_button_t(gfxengine_t *e, const char *cap = NULL);
-	void change(int delta);
 };
 
 

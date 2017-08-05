@@ -163,9 +163,11 @@ void ct_widget_t::render_text_aligned(const char *buf)
 }
 
 
-void ct_widget_t::change(double delta)
+void ct_widget_t::change(int delta)
 {
-	_value += delta;
+	value(value() + delta);
+	if(!transparent)
+		render();
 }
 
 
@@ -478,21 +480,20 @@ const char *ct_list_t::stringvalue()
 }
 
 
-void ct_list_t::change(double delta)
+void ct_list_t::change(int delta)
 {
 	if(_selected)
 	{
 		if(!delta)
-			delta = 1.0f;
-		if(delta > 0.0f)
+			delta = 1;
+		if(delta > 0)
 			for(int i = 0; i < (int)delta; ++i)
 				_selected = _selected->next;
-		else if(delta < 0.0f)
+		else if(delta < 0)
 			for(int i = 0; i > (int)delta; --i)
 				_selected = _selected->prev;
 		select(_selected);	//To update _value, render etc...
 	}
-	ct_widget_t::change(delta);
 }
 
 
@@ -539,20 +540,15 @@ void ct_spin_t::unit(const char *txt)
 }
 
 
-void ct_spin_t::value(int val)
+void ct_spin_t::value(double val)
 {
-	val -= min;
-	while(val < 0)
-		val += max - min + 1;
-	val %= max - min + 1;
-	val += min;
-	ct_label_t::value(val);
-}
-
-
-void ct_spin_t::change(int delta)
-{
-	value(_value + delta);
+	int v = (int)val;
+	v -= min;
+	while(v < 0)
+		v += max - min + 1;
+	v %= max - min + 1;
+	v += min;
+	ct_label_t::value(v);
 }
 
 
@@ -563,7 +559,6 @@ void ct_spin_t::render()
 	snprintf(buf, sizeof(buf), "%s: %f %s", caption(), _value, unit());
 	render_text_aligned(buf);
 }
-
 
 
 /*----------------------------------------------------------
@@ -580,15 +575,6 @@ void ct_button_t::render()
 {
 	ct_label_t::render();
 }
-
-
-void ct_button_t::change(int delta)
-{
-	ct_label_t::change(delta);
-	if(!transparent)
-		render();
-}
-
 
 
 /*----------------------------------------------------------
