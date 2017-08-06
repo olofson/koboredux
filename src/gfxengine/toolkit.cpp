@@ -571,6 +571,41 @@ void ct_spin_t::render()
 
 
 /*----------------------------------------------------------
+	ct_string_t::
+----------------------------------------------------------*/
+
+ct_string_t::ct_string_t(gfxengine_t *e, const char *cap,
+		const char *__str) : ct_label_t(e, cap)
+{
+	interactive = 1;
+	_token = ':';
+	xo = 0.55;
+	if(__str)
+		value(__str);
+	else
+		value("");
+}
+
+
+void ct_string_t::halign(ct_align_t ha)
+{
+	if(ALIGN_DEFAULT == ha)
+		_halign = ALIGN_CENTER_TOKEN;
+	else
+		_halign = ha;
+}
+
+
+void ct_string_t::render()
+{
+	char buf[128];
+	ct_widget_t::render();
+	snprintf(buf, sizeof(buf), "%s: %s", caption(), stringvalue());
+	render_text_aligned(buf);
+}
+
+
+/*----------------------------------------------------------
 	ct_button_t::
 ----------------------------------------------------------*/
 

@@ -181,6 +181,17 @@ class ct_spin_t : public ct_label_t
 };
 
 
+class ct_string_t : public ct_label_t
+{
+  protected:
+	void render();
+  public:
+	ct_string_t(gfxengine_t *e, const char *cap = NULL,
+			const char *__str = "");
+	void halign(ct_align_t ha);
+};
+
+
 class ct_button_t : public ct_label_t
 {
   protected:
