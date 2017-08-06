@@ -177,6 +177,7 @@ class ct_spin_t : public ct_label_t
 	void value(double val);
 	void unit(const char *txt);
 	const char *unit()	{ return _unit; }
+	void halign(ct_align_t ha);
 };
 
 

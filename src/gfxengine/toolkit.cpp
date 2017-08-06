@@ -552,6 +552,15 @@ void ct_spin_t::value(double val)
 }
 
 
+void ct_spin_t::halign(ct_align_t ha)
+{
+	if(ALIGN_DEFAULT == ha)
+		_halign = ALIGN_CENTER_TOKEN;
+	else
+		_halign = ha;
+}
+
+
 void ct_spin_t::render()
 {
 	char buf[128];
