@@ -372,8 +372,8 @@ void KOBO_screen::help(int t)
 			screen.set_highlight(0, 0);
 		woverlay->font(B_MEDIUM_FONT);
 		render_anim(cx, 105, B_PLAYER, 0, -1, 30, t);
-		woverlay->center(130, "Use arrow keys or NumPad.");
-		woverlay->center(140, "to control the ship.");
+		woverlay->center(130, "Use directional controls");
+		woverlay->center(140, "to maneuver the ship.");
 	}
 	else if(t < INST_TIME_CONTROL)
 		return;
@@ -390,7 +390,7 @@ void KOBO_screen::help(int t)
 		int cx1 = cx + 20;
 		int cy = 105;
 		woverlay->font(B_MEDIUM_FONT);
-		woverlay->center(80, "Primary Weapon: SHIFT or X");
+		woverlay->center(80, "Primary Fire: Nose + Tail");
 		woverlay->sprite(cx1, cy, B_PLAYER,
 				gengine->get_nframes(B_PLAYER) / 4);
 		int i;
@@ -446,8 +446,8 @@ void KOBO_screen::help(int t)
 			}
 		}
 		woverlay->center(150,
-				"Charged Blast: Direction + CTRL or SPACE");
-		woverlay->center(160, "Death Blossom: CTRL or SPACE");
+				"Secondary Fire: Charged Blast");
+		woverlay->center(160, "Tertiary Fire: Death Blossom");
 	}
 	else if(t < INST_TIME_FIRE)
 		return;

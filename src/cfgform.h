@@ -63,7 +63,7 @@ class config_form_t : public kobo_form_t
 
 	// Override this to construct the menu. Note that this is called both
 	// for open() and for OS_REBUILD.
-	virtual void build();
+	void build();
 
 	// ...and this, if you need to. Normally, it just sets the status to 0.
 	void close();
@@ -73,6 +73,7 @@ class config_form_t : public kobo_form_t
 	void clearstatus(int mask);
 	void undo();
 	void change(int delta);
+	void apply_change(ct_widget_t *w);
 
 	// Override this to do stuff when leaving the menu, in preparation for
 	// passing any OS_RESTART_* or OS_UPDATE_* flags to the main loop.

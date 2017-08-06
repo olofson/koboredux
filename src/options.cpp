@@ -220,6 +220,36 @@ void controls_options_t::build()
 	title("Controls");
 
 	xoffs = 0.57;
+
+	// Keyboard
+	keybinding("Up", &prf->keyboard_up);
+	keybinding("Down", &prf->keyboard_down);
+	keybinding("Left", &prf->keyboard_left);
+	keybinding("Right", &prf->keyboard_right);
+	space();
+	yesno("Use Tertiary Fire Button", &prf->tertiary_button, OS_REBUILD);
+	keybinding("Primary Fire", &prf->keyboard_primary);
+	keybinding("Secondary Fire", &prf->keyboard_secondary);
+	if(prf->tertiary_button)
+		keybinding("Tertiary Fire", &prf->keyboard_tertiary);
+	else
+	{
+		font(B_SMALL_FONT);
+		label("(Tertiary Fire: Secondary Fire while coasting)");
+		font();
+	}
+	space();
+	yesno("Broken NumPad Diagonals", &prf->broken_numdia, 0);
+	list("Diagonals Emphasis Filter", &prf->dia_emphasis, 0);
+		item("OFF", 0);
+		item("1 frame", 1);
+		item("2 frames", 2);
+		item("3 frames", 3);
+		item("4 frames", 4);
+		item("5 frames", 5);
+
+	// Mouse
+	space();
 	yesno("Use Mouse", &prf->mouse, OS_RESTART_INPUT | OS_REBUILD);
 	if(prf->mouse)
 	{
@@ -227,8 +257,9 @@ void controls_options_t::build()
 			item("Disabled", MMD_OFF);
 			item("Crosshair", MMD_CROSSHAIR);
 	}
-	space();
 	yesno("In-game Mouse Capture", &prf->mousecapture, 0);
+
+	// Joystick
 	space();
 	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
 		label("Could not initialize joysticks!");
@@ -250,16 +281,6 @@ void controls_options_t::build()
 				label("No Joysticks Found!");
 		}
 	}
-	space();
-	yesno("Use Tertiary Fire Button", &prf->tertiary_button, 0);
-	yesno("Broken NumPad Diagonals", &prf->broken_numdia, 0);
-	list("Diagonals Emphasis Filter", &prf->dia_emphasis, 0);
-		item("OFF", 0);
-		item("1 frame", 1);
-		item("2 frames", 2);
-		item("3 frames", 3);
-		item("4 frames", 4);
-		item("5 frames", 5);
 
 	xoffs = 0.5;
 	space(2);

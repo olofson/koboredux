@@ -59,42 +59,35 @@ void gamecontrol_t::clear()
 
 gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 {
-//FIXME: This should be replaced by a configurable mapping system.
+	// Configured key bindings
 	src = GC_SRC_KEY0;
+	if(sym.scancode == prefs->keyboard_up)
+		return BTN_UP;
+	if(sym.scancode == prefs->keyboard_down)
+		return BTN_DOWN;
+	if(sym.scancode == prefs->keyboard_left)
+		return BTN_LEFT;
+	if(sym.scancode == prefs->keyboard_right)
+		return BTN_RIGHT;
+	if(sym.scancode == prefs->keyboard_primary)
+		return BTN_PRIMARY;
+	if(sym.scancode == prefs->keyboard_secondary)
+		return BTN_SECONDARY;
+	if(sym.scancode == prefs->keyboard_tertiary)
+		return BTN_TERTIARY;
+
+	// Hardwired key bindings
+	++src;
 	switch(sym.sym)
 	{
 	  // Directions
-	  case SDLK_KP_4:
-		++src;
 	  case SDLK_LEFT:
-		++src;
-	  case SDLK_a:		// Qwerty + Dvorak
 		return BTN_LEFT;
-	  case SDLK_KP_6:
-		++src;
 	  case SDLK_RIGHT:
-		++src;
-	  case SDLK_d:		// Qwerty
-		++src;
-	  case SDLK_e:		// Dvorak
 		return BTN_RIGHT;
-	  case SDLK_KP_8:
-		++src;
 	  case SDLK_UP:
-		++src;
-	  case SDLK_w:		// Qwerty
-		++src;
-	  case SDLK_COMMA:	// Some Swedish Dvorak variants
-		++src;
-	  case SDLK_LESS:	// US Dvorak?
 		return BTN_UP;
-	  case SDLK_KP_2:
-		++src;
 	  case SDLK_DOWN:
-		++src;
-	  case SDLK_s:		// Qwerty
-		++src;
-	  case SDLK_o:		// Dvorak
 		return BTN_DOWN;
 
 	  // Keypad diagonals
@@ -132,7 +125,7 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 			return BTN_DL;
 		else
 			return BTN_NONE;
-
+#if 0
 	  // Primary fire
 	  case SDLK_LSHIFT:
 		++src;
@@ -158,7 +151,7 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 		++src;
 	  case SDLK_c:
 		return BTN_TERTIARY;
-
+#endif
 	  // Exit
 	  case SDLK_ESCAPE:
 		return BTN_EXIT;

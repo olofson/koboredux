@@ -43,6 +43,7 @@ ct_widget_t::ct_widget_t(gfxengine_t *e) : window_t(e)
 	user2 = 0;
 	tag = 0;
 	_color = 0;
+	parent = NULL;
 	next = prev = NULL;
 	_widget_index = -1;
 	halign(ALIGN_DEFAULT);
@@ -58,6 +59,8 @@ ct_widget_t::ct_widget_t(gfxengine_t *e) : window_t(e)
 ct_widget_t::~ct_widget_t()
 {
 	free(_string);
+	if(ct_engine.rawcapture == this)
+		ct_engine.rawcapture = NULL;
 }
 
 
@@ -196,6 +199,17 @@ const char *ct_widget_t::stringvalue()
 }
 
 
+void ct_widget_t::rawcapture(bool on)
+{
+	ct_engine.rawcapture = on ? this : NULL;
+}
+
+
+bool ct_widget_t::rawevent(SDL_Event *ev)
+{
+	return false;
+}
+
 
 /*----------------------------------------------------------
 	ct_engine_t::
@@ -223,7 +237,16 @@ static void default_render_highlight(ct_widget_t *wg)
 
 ct_engine_t::ct_engine_t()
 {
-	ct_engine.render_highlight = default_render_highlight;
+	render_highlight = default_render_highlight;
+	rawcapture = NULL;
+}
+
+
+bool ct_engine_t::rawevent(SDL_Event *ev)
+{
+	if(!rawcapture)
+		return false;
+	return rawcapture->rawevent(ev);
 }
 
 
@@ -651,6 +674,7 @@ ct_form_t::~ct_form_t()
 
 void ct_form_t::add(ct_widget_t *widget)
 {
+	widget->parent = this;
 	if(widgets)
 	{
 		widget->next = widgets;
@@ -796,6 +820,11 @@ void ct_form_t::change(int delta)
 {
 	if(_selected)
 		_selected->change(delta);
+}
+
+
+void ct_form_t::apply_change(ct_widget_t *w)
+{
 }
 
 

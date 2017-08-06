@@ -63,6 +63,15 @@ class prefs_t : public config_parser_t
 	int	mousecapture;
 	int	tertiary_button;
 
+	// Keyboard bindings (SDL_Scancode)
+	int	keyboard_up;
+	int	keyboard_down;
+	int	keyboard_left;
+	int	keyboard_right;
+	int	keyboard_primary;
+	int	keyboard_secondary;
+	int	keyboard_tertiary;
+
 	// Audio
 	cfg_string_t	audiodriver;	//Name/options for a2_NewDriver()
 	int	sound;		//Enable sound

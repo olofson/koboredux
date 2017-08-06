@@ -42,6 +42,8 @@ enum ct_align_t
 	ALIGN_CENTER_TOKEN
 };
 
+class ct_form_t;
+
 class ct_widget_t : public window_t
 {
   protected:
@@ -60,6 +62,7 @@ class ct_widget_t : public window_t
 	virtual void render();
 	void render_text_aligned(const char *buf);
   public:
+	ct_form_t	*parent;
 	ct_widget_t	*next, *prev;	//*CIRCULAR* list!
 	void		*user;	//user stuff
 	int		user2;	//user stuff
@@ -74,6 +77,10 @@ class ct_widget_t : public window_t
 	virtual void value(const char *str);
 	virtual double value();
 	virtual const char *stringvalue();
+
+	// Raw event capture
+	void rawcapture(bool on);
+	virtual bool rawevent(SDL_Event *ev);
 
 	//Contents alignment modes.
 	virtual void halign(ct_align_t ha);
@@ -94,9 +101,13 @@ class ct_widget_t : public window_t
 
 class ct_engine_t
 {
+  protected:
+	friend class ct_widget_t;
+	ct_widget_t *rawcapture;
   public:
 	ct_engine_t();
 	void (*render_highlight)(ct_widget_t *wg);
+	bool rawevent(SDL_Event *ev);
 };
 
 extern ct_engine_t ct_engine;
@@ -220,6 +231,7 @@ class ct_form_t : public window_t
 	void render();
 	void render_nontransparent();
 	virtual void change(int delta);
+	virtual void apply_change(ct_widget_t *w);
 };
 
 #endif /* _TOOLKIT_H_ */

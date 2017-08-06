@@ -1983,6 +1983,8 @@ void kobo_gfxengine_t::input(float fractional_frame)
 	while(SDL_PollEvent(&ev))
 	{
 		int ms;
+		if(ct_engine.rawevent(&ev))
+			continue;
 		if(prefs->soundtools && soundtools_event(ev))
 			continue;
 		switch (ev.type)

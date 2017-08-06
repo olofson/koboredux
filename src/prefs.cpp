@@ -72,6 +72,22 @@ void prefs_t::init()
 	yesno("tertiary_button", tertiary_button, 1);
 			desc("Use Tertiary Fire Button");
 
+	section("Keyboard bindings");
+	key("keyboard_up", keyboard_up, SDL_SCANCODE_UP);
+			desc("Keyboard Up");
+	key("keyboard_down", keyboard_down, SDL_SCANCODE_DOWN);
+			desc("Keyboard Down");
+	key("keyboard_left", keyboard_left, SDL_SCANCODE_LEFT);
+			desc("Keyboard Left");
+	key("keyboard_right", keyboard_right, SDL_SCANCODE_RIGHT);
+			desc("Keyboard Right");
+	key("keyboard_primary", keyboard_primary, SDL_SCANCODE_C);
+			desc("Keyboard Primary Fire");
+	key("keyboard_secondary", keyboard_secondary, SDL_SCANCODE_X);
+			desc("Keyboard Secondary Fire");
+	key("keyboard_tertiary", keyboard_tertiary, SDL_SCANCODE_Z);
+			desc("Keyboard Tertiary Fire");
+
 	section("Audio");
 	yesno("sound", sound, 1); desc("Enable Sound");
 	yesno("music", music, 1); desc("Enable Music");

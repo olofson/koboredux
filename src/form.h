@@ -27,6 +27,18 @@
 #include "toolkit.h"
 #include "cfgparse.h"
 
+class kobo_keybinding_t : public ct_string_t
+{
+  protected:
+	bool scanning;
+	void render();
+  public:
+	kobo_keybinding_t(gfxengine_t *e, const char *cap);
+	void value(double val);
+	void change(int delta);
+	bool rawevent(SDL_Event *ev);
+};
+
 class kobo_form_t : public ct_form_t
 {
 	//Called by build_all().
@@ -52,6 +64,7 @@ class kobo_form_t : public ct_form_t
 	void onoff(const char *cap, int *var, int tag = 0);
 	void spin(const char *cap, int *var, int min, int max,
 			const char *unit, int tag = 0);
+	void keybinding(const char *cap, int *var, int tag = 0);
 	void button(const char *cap, int tag = 0);
 	void space(float lines = 1.0f);	// Negative values are "virtual" pixels
 	void help();
@@ -72,7 +85,7 @@ class kobo_form_t : public ct_form_t
 	void next();
 	void prev();
 	void rebuild();
-	virtual void change(int delta);
+	void apply_change(ct_widget_t *w);
 	virtual void build();
 };
 

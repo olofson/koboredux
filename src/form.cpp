@@ -28,6 +28,113 @@
 #include "form.h"
 #include "kobo.h"
 
+
+/*----------------------------------------------------------
+	kobo_keybinding_t::
+----------------------------------------------------------*/
+
+kobo_keybinding_t::kobo_keybinding_t(gfxengine_t *e, const char *cap) :
+		ct_string_t(e, cap)
+{
+	scanning = false;
+}
+
+
+void kobo_keybinding_t::value(double val)
+{
+	// NOTE:
+	//	We're displaying the names from the current keyboard layout,
+	//	which is technically wrong, but probably less confusing than
+	//	scancodes. (And SDL doesn't have name strings for scancodes.)
+	//	However, the configuration stores scancodes, as it should.
+	//
+	int v = (int)val;
+	scanning = false;
+	rawcapture(false);
+	ct_string_t::value(v);
+	SDL_Keycode key = SDL_GetKeyFromScancode((SDL_Scancode)v);
+	const char *kn = SDL_GetKeyName(key);
+	if(kn[0] && textwidth(kn))
+		ct_string_t::value(kn);
+	else
+	{
+		char buf[16];
+		snprintf(buf, sizeof(buf), "0x%X", v);
+		ct_string_t::value(buf);
+	}
+}
+
+
+void kobo_keybinding_t::change(int delta)
+{
+	if(delta)
+	{
+		scanning = false;
+		ct_string_t::change(delta);
+	}
+	else
+		scanning = true;
+	rawcapture(scanning);
+}
+
+
+bool kobo_keybinding_t::rawevent(SDL_Event *ev)
+{
+	switch (ev->type)
+	{
+	  case SDL_KEYDOWN:
+		switch(ev->key.keysym.sym)
+		{
+		  case SDLK_ESCAPE:
+			scanning = false;
+			rawcapture(false);
+			return true;
+		  default:
+			value(ev->key.keysym.scancode);
+			parent->apply_change(this);
+			return true;
+		}
+		break;
+	  case SDL_WINDOWEVENT:
+		switch(ev->window.event)
+		{
+		  case SDL_WINDOWEVENT_CLOSE:
+		  case SDL_WINDOWEVENT_HIDDEN:
+		  case SDL_WINDOWEVENT_MINIMIZED:
+		  case SDL_WINDOWEVENT_FOCUS_LOST:
+			scanning = false;
+			rawcapture(false);
+			return false;
+		}
+		break;
+	  case SDL_QUIT:
+		scanning = false;
+		rawcapture(false);
+		return false;
+	}
+	return false;
+}
+
+
+void kobo_keybinding_t::render()
+{
+	if(scanning)
+	{
+		char buf[128];
+		ct_widget_t::render();
+		snprintf(buf, sizeof(buf), "%s: %s", caption(),
+				SDL_GetTicks() & 0x100 ? "Press key..." : "");
+		render_text_aligned(buf);
+	}
+	else
+		ct_string_t::render();
+}
+
+
+/*----------------------------------------------------------
+	kobo_form_t::
+----------------------------------------------------------*/
+
 kobo_form_t::kobo_form_t(gfxengine_t *e) : ct_form_t(e)
 {
 	ypos = 0;
@@ -81,10 +188,9 @@ void kobo_form_t::prev()
 }
 
 
-/* virtual */ void kobo_form_t::change(int delta)
+void kobo_form_t::apply_change(ct_widget_t *w)
 {
-	ct_form_t::change(delta);
-	if(!selected()->user)
+	if(!w->user)
 		return;
 
 	int handle = prefs->get(selected()->user);
@@ -92,7 +198,7 @@ void kobo_form_t::prev()
 	{
 		// Then it's not wired to a config, and it must be an int, as
 		// thats the only type we support in that case!
-		*((int *)selected()->user) = (int)selected()->value();
+		*((int *)w->user) = (int)w->value();
 		return;
 	}
 
@@ -100,18 +206,17 @@ void kobo_form_t::prev()
 	{
 	  case CFG_BOOL:
 	  case CFG_INT:
-		prefs->set(handle, (int)selected()->value());
-		DBG(log_printf(D2LOG, "Changed to %d\n",
-				(int)selected()->value());)
+		prefs->set(handle, (int)w->value());
+		DBG(log_printf(D2LOG, "Changed to %d\n", (int)w->value());)
 		break;
 	  case CFG_FLOAT:
-		prefs->set(handle, (float)selected()->value());
-		DBG(log_printf(D2LOG, "Changed to %f\n", selected()->value());)
+		prefs->set(handle, (float)w->value());
+		DBG(log_printf(D2LOG, "Changed to %f\n", w->value());)
 		break;
 	  case CFG_STRING:
-		prefs->set(handle, selected()->stringvalue());
+		prefs->set(handle, w->stringvalue());
 		DBG(log_printf(D2LOG, "Changed to \"%s\"\n",
-				selected()->stringvalue());)
+				w->stringvalue());)
 		break;
 	  default:
 		break;
@@ -119,7 +224,7 @@ void kobo_form_t::prev()
 }
 
 
-/* virtual */void kobo_form_t::build()
+void kobo_form_t::build()
 {
 }
 
@@ -288,6 +393,16 @@ void kobo_form_t::enum_list(int first, int last)
 		snprintf(buf, sizeof(buf), "%d", i);
 		item(buf, i);
 	}
+}
+
+
+void kobo_form_t::keybinding(const char *cap, int *var, int tag)
+{
+	kobo_keybinding_t *k = new kobo_keybinding_t(engine, cap);
+	k->offset(xoffs, 0);
+	k->user = var;
+	k->tag = tag;
+	init_widget(k, B_NORMAL_FONT);
 }
 
 
