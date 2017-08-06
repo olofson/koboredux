@@ -196,7 +196,14 @@ static void main_cleanup()
 // Hardwired paths
 static void setup_dirs(char *xpath)
 {
-	fmap->exepath(xpath);
+	char *p = SDL_GetBasePath();
+	if(p)
+	{
+		fmap->exepath(p);
+		SDL_free(p);
+	}
+	else
+		fmap->exepath(xpath);
 
 	// Data paths (sound and graphics, maps etc)
 #ifdef KOBO_DATADIR
@@ -212,7 +219,13 @@ static void setup_dirs(char *xpath)
 	fmap->addpath("SFX", "DATA>>sfx");
 
 	// Configuration files
+	if((p = SDL_GetPrefPath(KOBO_ORGANIZATION, KOBO_APPLICATION)))
+	{
+		fmap->addpath("CONFIG", p);
+		SDL_free(p);
+	}
 #ifdef KOBO_USERDIR
+	// (LEGACY FALLBACK: We should now rely on SDL_GetPrefPath()!)
 	// For Un*x systems; typically "~/.koboredux". Try to create it right
 	// away if it doesn't exist, because the only situation where it won't
 	// be used is if the user just quits without starting a game, and
@@ -225,6 +238,7 @@ static void setup_dirs(char *xpath)
 	// System local (custom default configs in official distro packages)
 	fmap->addpath("CONFIG", KOBO_SYSCONFDIR);
 #endif
+	// (LEGACY FALLBACK: We should now rely on SDL_GetPrefPath()!)
 	// For Win32, or packaging a custom default config in a Linux bz2 pkg
 	fmap->addpath("CONFIG", "EXE>>");
 

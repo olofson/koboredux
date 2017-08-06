@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(KOBOREDUX)
 
+set(KOBO_ORGANIZATION "OlofsonArcade")
+
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 7)
 set(VERSION_PATCH 4)
@@ -25,6 +27,7 @@ if(DEMO_BUILD)
 	#	- Append "-demo" to the package/install dir/... name.
 	#	- Exclude the mono and chip themes.
 	#	- Install the Kobo Redux Demo themes.
+	set(KOBO_APPLICATION "KoboRedux-Demo")
 	if(WIN32)
 		set(KOBO_PACKAGE_NAME "KoboRedux-Demo")
 	else(WIN32)
@@ -34,6 +37,7 @@ if(DEMO_BUILD)
 	set(DEMO_EXCLUDE_SFX PATTERN chip EXCLUDE)
 	set(EXT_DATA_DIR "${WORKDIR}/demo-data")
 else(DEMO_BUILD)
+	set(KOBO_APPLICATION "KoboRedux")
 	if(WIN32)
 		set(KOBO_PACKAGE_NAME "KoboRedux")
 	else(WIN32)
