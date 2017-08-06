@@ -838,9 +838,9 @@ FILE *filemapper_t::fopen(const char *ref, const char *mode, const char **pth)
 }
 
 
-int filemapper_t::mkdir(const char *ref)
+int filemapper_t::mkdir(const char *ref, bool accept_any_location)
 {
-	if(get(ref, FM_DIR))
+	if(accept_any_location && get(ref, FM_DIR))
 		return 0;	// Already exists!
 	const char *path = get(ref, FM_DIR_CREATE);
 	if(!path)

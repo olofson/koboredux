@@ -170,7 +170,7 @@ class filemapper_t
 	// Open/create file/dir.
 	FILE *fopen(const char *ref, const char *mode,
 			const char **pth = NULL);
-	int mkdir(const char *ref);
+	int mkdir(const char *ref, bool accept_any_location = false);
 
 	// Print out all registered paths of class 'ref'
 	// to stream 'f'. (ref == '*') ==> All classes.
