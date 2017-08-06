@@ -347,6 +347,7 @@ void st_intro_t::press(gc_targets_t button)
 		break;
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
+	  case BTN_TERTIARY:
 	  case BTN_SELECT:
 		gsm.push(&st_main_menu);
 		break;
@@ -456,6 +457,7 @@ void st_long_credits_t::press(gc_targets_t button)
 	  case BTN_CLOSE:
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
+	  case BTN_TERTIARY:
 	  case BTN_SELECT:
 	  case BTN_BACK:
 		transition_pop(KOBO_TRS_GAME_SLOW);
@@ -985,6 +987,7 @@ void st_get_ready_t::press(gc_targets_t button)
 	  case BTN_DR:
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
+	  case BTN_TERTIARY:
 	  case BTN_YES:
 		if(frame_time < 500)
 			break;
@@ -1109,6 +1112,7 @@ void st_game_over_t::press(gc_targets_t button)
 	  case BTN_DR:
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
+	  case BTN_TERTIARY:
 	  case BTN_SELECT:
 	  case BTN_YES:
 		if(frame_time < 500)
@@ -1290,6 +1294,7 @@ void st_menu_base_t::press(gc_targets_t button)
 	  case BTN_LEFT:
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
+	  case BTN_TERTIARY:
 	  case BTN_SELECT:
 		if(form->selected())
 			selection = translate(form->selected()->tag, button);
@@ -1318,6 +1323,7 @@ void st_menu_base_t::press(gc_targets_t button)
 			break;
 		  case BTN_PRIMARY:
 		  case BTN_SECONDARY:
+		  case BTN_TERTIARY:
 		  case BTN_SELECT:
 			form->change(0);
 			break;
@@ -1393,6 +1399,7 @@ void st_error_t::press(gc_targets_t button)
 	  case BTN_DR:
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
+	  case BTN_TERTIARY:
 	  case BTN_SELECT:
 	  case BTN_YES:
 		sound.ui_play(S_UI_OK);
