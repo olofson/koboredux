@@ -24,15 +24,18 @@ message "Defining dashboard layout"
 
 // set THEMEDATA x y w h <rel>
 
-set D_DASH_MAIN		140	12	336	336
+// Positions of playfield view and indicator LEDs
+set D_DASH_MAIN		132	4	352	352
+set D_DASH_TOPLEDS	136	2	344	2
+set D_DASH_BOTTOMLEDS	136	356	344	2
+set D_DASH_LEFTLEDS	130	8	2	344
+set D_DASH_RIGHTLEDS	484	8	2	344
+
+// Positions of console and radar windows, and health/charge bars
 set D_DASH_CONSOLE	8	52	104	256
 set D_DASH_HEALTH	118	80	12	200
 set D_DASH_CHARGE	486	80	12	200
 set D_DASH_RADAR	504	52	128	256
-set D_DASH_TOPLEDS	140	4	336	5
-set D_DASH_BOTTOMLEDS	140	351	336	5
-set D_DASH_LEFTLEDS	132	12	5	336
-set D_DASH_RIGHTLEDS	479	12	5	336
 
 // Positions of elements inside D_DASH_CONSOLE
 set D_DASH_HIGH		0	8	104	18	D_DASH_CONSOLE
@@ -176,10 +179,12 @@ message "Loading dashboard graphics"
 //-----------------------------------------------------------------------------
 
 path "dashboard"
-image B_SCREEN "dashboard-v2.png"
+image B_SCREEN "dashboard-v3.png"
 sprites B_CROSSHAIR "crosshair.png" 16 16 1 CENTER
-sprites B_HLEDS "hleds.png" 8 5
-sprites B_VLEDS "vleds.png" 5 8
+sprites B_TOPLEDS "topleds.png" 8 2
+sprites B_BOTTOMLEDS "bottomleds.png" 8 2
+sprites B_LEFTLEDS "leftleds.png" 2 8
+sprites B_RIGHTLEDS "rightleds.png" 2 8
 sprites B_HEALTHLEDS "barleds2.png" 12 4
 sprites B_CHARGELEDS "chargeleds2.png" 12 4
 sprites B_LOGO "logo.png" 320 128

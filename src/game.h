@@ -46,7 +46,9 @@
 // Kobo Redux replaces WSIZE with WMAIN_W and WMAIN_H, but VIEWLIMIT is still
 // what that determines what the game logic considers "in view!" The value is
 // changed to 336, to match the new view size.
-#define VIEWLIMIT		336
+//
+// UPDATE: Changed to 352. Even bigger view, with a less bulky dashboard.
+#define VIEWLIMIT		352
 
 // Player ship hit rect/circle size
 #define HIT_MYSHIP_NORMAL	5

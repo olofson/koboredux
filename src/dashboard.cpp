@@ -901,7 +901,7 @@ void hledbar_t::frame()
 void hledbar_t::refresh(SDL_Rect *r)
 {
 	for(int i = 0; i < PROXY_LEDS; ++i)
-		sprite(i * PROXY_LED_SIZE, 0, B_HLEDS, leds[i].frame);
+		sprite(i * PROXY_LED_SIZE, 0, led_bank, leds[i].frame);
 }
 
 
@@ -912,5 +912,5 @@ void hledbar_t::refresh(SDL_Rect *r)
 void vledbar_t::refresh(SDL_Rect *r)
 {
 	for(int i = 0; i < PROXY_LEDS; ++i)
-		sprite(0, i * PROXY_LED_SIZE, B_VLEDS, leds[i].frame);
+		sprite(0, i * PROXY_LED_SIZE, led_bank, leds[i].frame);
 }

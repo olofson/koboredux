@@ -204,6 +204,7 @@ struct proxy_led_t
 class hledbar_t : public window_t
 {
   protected:
+	int		led_bank;
 	proxy_led_t	leds[PROXY_LEDS];
 	proxy_fxtypes_t	fxtype;
 	proxy_colors_t	fxcolor;
@@ -211,6 +212,7 @@ class hledbar_t : public window_t
 	int		fxpos;
   public:
 	hledbar_t(gfxengine_t *e);
+	void set_leds(int _bank)	{ led_bank = _bank; }
 	void reset();
 	void set(int pos, proxy_colors_t color, float intensity);
 	void fx(proxy_fxtypes_t fxt, proxy_colors_t color = PCOLOR_HAZARD);

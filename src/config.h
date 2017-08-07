@@ -198,7 +198,7 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	KOBO_BG_MAP_LEVELS	2
 
 /* Number of proximity warning LEDs along each edge of the main view window. */
-#define	PROXY_LEDS		42
+#define	PROXY_LEDS		43
 
 /* Proximity warning LED fade speed (units per logic frame; 16:16 fixp) */
 #define	PROXY_LIGHTSPEED	16384

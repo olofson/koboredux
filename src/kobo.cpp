@@ -695,6 +695,10 @@ void KOBO_main::init_dash_layout()
 	wradar->scale(-2.0f, -2.0f);
 
 	// Indicator LEDs around the playfield window
+	pxtop->set_leds(B_TOPLEDS);
+	pxbottom->set_leds(B_BOTTOMLEDS);
+	pxleft->set_leds(B_LEFTLEDS);
+	pxright->set_leds(B_RIGHTLEDS);
 	place(pxtop, KOBO_D_DASH_TOPLEDS);
 	place(pxbottom, KOBO_D_DASH_BOTTOMLEDS);
 	place(pxleft, KOBO_D_DASH_LEFTLEDS);
