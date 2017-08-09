@@ -3,7 +3,7 @@
 	cfgparse.h - Generic Config File and Argument Parser
 -------------------------------------------------------------------
  * Copyright 2001, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -177,7 +177,7 @@ class config_parser_t
 	void comment(const char *text);
 	void section(const char *_name);
 	void yesno(const char *_name, int &var, int def, bool save = true);
-	void command(const char *_name, int &var);
+	void command(const char *_name, int &var, int def = 0);
 	void key(const char *_name, int &var, int def, bool save = true);
 	void key(const char *_name, float &var, float def, bool save = true);
 	void key(const char *_name, cfg_string_t &var, const cfg_string_t def,

@@ -172,6 +172,7 @@ void prefs_t::init()
 	comment(" (Never written to config files!)");
 	command("showcfg", cmd_showcfg); desc("Show Configuration");
 	command("override", cmd_override); desc("Ignore Configuration File");
+	command("savecfg", cmd_savecfg, 1); desc("(Don't) Save Configuration");
 	command("help", cmd_help); desc("Print usage info and exit");
 	command("options_man", cmd_options_man);
 			desc("Print options for 'man'");

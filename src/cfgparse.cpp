@@ -3,7 +3,7 @@
 	cfgparse.cpp - Generic Config File and Argument Parser
 -------------------------------------------------------------------
  * Copyright 2001, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -455,9 +455,9 @@ void config_parser_t::yesno(const char *_name, int &var, int def, bool save)
 }
 
 
-void config_parser_t::command(const char *_name, int &var)
+void config_parser_t::command(const char *_name, int &var, int def)
 {
-	add(new cfg_switch_t(_name, var, 0, false));
+	add(new cfg_switch_t(_name, var, def, false));
 }
 
 

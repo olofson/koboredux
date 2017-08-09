@@ -160,6 +160,7 @@ class prefs_t : public config_parser_t
 	// "Commands" - never written to config files
 	int	cmd_showcfg;
 	int	cmd_override;
+	int	cmd_savecfg;
 	int	cmd_help;	//Show help and exit
 	int	cmd_options_man;//Output OPTIONS doc in Un*x man source format
 	int	cmd_autoshot;	//Take ingame screenshots
