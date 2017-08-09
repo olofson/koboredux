@@ -905,6 +905,7 @@ int KOBO_main::init_display(prefs_t *p)
 	pxright = new vledbar_t(gengine);
 
 	init_dash_layout();
+	screen.init_graphics();
 	wdash->mode(DASHBOARD_BLACK);
 
 	return 0;
