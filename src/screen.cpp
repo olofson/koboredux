@@ -137,11 +137,11 @@ void KOBO_screen::title(int t, float fade)
 	{
 		// Version
 		woverlay->font(B_NORMAL_FONT);
-		woverlay->center(195, KOBO_VERSION_STRING);
+		woverlay->center(200, KOBO_VERSION_STRING);
 
 		// Copyright
 		woverlay->font(B_SMALL_FONT);
-		woverlay->center(210, KOBO_COPYRIGHT);
+		woverlay->center(215, KOBO_COPYRIGHT);
 	}
 
 	// Cheat mode warning
