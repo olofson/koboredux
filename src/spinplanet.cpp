@@ -588,8 +588,8 @@ void spinplanet_t::refresh(SDL_Rect *r)
 	int pitch = lock(r, &buffer);
 	if(!pitch)
 	{
-		log_printf(ELOG, "spinplanet_t::refresh_static() failed to "
-				"lock buffer!\n");
+		log_printf(ELOG, "spinplanet_t::refresh() failed to lock "
+				"buffer!\n");
 		return;
 	}
 
