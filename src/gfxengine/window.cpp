@@ -3,7 +3,7 @@
 	window.cpp - Generic Rendering Window
 ---------------------------------------------------------------------------
  * Copyright 2001-2003, 2006-2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -25,12 +25,6 @@
 #include "window.h"
 #include "sofont.h"
 
-enum gfx_offscreen_mode_t
-{
-	OFFSCREEN_RENDER_TARGET =	1,
-	OFFSCREEN_SOFTWARE =		2
-};
-
 
   /////////////////////////////////////////////////////////////////////////////
  // Engine window base class
@@ -42,7 +36,8 @@ windowbase_t::windowbase_t(gfxengine_t *e)
 	prev = NULL;
 	engine = NULL;
 	renderer = NULL;
-	_visible = 1;
+	_visible = true;
+	_autoinvalidate = false;
 	link(e);
 	xs = engine->xs;
 	ys = engine->ys;
@@ -99,7 +94,7 @@ void windowbase_t::unlink(void)
 }
 
 
-void windowbase_t::visible(int vis)
+void windowbase_t::visible(bool vis)
 {
 	_visible = vis;
 }
@@ -242,8 +237,8 @@ window_t::window_t(gfxengine_t *e) : windowbase_t(e)
 	bg_bank = -1;
 	bg_frame = -1;
 	_font = 0;
-	_visible = 1;
-	_offscreen = 0;
+	_visible = true;
+	_offscreen = OFFSCREEN_DISABLED;
 }
 
 
@@ -259,9 +254,9 @@ window_t::~window_t()
 }
 
 
-void window_t::visible(int vis)
+void window_t::visible(bool vis)
 {
-	if(_offscreen)
+	if(_offscreen != OFFSCREEN_DISABLED)
 		return;		// Cannot be visible!
 	_visible = vis;
 }
@@ -269,7 +264,7 @@ void window_t::visible(int vis)
 
 void window_t::place(int left, int top, int sizex, int sizey)
 {
-	if(_offscreen)
+	if(_offscreen != OFFSCREEN_DISABLED)
 	{
 		phys_rect.x = phys_rect.y = 0;
 		phys_rect.w = (sizex * xs + 128) >> 8;
@@ -288,7 +283,7 @@ void window_t::select()
 		return;
 	switch(_offscreen)
 	{
-	  case 0:
+	  case OFFSCREEN_DISABLED:
 		SDL_SetRenderTarget(renderer, NULL);
 		SDL_RenderSetClipRect(renderer, &phys_rect);
 		break;
@@ -308,7 +303,7 @@ int window_t::offscreen()
 {
 	if(!engine)
 		return -1;
-	if(_offscreen)
+	if(_offscreen != OFFSCREEN_DISABLED)
 		return 0;	// Already offscreen!
 	visible(0);
 	phys_rect.x = phys_rect.y = 0;
@@ -359,6 +354,8 @@ void window_t::offscreen_invalidate(SDL_Rect *r)
 {
 	switch(_offscreen)
 	{
+	  case OFFSCREEN_DISABLED:
+		break;
 	  case OFFSCREEN_RENDER_TARGET:
 		SDL_RenderPresent(renderer);
 		break;
@@ -396,7 +393,7 @@ void window_t::offscreen_invalidate(SDL_Rect *r)
 
 void window_t::invalidate(SDL_Rect *r)
 {
-	if(!engine || !renderer || !_offscreen)
+	if(!engine || !renderer || (_offscreen == OFFSCREEN_DISABLED))
 		return;
 	check_select();
 	refresh(r);

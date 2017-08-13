@@ -3,7 +3,7 @@
 	window.h - Generic Rendering Window
 ---------------------------------------------------------------------------
  * Copyright 2001-2003, 2007, 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -201,6 +201,13 @@ enum blendmodes_t {
 #define	GFX_DEFAULT_COLORMOD	0xffffffff
 #define	GFX_DEFAULT_ALPHAMOD	255
 
+enum gfx_offscreen_mode_t
+{
+	OFFSCREEN_DISABLED =		0,
+	OFFSCREEN_RENDER_TARGET =	1,
+	OFFSCREEN_SOFTWARE =		2
+};
+
 
   /////////////////////////////////////////////////////////////////////////////
  // Engine window base class
@@ -217,11 +224,11 @@ class windowbase_t
 	virtual void place(int left, int top, int sizex, int sizey);
 	virtual void scale(float x, float y);
 
-	virtual void visible(int vis);
-	int visible()	{ return _visible; }
+	virtual void visible(bool vis);
+	bool visible()	{ return _visible; }
 
-	void autoinvalidate(int ai)	{ _autoinvalidate = ai; }
-	int autoinvalidate()		{ return _autoinvalidate; }
+	void autoinvalidate(bool ai)	{ _autoinvalidate = ai; }
+	bool autoinvalidate()		{ return _autoinvalidate; }
 
 	virtual void select();
 	void check_select()
@@ -386,8 +393,8 @@ class windowbase_t
 	windowbase_t	*next, *prev;
 	gfxengine_t	*engine;
 	SDL_Renderer	*renderer;	// Can be engine or local renderer!
-	int		_visible;
-	int		_autoinvalidate;// Always invalidate before rendering
+	bool		_visible;
+	bool		_autoinvalidate;// Always invalidate before rendering
 	int		xs, ys;		// fixp 24:8
 	blendmodes_t	_blendmode;
 	Uint32		_colormod, _alphamod;
@@ -449,7 +456,7 @@ class window_t : public windowbase_t
 	virtual ~window_t();
 
 	void place(int left, int top, int sizex, int sizey);
-	void visible(int vis);
+	void visible(bool vis);
 
 	void select();
 	void invalidate(SDL_Rect *r = NULL);
@@ -498,7 +505,8 @@ class window_t : public windowbase_t
 
 	int		bg_bank, bg_frame;
 	int		_font;
-	int		_offscreen;
+
+	gfx_offscreen_mode_t	_offscreen;
 
 	void offscreen_invalidate(SDL_Rect *r);
 };
