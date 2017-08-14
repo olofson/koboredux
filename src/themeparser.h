@@ -39,6 +39,11 @@ class KOBO_ThemeData
 	KOBO_ThemeData();
 	~KOBO_ThemeData();
 
+	void clear(KOBO_TD_Items item)
+	{
+		sizes[item] = 0;
+	}
+
 	bool set(KOBO_TD_Items item, unsigned index, double value);
 	bool set(KOBO_TD_Items item, const char *str);
 

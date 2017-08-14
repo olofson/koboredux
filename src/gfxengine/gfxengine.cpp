@@ -668,6 +668,17 @@ unsigned gfxengine_t::palette_size(unsigned pal)
 }
 
 
+void gfxengine_t::clear_palette(unsigned pal)
+{
+	if(pal >= GFX_PALETTES)
+		return;
+	if(!palettes[pal])
+		return;
+	delete palettes[pal];
+	palettes[pal] = NULL;
+}
+
+
 /*----------------------------------------------------------
 	Engine open/close
 ----------------------------------------------------------*/

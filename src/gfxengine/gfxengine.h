@@ -114,6 +114,7 @@ class gfxengine_t
 	uint32_t palette(unsigned pal, unsigned ind);
 	void set_palette(unsigned pal, unsigned ind, uint32_t color);
 	unsigned palette_size(unsigned pal);
+	void clear_palette(unsigned pal);
 
 	int loadimage(int bank, const char *name);
 	int loadtiles(int bank, int w, int h, const char *name);

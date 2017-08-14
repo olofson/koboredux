@@ -972,7 +972,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_palette()
 	if(!expect(KTK_PALETTE))
 		return KTK_ERROR;
 	int pal = iv;
-
+	gengine->clear_palette(pal);
 	switch(KOBO_TP_Tokens tk = lex())
 	{
 	  case KTK_STRING:
@@ -1073,6 +1073,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_set()
 	if(!(default_flags & KOBO_SILENT))
 		log_printf(ULOG, "[Theme Loader] set %s ...\n",
 				kobo_datanames[td]);
+	themedata->clear((KOBO_TD_Items)td);
 	for(int i = 0; ; ++i)
 	{
 		KOBO_TP_Tokens tk = lex();
