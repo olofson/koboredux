@@ -34,19 +34,6 @@ enum spinplanet_modes_t
 	SPINPLANET_SPIN
 };
 
-enum spinplanet_dither_t
-{
-	SPINPLANET_DITHER_RAW,		// Use source texture pixels as is
-	SPINPLANET_DITHER_NONE,		// Map to nearest palette entry
-	SPINPLANET_DITHER_RANDOM,	// Random dither pattern
-	SPINPLANET_DITHER_ORDERED,	// 4x4 ordered pattern
-	SPINPLANET_DITHER_SKEWED,	// 4x4 skewed pattern
-	SPINPLANET_DITHER_NOISE,	// Temporal noise dither
-	SPINPLANET_DITHER_TEMPORAL2,	// 4x4 pattern, two frames
-	SPINPLANET_DITHER_TEMPORAL4,	// 4x4 pattern, four frames
-	SPINPLANET_DITHER_TRUECOLOR	// Interpolate between palette entries
-};
-
 class spinplanet_t : public stream_window_t
 {
 	int sbank, sframe;
@@ -84,7 +71,7 @@ class spinplanet_t : public stream_window_t
 	bool free_source;
 
 	spinplanet_modes_t mode;
-	spinplanet_dither_t dither;
+	gfx_dither_t dither;
 
 	void set_msize(int size);
 	void init_lens();
@@ -117,7 +104,7 @@ class spinplanet_t : public stream_window_t
 	void set_palette(unsigned pal);
 	void set_size(int size)			{ psize = size; }
 	void set_mode(spinplanet_modes_t md);
-	void set_dither(spinplanet_dither_t dth, int brightness, int contrast);
+	void set_dither(gfx_dither_t dth, int brightness, int contrast);
 	void set_texture_repeat(int txr)	{ texrep = txr; }
 	void track_layer(int lr)		{ tlayer = lr; }
 	void track_speed(float _xspeed, float _yspeed)

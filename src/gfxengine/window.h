@@ -190,7 +190,8 @@
 
 class gfxengine_t;
 
-enum blendmodes_t {
+enum blendmodes_t
+{
 	GFX_BLENDMODE_COPY =	SDL_BLENDMODE_NONE,
 	GFX_BLENDMODE_ALPHA =	SDL_BLENDMODE_BLEND,
 	GFX_BLENDMODE_ADD =	SDL_BLENDMODE_ADD,
@@ -206,6 +207,21 @@ enum gfx_offscreen_mode_t
 	OFFSCREEN_DISABLED =		0,
 	OFFSCREEN_RENDER_TARGET =	1,
 	OFFSCREEN_SOFTWARE =		2
+};
+
+// Not actually used by the engine itself (yet); it's only here because we need
+// a unified enum for this for themes and extensions.
+enum gfx_dither_t
+{
+	GFX_DITHER_RAW,		// Use source texture pixels as is
+	GFX_DITHER_NONE,	// Map to nearest palette entry
+	GFX_DITHER_RANDOM,	// Random dither pattern
+	GFX_DITHER_ORDERED,	// 4x4 ordered pattern
+	GFX_DITHER_SKEWED,	// 4x4 skewed pattern
+	GFX_DITHER_NOISE,	// Temporal noise dither
+	GFX_DITHER_TEMPORAL2,	// 4x4 pattern, two frames
+	GFX_DITHER_TEMPORAL4,	// 4x4 pattern, four frames
+	GFX_DITHER_TRUECOLOR	// Interpolate between palette entries
 };
 
 

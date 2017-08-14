@@ -34,7 +34,7 @@ spinplanet_t::spinplanet_t(gfxengine_t *e) : stream_window_t(e)
 	lastx = lasty = -1;
 	lastnx = lastny = -1.0f;
 	wox = woy = 0.0f;
-	dither = SPINPLANET_DITHER_RAW;
+	dither = GFX_DITHER_RAW;
 	lens = NULL;
 	source = NULL;
 	free_source = false;
@@ -231,8 +231,7 @@ void spinplanet_t::set_palette(unsigned pal)
 }
 
 
-void spinplanet_t::set_dither(spinplanet_dither_t dth, int brightness,
-		int contrast)
+void spinplanet_t::set_dither(gfx_dither_t dth, int brightness, int contrast)
 {
 	dither = dth;
 	dither_brightness = brightness;
@@ -348,20 +347,20 @@ void spinplanet_t::scale_texture()
 
 	switch(dither)
 	{
-	  case SPINPLANET_DITHER_RAW:
+	  case GFX_DITHER_RAW:
 		// We never scale in raw mode!
 		return;
-	  case SPINPLANET_DITHER_NONE:
-	  case SPINPLANET_DITHER_TRUECOLOR:
+	  case GFX_DITHER_NONE:
+	  case GFX_DITHER_TRUECOLOR:
 		newsource = downscale_32bpp((uint32_t *)source, sourcepitch,
 				msize, msize, msize / newmsize);
 		break;
-	  case SPINPLANET_DITHER_RANDOM:
-	  case SPINPLANET_DITHER_ORDERED:
-	  case SPINPLANET_DITHER_SKEWED:
-	  case SPINPLANET_DITHER_NOISE:
-	  case SPINPLANET_DITHER_TEMPORAL2:
-	  case SPINPLANET_DITHER_TEMPORAL4:
+	  case GFX_DITHER_RANDOM:
+	  case GFX_DITHER_ORDERED:
+	  case GFX_DITHER_SKEWED:
+	  case GFX_DITHER_NOISE:
+	  case GFX_DITHER_TEMPORAL2:
+	  case GFX_DITHER_TEMPORAL4:
 		newsource = downscale_8bpp((uint8_t *)source, sourcepitch,
 				msize, msize, msize / newmsize);
 		break;
@@ -419,12 +418,12 @@ void spinplanet_t::dth_prepare()
 
 	switch(dither)
 	{
-	  case SPINPLANET_DITHER_RAW:
+	  case GFX_DITHER_RAW:
 		source = src;
 		sourcepitch = sp;
 		break;
-	  case SPINPLANET_DITHER_NONE:
-	  case SPINPLANET_DITHER_TRUECOLOR:
+	  case GFX_DITHER_NONE:
+	  case GFX_DITHER_TRUECOLOR:
 	  {
 		uint32_t *clrs = colors;
 		int nclrs = SPINPLANET_MAX_COLORS;
@@ -434,7 +433,7 @@ void spinplanet_t::dth_prepare()
 				dither_brightness, dither_contrast);
 		if(!tmp)
 			return;
-		if(dither == SPINPLANET_DITHER_TRUECOLOR)
+		if(dither == GFX_DITHER_TRUECOLOR)
 		{
 			for(int i = 0; i < 256; ++i)
 			{
@@ -471,12 +470,12 @@ void spinplanet_t::dth_prepare()
 		free_source = true;
 		break;
 	  }
-	  case SPINPLANET_DITHER_RANDOM:
-	  case SPINPLANET_DITHER_ORDERED:
-	  case SPINPLANET_DITHER_SKEWED:
-	  case SPINPLANET_DITHER_NOISE:
-	  case SPINPLANET_DITHER_TEMPORAL2:
-	  case SPINPLANET_DITHER_TEMPORAL4:
+	  case GFX_DITHER_RANDOM:
+	  case GFX_DITHER_ORDERED:
+	  case GFX_DITHER_SKEWED:
+	  case GFX_DITHER_NOISE:
+	  case GFX_DITHER_TEMPORAL2:
+	  case GFX_DITHER_TEMPORAL4:
 		if(!(source = grayscale_convert(src, sp,
 				s->surface->w, s->surface->h,
 				dither_brightness, dither_contrast)))
@@ -560,21 +559,21 @@ void spinplanet_t::refresh(SDL_Rect *r)
 
 	switch(dither)
 	{
-	  case SPINPLANET_DITHER_RAW:
-	  case SPINPLANET_DITHER_NONE:
-	  case SPINPLANET_DITHER_RANDOM:
-	  case SPINPLANET_DITHER_ORDERED:
-	  case SPINPLANET_DITHER_SKEWED:
-	  case SPINPLANET_DITHER_TRUECOLOR:
+	  case GFX_DITHER_RAW:
+	  case GFX_DITHER_NONE:
+	  case GFX_DITHER_RANDOM:
+	  case GFX_DITHER_ORDERED:
+	  case GFX_DITHER_SKEWED:
+	  case GFX_DITHER_TRUECOLOR:
 		ditherstate = 16576;	// For random dither
 		if((vx == lastx) && (vy == lasty))
 			return;		// Position hasn't changed!
 		lastx = vx;
 		lasty = vy;
 		break;
-	  case SPINPLANET_DITHER_NOISE:
-	  case SPINPLANET_DITHER_TEMPORAL2:
-	  case SPINPLANET_DITHER_TEMPORAL4:
+	  case GFX_DITHER_NOISE:
+	  case GFX_DITHER_TEMPORAL2:
+	  case GFX_DITHER_TEMPORAL4:
 		// Temporal dithering always at full frame rate!
 		break;
 	}
@@ -606,36 +605,36 @@ void spinplanet_t::refresh(SDL_Rect *r)
 		int16_t *ld = &lens[i];
 		switch(dither)
 		{
-		  case SPINPLANET_DITHER_RAW:
-		  case SPINPLANET_DITHER_NONE:
-		  case SPINPLANET_DITHER_TRUECOLOR:
+		  case GFX_DITHER_RAW:
+		  case GFX_DITHER_NONE:
+		  case GFX_DITHER_TRUECOLOR:
 			dth_raw((uint32_t *)source, sourcepitch,
 					dst, ld, ldlen, x, y, vx, vy);
 			break;
-		  case SPINPLANET_DITHER_RANDOM:
+		  case GFX_DITHER_RANDOM:
 			dth_random((uint8_t *)source, sourcepitch,
 					dst, ld, ldlen, x, y, vx, vy);
 			break;
-		  case SPINPLANET_DITHER_ORDERED:
+		  case GFX_DITHER_ORDERED:
 			dth_ordered((uint8_t *)source, sourcepitch,
 					dst, ld, ldlen, x, y, vx, vy);
 			break;
-		  case SPINPLANET_DITHER_SKEWED:
+		  case GFX_DITHER_SKEWED:
 			x += (y & 2) >> 1;
 			dth_ordered((uint8_t *)source, sourcepitch,
 					dst, ld, ldlen, x, y, vx, vy);
 			break;
-		  case SPINPLANET_DITHER_NOISE:
+		  case GFX_DITHER_NOISE:
 			dth_random((uint8_t *)source, sourcepitch,
 					dst, ld, ldlen, x, y, vx, vy);
 			break;
-		  case SPINPLANET_DITHER_TEMPORAL2:
+		  case GFX_DITHER_TEMPORAL2:
 			x += ditherstate;
 			y += ditherstate;
 			dth_ordered((uint8_t *)source, sourcepitch,
 					dst, ld, ldlen, x, y, vx, vy);
 			break;
-		  case SPINPLANET_DITHER_TEMPORAL4:
+		  case GFX_DITHER_TEMPORAL4:
 			x += ditherstate >> 1;
 			y += ditherstate;
 			dth_ordered((uint8_t *)source, sourcepitch,

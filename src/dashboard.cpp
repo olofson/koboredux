@@ -222,7 +222,7 @@ void dashboard_window_t::mode(dashboard_modes_t m, dashboard_transitions_t tr)
 		wplanet->set_texture_repeat(2);
 		wplanet->set_size(psize);
 		wplanet->set_source(B_OAPLANET, 0);
-		wplanet->set_dither(SPINPLANET_DITHER_RAW, 0, 0);
+		wplanet->set_dither(GFX_DITHER_RAW, 0, 0);
 		wplanet->set_mode(SPINPLANET_SPIN);
 		jingelstars.set_target(this, KOBO_P_LOADER_STARS);
 		jingelstars.init(1000, 100, psize);

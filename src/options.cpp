@@ -470,15 +470,15 @@ void interface_options_t::build()
 		item("Insane", 8000);
 	list("Planet Dither Style", &prf->planetdither, OS_UPDATE_SCREEN);
 		item("Theme Default", -1);
-		item("None", SPINPLANET_DITHER_NONE);
-		item("Raw", SPINPLANET_DITHER_RAW);
-		item("Random", SPINPLANET_DITHER_RANDOM);
-		item("Ordered", SPINPLANET_DITHER_ORDERED);
-		item("Skewed", SPINPLANET_DITHER_SKEWED);
-		item("Temporal, Noise", SPINPLANET_DITHER_NOISE);
-		item("Temporal, 2 Frames", SPINPLANET_DITHER_TEMPORAL2);
-		item("Temporal, 4 Frames", SPINPLANET_DITHER_TEMPORAL4);
-		item("TrueColor", SPINPLANET_DITHER_TRUECOLOR);
+		item("None", GFX_DITHER_NONE);
+		item("Raw", GFX_DITHER_RAW);
+		item("Random", GFX_DITHER_RANDOM);
+		item("Ordered", GFX_DITHER_ORDERED);
+		item("Skewed", GFX_DITHER_SKEWED);
+		item("Temporal, Noise", GFX_DITHER_NOISE);
+		item("Temporal, 2 Frames", GFX_DITHER_TEMPORAL2);
+		item("Temporal, 4 Frames", GFX_DITHER_TEMPORAL4);
+		item("TrueColor", GFX_DITHER_TRUECOLOR);
 #if 0
 	space(1);
 	list("Scale Mode", &prf->scalemode, OS_RELOAD_GRAPHICS);

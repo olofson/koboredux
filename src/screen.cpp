@@ -906,9 +906,9 @@ void KOBO_screen::init_background()
 		wplanet->set_size(psize);
 		wplanet->set_source(B_R1_PLANET + region, 0);
 		wplanet->set_palette(KOBO_P_PLANET_R1 + region);
-		spinplanet_dither_t dth = (prefs->planetdither >= 0) ?
-				(spinplanet_dither_t)prefs->planetdither :
-				(spinplanet_dither_t)themedata.get(
+		gfx_dither_t dth = (prefs->planetdither >= 0) ?
+				(gfx_dither_t)prefs->planetdither :
+				(gfx_dither_t)themedata.get(
 				KOBO_D_PLANET_DITHERMODE);
 		wplanet->set_dither(dth, themedata.get(
 				KOBO_D_PLANET_BRIGHTNESS, level - 1),
