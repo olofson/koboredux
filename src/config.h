@@ -133,6 +133,9 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	WRAPDISTXCS(x1, x2)	kobo_wrapdist(x1, x2, PIXEL2CS(WORLD_SIZEX))
 #define	WRAPDISTYCS(y1, y2)	kobo_wrapdist(y1, y2, PIXEL2CS(WORLD_SIZEY))
 
+/* Minimum viewport margin for the fire/explosion engine */
+#define	FIRE_VIEW_MARGIN	64
+
 /* Text scroller speed (pixels/second) */
 #define	SCROLLER_SPEED		120
 

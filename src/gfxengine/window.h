@@ -216,6 +216,7 @@ enum gfx_dither_t
 	GFX_DITHER_RAW,		// Use source texture pixels as is
 	GFX_DITHER_NONE,	// Map to nearest palette entry
 	GFX_DITHER_RANDOM,	// Random dither pattern
+	GFX_DITHER_2X2,		// 2x2 ordered pattern
 	GFX_DITHER_ORDERED,	// 4x4 ordered pattern
 	GFX_DITHER_SKEWED,	// 4x4 skewed pattern
 	GFX_DITHER_NOISE,	// Temporal noise dither
@@ -436,6 +437,9 @@ class stream_window_t : public windowbase_t
 
 	void place(int left, int top, int sizex, int sizey);
 
+	void buffersize(int w = 0, int h = 0);
+	virtual void scroll(int x, int y, bool wrap);	// (24:8 fixp)
+
 	// Lock area for updating. 'pixels' is pointed at a write-only buffer
 	// of 32 bit pixels of the same format as used by the windowbase_t
 	// color tools API. Returns the pitch (in Uint32 pixels) of the target
@@ -453,9 +457,13 @@ class stream_window_t : public windowbase_t
 	void invalidate(SDL_Rect *r = NULL);
 
   protected:
-	SDL_Texture	*texture;	// Hardware/API texture
+	SDL_Texture	*texture;		// Hardware/API texture
+	int		bufw, bufh;		// (0 for fit-to-window)
+	int		scrollx, scrolly;
+	bool		scrollwrap;
 
 	void render(SDL_Rect *r);
+	void realloc_texture();
 };
 
 

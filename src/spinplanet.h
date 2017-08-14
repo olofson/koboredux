@@ -2,7 +2,7 @@
 ----------------------------------------------------------------------
 	spinplanet.h - Spinning planet effect
 ----------------------------------------------------------------------
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -93,6 +93,8 @@ class spinplanet_t : public stream_window_t
 	inline void dth_raw(uint32_t *s, int sp, Uint32 *d,
 			int16_t *l, int len, int x, int y, int vx, int vy);
 	inline void dth_random(uint8_t *s, int sp, Uint32 *d,
+			int16_t *l, int len, int x, int y, int vx, int vy);
+	inline void dth_2x2(uint8_t *s, int sp, Uint32 *d,
 			int16_t *l, int len, int x, int y, int vx, int vy);
 	inline void dth_ordered(uint8_t *s, int sp, Uint32 *d,
 			int16_t *l, int len, int x, int y, int vx, int vy);

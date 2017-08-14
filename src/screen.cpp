@@ -932,6 +932,14 @@ void KOBO_screen::init_background()
 
 	wplanet->set_mode(md);
 	stars.init(prefs->stars, bg_altitude, psize, true);
+
+	wfire->SetPalette(KOBO_P_FIRE);
+	if(prefs->firedither >= 0)
+		wfire->SetDither((gfx_dither_t)prefs->firedither);
+	else
+		wfire->SetDither((gfx_dither_t)themedata.get(
+				KOBO_D_FIRE_DITHERMODE));
+	wfire->Clear(true, true);
 }
 
 
@@ -1060,6 +1068,9 @@ void KOBO_screen::render_background()
 	wmain->colormod(cm, cm, cm);
 	render_bases(map[0], B_R1_TILES + region, vx, vy);
 	wmain->resetmod();
+
+	// Adjust scroll position for fire/explosions layer
+	wfire->scroll(vx, vy, true);
 }
 
 

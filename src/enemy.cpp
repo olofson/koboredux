@@ -185,9 +185,16 @@ void KOBO_enemy::shot_template_8_dir(const KOBO_enemy_kind *ekp)
 	playsound(ekp->launchsound);
 }
 
+static const KOBO_ParticleFXDef default_explo_fxdef;
+
+void KOBO_enemy::explode()
+{
+	wfire->NewPSystem(x, y, h, v, &default_explo_fxdef);
+}
+
 void KOBO_enemy::kill_default()
 {
-	enemies.make(enemies.randexp(), x, y, h >> 1, v >> 1);
+	explode();
 	die();
 }
 
@@ -678,9 +685,6 @@ void KOBO_enemy::make_expl()
 	a = frames;	// Use all loaded frames, unless overridden below!
 	switch(logical_bank)
 	{
-	  case B_BASEEXPL:
-		a = -16;
-		break;
 	  case B_RINGEXPL:
 		a = -8;
 		break;
@@ -694,10 +698,6 @@ void KOBO_enemy::make_expl()
 		di = pubrand.get(2);
 		a = 8;
 		break;
-	  case B_EXPLO1:
-	  case B_EXPLO3:
-	  case B_EXPLO4:
-	  case B_EXPLO5:
 	  case B_BOMBDETO:
 	  case B_ROCKEXPL:
 		break;
@@ -715,79 +715,6 @@ void KOBO_enemy::move_expl()
 	if(++di > a)
 		release();
 }
-
-const KOBO_enemy_kind explosion = {
-	"explosion",
-	0,
-	&KOBO_enemy::make_expl,
-	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_unused,
-	-1,
-	B_EXPLO1, 0,
-	LAYER_FX,
-	0,
-	KOBO_EK_SOUNDS(EXPLO1)
-};
-
-const KOBO_enemy_kind explosion3 = {
-	"explosion3",
-	0,
-	&KOBO_enemy::make_expl,
-	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_unused,
-	-1,
-	B_EXPLO3, 0,
-	LAYER_FX,
-	0,
-	KOBO_EK_SOUNDS(EXPLO3)
-};
-
-const KOBO_enemy_kind explosion4 = {
-	"explosion4",
-	0,
-	&KOBO_enemy::make_expl,
-	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_unused,
-	-1,
-	B_EXPLO4, 0,
-	LAYER_FX,
-	0,
-	KOBO_EK_SOUNDS(EXPLO4)
-};
-
-const KOBO_enemy_kind explosion5 = {
-	"explosion5",
-	0,
-	&KOBO_enemy::make_expl,
-	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_unused,
-	-1,
-	B_EXPLO5, 0,
-	LAYER_FX,
-	0,
-	KOBO_EK_SOUNDS(EXPLO5)
-};
-
-
-/*
- * ===========================================================================
- *                                 baseexpl
- *                           Exploding base section
- * ===========================================================================
- */
-
-const KOBO_enemy_kind baseexpl = {
-	"baseexpl",
-	0,
-	&KOBO_enemy::make_expl,
-	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_unused,
-	-1,
-	B_BASEEXPL, 0,
-	LAYER_FX,
-	0,
-	KOBO_EK_SOUNDS(BASEEXPL)
-};
 
 
 /*
@@ -950,14 +877,14 @@ void KOBO_enemy::move_cannon()
 // For destruction via core chain reaction (don't spawn a pipein!)
 void KOBO_enemy::destroy_cannon()
 {
-	enemies.make(enemies.randexp(), x, y);
+	explode();
 	die();
 }
 
 // For destruction via normal damage
 void KOBO_enemy::kill_cannon()
 {
-	enemies.make(enemies.randexp(), x, y);
+	explode();
 	enemies.make(&pipein, x, y);
 	die();
 }
@@ -1008,7 +935,7 @@ void KOBO_enemy::kill_core()
 	enemies.make(&pipeout, x, y, 0, 0, 7);
 	enemies.make(&pipeout, x, y, 0, 0, 1);
 	enemies.make(&pipeout, x, y, 0, 0, 5);
-	enemies.make(&explosion4, x, y);
+	explode();
 	die();
 	manage.destroyed_a_core();
 }
@@ -1099,10 +1026,7 @@ void KOBO_enemy::move_pipein()
 		if(mindiff < ((VIEWLIMIT >> 1) + 32))
 		{
 			controlsound(2, pubrand.get(16) * (1.0f / 65536.0f));
-			enemies.make(&baseexpl,
-					x + PIXEL2CS(pubrand.get(3) - 4),
-					y + PIXEL2CS(pubrand.get(3) - 4),
-					0, 0, 1);
+			explode();
 		}
 	}
 	else
@@ -1204,7 +1128,7 @@ void KOBO_enemy::move_pipeout()
 		screen.set_map(x1, y1, SPACE);
 		controlsound(2, pubrand.get(16) * (1.0f / 65536.0f));
 		if(mindiff < ((VIEWLIMIT >> 1) + 32))
-			enemies.make(&baseexpl, x, y, 0, 0, 1);
+			explode();
 		return;
 	}
 
@@ -1247,10 +1171,7 @@ void KOBO_enemy::move_pipeout()
 	screen.set_map(x1, y1, (scraptube << 8) | SPACE);
 	controlsound(2, pubrand.get(16) * (1.0f / 65536.0f));
 	if(mindiff < ((VIEWLIMIT >> 1) + 32))
-		enemies.make(&baseexpl,
-				x + PIXEL2CS(pubrand.get(3) - 4),
-				y + PIXEL2CS(pubrand.get(3) - 4),
-				0, 0, 1);
+		explode();
 	x += x_next;
 	y += y_next;
 	a = a_next;

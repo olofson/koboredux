@@ -195,6 +195,7 @@ void dashboard_window_t::mode(dashboard_modes_t m, dashboard_transitions_t tr)
 	wbackdrop->visible(main);
 	wplanet->visible(main);
 	wmain->visible(main);
+	wfire->visible(main);
 	whealth->visible(main);
 	wcharge->visible(main);
 	wradar->visible(main);

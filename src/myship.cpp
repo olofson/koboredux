@@ -159,6 +159,7 @@ void KOBO_myship::init(int rhealth, int rcharge)
 	_charge = rcharge;
 }
 
+static const KOBO_ParticleFXDef player_explo_fxdef;
 
 void KOBO_myship::explode()
 {
@@ -166,17 +167,13 @@ void KOBO_myship::explode()
 		return;
 
 	int d = 4096 - (64 - explo_time)*(64 - explo_time);
-	for(int i = 0; i < 2; ++i)
-	{
-		int dx = (int)(pubrand.get(6)) - 32;
-		int dy = (int)(pubrand.get(6)) - 32;
-		int vx = dx * (4096 - d) >> 8;
-		int vy = dy * (4096 - d) >> 8;
-		dx = PIXEL2CS(dx * d >> 12);
-		dy = PIXEL2CS(dy * d >> 12);
-		enemies.make(enemies.randexp(), x + dx, y + dy, vx, vy,
-				explo_time >> 4);
-	}
+	int dx = (int)(pubrand.get(6)) - 32;
+	int dy = (int)(pubrand.get(6)) - 32;
+	int vx = dx * (4096 - d) >> 8;
+	int vy = dy * (4096 - d) >> 8;
+	dx = PIXEL2CS(dx * d >> 12);
+	dy = PIXEL2CS(dy * d >> 12);
+	wfire->NewPSystem(x + dx, y + dy, vx, vy, &player_explo_fxdef);
 	++explo_time;
 }
 

@@ -192,22 +192,6 @@ int KOBO_enemies::make(const KOBO_enemy_kind * ek, int x, int y, int h, int v,
 	return 1;
 }
 
-const KOBO_enemy_kind *KOBO_enemies::randexp()
-{
-	explocount += 1 + pubrand.get(1);
-	switch(explocount & 3)
-	{
-	  case 0:
-		return &explosion;
-	  case 1:
-		return &explosion3;
-	  case 2:
-		return &explosion4;
-	  default:
-		return &explosion5;
-	}
-}
-
 int KOBO_enemies::erase_cannon(int x, int y)
 {
 	int count = 0;

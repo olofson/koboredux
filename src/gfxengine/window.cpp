@@ -149,6 +149,9 @@ void windowbase_t::render(SDL_Rect *r)
 stream_window_t::stream_window_t(gfxengine_t *e) : windowbase_t(e)
 {
 	texture = NULL;
+	bufw = bufh = 0;
+	scrollx = scrolly = 0;
+	scrollwrap = false;
 }
 
 
@@ -159,25 +162,49 @@ stream_window_t::~stream_window_t()
 }
 
 
-void stream_window_t::place(int left, int top, int sizex, int sizey)
+void stream_window_t::realloc_texture()
 {
-	windowbase_t::place(left, top, sizex, sizey);
+	int neww = bufw ? bufw : width();
+	int newh = bufh ? bufh : height();
 	if(texture)
 	{
 		int w, h;
 		SDL_QueryTexture(texture, NULL, NULL, &w, &h);
-		if((width() != w) || (height() != h))
+		if((neww != w) || (newh != h))
 		{
 			SDL_DestroyTexture(texture);
 			texture = NULL;
 		}
 	}
-	if(!texture)
+	if(!texture && neww && newh)
 	{
 		texture = SDL_CreateTexture(engine->renderer(),
 				KOBO_PIXELFORMAT, SDL_TEXTUREACCESS_STREAMING,
-				width(), height());
+				neww, newh);
 	}
+}
+
+
+void stream_window_t::place(int left, int top, int sizex, int sizey)
+{
+	windowbase_t::place(left, top, sizex, sizey);
+	realloc_texture();
+}
+
+
+void stream_window_t::buffersize(int w, int h)
+{
+	bufw = w;
+	bufh = h;
+	realloc_texture();
+}
+
+
+void stream_window_t::scroll(int x, int y, bool wrap)
+{
+	scrollx = x;
+	scrolly = y;
+	scrollwrap = wrap;
 }
 
 
@@ -219,7 +246,30 @@ void stream_window_t::render(SDL_Rect *r)
 	SDL_SetTextureAlphaMod(texture, _alphamod);
 	SDL_SetTextureColorMod(texture,
 			get_r(_colormod), get_g(_colormod), get_b(_colormod));
-	SDL_RenderCopy(renderer, texture, NULL, &phys_rect);
+	SDL_Rect dr = phys_rect;
+	if(bufw)
+		dr.w = bufw * xs >> 8;
+	if(bufh)
+		dr.h = bufh * ys >> 8;
+	if(scrollwrap)
+	{
+		dr.x -= ((scrollx * xs >> 16) + dr.w * 10) % dr.w;
+		dr.y -= ((scrolly * ys >> 16) + dr.h * 10) % dr.h;
+		SDL_RenderCopy(renderer, texture, NULL, &dr);
+		dr.x += dr.w;
+		SDL_RenderCopy(renderer, texture, NULL, &dr);
+		dr.x -= dr.w;
+		dr.y += dr.h;
+		SDL_RenderCopy(renderer, texture, NULL, &dr);
+		dr.x += dr.w;
+		SDL_RenderCopy(renderer, texture, NULL, &dr);
+	}
+	else
+	{
+		dr.x -= scrollx * xs >> 16;
+		dr.y -= scrolly * ys >> 16;
+		SDL_RenderCopy(renderer, texture, NULL, &dr);
+	}
 }
 
 

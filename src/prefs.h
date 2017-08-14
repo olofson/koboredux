@@ -101,6 +101,7 @@ class prefs_t : public config_parser_t
 	int	brightness;	//Graphics brightness
 	int	contrast;	//Graphics contrast
 	int	planetdither;	//Spinning planet dither style
+	int	firedither;	//Fire effect dither mode
 	int	playerhitfx;	//Use visual effects when player takes damage
 	int	screenshake;	//Screen shake amount
 

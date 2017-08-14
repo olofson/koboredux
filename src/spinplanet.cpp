@@ -356,6 +356,7 @@ void spinplanet_t::scale_texture()
 				msize, msize, msize / newmsize);
 		break;
 	  case GFX_DITHER_RANDOM:
+	  case GFX_DITHER_2X2:
 	  case GFX_DITHER_ORDERED:
 	  case GFX_DITHER_SKEWED:
 	  case GFX_DITHER_NOISE:
@@ -471,6 +472,7 @@ void spinplanet_t::dth_prepare()
 		break;
 	  }
 	  case GFX_DITHER_RANDOM:
+	  case GFX_DITHER_2X2:
 	  case GFX_DITHER_ORDERED:
 	  case GFX_DITHER_SKEWED:
 	  case GFX_DITHER_NOISE:
@@ -511,6 +513,20 @@ inline void spinplanet_t::dth_random(uint8_t *s, int sp, Uint32 *d,
 		int my = ((vy + l[j * 2 + 1]) >> 4) & msizemask;
 		int c = s[sp * my + mx];
 		c = (c + (noise() & 0xf)) >> 4;
+		d[j] = colors[c];
+	}
+}
+
+inline void spinplanet_t::dth_2x2(uint8_t *s, int sp, Uint32 *d,
+		int16_t *l, int len, int x, int y, int vx, int vy)
+{
+	for(int j = 0; j < len; ++j)
+	{
+		int mx = ((vx + l[j * 2]) >> 4) & msizemask;
+		int my = ((vy + l[j * 2 + 1]) >> 4) & msizemask;
+		int c = s[sp * my + mx];
+		int dth = (((x + j) ^ y) & 1) << 3;
+		c = (c + dth) >> 4;
 		d[j] = colors[c];
 	}
 }
@@ -562,6 +578,7 @@ void spinplanet_t::refresh(SDL_Rect *r)
 	  case GFX_DITHER_RAW:
 	  case GFX_DITHER_NONE:
 	  case GFX_DITHER_RANDOM:
+	  case GFX_DITHER_2X2:
 	  case GFX_DITHER_ORDERED:
 	  case GFX_DITHER_SKEWED:
 	  case GFX_DITHER_TRUECOLOR:
@@ -613,6 +630,10 @@ void spinplanet_t::refresh(SDL_Rect *r)
 			break;
 		  case GFX_DITHER_RANDOM:
 			dth_random((uint8_t *)source, sourcepitch,
+					dst, ld, ldlen, x, y, vx, vy);
+			break;
+		  case GFX_DITHER_2X2:
+			dth_2x2((uint8_t *)source, sourcepitch,
 					dst, ld, ldlen, x, y, vx, vy);
 			break;
 		  case GFX_DITHER_ORDERED:

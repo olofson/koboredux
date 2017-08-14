@@ -90,6 +90,7 @@ KOBO_radar_window	*wradar = NULL;
 backdrop_t		*wbackdrop = NULL;
 spinplanet_t		*wplanet = NULL;
 engine_window_t		*wmain = NULL;
+KOBO_Fire		*wfire = NULL;
 window_t		*woverlay = NULL;
 
 display_t		*dhigh = NULL;
@@ -682,6 +683,11 @@ void KOBO_main::init_dash_layout()
 	// Main playfield layer
 	place(wmain, KOBO_D_DASH_MAIN);
 
+	// Fire/smoke overlay
+	wfire->SetWorldSize(WORLD_SIZEX, WORLD_SIZEY);
+	wfire->SetViewMargin(FIRE_VIEW_MARGIN);
+	place(wfire, KOBO_D_DASH_MAIN);
+
 	// Playfield overlay
 	place(woverlay, KOBO_D_DASH_MAIN);
 
@@ -892,6 +898,7 @@ int KOBO_main::init_display(prefs_t *p)
 	wbackdrop = new backdrop_t(gengine);
 	wplanet = new spinplanet_t(gengine);
 	wmain = new engine_window_t(gengine);
+	wfire = new KOBO_Fire(gengine);
 	woverlay = new window_t(gengine);
 	dhigh = new display_t(gengine);
 	dscore = new display_t(gengine);
@@ -928,6 +935,7 @@ void KOBO_main::close_display()
 	delete dscore;		dscore = NULL;
 	delete dhigh;		dhigh = NULL;
 	delete woverlay;	woverlay = NULL;
+	delete wfire;		wfire = NULL;
 	delete wmain;		wmain = NULL;
 	delete wplanet;		wplanet = NULL;
 	delete wbackdrop;	wbackdrop = NULL;
@@ -1892,8 +1900,22 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 		mouse_middle = 1;
 		break;
 	  case SDL_BUTTON_RIGHT:
-		mouse_right = 1;
-		break;
+		if(prefs->debug)
+		{
+			KOBO_ParticleFXDef *fxd = new KOBO_ParticleFXDef;
+			wfire->NewPSystem(PIXEL2CS(mouse_x - DASHX(MAIN)) +
+					gengine->xoffs(LAYER_BASES),
+					PIXEL2CS(mouse_y - DASHY(MAIN)) +
+					gengine->yoffs(LAYER_BASES),
+					0, -300, fxd);
+			delete fxd;
+			return;
+		}
+		else
+		{
+			mouse_right = 1;
+			break;
+		}
 	}
 
 	if(!prefs->mouse)
@@ -2336,6 +2358,12 @@ void kobo_gfxengine_t::post_render()
 		snprintf(buf, sizeof(buf), "Obj: %d",
 				gengine->objects_in_use());
 		woverlay->string(120, 1, buf);
+
+		// Particles
+		snprintf(buf, sizeof(buf), "PS: %d/%d",
+				wfire->StatPSystems(),
+				wfire->StatParticles());
+		woverlay->string(120, 10, buf);
 
 		// Cores; left/total
 		snprintf(buf, sizeof(buf), "Cores: %d/%d",

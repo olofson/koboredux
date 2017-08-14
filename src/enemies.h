@@ -62,11 +62,6 @@ struct KOBO_enemy_kind
 extern const KOBO_enemy_kind bullet1;
 extern const KOBO_enemy_kind bullet2;
 extern const KOBO_enemy_kind bullet2;
-extern const KOBO_enemy_kind explosion;
-extern const KOBO_enemy_kind explosion3;
-extern const KOBO_enemy_kind explosion4;
-extern const KOBO_enemy_kind explosion5;
-extern const KOBO_enemy_kind baseexpl;
 extern const KOBO_enemy_kind ringexpl;
 extern const KOBO_enemy_kind greenbltexpl;
 extern const KOBO_enemy_kind redbltexpl;
@@ -135,6 +130,7 @@ class KOBO_enemy
 	void move_enemy_template_3(int quick, int maxspeed);
 	void launch(const KOBO_enemy_kind *ekp);
 	void shot_template_8_dir(const KOBO_enemy_kind *ekp);
+	void explode();
       public:
 	 KOBO_enemy();
 	inline void init();
@@ -263,7 +259,6 @@ class KOBO_enemies
 	static void render_hit_zones();
 	static int make(const KOBO_enemy_kind * ek,
 			int x, int y, int h = 0, int v = 0, int di = 0);
-	static const KOBO_enemy_kind *randexp();
 	static int erase_cannon(int x, int y);
 	static int exist_pipe();
 	static void hit_map(int x, int y, int dmg);
@@ -395,7 +390,7 @@ inline void KOBO_enemy::hit(int dmg)
 	{
 		if(health <= 0)
 		{
-			enemies.make(&explosion, x, y);
+			explode();
 			die();
 		}
 		return;

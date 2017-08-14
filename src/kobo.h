@@ -35,6 +35,7 @@
 #include "dashboard.h"
 #include "sound.h"
 #include "spinplanet.h"
+#include "fire.h"
 #include "themeparser.h"
 #include "savemanager.h"
 
@@ -242,10 +243,10 @@ extern KOBO_main		km;
 extern KOBO_save_manager	savemanager;
 
 #define THD(x, y)	(themedata.get(KOBO_D_##x, (y)))
-#define	DASHX(x)	THD(DASH_##x, 0)
-#define	DASHY(x)	THD(DASH_##x, 1)
-#define	DASHW(x)	THD(DASH_##x, 2)
-#define	DASHH(x)	THD(DASH_##x, 3)
+#define	DASHX(x)	((int)THD(DASH_##x, 0))
+#define	DASHY(x)	((int)THD(DASH_##x, 1))
+#define	DASHW(x)	((int)THD(DASH_##x, 2))
+#define	DASHH(x)	((int)THD(DASH_##x, 3))
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -266,6 +267,7 @@ extern KOBO_radar_window	*wradar;
 extern backdrop_t		*wbackdrop;
 extern spinplanet_t		*wplanet;
 extern engine_window_t		*wmain;
+extern KOBO_Fire		*wfire;
 extern window_t			*woverlay;
 
 extern display_t		*dhigh;

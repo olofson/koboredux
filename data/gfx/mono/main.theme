@@ -53,6 +53,9 @@ path ""
 palette P_MAIN "HW-ZX-Spectrum.gpl"
 palette P_MAIN_STARS P_MAIN 1 3 5 7
 
+// NOTE: The engine adds a transparent entry before the first color!
+palette P_FIRE P_MAIN 0 1 2 10 6 14 15
+
 palette P_PLANET_R1 P_MAIN 0 0  1 1 9 9 5
 palette P_PLANET_R2 P_PLANET_R1
 palette P_PLANET_R3 P_PLANET_R1
@@ -69,6 +72,7 @@ set D_PLANET_COLORMOD .5
 set D_PLANET_BRIGHTNESS	-93  -91  -89  -87  -85  -83  -81
 set D_PLANET_CONTRAST	-102 -104 -106 -108 -110 -112 -114
 set D_BASES_COLORMOD	1 1 1 .5	// far/near/current/current_title
+set D_FIRE_DITHERMODE ORDERED
 
 // KOBO_RC_(BACKGROUND BASE NODE CORE   PLAYER[0..7])
 palette P_RADAR P_MAIN 0 4 12 14   15 14 6 4 3 9 1 1
@@ -152,11 +156,6 @@ sprites B_MISSILE1 "missile.png" 16 16 CENTER
 sprites B_MISSILE2 "missile2.png" 16 16 CENTER
 sprites B_MISSILE3 "missile3.png" 16 16 CENTER
 sprites B_BOLT "bolt.png" 8 8 CENTER
-sprites B_EXPLO1 "explo.png" 24 24 CENTER
-alias B_EXPLO3 B_EXPLO1
-alias B_EXPLO4 B_EXPLO1
-alias B_EXPLO5 B_EXPLO1
-alias B_BASEEXPL B_EXPLO1
 sprites B_ROCK1 "rock.png" 32 32 CENTER
 alias B_ROCK2 B_ROCK1
 alias B_ROCK3 B_ROCK1
