@@ -676,7 +676,7 @@ void gfxengine_t::clear_palette(unsigned pal)
 		return;
 	if(!palettes[pal])
 		return;
-	delete palettes[pal];
+	gfx_palette_free(palettes[pal]);
 	palettes[pal] = NULL;
 }
 
