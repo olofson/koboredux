@@ -27,83 +27,11 @@
 #include "myship.h"
 #include "random.h"
 #include "kobolog.h"
+#include "mathutil.h"
 #include <math.h>
 
 // HAX: See "Game logic/effects pseudo-RNG interference #308"
 #define	pubrand	gamerand
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Fast integer atan() approximation. Input is 24:8 fixed point.
-// Output is 0..64 for 0..45 deg, accurate down to LSB.
-//	In:	q = 256 * minv / maxv	(0..256 <==> 0..1)
-//	Out:	atan(q / 256) * 256	(0..64 <==> 0..45 deg)
-///////////////////////////////////////////////////////////////////////////////
-// atan() approximations for 0..90 deg:
-//	a = 83 * q / 256 - q*q / 2844				(+/- 2.1%)
-//	a = 82 * q / 256 - q*q / 8500 - q*q*q / 1600000		(+/- 0.6%)
-//
-// FIXME: Better version?
-//	a = 84 * q / 256 - 95 * q*q / 524288 - 8 * q*q*q / 16777216
-///////////////////////////////////////////////////////////////////////////////
-static inline int fastatan(int q)
-{
-	int q2 = q * q;
-	int q3 = q2 * q;
-	return (82 * q >> 8) - (62 * q2 >> 19) - (10 * q3 >> 24);
-}
-
-static int speed2dir(int sx, int sy, int frames)
-{
-	if(!sx && !sy)
-		return 0;
-	int at2;
-	if(sx > 0)
-	{
-		// Right
-		if(sy < 0)
-		{
-			// Top-right quadrant
-			sy = -sy;
-			if(sy > sx)
-				at2 = fastatan(sx * 256 / sy);
-			else
-				at2 = 128 - fastatan(sy * 256 / sx);
-		}
-		else
-		{
-			// Bottom-right quadrant
-			if(sx > sy)
-				at2 = 128 + fastatan(sy * 256 / sx);
-			else
-				at2 = 256 - fastatan(sx * 256 / sy);
-		}
-	}
-	else
-	{
-		// Left
-		sx = -sx;
-		if(sy > 0)
-		{
-			// Bottom-left quadrant
-			if(sy > sx)
-				at2 = 256 + fastatan(sx * 256 / sy);
-			else
-				at2 = 384 - fastatan(sy * 256 / sx);
-		}
-		else
-		{
-			// Top-left quadrant
-			sy = -sy;
-			if(sx > sy)
-				at2 = 384 + fastatan(sy * 256 / sx);
-			else
-				at2 = 512 - fastatan(sx * 256 / sy);
-		}
-	}
-	at2 = (at2 * frames + 256) >> 9;
-	return at2 > frames - 1 ? 1 : at2 + 1;
-}
 
 
 /*
