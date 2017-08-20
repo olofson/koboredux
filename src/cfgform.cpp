@@ -115,8 +115,6 @@ void config_form_t::change(int delta)
 	}
 	else
 		sound.ui_play(S_UI_TICK);
-
-	apply_change(selected());
 }
 
 

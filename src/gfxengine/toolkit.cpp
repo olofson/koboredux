@@ -819,7 +819,10 @@ int ct_form_t::selected_index()
 void ct_form_t::change(int delta)
 {
 	if(_selected)
+	{
 		_selected->change(delta);
+		apply_change(_selected);
+	}
 }
 
 
