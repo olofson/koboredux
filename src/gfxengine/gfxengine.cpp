@@ -52,7 +52,6 @@ gfxengine_t::gfxengine_t()
 	fullwin = NULL;
 	windows = NULL;
 	selected = NULL;
-	wrapx = wrapy = 0;
 	xs = ys = 256;		// 1.0
 	sxs = sys = 256;	// 1.0
 	sf1 = sf2 = acf = bcf = markf = dsf = NULL;
@@ -74,20 +73,23 @@ gfxengine_t::gfxengine_t()
 
 	alpha_threshold = 0;
 
-	_brightness = 1.0;
-	_contrast = 1.0;
+	_brightness = 1.0f;
+	_contrast = 1.0f;
 
 	last_tick = -1000000;
-	ticks_per_frame = 1000.0/60.0;
+	ticks_per_frame = 1000.0f / 60.0f;
+	_frame_delta_time = 1.0f;
 
 	is_running = 0;
 	is_showing = 0;
 	is_open = 0;
 
 	_camfilter = 0;
+	xtarget = ytarget = 0;
 	xscroll = yscroll = 0;
+	wrapx = wrapy = 0;
 	for(int i = 0; i < CS_LAYERS ; ++i)
-		xratio[i] = yratio[i] = 0.0;
+		xratio[i] = yratio[i] = 0.0f;
 
 	screenshot_count = 0;
 
