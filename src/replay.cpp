@@ -347,15 +347,6 @@ bool KOBO_replay::load_reph(pfile_t *pf)
 			log_dump(ULOG);
 		return false;
 	}
-// Temporary hax to get 0.7.5 to import 0.7.4 replays
-#if (KOBO_REPLAY_VERSION != KOBO_MAKE_VERSION(0, 7, 5, 0))
-# error "Remove the 0.7.4->0.7.5 replay conversion hack!"
-#endif
-	else if(version == KOBO_MAKE_VERSION(0, 7, 4, 0))
-	{
-		compat = KOBO_RPCOM_FULL;
-	}
-// /Temporary hax
 	else
 	{
 		// TODO: Add logic to upgrade the initial parameters parts from
@@ -434,33 +425,6 @@ bool KOBO_replay::load_repd(pfile_t *pf)
 	}
 	if(buffer)
 		pf->read(buffer, bufrecord);
-
-// Temporary hax to get 0.7.5 to import 0.7.4 replays
-#if (KOBO_REPLAY_VERSION != KOBO_MAKE_VERSION(0, 7, 5, 0))
-# error "Remove the 0.7.4->0.7.5 replay conversion hack!"
-#endif
-	if(buffer && (version == KOBO_MAKE_VERSION(0, 7, 4, 0)))
-		for(unsigned i = 0; i < bufrecord; ++i)
-		{
-			int x = buffer[i] & KOBO_PC_DIR;
-			// We only store the final weapon fire commands now!
-			// Quick taps, dual function buttons etc, are taken
-			// care of *before* the point where data is recorded.
-			// So, primary down or hold becomes "fire primary", and
-			// secondary down becomes "fire secondary" or "fire
-			// tertiary," depending on stick status.
-			if(buffer[i] & 0x30)
-				x |= KOBO_PC_PRIMARY;
-			if(buffer[i] & 0x40)
-			{
-				if(x & KOBO_PC_DIR)
-					x |= KOBO_PC_SECONDARY;
-				else
-					x |= KOBO_PC_TERTIARY;
-			}
-			buffer[i] = x;
-		}
-// /Temporary hax
 
 	pf->chunk_end();
 

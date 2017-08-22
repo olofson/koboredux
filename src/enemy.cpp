@@ -30,9 +30,6 @@
 #include "mathutil.h"
 #include <math.h>
 
-// HAX: See "Game logic/effects pseudo-RNG interference #308"
-#define	pubrand	gamerand
-
 
 /*
  * ===========================================================================
