@@ -1152,7 +1152,12 @@ void _manage::run()
 							* 0.001f);
 				}
 				else
+				{
 					state(GS_NONE);
+					gengine->period(game.speed);
+					sound.g_volume(1.0f);
+					sound.g_pitch(0.0f);
+				}
 				break;
 			  case RPM_RETRY:
 				rewind();
