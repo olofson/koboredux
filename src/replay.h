@@ -45,7 +45,6 @@
 #define	_KOBO_REPLAY_H_
 
 #include "pfile.h"
-#include "replay_gst.h"
 #include "gamectl.h"
 
 // Replay header
@@ -75,6 +74,8 @@ enum KOBO_replay_logdump
 	KOBO_RLD_REPLAY,
 	KOBO_RLD_GAMESTATE
 };
+
+class KOBO_replay_gst;
 
 class KOBO_replay
 {

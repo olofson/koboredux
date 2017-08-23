@@ -24,6 +24,7 @@
 #include "manage.h"
 #include "random.h"
 #include "replay.h"
+#include "replay_gst.h"
 
 // Initial buffer size (enough for about 65 minutes at 30 ms/frame)
 #define	KOBO_REPLAY_BUFFER	131072

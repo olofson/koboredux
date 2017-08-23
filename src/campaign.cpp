@@ -22,6 +22,7 @@
 #include "kobo.h"
 #include "kobolog.h"
 #include "campaign.h"
+#include "replay_gst.h"
 #include <algorithm>
 
 

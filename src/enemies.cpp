@@ -32,9 +32,10 @@ const KOBO_enemy_kind *KOBO_enemies::ekind_to_generate_1;
 const KOBO_enemy_kind *KOBO_enemies::ekind_to_generate_2;
 int KOBO_enemies::e1_interval;
 int KOBO_enemies::e2_interval;
-int KOBO_enemies::explocount = 0;
 int KOBO_enemies::is_intro = 0;
 int KOBO_enemies::sound_update_period = 3;
+KOBO_enemystats KOBO_enemies::stats[KOBO_EK__COUNT];
+
 
 //---------------------------------------------------------------------------//
 KOBO_enemy::KOBO_enemy()
@@ -95,6 +96,17 @@ void KOBO_enemy::restartsound()
 }
 
 //---------------------------------------------------------------------------//
+#define	KOBO_DEFS(x, y)	case KOBO_EK_##x: return #y;
+const char *KOBO_enemies::enemy_name(KOBO_enemy_kinds eki)
+{
+	switch(eki)
+	{
+	  KOBO_ALLENEMYKINDS
+	  default:	return "<unknown enemy kind>";
+	}
+}
+#undef	KOBO_DEFS
+
 void KOBO_enemies::off()
 {
 	KOBO_enemy *enemyp;
@@ -114,6 +126,7 @@ int KOBO_enemies::init()
 	e2_interval = 1;
 	is_intro = 0;
 	sound_update_period = KOBO_SOUND_UPDATE_PERIOD / game.speed;
+	memset(stats, 0, sizeof(stats));
 	return 0;
 }
 
@@ -188,7 +201,11 @@ int KOBO_enemies::make(const KOBO_enemy_kind * ek, int x, int y, int h, int v,
 	KOBO_enemy *enemyp;
 	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
 		if(!enemyp->make(ek, x, y, h, v, di))
+		{
+			stats[ek->eki].spawned++;
+			stats[ek->eki].health += enemyp->get_health();
 			return 0;
+		}
 	return 1;
 }
 

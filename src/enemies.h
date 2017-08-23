@@ -31,13 +31,52 @@
 #include "manage.h"
 #include "sound.h"
 
+#define	KOBO_ALLENEMYKINDS			\
+	KOBO_DEFS(BULLET1, bullet1)		\
+	KOBO_DEFS(BULLET2, bullet2)		\
+	KOBO_DEFS(BULLET3, bullet3)		\
+	KOBO_DEFS(RINGEXPL, ringexpl)		\
+	KOBO_DEFS(GREENBLTEXPL, greenbltexpl)	\
+	KOBO_DEFS(REDBLTEXPL, redbltexpl)	\
+	KOBO_DEFS(BLUEBLTEXPL, bluebltexpl)	\
+	KOBO_DEFS(BOLTEXPL, boltexpl)		\
+	KOBO_DEFS(ROCKEXPL, rockexpl)		\
+	KOBO_DEFS(ENEMY1, enemy1)		\
+	KOBO_DEFS(ENEMY2, enemy2)		\
+	KOBO_DEFS(ENEMY3, enemy3)		\
+	KOBO_DEFS(ENEMY4, enemy4)		\
+	KOBO_DEFS(ENEMY5, enemy5)		\
+	KOBO_DEFS(ENEMY6, enemy6)		\
+	KOBO_DEFS(ENEMY7, enemy7)		\
+	KOBO_DEFS(BOMB1, bomb1)			\
+	KOBO_DEFS(BOMB2, bomb2)			\
+	KOBO_DEFS(BOMBDETO, bombdeto)		\
+	KOBO_DEFS(CANNON, cannon)		\
+	KOBO_DEFS(PIPEIN, pipein)		\
+	KOBO_DEFS(CORE, core)			\
+	KOBO_DEFS(PIPEOUT, pipeout)		\
+	KOBO_DEFS(ROCK, rock)			\
+	KOBO_DEFS(RING, ring)			\
+	KOBO_DEFS(ENEMY_M1, enemy_m1)		\
+	KOBO_DEFS(ENEMY_M2, enemy_m2)		\
+	KOBO_DEFS(ENEMY_M3, enemy_m3)		\
+	KOBO_DEFS(ENEMY_M4, enemy_m4)
+
+// KOBO_enemy_kinds
+#define	KOBO_DEFS(x, y)	KOBO_EK_##x,
+enum KOBO_enemy_kinds
+{
+	KOBO_ALLENEMYKINDS
+	KOBO_EK__COUNT
+};
+#undef	KOBO_DEFS
 
 class KOBO_enemy;
 class KOBO_enemies;
 //---------------------------------------------------------------------------//
 struct KOBO_enemy_kind
 {
-	const char	*name;
+	KOBO_enemy_kinds eki;
 	int		score;
 	void (KOBO_enemy::*make) ();
 	void (KOBO_enemy::*move) ();
@@ -59,36 +98,18 @@ struct KOBO_enemy_kind
 	S_##x##_DAMAGE,		\
 	S_##x##_DEATH
 
-extern const KOBO_enemy_kind bullet1;
-extern const KOBO_enemy_kind bullet2;
-extern const KOBO_enemy_kind bullet2;
-extern const KOBO_enemy_kind ringexpl;
-extern const KOBO_enemy_kind greenbltexpl;
-extern const KOBO_enemy_kind redbltexpl;
-extern const KOBO_enemy_kind bluebltexpl;
-extern const KOBO_enemy_kind boltexpl;
-extern const KOBO_enemy_kind rockexpl;
-extern const KOBO_enemy_kind enemy1;
-extern const KOBO_enemy_kind enemy2;
-extern const KOBO_enemy_kind enemy3;
-extern const KOBO_enemy_kind enemy4;
-extern const KOBO_enemy_kind enemy5;
-extern const KOBO_enemy_kind enemy6;
-extern const KOBO_enemy_kind enemy7;
-extern const KOBO_enemy_kind bomb1;
-extern const KOBO_enemy_kind bomb2;
-extern const KOBO_enemy_kind bombdeto;
-extern const KOBO_enemy_kind cannon;
-extern const KOBO_enemy_kind pipein;
-extern const KOBO_enemy_kind core;
-extern const KOBO_enemy_kind pipeout;
-extern const KOBO_enemy_kind rock;
-extern const KOBO_enemy_kind ring;
-extern const KOBO_enemy_kind enemy_m1;
-extern const KOBO_enemy_kind enemy_m2;
-extern const KOBO_enemy_kind enemy_m3;
-extern const KOBO_enemy_kind enemy_m4;
+// KOBO_enemy_kind externs
+#define	KOBO_DEFS(x, y)	extern const KOBO_enemy_kind y;
+KOBO_ALLENEMYKINDS
+#undef	KOBO_DEFS
 
+struct KOBO_enemystats
+{
+	uint32_t	spawned;
+	uint32_t	killed;
+	uint32_t	health;
+	uint32_t	damage;
+};
 
 //---------------------------------------------------------------------------//
 enum KOBO_state
@@ -102,7 +123,7 @@ class KOBO_enemy
 {
 	cs_obj_t	*object;	// For the gfxengine connection
 	KOBO_state	_state;
-	const KOBO_enemy_kind *ek;
+	const KOBO_enemy_kind	*ek;
 	int	x, y;			// Position
 	int	h, v;			// Velocity
 	int	contact;		// 0 or amount of overlap (24:8)
@@ -132,7 +153,7 @@ class KOBO_enemy
 	void shot_template_8_dir(const KOBO_enemy_kind *ekp);
 	void explode();
       public:
-	 KOBO_enemy();
+	KOBO_enemy();
 	inline void init();
 	inline void release();
 	inline void die();
@@ -149,6 +170,7 @@ class KOBO_enemy
 	inline int realize();
 	inline int is_pipe();
 	void hit(int dmg);
+	int get_health()	{ return health; }
 	void detonate();
 	inline bool can_hit_map(int px, int py);
 	inline bool can_splash_damage()	{ return takes_splash_damage; }
@@ -244,10 +266,11 @@ class KOBO_enemies
 	static const KOBO_enemy_kind *ekind_to_generate_2;
 	static int e1_interval;
 	static int e2_interval;
-	static int explocount;
       public:
 	static int is_intro;
 	static int sound_update_period;
+	static KOBO_enemystats stats[KOBO_EK__COUNT];
+	static const char *enemy_name(KOBO_enemy_kinds eki);
 	static int init();
 	static void off();
 	static void move();
@@ -295,6 +318,7 @@ inline void KOBO_enemy::release()
 {
 	stopsound();
 	state(notuse);
+	enemies.stats[ek->eki].killed++;
 }
 
 inline void KOBO_enemy::die()
@@ -385,7 +409,10 @@ inline void KOBO_enemy::hit(int dmg)
 		return;
 
 	if(HEALTH_INDESTRUCTIBLE != health)
+	{
 		health -= dmg;
+		enemies.stats[ek->eki].damage += dmg;
+	}
 	if(enemies.is_intro)
 	{
 		if(health <= 0)

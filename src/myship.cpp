@@ -112,6 +112,8 @@ void KOBO_myship::off()
 
 void KOBO_myship::init(bool newship)
 {
+	ctrl = KOBO_PC_NONE;
+	shield_timer = 0;
 	di = 1;
 	if(s_bank_t *b = s_get_bank(gengine->get_gfx(), B_PLAYER))
 		dframes = b->max + 1;

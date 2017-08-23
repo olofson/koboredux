@@ -23,16 +23,19 @@
 #define	_KOBO_REPLAY_GST_H_
 
 #include "pfile.h"
+#include "enemies.h"
 
 // Game state data (debug/test/verification)
 #define	KOBO_PF_GSTD_4CC	MAKE_4CC('G', 'S', 'T', 'D')
-#define	KOBO_PF_GSTD_VERSION	1
+#define	KOBO_PF_GSTD_VERSION	2
 
 class KOBO_replay_gst
 {
 	bool	status;
-	void verify(const char *desc, uint32_t snap, uint32_t current);
-	void verify(const char *desc, int32_t snap, int32_t current);
+	void verify(const char *desc, const char *desc2,
+			uint32_t snap, uint32_t current);
+	void verify(const char *desc, const char *desc2,
+			int32_t snap, int32_t current);
   public:
 	KOBO_replay_gst();
 	~KOBO_replay_gst();
@@ -52,6 +55,7 @@ class KOBO_replay_gst
 		int16_t		health;
 		int16_t		charge;
 	} player;
+	KOBO_enemystats	enemystats[KOBO_EK__COUNT];
 };
 
 #endif /* _KOBO_REPLAY_GST_H_ */
