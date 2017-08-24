@@ -26,8 +26,8 @@
 #include "random.h"
 #include "radar.h"
 
-KOBO_enemy KOBO_enemies::enemy[ENEMY_MAX];
-KOBO_enemy *KOBO_enemies::enemy_max;
+KOBO_enemy *KOBO_enemies::active = NULL;
+KOBO_enemy *KOBO_enemies::pool = NULL;
 const KOBO_enemy_kind *KOBO_enemies::ekind_to_generate_1;
 const KOBO_enemy_kind *KOBO_enemies::ekind_to_generate_2;
 int KOBO_enemies::e1_interval;
@@ -40,43 +40,6 @@ KOBO_enemystats KOBO_enemies::stats[KOBO_EK__COUNT];
 //---------------------------------------------------------------------------//
 KOBO_enemy::KOBO_enemy()
 {
-	object = NULL;
-	_state = notuse;
-}
-
-void KOBO_enemy::state(KOBO_state s)
-{
-	switch(s)
-	{
-	  case notuse:
-		soundhandle = 0;
-		if(object)
-		{
-			gengine->free_obj(object);
-			object = NULL;
-		}
-		break;
-	  case reserved:
-	  case moving:
-		if(actual_bank >= 0)
-		{
-			if(!object)
-				object = gengine->get_obj(ek->layer);
-			if(!object)
-				break;
-			if(s == moving)
-				cs_obj_show(object);
-			else
-				cs_obj_hide(object);
-		}
-		else if(object)
-		{
-			gengine->free_obj(object);
-			object = NULL;
-		}
-		break;
-	}
-	_state = s;
 }
 
 void KOBO_enemy::detachsound()
@@ -109,17 +72,20 @@ const char *KOBO_enemies::enemy_name(KOBO_enemy_kinds eki)
 
 void KOBO_enemies::off()
 {
-	KOBO_enemy *enemyp;
-	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		enemyp->state(notuse);
+	while(active)
+	{
+		KOBO_enemy *e = active;
+		active = active->next;
+		if(e->ek)
+			e->release();
+		e->next = pool;
+		pool = e;
+	}
 }
 
 int KOBO_enemies::init()
 {
-	KOBO_enemy *enemyp;
-	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		enemyp->init();
-	enemy_max = enemy;
+	off();
 	ekind_to_generate_1 = NULL;
 	ekind_to_generate_2 = NULL;
 	e1_interval = 1;
@@ -130,91 +96,95 @@ int KOBO_enemies::init()
 	return 0;
 }
 
+void KOBO_enemies::clean()
+{
+	KOBO_enemy *p = NULL;
+	KOBO_enemy *e = active;
+	while(e)
+	{
+		KOBO_enemy *de = e;
+		e = e->next;
+		if(!de->ek)
+		{
+			if(p)
+				p->next = e;
+			else
+				active = e;
+			de->next = pool;
+			pool = de;
+		}
+		else
+			p = de;
+	}
+}
+
 void KOBO_enemies::move()
 {
-	KOBO_enemy *enemyp;
-	/* realize reserved enemies */
-	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-	{
-		if(enemyp->realize())
-			enemy_max = enemyp;
-	}
-	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
-		enemyp->move();
+	clean();
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		e->move();
 }
 
 void KOBO_enemies::move_intro()
 {
-	KOBO_enemy *enemyp;
-	/* realize reserved enemies */
-	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-	{
-		if(enemyp->realize())
-			enemy_max = enemyp;
-	}
-	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
-		enemyp->move_intro();
+	clean();
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		e->move_intro();
 }
 
 void KOBO_enemies::detach_sounds()
 {
-	KOBO_enemy *enemyp;
-	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		if(enemyp->in_use())
-			enemyp->detachsound();
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		e->detachsound();
 }
 
 void KOBO_enemies::restart_sounds()
 {
-	KOBO_enemy *enemyp;
-	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		if(enemyp->in_use())
-			enemyp->restartsound();
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		e->restartsound();
 }
 
 void KOBO_enemies::put()
 {
-	KOBO_enemy *enemyp;
-	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
-		enemyp->put();
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		e->put();
 }
 
 void KOBO_enemies::force_positions()
 {
-	KOBO_enemy *enemyp;
-	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
-		enemyp->force_position();
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		e->force_position();
 }
 
 void KOBO_enemies::render_hit_zones()
 {
-	KOBO_enemy *enemyp;
 	wmain->blendmode(GFX_BLENDMODE_ADD);
-	for(enemyp = enemy; enemyp <= enemy_max; enemyp++)
-		enemyp->render_hit_zone();
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		e->render_hit_zone();
 	wmain->blendmode();
 }
 
-int KOBO_enemies::make(const KOBO_enemy_kind * ek, int x, int y, int h, int v,
-		int di)
+KOBO_enemy *KOBO_enemies::make(const KOBO_enemy_kind *ek,
+		int x, int y, int h, int v, int di)
 {
-	KOBO_enemy *enemyp;
-	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		if(!enemyp->make(ek, x, y, h, v, di))
-		{
-			stats[ek->eki].spawned++;
-			stats[ek->eki].health += enemyp->get_health();
-			return 0;
-		}
-	return 1;
+	KOBO_enemy *e = pool;
+	if(e)
+		pool = e->next;
+	else
+		e = new KOBO_enemy;
+	e->init(ek, x, y, h, v, di);
+	stats[ek->eki].spawned++;
+	stats[ek->eki].health += e->health;
+	e->next = active;
+	active = e;
+	return e;
 }
 
 int KOBO_enemies::erase_cannon(int x, int y)
 {
 	int count = 0;
-	KOBO_enemy *enemyp;
-	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		count += enemyp->erase_cannon(x, y);
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		count += e->erase_cannon(x, y);
 	if(count)
 		wradar->update(x, y);
 	return count;
@@ -224,17 +194,16 @@ void KOBO_enemies::hit_map(int x, int y, int dmg)
 {
 	if(!dmg)
 		return;
-	for(KOBO_enemy *enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		if(enemyp->can_hit_map(x, y))
-			enemyp->hit(dmg);
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		if(e->can_hit_map(x, y))
+			e->hit(dmg);
 }
 
 int KOBO_enemies::exist_pipe()
 {
 	int count = 0;
-	KOBO_enemy *enemyp;
-	for(enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
-		if(enemyp->is_pipe())
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
+		if(e->is_pipe())
 			count++;
 	return count;
 }
@@ -254,16 +223,16 @@ void KOBO_enemies::splash_damage(int x, int y, int damage)
 	int dist;
 
 	// Enemies
-	for(KOBO_enemy *enemyp = enemy; enemyp < enemy + ENEMY_MAX; enemyp++)
+	for(KOBO_enemy *e = NULL; (e = next(e)); )
 	{
-		if(!enemyp->can_splash_damage())
+		if(!e->can_splash_damage())
 			continue;
-		if(!enemyp->in_range(x, y, maxdist, dist))
+		if(!e->in_range(x, y, maxdist, dist))
 			continue;
 		int dmg = damage * ENEMY_SPLASH_DAMAGE_MULTIPLIER *
 				(maxdist - dist) / maxdist;
 		if(dmg)
-			enemyp->hit(dmg);
+			e->hit(dmg);
 	}
 
 	// Player

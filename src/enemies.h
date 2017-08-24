@@ -112,18 +112,12 @@ struct KOBO_enemystats
 };
 
 //---------------------------------------------------------------------------//
-enum KOBO_state
-{
-	notuse,
-	reserved,
-	moving
-};
-
 class KOBO_enemy
 {
+	friend class KOBO_enemies;
+	KOBO_enemy	*next;
 	cs_obj_t	*object;	// For the gfxengine connection
-	KOBO_state	_state;
-	const KOBO_enemy_kind	*ek;
+	const KOBO_enemy_kind	*ek;	// NOTE: NULL if enemy is dead!
 	int	x, y;			// Position
 	int	h, v;			// Velocity
 	int	contact;		// 0 or amount of overlap (24:8)
@@ -138,7 +132,7 @@ class KOBO_enemy
 	int	health;			// Current health
 	int	damage;			// Damage dealt to player at contact
 	int	splash_damage;		// Splash damage dealt on death
-	bool	takes_splash_damage;
+	bool	takes_splash_damage;	// Can receive splash damage
 	bool	shootable;		// Can be hit by player bolts
 	bool	physics;		// Use physics collision responses
 	bool	mapcollide;		// Tied to tile; collisions via map!
@@ -154,23 +148,18 @@ class KOBO_enemy
 	void explode();
       public:
 	KOBO_enemy();
-	inline void init();
+	inline void init(const KOBO_enemy_kind *k,
+			int px, int py, int h1, int v1, int dir = 0);
 	inline void release();
 	inline void die();
-	void state(KOBO_state s);
-	inline bool in_use()	{ return _state != notuse; }
 	void player_collision(int dx, int dy);
 	inline void move();
 	inline void move_intro();
 	inline void put();
 	inline void force_position();
 	inline void set_bank(int new_bank);
-	inline int make(const KOBO_enemy_kind *k,
-			int px, int py, int h1, int v1, int dir = 0);
-	inline int realize();
 	inline int is_pipe();
 	void hit(int dmg);
-	int get_health()	{ return health; }
 	void detonate();
 	inline bool can_hit_map(int px, int py);
 	inline bool can_splash_damage()	{ return takes_splash_damage; }
@@ -260,12 +249,23 @@ class KOBO_enemy
 //---------------------------------------------------------------------------//
 class KOBO_enemies
 {
-	static KOBO_enemy enemy[ENEMY_MAX];
-	static KOBO_enemy *enemy_max;
+	static KOBO_enemy *active;
+	static KOBO_enemy *pool;
 	static const KOBO_enemy_kind *ekind_to_generate_1;
 	static const KOBO_enemy_kind *ekind_to_generate_2;
 	static int e1_interval;
 	static int e2_interval;
+	static inline KOBO_enemy *next(KOBO_enemy *current)
+	{
+		if(!current)
+			current = active;
+		else
+			current = current->next;
+		while(current && !current->ek)
+			current = current->next;
+		return current;
+	}
+	static void clean();
       public:
 	static int is_intro;
 	static int sound_update_period;
@@ -280,7 +280,7 @@ class KOBO_enemies
 	static void put();
 	static void force_positions();
 	static void render_hit_zones();
-	static int make(const KOBO_enemy_kind * ek,
+	static KOBO_enemy *make(const KOBO_enemy_kind *ek,
 			int x, int y, int h = 0, int v = 0, int di = 0);
 	static int erase_cannon(int x, int y);
 	static int exist_pipe();
@@ -309,16 +309,56 @@ class KOBO_enemies
 extern KOBO_enemies enemies;
 
 
-inline void KOBO_enemy::init()
+inline void KOBO_enemy::init(const KOBO_enemy_kind *k, int px, int py,
+		int h1, int v1, int dir)
 {
-	state(notuse);
+	ek = k;
+	x = px;
+	y = py;
+	h = h1;
+	v = v1;
+	contact = 0;
+	di = dir;
+	a = b = c = 0;
+	soundhandle = 0;
+	health = 20;
+	damage = 50;
+	splash_damage = 0;
+	takes_splash_damage = true;
+	shootable = true;
+	mapcollide = false;
+	physics = true;
+	detonate_on_contact = false;
+	hitsize = ek->hitsize;
+	set_bank(ek->bank);
+	frame = ek->frame;
+	if(ek->sound)
+		startsound(ek->sound);
+	(this->*(ek->make)) ();
+	if(actual_bank >= 0)
+	{
+		object = gengine->get_obj(ek->layer);
+		if(object)
+		{
+			object->point.v.x = x;
+			object->point.v.y = y;
+			cs_point_force(&object->point);
+			cs_obj_show(object);
+		}
+	}
+	else
+		object = NULL;
 }
+
 
 inline void KOBO_enemy::release()
 {
 	stopsound();
-	state(notuse);
+	soundhandle = 0;
+	if(object)
+		gengine->free_obj(object);
 	enemies.stats[ek->eki].killed++;
+	ek = NULL;	// Mark as dead! (Can't safely remove from list here.)
 }
 
 inline void KOBO_enemy::die()
@@ -335,7 +375,7 @@ inline void KOBO_enemy::playsound(KOBO_sounds si)
 inline void KOBO_enemy::startsound(KOBO_sounds si)
 {
 	stopsound();
-	if(enemies.is_intro || (_state == notuse))
+	if(enemies.is_intro)
 		return;
 	soundhandle = sound.g_start(si, CS2PIXEL(x), CS2PIXEL(y));
 	soundtimer = enemies.sound_update_period;
@@ -365,39 +405,6 @@ inline void KOBO_enemy::set_bank(int new_bank)
 		frames = bnk->max + 1;
 	else
 		frames = 8;
-}
-
-inline int KOBO_enemy::make(const KOBO_enemy_kind *k, int px, int py,
-		int h1, int v1, int dir)
-{
-	if(_state != notuse)
-		return -1;
-	ek = k;
-	state(reserved);
-	x = px;
-	y = py;
-	di = dir;
-	h = h1;
-	v = v1;
-	contact = 0;
-	a = 0;
-	b = 0;
-	c = 0;
-	health = 20;
-	damage = 50;
-	splash_damage = 0;
-	takes_splash_damage = true;
-	shootable = true;
-	mapcollide = false;
-	physics = true;
-	detonate_on_contact = false;
-	hitsize = ek->hitsize;
-	set_bank(ek->bank);
-	frame = ek->frame;
-	if(ek->sound)
-		startsound(ek->sound);
-	(this->*(ek->make)) ();
-	return 0;
 }
 
 inline void KOBO_enemy::hit(int dmg)
@@ -434,20 +441,18 @@ inline void KOBO_enemy::hit(int dmg)
 	if(splash_damage)
 		enemies.splash_damage(x, y, splash_damage);
 	manage.add_score(ek->score);
-	(this->*(ek->kill)) ();
+	(this->*(ek->kill))();
 }
 
 inline void KOBO_enemy::detonate()
 {
 	if(splash_damage)
 		enemies.splash_damage(x, y, splash_damage);
-	(this->*(ek->kill)) ();
+	(this->*(ek->kill))();
 }
 
 inline bool KOBO_enemy::can_hit_map(int px, int py)
 {
-	if(_state == notuse)
-		return false;
 	if(!mapcollide)
 		return false;
 	return ((signed)(CS2PIXEL(x) & (WORLD_SIZEX - 1)) >> 4 == px) &&
@@ -456,8 +461,6 @@ inline bool KOBO_enemy::can_hit_map(int px, int py)
 
 inline bool KOBO_enemy::in_range(int px, int py, int range, int &dist)
 {
-	if(_state == notuse)
-		return false;
 	if(mapcollide)
 		return false;	// Non-fixed enemies only!
 	int dx = labs(x - px);
@@ -486,9 +489,6 @@ inline int KOBO_enemy::erase_cannon(int px, int py)
 
 inline void KOBO_enemy::move()
 {
-	if(_state == notuse)
-		return;
-
 	// Need to update this for stationary objects as well, as the listener
 	// is (usually) moving around at all times!
 	if((soundhandle > 0) && (soundtimer-- <= 0))
@@ -496,9 +496,6 @@ inline void KOBO_enemy::move()
 		sound.g_move(soundhandle, CS2PIXEL(x), CS2PIXEL(y));
 		soundtimer = enemies.sound_update_period;
 	}
-
-	if(_state != moving)
-		return;
 
 	x += h;
 	y += v;
@@ -509,12 +506,19 @@ inline void KOBO_enemy::move()
 	diffx = CS2PIXEL(dx);
 	diffy = CS2PIXEL(dy);
 	mindiff = MAX(labs(diffx), labs(diffy));
-	(this->*(ek->move)) ();
+
+	(this->*(ek->move))();
+	if(!ek)
+		return;	// Killed by ek->move()!
 
 	// Handle collisions with the player ship
 	if(!mapcollide && myship.alive() && (hitsize >= 0) &&
 			(mindiff < (hitsize + myship.get_hitsize())))
+	{
 		player_collision(dx, dy);
+		if(!ek)
+			return;	// Killed by player_collision()!
+	}
 	else
 		contact = 0;
 
@@ -531,8 +535,6 @@ inline void KOBO_enemy::move()
 
 inline void KOBO_enemy::move_intro()
 {
-	if(_state != moving)
-		return;
 	x += h;
 	y += v;
 	x &= PIXEL2CS(WORLD_SIZEX) - 1;
@@ -540,7 +542,7 @@ inline void KOBO_enemy::move_intro()
 	diffx = WRAPDISTX(CS2PIXEL(x), myship.get_x());
 	diffy = WRAPDISTY(CS2PIXEL(y), myship.get_y());
 	mindiff = MAX(labs(diffx), labs(diffy));
-	(this->*(ek->move)) ();
+	(this->*(ek->move))();
 }
 
 inline void KOBO_enemy::put()
@@ -554,28 +556,13 @@ inline void KOBO_enemy::put()
 
 inline void KOBO_enemy::force_position()
 {
-	if((_state == moving) && object)
+	if(object)
 		cs_point_force(&object->point);
-}
-
-inline int KOBO_enemy::realize()
-{
-	if(_state == reserved)
-	{
-		state(moving);
-		if(object)
-		{
-			object->point.v.x = x;
-			object->point.v.y = y;
-			cs_point_force(&object->point);
-		}
-	}
-	return (_state == moving);
 }
 
 inline int KOBO_enemy::is_pipe()
 {
-	return ((_state != notuse) && ((ek == &pipein) || (ek == &pipeout)));
+	return ((ek == &pipein) || (ek == &pipeout));
 }
 
 #endif				// XKOBO_H_ENEMIES
