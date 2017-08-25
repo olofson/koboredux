@@ -501,6 +501,8 @@ void _manage::advance(int frame)
 	replaymode = RPM_REPLAY;
 	float volume_save = sound.g_volume();
 	sound.g_volume(0.0f);
+	if((int)replay->position() + 10 < frame)
+		wfire->Clear(true, false);
 	while((int)replay->position() < frame)
 	{
 		KOBO_player_controls rpctrl = replay->read();
@@ -510,7 +512,10 @@ void _manage::advance(int frame)
 		myship.move();
 		enemies.move();
 		myship.check_base_bolts();
-		wfire->update();
+		if((int)replay->position() + 10 < frame)
+			wfire->update_norender();
+		else
+			wfire->update();
 		if(prefs->replaydebug)
 			replay->verify_state();
 		++playtime;

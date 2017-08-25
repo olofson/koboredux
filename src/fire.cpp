@@ -247,6 +247,62 @@ void KOBO_Fire::RunParticles()
 }
 
 
+bool KOBO_Fire::RunPSystemNR(KOBO_ParticleSystem *ps)
+{
+	for(int i = 0; i < ps->nparticles; ++i)
+	{
+		KOBO_Particle *p = &ps->particles[i];
+
+		// Update
+		p->z = p->z * p->zc >> 12;
+		if(p->z < ps->threshold)
+		{
+			// Dead! Remove.
+			--ps->nparticles;
+			ps->particles[i] = ps->particles[ps->nparticles];
+			--i;
+			continue;
+		}
+		p->x += p->dx;
+		p->y += p->dy;
+		p->dx = p->dx * p->drag >> 12;
+		p->dy = p->dy * p->drag >> 12;
+	}
+	return ps->nparticles > 0;
+}
+
+
+void KOBO_Fire::RunParticlesNR()
+{
+	pscount = pcount = 0;
+	KOBO_ParticleSystem *ps = psystems;
+	KOBO_ParticleSystem *pps = NULL;
+	while(ps)
+	{
+		++pscount;
+		if(IsOnScreen(ps) && RunPSystemNR(ps))
+		{
+			pcount += ps->nparticles;
+			// Next...
+			pps = ps;
+			ps = ps->next;
+		}
+		else
+		{
+			// Done! Remove particle system.
+			KOBO_ParticleSystem *nps = ps->next;
+			if(pps)
+				pps->next = nps;
+			else
+				psystems = nps;
+			ps->next = psystempool;
+			psystempool = ps;
+			ps = nps;
+		}
+	}
+}
+
+
 KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 		const KOBO_ParticleFXDef *fxd)
 {
@@ -391,6 +447,16 @@ void KOBO_Fire::update()
 	current_buffer = !current_buffer;
 
 	need_refresh = true;
+}
+
+
+void KOBO_Fire::update_norender()
+{
+	if(!bufw || !bufh)
+		return;
+
+	// Run particle systems
+	RunParticlesNR();
 }
 
 

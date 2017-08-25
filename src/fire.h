@@ -182,6 +182,8 @@ class KOBO_Fire : public stream_window_t
 	int pscount, pcount;
 	bool RunPSystem(KOBO_ParticleSystem *ps);
 	void RunParticles();
+	bool RunPSystemNR(KOBO_ParticleSystem *ps);
+	void RunParticlesNR();
 
 	// RNG
 	unsigned noisestate;
@@ -230,6 +232,7 @@ class KOBO_Fire : public stream_window_t
 	void SetWorldSize(int w, int h);
 
 	void update();
+	void update_norender();
 	void refresh(SDL_Rect *r);
 
 	// Spawn new particle system as specified by 'fxd', at (x, y), with an
