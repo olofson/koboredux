@@ -1903,7 +1903,10 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 		if(prefs->debug)
 		{
 			KOBO_ParticleFXDef *fxd = new KOBO_ParticleFXDef;
-			wfire->NewPSystem(PIXEL2CS(mouse_x - DASHX(MAIN)) +
+			fxd->xoffs.Set(-20.0f, 20.0f);
+			KOBO_ParticleFXDef *fxd2 = fxd->Add();
+			fxd2->yoffs.Set(-20.0f, 20.0f);
+			wfire->Spawn(PIXEL2CS(mouse_x - DASHX(MAIN)) +
 					gengine->xoffs(LAYER_BASES),
 					PIXEL2CS(mouse_y - DASHY(MAIN)) +
 					gengine->yoffs(LAYER_BASES),

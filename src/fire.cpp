@@ -30,6 +30,32 @@
 #undef	FIRE_SHOW_EDGE
 
 
+KOBO_ParticleFXDef::KOBO_ParticleFXDef()
+{
+	next = NULL;
+	threshold = 0;
+	init_count = 256;
+	xoffs.Set(0.0f, 0.0f);
+	yoffs.Set(0.0f, 0.0f);
+	radius.Set(3.0f, 8.0f, 0.0f);
+	twist.Set(-0.25f, 0.25f, 0.5f);
+	speed.Set(3.0f, 5.0f, 0.0f);
+	drag.Set(0.85f, 0.85f, 0.9f);
+	heat.Set(1.5f, 3.0f, 0.75f);
+	fade.Set(0.8f, 0.9f, 0.9f);
+}
+
+KOBO_ParticleFXDef::~KOBO_ParticleFXDef()
+{
+	while(next)
+	{
+		KOBO_ParticleFXDef *nd = next;
+		next = nd->next;
+		delete nd;
+	}
+}
+
+
 KOBO_Fire::KOBO_Fire(gfxengine_t *e) : stream_window_t(e)
 {
 	worldw = worldh = 0;
@@ -318,6 +344,8 @@ KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 	ps->y = y >> 8;
 	x <<= 8;
 	y <<= 8;
+	x += RandRange(fxd->xoffs);
+	y += RandRange(fxd->yoffs);
 	vx <<= 8;
 	vy <<= 8;
 
@@ -360,7 +388,18 @@ KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 		p->z = RandRange(heat_min, heat_max);
 		p->zc = RandRange(fade_min, fade_max);
 	}
+
 	return ps;
+}
+
+
+KOBO_ParticleSystem *KOBO_Fire::Spawn(int x, int y, int vx, int vy,
+		const KOBO_ParticleFXDef *fxd)
+{
+	KOBO_ParticleSystem *first = NewPSystem(x, y, vx, vy, fxd);
+	for(fxd = fxd->next; fxd; fxd = fxd->next)
+		NewPSystem(x, y, vx, vy, fxd);
+	return first;
 }
 
 

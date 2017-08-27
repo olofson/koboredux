@@ -186,7 +186,7 @@ static const KOBO_ParticleFXDef default_explo_fxdef;
 
 void KOBO_enemy::explode()
 {
-	wfire->NewPSystem(x + h, y + v, h, v, &default_explo_fxdef);
+	wfire->Spawn(x + h, y + v, h, v, &default_explo_fxdef);
 }
 
 void KOBO_enemy::kill_default()

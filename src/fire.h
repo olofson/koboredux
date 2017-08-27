@@ -70,16 +70,28 @@
 #define	FIRE_HEAT_THRESHOLD	32768
 
 // Particle effect definition
-struct KOBO_RandSpec {
+struct KOBO_RangeSpec
+{
+	int	min, max;	// Min/max limits (16:16 fixp)
+
+	void Set(float _min, float _max)
+	{
+		min = _min * 65536.0f;
+		max = _max * 65536.0f;
+	}
+};
+
+struct KOBO_RandSpec
+{
 	// Per system base value range (16:16 fixp)
 	//	For each new particle system, a single base value will be
 	//	randomized in the range [bmin, bmax].
-	int	bmin, bmax;
+	KOBO_RangeSpec	base;
 
 	// Per particle relative variation range (16:16 fixp)
 	//	For each particle issued, the corresponding value is randomly
 	//	selected in the range [rmin * base, rmax * base].
-	int	rmin, rmax;
+	KOBO_RangeSpec	relative;
 
 	// Per particle absolute variation range (16:16 fixp)
 	//	For each particle issued, an random value in the absolute range
@@ -90,15 +102,16 @@ struct KOBO_RandSpec {
 			float relmin = 1.0f, float relmax = 1.0f,
 			float absnoise = 0.0f)
 	{
-		bmin = basemin * 65536.0f;
-		bmax = basemax * 65536.0f;
-		rmin = relmin * 65536.0f;
-		rmax = relmax * 65536.0f;
+		base.Set(basemin, basemax);
+		relative.Set(relmin, relmax);
 		noise = absnoise * 65536.0f;
 	}
 };
 
-class KOBO_ParticleFXDef {
+class KOBO_ParticleFXDef
+{
+	friend class KOBO_Fire;
+	KOBO_ParticleFXDef	*next;
   public:
 
 	// General parameters
@@ -106,6 +119,8 @@ class KOBO_ParticleFXDef {
 
 	// Initial state
 	int		init_count;	// Number of initial particles
+	KOBO_RangeSpec	xoffs;		// Horizontal offset (pixels)
+	KOBO_RangeSpec	yoffs;		// Vertical offset (pixels)
 	KOBO_RandSpec	radius;		// Initial radius (pixels)
 
 	// Behavior of initial particles
@@ -118,21 +133,23 @@ class KOBO_ParticleFXDef {
 	// Particle spawning
 	// TODO
 
-	KOBO_ParticleFXDef()
+	KOBO_ParticleFXDef();
+	~KOBO_ParticleFXDef();
+
+	// Add new particle system definition to cluster
+	KOBO_ParticleFXDef *Add()
 	{
-		threshold = 0;
-		init_count = 256;
-		radius.Set(3.0f, 8.0f, 0.0f);
-		twist.Set(-0.25f, 0.25f, 0.5f);
-		speed.Set(3.0f, 5.0f, 0.0f);
-		drag.Set(0.85f, 0.85f, 0.9f);
-		heat.Set(1.5f, 3.0f, 0.75f);
-		fade.Set(0.8f, 0.9f, 0.9f);
+		KOBO_ParticleFXDef *d = this;
+		while(d->next)
+			d = d->next;
+		d->next = new KOBO_ParticleFXDef;
+		return d->next;
 	}
 };
 
 // Single particle
-struct KOBO_Particle {
+struct KOBO_Particle
+{
 	int	x, y, z;	// Position and heat (16:16)
 	int	dx, dy;		// Velocity (16:16)
 	int	zc;		// Cool-down ratio (20:12)
@@ -140,7 +157,8 @@ struct KOBO_Particle {
 };
 
 // Particle system
-struct KOBO_ParticleSystem {
+struct KOBO_ParticleSystem
+{
 	KOBO_ParticleSystem	*next;
 	int			x, y;
 	// TODO: <parameters for issuing new particles>
@@ -185,6 +203,10 @@ class KOBO_Fire : public stream_window_t
 	bool RunPSystemNR(KOBO_ParticleSystem *ps);
 	void RunParticlesNR();
 
+	// Particle systems
+	KOBO_ParticleSystem *NewPSystem(int x, int y, int vx, int vy,
+			const KOBO_ParticleFXDef *fxd);
+
 	// RNG
 	unsigned noisestate;
 	inline int Noise()
@@ -197,12 +219,16 @@ class KOBO_Fire : public stream_window_t
 	{
 		return min + ((int64_t)Noise() * (max - min) >> 16);
 	}
+	inline int RandRange(const KOBO_RangeSpec &rs)
+	{
+		return RandRange(rs.min, rs.max);
+	}
 
 	void RRPrepare(const KOBO_RandSpec &rs, int &min, int &max)
 	{
-		int base = RandRange(rs.bmin, rs.bmax);
-		min = (int64_t)rs.rmin * base >> 16;
-		max = ((int64_t)rs.rmax * base >> 16) + rs.noise;
+		int base = RandRange(rs.base);
+		min = (int64_t)rs.relative.min * base >> 16;
+		max = ((int64_t)rs.relative.max * base >> 16) + rs.noise;
 	}
 
 	bool IsOnScreen(KOBO_ParticleSystem *ps)
@@ -237,7 +263,7 @@ class KOBO_Fire : public stream_window_t
 
 	// Spawn new particle system as specified by 'fxd', at (x, y), with an
 	// initial velocity bias of (vx, vy). Coordinates are 24:8 fixp.
-	KOBO_ParticleSystem *NewPSystem(int x, int y, int vx, int vy,
+	KOBO_ParticleSystem *Spawn(int x, int y, int vx, int vy,
 			const KOBO_ParticleFXDef *fxd);
 
 	bool PSVisible(KOBO_ParticleSystem *ps)

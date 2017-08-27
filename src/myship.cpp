@@ -175,7 +175,7 @@ void KOBO_myship::explode()
 	int vy = dy * (4096 - d) >> 8;
 	dx = PIXEL2CS(dx * d >> 12);
 	dy = PIXEL2CS(dy * d >> 12);
-	wfire->NewPSystem(x + dx, y + dy, vx, vy, &player_explo_fxdef);
+	wfire->Spawn(x + dx, y + dy, vx, vy, &player_explo_fxdef);
 	++explo_time;
 }
 
