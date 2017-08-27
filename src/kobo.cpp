@@ -1889,6 +1889,7 @@ void kobo_gfxengine_t::mouse_motion(SDL_Event &ev)
 
 void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 {
+	static int explo_debug_mode = 0;
 	mouse_x = (int)(ev.button.x / gengine->xscale()) - km.xoffs;
 	mouse_y = (int)(ev.button.y / gengine->yscale()) - km.yoffs;
 	switch(ev.button.button)
@@ -1900,25 +1901,66 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 		mouse_middle = 1;
 		break;
 	  case SDL_BUTTON_RIGHT:
-		if(prefs->debug)
-		{
-			KOBO_ParticleFXDef *fxd = new KOBO_ParticleFXDef;
-			fxd->xoffs.Set(-20.0f, 20.0f);
-			KOBO_ParticleFXDef *fxd2 = fxd->Add();
-			fxd2->yoffs.Set(-20.0f, 20.0f);
-			wfire->Spawn(PIXEL2CS(mouse_x - DASHX(MAIN)) +
-					gengine->xoffs(LAYER_BASES),
-					PIXEL2CS(mouse_y - DASHY(MAIN)) +
-					gengine->yoffs(LAYER_BASES),
-					0, -300, fxd);
-			delete fxd;
-			return;
-		}
-		else
+	  {
+		if(!prefs->debug)
 		{
 			mouse_right = 1;
 			break;
 		}
+		KOBO_ParticleFXDef *fxd = NULL;
+		switch(explo_debug_mode++)
+		{
+		  default:
+			explo_debug_mode = 1;
+		  case 0:
+			// Basic default; single system
+			fxd = new KOBO_ParticleFXDef;
+			fxd->Default();
+			break;
+		  case 1:
+			// Cluster of systems
+			fxd = new KOBO_ParticleFXDef;
+			fxd->Default();
+			fxd->init_count = 1024;
+			fxd->radius.Set(15.0f, 20.0f, 0.0f);
+			fxd->twist.Set(0.0f, 0.0f);
+			fxd->speed.Set(5.0f, 7.0f, 0.0f);
+			fxd->drag.Set(0.9f, 0.9f);
+			fxd->heat.Set(0.5f, 0.5f, 0.5f);
+			fxd->fade.Set(0.93f, 0.93f);
+			for(int i = 0; i < 10; ++i)
+			{
+				KOBO_ParticleFXDef *fxd2 = fxd->Add();
+				fxd2->Default();
+				fxd2->init_count = 100;
+				fxd2->radius.Set(1.0f, 3.0f, 0.0f);
+				fxd2->xoffs.Set(-20.0f, 20.0f);
+				fxd2->yoffs.Set(-20.0f, 20.0f);
+			}
+			break;
+		  case 2:
+		  {
+			// Nested systems
+			fxd = new KOBO_ParticleFXDef;
+			fxd->Reset();
+			fxd->init_count = 10;
+			fxd->radius.Set(10.0f, 10.0f, 0.0f);
+			fxd->speed.Set(10.0f, 10.0f, 0.0f);
+			KOBO_ParticleFXDef *fxd2 = fxd->Child();
+			fxd2->Default();
+			fxd2->init_count = 100;
+			fxd2->radius.Set(1.0f, 2.0f, 0.0f);
+			break;
+		  }
+		}
+		wfire->Spawn(PIXEL2CS(mouse_x - DASHX(MAIN)) +
+				gengine->xoffs(LAYER_BASES),
+				PIXEL2CS(mouse_y - DASHY(MAIN)) +
+				gengine->yoffs(LAYER_BASES),
+				0, -300, fxd);
+		delete fxd;
+		return;
+	  }
 	}
 
 	if(!prefs->mouse)

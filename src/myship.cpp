@@ -161,7 +161,6 @@ void KOBO_myship::init(int rhealth, int rcharge)
 	_charge = rcharge;
 }
 
-static const KOBO_ParticleFXDef player_explo_fxdef;
 
 void KOBO_myship::explode()
 {
@@ -175,7 +174,10 @@ void KOBO_myship::explode()
 	int vy = dy * (4096 - d) >> 8;
 	dx = PIXEL2CS(dx * d >> 12);
 	dy = PIXEL2CS(dy * d >> 12);
-	wfire->Spawn(x + dx, y + dy, vx, vy, &player_explo_fxdef);
+/*HAX*/	KOBO_ParticleFXDef *fxd = new KOBO_ParticleFXDef;
+/*HAX*/	fxd->Default();
+/*HAX*/	wfire->Spawn(x + dx, y + dy, vx, vy, fxd);
+/*HAX*/	delete fxd;
 	++explo_time;
 }
 

@@ -182,11 +182,12 @@ void KOBO_enemy::shot_template_8_dir(const KOBO_enemy_kind *ekp)
 	playsound(ekp->launchsound);
 }
 
-static const KOBO_ParticleFXDef default_explo_fxdef;
-
 void KOBO_enemy::explode()
 {
-	wfire->Spawn(x + h, y + v, h, v, &default_explo_fxdef);
+/*HAX*/	KOBO_ParticleFXDef *fxd = new KOBO_ParticleFXDef;
+/*HAX*/	fxd->Default();
+/*HAX*/	wfire->Spawn(x + h, y + v, h, v, fxd);
+/*HAX*/	delete fxd;
 }
 
 void KOBO_enemy::kill_default()

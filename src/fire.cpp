@@ -33,6 +33,45 @@
 KOBO_ParticleFXDef::KOBO_ParticleFXDef()
 {
 	next = NULL;
+	child = NULL;
+	Reset();
+}
+
+
+KOBO_ParticleFXDef::~KOBO_ParticleFXDef()
+{
+	while(next)
+	{
+		KOBO_ParticleFXDef *nd = next;
+		next = nd->next;
+		nd->next = NULL;
+		delete nd;
+	}
+	if(child)
+	{
+		delete child;
+		child = NULL;
+	}
+}
+
+
+void KOBO_ParticleFXDef::Reset()
+{
+	threshold = 0;
+	init_count = 256;
+	xoffs.Set(0.0f, 0.0f);
+	yoffs.Set(0.0f, 0.0f);
+	radius.Set(0.0f, 0.0f);
+	twist.Set(0.0f, 0.0f);
+	speed.Set(0.0f, 0.0f);
+	drag.Set(0.0f, 0.0f);
+	heat.Set(0.0f, 0.0f);
+	fade.Set(0.0f, 0.0f);
+}
+
+
+void KOBO_ParticleFXDef::Default()
+{
 	threshold = 0;
 	init_count = 256;
 	xoffs.Set(0.0f, 0.0f);
@@ -45,14 +84,22 @@ KOBO_ParticleFXDef::KOBO_ParticleFXDef()
 	fade.Set(0.8f, 0.9f, 0.9f);
 }
 
-KOBO_ParticleFXDef::~KOBO_ParticleFXDef()
+
+KOBO_ParticleFXDef *KOBO_ParticleFXDef::Add()
 {
-	while(next)
-	{
-		KOBO_ParticleFXDef *nd = next;
-		next = nd->next;
-		delete nd;
-	}
+	KOBO_ParticleFXDef *d = this;
+	while(d->next)
+		d = d->next;
+	d->next = new KOBO_ParticleFXDef;
+	return d->next;
+}
+
+
+KOBO_ParticleFXDef *KOBO_ParticleFXDef::Child()
+{
+	if(!child)
+		child = new KOBO_ParticleFXDef;
+	return child;
 }
 
 
@@ -332,16 +379,40 @@ void KOBO_Fire::RunParticlesNR()
 KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 		const KOBO_ParticleFXDef *fxd)
 {
-	KOBO_ParticleSystem *ps = psystempool;
-	if(ps)
-		psystempool = ps->next;
-	else
-		ps = new KOBO_ParticleSystem;
-	ps->next = psystems;
-	psystems = ps;
+	KOBO_ParticleSystem *ps = NULL;
 
-	ps->x = x >> 8;
-	ps->y = y >> 8;
+	int nparticles = fxd->init_count;
+	if(nparticles > FIRE_MAX_PARTICLES)
+	{
+		log_printf(WLOG, "KOBO_Fire::Spawn() too many particles! "
+				"(%d - max is %d)\n", nparticles,
+				FIRE_MAX_PARTICLES);
+		nparticles = FIRE_MAX_PARTICLES;
+	}
+
+	if(!fxd->child)
+	{
+		// Not nested - create actual PS, and generate particles
+		if(psystempool)
+		{
+			ps = psystempool;
+			psystempool = ps->next;
+		}
+		else
+			ps = new KOBO_ParticleSystem;
+		ps->next = psystems;
+		psystems = ps;
+
+		ps->x = x >> 8;
+		ps->y = y >> 8;
+
+		ps->threshold = fxd->threshold / ncolors;
+		if(ps->threshold < threshold)
+			ps->threshold = threshold;
+		ps->nparticles = nparticles;
+	}
+
+	// Convert position and velocity, and apply offset randomization
 	x <<= 8;
 	y <<= 8;
 	x += RandRange(fxd->xoffs);
@@ -349,11 +420,7 @@ KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 	vx <<= 8;
 	vy <<= 8;
 
-	ps->threshold = fxd->threshold / ncolors;
-	if(ps->threshold < threshold)
-		ps->threshold = threshold;
-	ps->nparticles = fxd->init_count;
-
+	// Initialize randomization ranges for all per-particle parameters
 	int radius_min, radius_max;
 	int twist_min, twist_max;
 	int speed_min, speed_max;
@@ -373,22 +440,34 @@ KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 	fade_min >>= 4;
 	fade_max >>= 4;
 
-	for(int i = 0; i < ps->nparticles; ++i)
+	for(int i = 0; i < nparticles; ++i)
 	{
-		KOBO_Particle *p = &ps->particles[i];
 		float a = Noise() * M_PI / 32768.0f;
 		float r = RandRange(radius_min, radius_max);
 		float v = RandRange(speed_min, speed_max);
-		p->x = x + sinf(a) * r;
-		p->y = y + cosf(a) * r;
+		int px = x + sinf(a) * r;
+		int py = y + cosf(a) * r;
 		a += RandRange(twist_min, twist_max) * M_PI / 32768.0f;
-		p->dx = sinf(a) * v + vx;
-		p->dy = cosf(a) * v + vy;
-		p->drag = RandRange(drag_min, drag_max);
-		p->z = RandRange(heat_min, heat_max);
-		p->zc = RandRange(fade_min, fade_max);
+		int pvx = sinf(a) * v + vx;
+		int pvy = cosf(a) * v + vy;
+		if(ps)
+		{
+			KOBO_Particle *p = &ps->particles[i];
+			p->x = px;
+			p->y = py;
+			p->dx = pvx;
+			p->dy = pvy;
+			p->drag = RandRange(drag_min, drag_max);
+			p->z = RandRange(heat_min, heat_max);
+			p->zc = RandRange(fade_min, fade_max);
+		}
+		else
+			Spawn(px >> 8, py >> 8, pvx >> 8, pvy >> 8,
+					fxd->child);
 	}
 
+	// NOTE: We don't return a PS for nested effects! There is no actual
+	// instance for the parent PS, so there's nothing sensible to return.
 	return ps;
 }
 

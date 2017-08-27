@@ -111,7 +111,8 @@ struct KOBO_RandSpec
 class KOBO_ParticleFXDef
 {
 	friend class KOBO_Fire;
-	KOBO_ParticleFXDef	*next;
+	KOBO_ParticleFXDef	*next;	// Next in cluster
+	KOBO_ParticleFXDef	*child;	// Child "particle" definition
   public:
 
 	// General parameters
@@ -136,15 +137,14 @@ class KOBO_ParticleFXDef
 	KOBO_ParticleFXDef();
 	~KOBO_ParticleFXDef();
 
+	void Reset();			// Reset to empty "all zero" system
+	void Default();			// Load default explosion preset
+
 	// Add new particle system definition to cluster
-	KOBO_ParticleFXDef *Add()
-	{
-		KOBO_ParticleFXDef *d = this;
-		while(d->next)
-			d = d->next;
-		d->next = new KOBO_ParticleFXDef;
-		return d->next;
-	}
+	KOBO_ParticleFXDef *Add();
+
+	// Get/create definition to spawn instead of plain particles
+	KOBO_ParticleFXDef *Child();
 };
 
 // Single particle
