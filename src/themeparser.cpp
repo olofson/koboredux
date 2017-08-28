@@ -136,8 +136,6 @@ KOBO_ThemeData::~KOBO_ThemeData()
 		free(items[i]);
 		free(strings[i]);
 	}
-	for(int i = 0; i < KOBO_PFX__COUNT; ++i)
-		delete pfxdefs[i];
 }
 
 
