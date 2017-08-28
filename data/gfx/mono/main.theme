@@ -56,6 +56,72 @@ palette P_MAIN_STARS P_MAIN 1 3 5 7
 // NOTE: The engine adds a transparent entry before the first color!
 palette P_FIRE P_MAIN 0 1 2 10 6 14 15
 
+// Particle effects
+particles PFX_PIPEOUT {
+	default
+	radius	2	3	0	1	0
+	speed	4	6	0	1	0
+	fade	.85	.85	.8	1	0
+}
+alias PFX_PIPEIN PFX_PIPEOUT
+
+particles PFX_ENEMY1 {
+	default
+}
+alias PFX_ENEMY2 PFX_ENEMY1
+alias PFX_ENEMY3 PFX_ENEMY1
+alias PFX_ENEMY4 PFX_ENEMY1
+alias PFX_ENEMY5 PFX_ENEMY1
+alias PFX_ENEMY6 PFX_ENEMY1
+alias PFX_ENEMY7 PFX_ENEMY1
+alias PFX_BOMB1 PFX_ENEMY1
+alias PFX_BOMB2 PFX_ENEMY1
+
+particles PFX_PLAYER_DEATH {
+	default
+	count	1024
+	radius	15	20	0	1	0
+	twist	0	0	1	1	0
+	speed	5	7	0	1	0
+	drag	.93	.93	1	1	0
+	heat	2	2	.5	1	0
+	fade	.97	.97	1	1	0
+	chain {
+		count 50
+		radius	40	40	0	1	0
+		child {
+			default
+			delay	10	100
+		}
+	}
+}
+
+particles PFX_CANNON {
+	default
+	count	400
+	radius	5	10	0	1	0
+	speed	5	7	0	1	0
+}
+
+particles PFX_CORE {
+	count	10
+	radius	10	10	0	1	0
+	speed	10	10	0	1	0
+	child {
+		default
+		count	100
+		radius	1	2	0	1	0
+	}
+	chain {
+		default
+		count	400
+	}
+}
+alias PFX_ENEMY_M1 PFX_CORE
+alias PFX_ENEMY_M2 PFX_CORE
+alias PFX_ENEMY_M3 PFX_CORE
+alias PFX_ENEMY_M4 PFX_CORE
+
 palette P_PLANET_R1 P_MAIN 0 0  1 1 9 9 5
 palette P_PLANET_R2 P_PLANET_R1
 palette P_PLANET_R3 P_PLANET_R1

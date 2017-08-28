@@ -2,7 +2,7 @@
 ------------------------------------------------------------
    Kobo Deluxe - An enhanced SDL port of XKobo
 ------------------------------------------------------------
- * Copyright 2016 David Olofson (Kobo Redux)
+ * Copyright 2016-2017 David Olofson (Kobo Redux)
  * 
  * This program  is free software; you can redistribute it and/or modify it
  * under the terms  of  the GNU General Public License  as published by the
@@ -41,5 +41,12 @@ const char *kobo_palettenames[] =
 const char *kobo_datanames[] =
 {
 	KOBO_ALLTDITEMS
+};
+#undef	KOBO_DEFS
+
+#define	KOBO_DEFS(x)	"PFX_" #x,
+const char *kobo_pfxnames[] =
+{
+	KOBO_ALLPARTICLEFX
 };
 #undef	KOBO_DEFS

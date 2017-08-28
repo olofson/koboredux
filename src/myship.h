@@ -63,7 +63,6 @@ class KOBO_myship
 	static int charged_cooltimer;	// Charged Blast cooldown timer
 	static int blossom_cooltimer;	// Fire Blossom cooldown timer
 	static int health_time;
-	static int explo_time;
 	static int nose_reload_timer;
 	static int tail_reload_timer;
 	static KOBO_player_bolt bolts[MAX_BOLTS];

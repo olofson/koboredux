@@ -23,6 +23,7 @@
 #define _KOBO_THEMEPARSER_H_
 
 #include "graphics.h"
+#include "fire.h"
 #include <math.h>
 
 #define	KOBO_TP_MAXLEN	256
@@ -30,9 +31,13 @@
 
 class KOBO_ThemeData
 {
+	friend class KOBO_ThemeParser;
 	unsigned sizes[KOBO_D__COUNT];
 	double *items[KOBO_D__COUNT];
 	char *strings[KOBO_D__COUNT];
+	KOBO_ParticleFXDef *pfxdefs[KOBO_PFX__COUNT];
+	int pfxaliases[KOBO_PFX__COUNT];
+	unsigned pfxflags[KOBO_PFX__COUNT];
   public:
 	KOBO_ThemeData *next;
 
@@ -86,6 +91,9 @@ class KOBO_ThemeData
 			return false;
 		return true;
 	}
+
+	KOBO_ParticleFXDef *pfxdef(KOBO_ParticleFX item);
+	void pfxalias(KOBO_ParticleFX item, KOBO_ParticleFX to);
 };
 
 
@@ -106,6 +114,7 @@ enum KOBO_TP_Tokens
 	KTK_NUMBER,	// rv = value
 	KTK_HEXCOLOR,	// iv = value (NOTE: Unsigned!)
 	KTK_THEMEDATA,	// iv = ThemeData item index
+	KTK_PFXDEF,	// iv = ThemeData particle effect definition index
 
 	// General
 	KTK_KW_FALLBACK,
@@ -121,7 +130,24 @@ enum KOBO_TP_Tokens
 	KTK_KW_SPRITES,
 	KTK_KW_SFONT,
 	KTK_KW_PALETTE,
-	KTK_KW_ALIAS
+	KTK_KW_ALIAS,
+	KTK_KW_PARTICLES,
+
+	// Local: Particle system definition keywords
+	KTK_KW_PFX_DEFAULT,
+	KTK_KW_PFX_DELAY,
+	KTK_KW_PFX_THRESHOLD,
+	KTK_KW_PFX_COUNT,
+	KTK_KW_PFX_XOFFS,
+	KTK_KW_PFX_YOFFS,
+	KTK_KW_PFX_RADIUS,
+	KTK_KW_PFX_TWIST,
+	KTK_KW_PFX_SPEED,
+	KTK_KW_PFX_DRAG,
+	KTK_KW_PFX_HEAT,
+	KTK_KW_PFX_FADE,
+	KTK_KW_PFX_CHAIN,
+	KTK_KW_PFX_CHILD
 };
 
 struct TP_Keywords
@@ -171,21 +197,23 @@ class KOBO_ThemeParser
 		return ((c >= 'a') && (c <= 'z')) ||
 				((c >= 'A') && (c <= 'Z'));
 	}
-	bool is_white(int c)
+	bool is_white(int c, bool eoln = false)
 	{
+		if(eoln && (c == '\n'))
+			return true;
 		return (c == ' ') || (c == '\t') || (c == '\a');
 	}
 	const char *token_name(KOBO_TP_Tokens tk);
 	void dump_line();
-	void skip_white();
+	void skip_white(bool skipeoln = false);
 	void skip_to_eoln();
 	KOBO_TP_Tokens lex_number();
 	KOBO_TP_Tokens lex_hexcolor();
 	KOBO_TP_Tokens lex_string();
 	KOBO_TP_Tokens lex_symbol();
-	KOBO_TP_Tokens lex();
+	KOBO_TP_Tokens lex(bool skipeoln = false);
 	void unlex();
-	bool expect(KOBO_TP_Tokens token);
+	bool expect(KOBO_TP_Tokens token, bool skipeoln = false);
 	bool read_flags(int *flags, int allowed);
 	void apply_flags(int flags, double scale);
 	void warn_bank_used(int bank);
@@ -200,8 +228,15 @@ class KOBO_ThemeParser
 	KOBO_TP_Tokens handle_palette_index(int pal, int source);
 	KOBO_TP_Tokens handle_fallback();
 	KOBO_TP_Tokens handle_path();
+	KOBO_TP_Tokens handle_alias_bank(int bank);
+	KOBO_TP_Tokens handle_alias_pfx(int pfx);
 	KOBO_TP_Tokens handle_alias();
 	KOBO_TP_Tokens handle_set();
+	KOBO_TP_Tokens parse_spec(KOBO_RangeSpec &rs);
+	KOBO_TP_Tokens parse_spec(KOBO_RandSpec &rs);
+	KOBO_TP_Tokens particles_line(KOBO_ParticleFXDef *pfxd);
+	KOBO_TP_Tokens particles_body(KOBO_ParticleFXDef *pfxd);
+	KOBO_TP_Tokens handle_particles();
 	KOBO_TP_Tokens parse_line();
 	void init(int flags);
 	KOBO_TP_Tokens parse_theme(const char *scriptpath, int flags = 0);

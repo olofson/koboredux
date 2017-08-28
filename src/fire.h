@@ -116,7 +116,8 @@ class KOBO_ParticleFXDef
   public:
 
 	// General parameters
-	int		threshold;	// Death "heat" level
+	KOBO_RangeSpec	delay;		// Delay before going live (frames)
+	int		threshold;	// Death "heat" level (16:16 fixp)
 
 	// Initial state
 	int		init_count;	// Number of initial particles
@@ -160,6 +161,7 @@ struct KOBO_Particle
 struct KOBO_ParticleSystem
 {
 	KOBO_ParticleSystem	*next;
+	int			delay;
 	int			x, y;
 	// TODO: <parameters for issuing new particles>
 	int			threshold;
@@ -205,7 +207,7 @@ class KOBO_Fire : public stream_window_t
 
 	// Particle systems
 	KOBO_ParticleSystem *NewPSystem(int x, int y, int vx, int vy,
-			const KOBO_ParticleFXDef *fxd);
+			const KOBO_ParticleFXDef *fxd, int delay);
 
 	// RNG
 	unsigned noisestate;
@@ -263,8 +265,9 @@ class KOBO_Fire : public stream_window_t
 
 	// Spawn new particle system as specified by 'fxd', at (x, y), with an
 	// initial velocity bias of (vx, vy). Coordinates are 24:8 fixp.
+	// 'delay' is added to whatever delay value the PS itself calculates.
 	KOBO_ParticleSystem *Spawn(int x, int y, int vx, int vy,
-			const KOBO_ParticleFXDef *fxd);
+			const KOBO_ParticleFXDef *fxd, int delay = 0);
 
 	bool PSVisible(KOBO_ParticleSystem *ps)
 	{

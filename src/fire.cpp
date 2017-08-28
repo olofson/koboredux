@@ -40,6 +40,12 @@ KOBO_ParticleFXDef::KOBO_ParticleFXDef()
 
 KOBO_ParticleFXDef::~KOBO_ParticleFXDef()
 {
+	Reset();
+}
+
+
+void KOBO_ParticleFXDef::Reset()
+{
 	while(next)
 	{
 		KOBO_ParticleFXDef *nd = next;
@@ -47,16 +53,9 @@ KOBO_ParticleFXDef::~KOBO_ParticleFXDef()
 		nd->next = NULL;
 		delete nd;
 	}
-	if(child)
-	{
-		delete child;
-		child = NULL;
-	}
-}
-
-
-void KOBO_ParticleFXDef::Reset()
-{
+	delete child;
+	child = NULL;
+	delay.Set(0.0f, 0.0f);
 	threshold = 0;
 	init_count = 256;
 	xoffs.Set(0.0f, 0.0f);
@@ -72,6 +71,7 @@ void KOBO_ParticleFXDef::Reset()
 
 void KOBO_ParticleFXDef::Default()
 {
+	delay.Set(0.0f, 0.0f);
 	threshold = 0;
 	init_count = 256;
 	xoffs.Set(0.0f, 0.0f);
@@ -296,25 +296,34 @@ void KOBO_Fire::RunParticles()
 	KOBO_ParticleSystem *pps = NULL;
 	while(ps)
 	{
-		++pscount;
-		if(IsOnScreen(ps) && RunPSystem(ps))
+		if(ps->delay)
 		{
-			pcount += ps->nparticles;
-			// Next...
+			--ps->delay;
 			pps = ps;
 			ps = ps->next;
 		}
 		else
 		{
-			// Done! Remove particle system.
-			KOBO_ParticleSystem *nps = ps->next;
-			if(pps)
-				pps->next = nps;
+			++pscount;
+			if(IsOnScreen(ps) && RunPSystem(ps))
+			{
+				pcount += ps->nparticles;
+				// Next...
+				pps = ps;
+				ps = ps->next;
+			}
 			else
-				psystems = nps;
-			ps->next = psystempool;
-			psystempool = ps;
-			ps = nps;
+			{
+				// Done! Remove particle system.
+				KOBO_ParticleSystem *nps = ps->next;
+				if(pps)
+					pps->next = nps;
+				else
+					psystems = nps;
+				ps->next = psystempool;
+				psystempool = ps;
+				ps = nps;
+			}
 		}
 	}
 }
@@ -352,32 +361,41 @@ void KOBO_Fire::RunParticlesNR()
 	KOBO_ParticleSystem *pps = NULL;
 	while(ps)
 	{
-		++pscount;
-		if(IsOnScreen(ps) && RunPSystemNR(ps))
+		if(ps->delay)
 		{
-			pcount += ps->nparticles;
-			// Next...
+			--ps->delay;
 			pps = ps;
 			ps = ps->next;
 		}
 		else
 		{
-			// Done! Remove particle system.
-			KOBO_ParticleSystem *nps = ps->next;
-			if(pps)
-				pps->next = nps;
+			++pscount;
+			if(IsOnScreen(ps) && RunPSystemNR(ps))
+			{
+				pcount += ps->nparticles;
+				// Next...
+				pps = ps;
+				ps = ps->next;
+			}
 			else
-				psystems = nps;
-			ps->next = psystempool;
-			psystempool = ps;
-			ps = nps;
+			{
+				// Done! Remove particle system.
+				KOBO_ParticleSystem *nps = ps->next;
+				if(pps)
+					pps->next = nps;
+				else
+					psystems = nps;
+				ps->next = psystempool;
+				psystempool = ps;
+				ps = nps;
+			}
 		}
 	}
 }
 
 
 KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
-		const KOBO_ParticleFXDef *fxd)
+		const KOBO_ParticleFXDef *fxd, int delay)
 {
 	KOBO_ParticleSystem *ps = NULL;
 
@@ -389,6 +407,8 @@ KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 				FIRE_MAX_PARTICLES);
 		nparticles = FIRE_MAX_PARTICLES;
 	}
+
+	delay += RandRange(fxd->delay) >> 16;
 
 	if(!fxd->child)
 	{
@@ -403,6 +423,7 @@ KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 		ps->next = psystems;
 		psystems = ps;
 
+		ps->delay = delay;
 		ps->x = x >> 8;
 		ps->y = y >> 8;
 
@@ -463,7 +484,7 @@ KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 		}
 		else
 			Spawn(px >> 8, py >> 8, pvx >> 8, pvy >> 8,
-					fxd->child);
+					fxd->child, delay);
 	}
 
 	// NOTE: We don't return a PS for nested effects! There is no actual
@@ -473,11 +494,11 @@ KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 
 
 KOBO_ParticleSystem *KOBO_Fire::Spawn(int x, int y, int vx, int vy,
-		const KOBO_ParticleFXDef *fxd)
+		const KOBO_ParticleFXDef *fxd, int delay)
 {
-	KOBO_ParticleSystem *first = NewPSystem(x, y, vx, vy, fxd);
+	KOBO_ParticleSystem *first = NewPSystem(x, y, vx, vy, fxd, delay);
 	for(fxd = fxd->next; fxd; fxd = fxd->next)
-		NewPSystem(x, y, vx, vy, fxd);
+		NewPSystem(x, y, vx, vy, fxd, delay);
 	return first;
 }
 

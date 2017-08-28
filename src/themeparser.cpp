@@ -35,20 +35,21 @@
 static TP_Keywords tp_keywords[] =
 {
 	// General
-	{ "fallback",		KTK_KW_FALLBACK,	0	},
-	{ "path",		KTK_KW_PATH,		0	},
-	{ "message",		KTK_KW_MESSAGE,		0	},
-	{ "set",		KTK_KW_SET,		0	},
+	{ "fallback",		KTK_KW_FALLBACK,	0		},
+	{ "path",		KTK_KW_PATH,		0		},
+	{ "message",		KTK_KW_MESSAGE,		0		},
+	{ "set",		KTK_KW_SET,		0		},
 
 	// Stages, maps, and levels
-	{ "stagemessage",	KTK_KW_STAGEMESSAGE,	0	},
+	{ "stagemessage",	KTK_KW_STAGEMESSAGE,	0		},
 
 	// Graphics
-	{ "image",		KTK_KW_IMAGE,		0	},
-	{ "sprites",		KTK_KW_SPRITES,		0	},
-	{ "sfont",		KTK_KW_SFONT,		0	},
-	{ "palette",		KTK_KW_PALETTE,		0	},
-	{ "alias",		KTK_KW_ALIAS,		0	},
+	{ "image",		KTK_KW_IMAGE,		0		},
+	{ "sprites",		KTK_KW_SPRITES,		0		},
+	{ "sfont",		KTK_KW_SFONT,		0		},
+	{ "palette",		KTK_KW_PALETTE,		0		},
+	{ "alias",		KTK_KW_ALIAS,		0		},
+	{ "particles",		KTK_KW_PARTICLES,	0		},
 
 	// Flag constants
 	{ "CLAMP",		KTK_FLAG,	KOBO_CLAMP		},
@@ -65,20 +66,41 @@ static TP_Keywords tp_keywords[] =
 	{ "FUTURE",		KTK_FLAG,	KOBO_FUTURE		},
 
 	// Numeric constants
-	{ "RAW",	KTK_NUMBER,	GFX_DITHER_RAW		},
-	{ "NONE",	KTK_NUMBER,	GFX_DITHER_NONE		},
-	{ "RANDOM",	KTK_NUMBER,	GFX_DITHER_RANDOM	},
-	{ "ORDERED2X2",	KTK_NUMBER,	GFX_DITHER_2X2		},
-	{ "ORDERED",	KTK_NUMBER,	GFX_DITHER_ORDERED	},
-	{ "SKEWED",	KTK_NUMBER,	GFX_DITHER_SKEWED	},
-	{ "NOISE",	KTK_NUMBER,	GFX_DITHER_NOISE	},
-	{ "TEMPORAL2",	KTK_NUMBER,	GFX_DITHER_TEMPORAL2	},
-	{ "TEMPORAL4",	KTK_NUMBER,	GFX_DITHER_TEMPORAL4	},
-	{ "TRUECOLOR",	KTK_NUMBER,	GFX_DITHER_TRUECOLOR	},
+	{ "RAW",		KTK_NUMBER,	GFX_DITHER_RAW		},
+	{ "NONE",		KTK_NUMBER,	GFX_DITHER_NONE		},
+	{ "RANDOM",		KTK_NUMBER,	GFX_DITHER_RANDOM	},
+	{ "ORDERED2X2",		KTK_NUMBER,	GFX_DITHER_2X2		},
+	{ "ORDERED",		KTK_NUMBER,	GFX_DITHER_ORDERED	},
+	{ "SKEWED",		KTK_NUMBER,	GFX_DITHER_SKEWED	},
+	{ "NOISE",		KTK_NUMBER,	GFX_DITHER_NOISE	},
+	{ "TEMPORAL2",		KTK_NUMBER,	GFX_DITHER_TEMPORAL2	},
+	{ "TEMPORAL4",		KTK_NUMBER,	GFX_DITHER_TEMPORAL4	},
+	{ "TRUECOLOR",		KTK_NUMBER,	GFX_DITHER_TRUECOLOR	},
 
 	{ "LOGO_FX_SLIDE",	KTK_NUMBER,	KOBO_LOGO_FX_SLIDE	},
 	{ "LOGO_FX_FADE",	KTK_NUMBER,	KOBO_LOGO_FX_FADE	},
 	{ "LOGO_FX_ZOOM",	KTK_NUMBER,	KOBO_LOGO_FX_ZOOM	},
+
+	{ NULL, KTK_EOF, 0 }
+};
+
+// Particle system definition ('particles') local keywords
+static TP_Keywords pfx_keywords[] =
+{
+	{ "default",		KTK_KW_PFX_DEFAULT,	0		},
+	{ "delay",		KTK_KW_PFX_DELAY,	0		},
+	{ "threshold",		KTK_KW_PFX_THRESHOLD,	0		},
+	{ "count",		KTK_KW_PFX_COUNT,	0		},
+	{ "xoffs",		KTK_KW_PFX_XOFFS,	0		},
+	{ "yoffs",		KTK_KW_PFX_YOFFS,	0		},
+	{ "radius",		KTK_KW_PFX_RADIUS,	0		},
+	{ "twist",		KTK_KW_PFX_TWIST,	0		},
+	{ "speed",		KTK_KW_PFX_SPEED,	0		},
+	{ "drag",		KTK_KW_PFX_DRAG,	0		},
+	{ "heat",		KTK_KW_PFX_HEAT,	0		},
+	{ "fade",		KTK_KW_PFX_FADE,	0		},
+	{ "chain",		KTK_KW_PFX_CHAIN,	0		},
+	{ "child",		KTK_KW_PFX_CHILD,	0		},
 
 	{ NULL, KTK_EOF, 0 }
 };
@@ -100,6 +122,7 @@ const char *KOBO_ThemeParser::token_name(KOBO_TP_Tokens tk)
 	  case KTK_NUMBER:		return "NUMBER";
 	  case KTK_HEXCOLOR:		return "HEXCOLOR";
 	  case KTK_THEMEDATA:		return "THEMEDATA";
+	  case KTK_PFXDEF:		return "PFXDEF";
 	  case KTK_KW_FALLBACK:		return "KW_FALLBACK";
 	  case KTK_KW_PATH:		return "KW_PATH";
 	  case KTK_KW_MESSAGE:		return "KW_MESSAGE";
@@ -110,6 +133,21 @@ const char *KOBO_ThemeParser::token_name(KOBO_TP_Tokens tk)
 	  case KTK_KW_SFONT:		return "KW_SFONT";
 	  case KTK_KW_PALETTE:		return "KW_PALETTE";
 	  case KTK_KW_ALIAS:		return "KW_ALIAS";
+	  case KTK_KW_PARTICLES:	return "KW_PARTICLES";
+	  case KTK_KW_PFX_DEFAULT:	return "KW_PFX_DEFAULT";
+	  case KTK_KW_PFX_DELAY:	return "KW_PFX_DELAY";
+	  case KTK_KW_PFX_THRESHOLD:	return "KW_PFX_THRESHOLD";
+	  case KTK_KW_PFX_COUNT:	return "KW_PFX_COUNT";
+	  case KTK_KW_PFX_XOFFS:	return "KW_PFX_XOFFS";
+	  case KTK_KW_PFX_YOFFS:	return "KW_PFX_YOFFS";
+	  case KTK_KW_PFX_RADIUS:	return "KW_PFX_RADIUS";
+	  case KTK_KW_PFX_TWIST:	return "KW_PFX_TWIST";
+	  case KTK_KW_PFX_SPEED:	return "KW_PFX_SPEED";
+	  case KTK_KW_PFX_DRAG:		return "KW_PFX_DRAG";
+	  case KTK_KW_PFX_HEAT:		return "KW_PFX_HEAT";
+	  case KTK_KW_PFX_FADE:		return "KW_PFX_FADE";
+	  case KTK_KW_PFX_CHAIN:	return "KW_PFX_CHAIN";
+	  case KTK_KW_PFX_CHILD:	return "KW_PFX_CHILD";
 	}
 	return "<unknown>";
 }
@@ -126,6 +164,8 @@ KOBO_ThemeData::KOBO_ThemeData()
 	memset(sizes, 0, sizeof(sizes));
 	memset(items, 0, sizeof(items));
 	memset(strings, 0, sizeof(strings));
+	memset(pfxdefs, 0, sizeof(pfxdefs));
+	memset(pfxaliases, -1, sizeof(pfxaliases));
 }
 
 
@@ -136,6 +176,8 @@ KOBO_ThemeData::~KOBO_ThemeData()
 		free(items[i]);
 		free(strings[i]);
 	}
+	for(int i = 0; i < KOBO_PFX__COUNT; ++i)
+		delete pfxdefs[i];
 }
 
 
@@ -169,6 +211,32 @@ bool KOBO_ThemeData::set(KOBO_TD_Items item, const char *str)
 	return (strings[item] != NULL);
 }
 
+
+KOBO_ParticleFXDef *KOBO_ThemeData::pfxdef(KOBO_ParticleFX item)
+{
+	for(int limit = 0; pfxaliases[item] >= 0; ++limit)
+	{
+		if(limit > KOBO_PFX__COUNT)
+		{
+			log_printf(ELOG, "[Theme Loader] pfxdef alias loop "
+					"detected!\n");
+			return NULL;
+		}
+		item = (KOBO_ParticleFX)pfxaliases[item];
+	}
+	return pfxdefs[item];
+}
+
+
+void KOBO_ThemeData::pfxalias(KOBO_ParticleFX item, KOBO_ParticleFX to)
+{
+	if(pfxdefs[item])
+	{
+		delete pfxdefs[item];
+		pfxdefs[item] = NULL;
+	}
+	pfxaliases[item] = to;
+}
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -267,9 +335,9 @@ void KOBO_ThemeParser::skip_to_eoln()
 }
 
 
-void KOBO_ThemeParser::skip_white()
+void KOBO_ThemeParser::skip_white(bool skipeoln)
 {
-	while(is_white(bufget()))
+	while(is_white(bufget(), skipeoln))
 		;
 	bufunget();
 }
@@ -499,6 +567,14 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_symbol()
 			return KTK_THEMEDATA;
 		}
 
+	// Particle effects
+	for(int i = 0; i < KOBO_PFX__COUNT; ++i)
+		if(strcmp(kobo_pfxnames[i], sv) == 0)
+		{
+			iv = i;
+			return KTK_PFXDEF;
+		}
+
 	char *s = strdup(sv);
 	dump_line();
 	log_printf(ELOG, "[Theme Loader] Unknown symbol '%s'!\n", s);
@@ -507,10 +583,10 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_symbol()
 }
 
 
-KOBO_TP_Tokens KOBO_ThemeParser::lex()
+KOBO_TP_Tokens KOBO_ThemeParser::lex(bool skipeoln)
 {
 	unlex_pos = pos;
-	skip_white();
+	skip_white(skipeoln);
 	switch(int c = bufget())
 	{
 	  case 0:
@@ -562,9 +638,9 @@ void KOBO_ThemeParser::unlex()
 }
 
 
-bool KOBO_ThemeParser::expect(KOBO_TP_Tokens token)
+bool KOBO_ThemeParser::expect(KOBO_TP_Tokens token, bool skipeoln)
 {
-	KOBO_TP_Tokens tk = lex();
+	KOBO_TP_Tokens tk = lex(skipeoln);
 	if(tk != token)
 	{
 		dump_line();
@@ -1060,11 +1136,8 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_path()
 }
 
 
-KOBO_TP_Tokens KOBO_ThemeParser::handle_alias()
+KOBO_TP_Tokens KOBO_ThemeParser::handle_alias_bank(int bank)
 {
-	if(!expect(KTK_BANK))
-		return KTK_ERROR;
-	int bank = iv;
 	warn_bank_used(bank);
 
 	if(!expect(KTK_BANK))
@@ -1098,7 +1171,53 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_alias()
 	}
 	b->userflags = flags;
 
-	return KTK_KW_PATH;
+	return KTK_KW_ALIAS;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::handle_alias_pfx(int pfx)
+{
+	if(!expect(KTK_PFXDEF))
+		return KTK_ERROR;
+	int orig = iv;
+
+	int flags = default_flags;
+	if(!read_flags(&flags, KOBO_FALLBACK | KOBO_FUTURE))
+		return KTK_ERROR;
+
+	log_printf(ULOG, "[Theme Loader] alias %s %s 0x%x\n",
+			kobo_pfxnames[pfx], kobo_pfxnames[orig], flags);
+
+	if(!(flags & KOBO_FUTURE) && !themedata->pfxdefs[orig])
+	{
+		dump_line();
+		log_printf(WLOG, "[Theme Loader] Failed to alias %s to "
+				"undefined PFX %s! "
+				"(Intentional? Use FUTURE!)\n",
+				kobo_pfxnames[pfx], kobo_pfxnames[orig]);
+	}
+
+	themedata->pfxalias((KOBO_ParticleFX)pfx, (KOBO_ParticleFX)orig);
+
+	return KTK_KW_ALIAS;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::handle_alias()
+{
+	KOBO_TP_Tokens tk = lex();
+	switch(tk)
+	{
+	  case KTK_BANK:
+		return handle_alias_bank(iv);
+	  case KTK_PFXDEF:
+		return handle_alias_pfx(iv);
+	  default:
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] Expected bank or pfxdef "
+				"index; not %s!\n", token_name(tk));
+		return KTK_ERROR;
+	}
 }
 
 
@@ -1156,6 +1275,168 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_set()
 }
 
 
+KOBO_TP_Tokens KOBO_ThemeParser::parse_spec(KOBO_RangeSpec &rs)
+{
+	float min = 0.0f;
+	float max = 0.0f;
+	if(!expect(KTK_NUMBER))
+		return KTK_ERROR;
+	min = rv;
+	if(!expect(KTK_NUMBER))
+		return KTK_ERROR;
+	max = rv;
+	rs.Set(min, max);
+	return KTK_KW_PARTICLES;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::parse_spec(KOBO_RandSpec &rs)
+{
+	float basemin = 0.0f;
+	float basemax = 0.0f;
+	float relmin = 1.0f;
+	float relmax = 1.0f;
+	float absnoise = 0.0f;
+	if(!expect(KTK_NUMBER))
+		return KTK_ERROR;
+	basemin = rv;
+	if(!expect(KTK_NUMBER))
+		return KTK_ERROR;
+	basemax = rv;
+	if(!expect(KTK_NUMBER))
+		return KTK_ERROR;
+	relmin = rv;
+	if(!expect(KTK_NUMBER))
+		return KTK_ERROR;
+	relmax = rv;
+	if(!expect(KTK_NUMBER))
+		return KTK_ERROR;
+	absnoise = rv;
+	rs.Set(basemin, basemax, relmin, relmax, absnoise);
+	return KTK_KW_PARTICLES;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::particles_line(KOBO_ParticleFXDef *pfxd)
+{
+	switch(KOBO_TP_Tokens tk = lex())
+	{
+	  case KTK_EOF:
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] Unexpected EOF!\n");
+		return KTK_ERROR;
+	  case KTK_ERROR:
+	  case KTK_EOLN:
+	  case KTK_END:
+		return tk;
+	  case KTK_KW_PFX_DEFAULT:
+		pfxd->Default();
+		break;
+	  case KTK_KW_PFX_DELAY:
+		return parse_spec(pfxd->delay);
+		break;
+	  case KTK_KW_PFX_THRESHOLD:
+		if(!expect(KTK_NUMBER))
+			return KTK_ERROR;
+		pfxd->threshold = rv * 65536.0f;
+		break;
+	  case KTK_KW_PFX_COUNT:
+		if(!expect(KTK_NUMBER))
+			return KTK_ERROR;
+		pfxd->init_count = rv;
+		break;
+	  case KTK_KW_PFX_XOFFS:
+		return parse_spec(pfxd->xoffs);
+	  case KTK_KW_PFX_YOFFS:
+		return parse_spec(pfxd->yoffs);
+	  case KTK_KW_PFX_RADIUS:
+		return parse_spec(pfxd->radius);
+	  case KTK_KW_PFX_TWIST:
+		return parse_spec(pfxd->twist);
+	  case KTK_KW_PFX_SPEED:
+		return parse_spec(pfxd->speed);
+	  case KTK_KW_PFX_DRAG:
+		return parse_spec(pfxd->drag);
+	  case KTK_KW_PFX_HEAT:
+		return parse_spec(pfxd->heat);
+	  case KTK_KW_PFX_FADE:
+		return parse_spec(pfxd->fade);
+	  case KTK_KW_PFX_CHAIN:
+		return particles_body(pfxd->Add());
+	  case KTK_KW_PFX_CHILD:
+		// TODO: Warn if there already is a child
+		return particles_body(pfxd->Child());
+	  default:
+		dump_line();
+		log_printf(ELOG, "[Theme Loader] Unexpected token '%s'!\n",
+				token_name(tk));
+		return KTK_ERROR;
+	}
+	return KTK_KW_PARTICLES;
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::particles_body(KOBO_ParticleFXDef *pfxd)
+{
+	if(!expect(KTK_BEGIN, true))
+		return KTK_ERROR;
+
+	TP_Keywords *prevkw = local_keywords;
+	local_keywords = pfx_keywords;
+
+	while(1)
+	{
+		KOBO_TP_Tokens res = particles_line(pfxd);
+		switch(res)
+		{
+		  case KTK_KW_PARTICLES:
+		  case KTK_EOLN:
+			break;
+		  case KTK_END:
+			local_keywords = prevkw;
+			return KTK_KW_PARTICLES;
+		  default:
+			// TODO: Give up on the whole file...?
+			local_keywords = prevkw;
+			return KTK_ERROR;
+		}
+	}
+}
+
+
+KOBO_TP_Tokens KOBO_ThemeParser::handle_particles()
+{
+	if(!expect(KTK_PFXDEF))
+		return KTK_ERROR;
+
+	int pfxi = iv;
+
+	// TODO: Warn only if overwriting a def or alias not from a fallback.
+	if((themedata->pfxdefs[pfxi] || (themedata->pfxaliases[pfxi] >= 0)) &&
+			!(themedata->pfxflags[pfxi] & KOBO_FALLBACK))
+	{
+		dump_line();
+		log_printf(WLOG, "[Theme Loader] WARNING: Particle effect "
+				" %s(%d) already defined!\n",
+				kobo_pfxnames[pfxi], pfxi);
+	}
+
+	KOBO_ParticleFXDef *pfxd = themedata->pfxdefs[pfxi];
+	if(pfxd)
+		pfxd->Reset();
+	else
+		pfxd = themedata->pfxdefs[pfxi] = new KOBO_ParticleFXDef;
+	themedata->pfxaliases[pfxi] = -1;
+	themedata->pfxflags[pfxi] = default_flags;
+
+	KOBO_TP_Tokens res = particles_body(pfxd);
+	if(res == KTK_KW_PARTICLES)
+		log_printf(ULOG, "[Theme Loader] particles %s (initial: %d)\n",
+				kobo_pfxnames[pfxi], pfxd->init_count);
+	return res;
+}
+
+
 KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 {
 	switch(KOBO_TP_Tokens tk = lex())
@@ -1184,6 +1465,8 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 		return handle_alias();
 	  case KTK_KW_SET:
 		return handle_set();
+	  case KTK_KW_PARTICLES:
+		return handle_particles();
 	  default:
 		dump_line();
 		log_printf(ELOG, "[Theme Loader] Unexpected token '%s'!\n",

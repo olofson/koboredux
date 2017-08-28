@@ -89,14 +89,16 @@ struct KOBO_enemy_kind
 	KOBO_sounds	launchsound;	// Launch/fire/spawn
 	KOBO_sounds	damagesound;	// Impact/damage
 	KOBO_sounds	deathsound;	// Death/failure
+	KOBO_ParticleFX	deathpfx;	// Death particle effect
 	bool is_bullet() const { return layer == LAYER_BULLETS; }
 };
 
-#define KOBO_EK_SOUNDS(x)	\
+#define KOBO_EK_FX(x)		\
 	S_##x,			\
 	S_##x##_LAUNCH,		\
 	S_##x##_DAMAGE,		\
-	S_##x##_DEATH
+	S_##x##_DEATH,		\
+	KOBO_PFX_##x
 
 // KOBO_enemy_kind externs
 #define	KOBO_DEFS(x, y)	extern const KOBO_enemy_kind y;

@@ -50,7 +50,6 @@ float KOBO_myship::charge_blipp_granularity;
 int KOBO_myship::charged_cooltimer;
 int KOBO_myship::blossom_cooltimer;
 int KOBO_myship::health_time;
-int KOBO_myship::explo_time;
 int KOBO_myship::nose_reload_timer;
 int KOBO_myship::tail_reload_timer;
 KOBO_player_bolt KOBO_myship::bolts[MAX_BOLTS];
@@ -140,7 +139,7 @@ void KOBO_myship::init(bool newship)
 	}
 	charge_blipp_granularity = (float)wcharge->led_count() / game.charge;
 
-	health_time = explo_time = charged_cooltimer = blossom_cooltimer = 0;
+	health_time = charged_cooltimer = blossom_cooltimer = 0;
 	nose_reload_timer = tail_reload_timer = 0;
 
 	int i;
@@ -164,21 +163,9 @@ void KOBO_myship::init(int rhealth, int rcharge)
 
 void KOBO_myship::explode()
 {
-	if(explo_time > 64)
-		return;
-
-	int d = 4096 - (64 - explo_time)*(64 - explo_time);
-	int dx = (int)(pubrand.get(6)) - 32;
-	int dy = (int)(pubrand.get(6)) - 32;
-	int vx = dx * (4096 - d) >> 8;
-	int vy = dy * (4096 - d) >> 8;
-	dx = PIXEL2CS(dx * d >> 12);
-	dy = PIXEL2CS(dy * d >> 12);
-/*HAX*/	KOBO_ParticleFXDef *fxd = new KOBO_ParticleFXDef;
-/*HAX*/	fxd->Default();
-/*HAX*/	wfire->Spawn(x + dx, y + dy, vx, vy, fxd);
-/*HAX*/	delete fxd;
-	++explo_time;
+	KOBO_ParticleFXDef *pfxd = themedata.pfxdef(KOBO_PFX_PLAYER_DEATH);
+	if(pfxd)
+		wfire->Spawn(x, y, 0, 0, pfxd);
 }
 
 
@@ -364,11 +351,9 @@ void KOBO_myship::move()
 	  case SHIP_INVULNERABLE:
 		handle_controls();
 		update_position();
-		explo_time = 0;
 		break;
 	  case SHIP_DEAD:
 		_charge = 0;
-		explode();
 		break;
 	}
 
@@ -455,6 +440,7 @@ void KOBO_myship::hit(int dmg)
 		manage.screenshake(2.0f, 2.0f, 0.99f);
 		manage.lost_myship();
 		state(SHIP_DEAD);
+		explode();
 		sound.g_player_explo_start();
 	}
 	else
