@@ -32,15 +32,7 @@
  //	Keywords and constants
 /////////////////////////////////////////////////////////////////////////////
 
-struct TP_keywords
-{
-	const char	*kw;
-	KOBO_TP_Tokens	token;
-	int		value;
-};
-
-
-static TP_keywords tp_keywords[] =
+static TP_Keywords tp_keywords[] =
 {
 	// General
 	{ "fallback",		KTK_KW_FALLBACK,	0	},
@@ -92,6 +84,37 @@ static TP_keywords tp_keywords[] =
 };
 
 
+const char *KOBO_ThemeParser::token_name(KOBO_TP_Tokens tk)
+{
+	switch(tk)
+	{
+	  case KTK_ERROR:		return "ERROR";
+	  case KTK_EOF:			return "EOF";
+	  case KTK_EOLN:		return "EOLN";
+	  case KTK_BEGIN:		return "BEGIN";
+	  case KTK_END:			return "END";
+	  case KTK_BANK:		return "BANK";
+	  case KTK_PALETTE:		return "PALETTE";
+	  case KTK_FLAG:		return "FLAG";
+	  case KTK_STRING:		return "STRING";
+	  case KTK_NUMBER:		return "NUMBER";
+	  case KTK_HEXCOLOR:		return "HEXCOLOR";
+	  case KTK_THEMEDATA:		return "THEMEDATA";
+	  case KTK_KW_FALLBACK:		return "KW_FALLBACK";
+	  case KTK_KW_PATH:		return "KW_PATH";
+	  case KTK_KW_MESSAGE:		return "KW_MESSAGE";
+	  case KTK_KW_SET:		return "KW_SET";
+	  case KTK_KW_STAGEMESSAGE:	return "KW_STAGEMESSAGE";
+	  case KTK_KW_IMAGE:		return "KW_IMAGE";
+	  case KTK_KW_SPRITES:		return "KW_SPRITES";
+	  case KTK_KW_SFONT:		return "KW_SFONT";
+	  case KTK_KW_PALETTE:		return "KW_PALETTE";
+	  case KTK_KW_ALIAS:		return "KW_ALIAS";
+	}
+	return "<unknown>";
+}
+
+
   /////////////////////////////////////////////////////////////////////////////
  //	KOBO_ThemeData
 /////////////////////////////////////////////////////////////////////////////
@@ -113,6 +136,8 @@ KOBO_ThemeData::~KOBO_ThemeData()
 		free(items[i]);
 		free(strings[i]);
 	}
+	for(int i = 0; i < KOBO_PFX__COUNT; ++i)
+		delete pfxdefs[i];
 }
 
 
@@ -435,6 +460,15 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex_symbol()
 	}
 	sv[p++] = 0;
 
+	// Local keywords
+	if(local_keywords)
+		for(int i = 0; local_keywords[i].kw; ++i)
+			if(strcmp(local_keywords[i].kw, sv) == 0)
+			{
+				rv = iv = local_keywords[i].value;
+				return local_keywords[i].token;
+			}
+
 	// Keywords and flags
 	for(int i = 0; tp_keywords[i].kw; ++i)
 		if(strcmp(tp_keywords[i].kw, sv) == 0)
@@ -485,6 +519,10 @@ KOBO_TP_Tokens KOBO_ThemeParser::lex()
 		return KTK_EOF;
 	  case '\n':
 		return KTK_EOLN;
+	  case '{':
+		return KTK_BEGIN;
+	  case '}':
+		return KTK_END;
 	  case '#':
 		return lex_hexcolor();
 	  case '/':
@@ -1159,6 +1197,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::parse_line()
 
 void KOBO_ThemeParser::init(int flags)
 {
+	local_keywords = NULL;
 	basepath[0] = 0;
 	path[0] = 0;
 	pos = 0;

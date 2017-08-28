@@ -95,6 +95,9 @@ enum KOBO_TP_Tokens
 	KTK_EOF = 0,
 	KTK_EOLN,
 
+	KTK_BEGIN,	// '{'
+	KTK_END,	// '}'
+
 	// Symbols
 	KTK_BANK,	// iv = bank index
 	KTK_PALETTE,	// iv = palette index
@@ -121,12 +124,19 @@ enum KOBO_TP_Tokens
 	KTK_KW_ALIAS
 };
 
+struct TP_Keywords
+{
+	const char	*kw;
+	KOBO_TP_Tokens	token;
+	int		value;
+};
 
 class KOBO_ThemeParser
 {
 	KOBO_ThemeData *themedata;
 	const char *buffer;
 	int bufsize;
+	TP_Keywords *local_keywords;
 	int pos;
 	int unlex_pos;
 	int default_flags;
@@ -165,36 +175,7 @@ class KOBO_ThemeParser
 	{
 		return (c == ' ') || (c == '\t') || (c == '\a');
 	}
-	const char *token_name(KOBO_TP_Tokens tk)
-	{
-		switch(tk)
-		{
-		  case KTK_ERROR:		return "ERROR";
-		  case KTK_EOF:			return "EOF";
-		  case KTK_EOLN:		return "EOLN";
-		  case KTK_BANK:		return "BANK";
-		  case KTK_PALETTE:		return "PALETTE";
-		  case KTK_FLAG:		return "FLAG";
-		  case KTK_STRING:		return "STRING";
-		  case KTK_NUMBER:		return "NUMBER";
-		  case KTK_HEXCOLOR:		return "HEXCOLOR";
-		  case KTK_THEMEDATA:		return "THEMEDATA";
-
-		  case KTK_KW_FALLBACK:		return "KW_FALLBACK";
-		  case KTK_KW_PATH:		return "KW_PATH";
-		  case KTK_KW_MESSAGE:		return "KW_MESSAGE";
-		  case KTK_KW_SET:		return "KW_SET";
-
-		  case KTK_KW_STAGEMESSAGE:	return "KW_STAGEMESSAGE";
-
-		  case KTK_KW_IMAGE:		return "KW_IMAGE";
-		  case KTK_KW_SPRITES:		return "KW_SPRITES";
-		  case KTK_KW_SFONT:		return "KW_SFONT";
-		  case KTK_KW_PALETTE:		return "KW_PALETTE";
-		  case KTK_KW_ALIAS:		return "KW_ALIAS";
-		}
-		return "<unknown>";
-	}
+	const char *token_name(KOBO_TP_Tokens tk);
 	void dump_line();
 	void skip_white();
 	void skip_to_eoln();
@@ -232,3 +213,4 @@ class KOBO_ThemeParser
 };
 
 #endif // _KOBO_THEMEPARSER_H_
+
