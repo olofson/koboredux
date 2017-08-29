@@ -2321,7 +2321,8 @@ void kobo_gfxengine_t::frame()
 	sound.timestamp_bump(gengine->period());
 
 	// Screenshot video - "every Nth logic frame" rates
-	if((prefs->cmd_autoshot < 0) && manage.game_in_progress())
+	if((prefs->cmd_autoshot < 0) && (manage.game_in_progress() ||
+			(manage.replay_mode() == RPM_REPLAY)))
 	{
 		++km.ss_frames;
 		if(km.ss_frames >= -prefs->cmd_autoshot)
@@ -2469,7 +2470,8 @@ void kobo_gfxengine_t::post_render()
 		wscreen->sprite(mouse_x, mouse_y, B_CROSSHAIR, 0);
 
 	// Screenshot video - frame rates in Hz; 999 ==> every rendered frame
-	if((prefs->cmd_autoshot > 0) && manage.game_in_progress())
+	if((prefs->cmd_autoshot > 0) && (manage.game_in_progress() ||
+			(manage.replay_mode() == RPM_REPLAY)))
 	{
 		if((prefs->cmd_autoshot == 999) ||
 				(nt - km.ss_last_frame >=
