@@ -2353,9 +2353,6 @@ void kobo_gfxengine_t::pre_sprite_render()
 
 void kobo_gfxengine_t::post_sprite_render()
 {
-	// HACK: Custom rendering "callback!" The engine should support this...
-	myship.render();
-
 	if(prefs->show_hit)
 		enemies.render_hit_zones();
 }
@@ -2363,6 +2360,9 @@ void kobo_gfxengine_t::post_sprite_render()
 
 void kobo_gfxengine_t::post_render()
 {
+	// HACK: Custom rendering "callback!" The engine should support this...
+	myship.render();
+
 	if(prefs->soundtools)
 	{
 		// Make sure the GUI is built and visible
