@@ -68,16 +68,16 @@ void KOBO_myship::state(KOBO_myship_state s)
 {
 	if(prefs->cheat_shield && (s == SHIP_NORMAL))
 		s = SHIP_INVULNERABLE;
-	shield_timer = 0;
 	switch (s)
 	{
 	  case SHIP_DEAD:
 		if(object)
 			gengine->free_obj(object);
 		object = NULL;
+		shield_timer = 0;
 		break;
 	  case SHIP_SHIELD:
-		shield_timer = MYSHIP_SHIELD_DURATION;
+		shield_timer += MYSHIP_SHIELD_DURATION;
 		// Fall-through
 	  case SHIP_INVULNERABLE:
 	  case SHIP_NORMAL:
