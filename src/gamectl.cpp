@@ -125,33 +125,7 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 			return BTN_DL;
 		else
 			return BTN_NONE;
-#if 0
-	  // Primary fire
-	  case SDLK_LSHIFT:
-		++src;
-	  case SDLK_RSHIFT:
-		++src;
-	  case SDLK_z:
-		return BTN_PRIMARY;
 
-	  // Secondary fire
-	  case SDLK_LCTRL:
-		++src;
-	  case SDLK_RCTRL:
-		++src;
-	  case SDLK_x:
-		return BTN_SECONDARY;
-
-	  // Tertiary fire
-	  case SDLK_LALT:
-		++src;
-	  case SDLK_RALT:
-		++src;
-	  case SDLK_SPACE:
-		++src;
-	  case SDLK_c:
-		return BTN_TERTIARY;
-#endif
 	  // Exit
 	  case SDLK_ESCAPE:
 		return BTN_EXIT;
@@ -163,6 +137,8 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 		return BTN_PAUSE;
 
 	  // Select
+	  case SDLK_SPACE:
+		++src;
 	  case SDLK_KP_ENTER:
 		++src;
 	  case SDLK_RETURN:
