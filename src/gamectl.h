@@ -57,7 +57,6 @@ enum gc_targets_t
 	BTN_EXIT,	// ESC
 	BTN_PAUSE,	// Pause or P; also used as an internal event.
 	BTN_CLOSE,	// Window close button, ALT-F4,...
-	BTN_BACK,	// Backspace
 
 	BTN__COUNT
 };

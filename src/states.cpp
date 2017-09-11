@@ -351,7 +351,6 @@ void st_intro_t::press(gc_targets_t button)
 	  case BTN_SELECT:
 		gsm.push(&st_main_menu);
 		break;
-	  case BTN_BACK:
 	  case BTN_UP:
 	  case BTN_LEFT:
 		--page;
@@ -459,7 +458,6 @@ void st_long_credits_t::press(gc_targets_t button)
 	  case BTN_SECONDARY:
 	  case BTN_TERTIARY:
 	  case BTN_SELECT:
-	  case BTN_BACK:
 		transition_pop(KOBO_TRS_GAME_SLOW);
 		break;
 	  default:

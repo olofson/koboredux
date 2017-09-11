@@ -127,6 +127,8 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 			return BTN_NONE;
 
 	  // Exit
+	  case SDLK_BACKSPACE:
+		++src;
 	  case SDLK_ESCAPE:
 		return BTN_EXIT;
 
@@ -153,8 +155,6 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 		return BTN_YES;
 	  case SDLK_n:
 		return BTN_NO;
-	  case SDLK_BACKSPACE:
-		return BTN_BACK;
 
 	  // Unmapped!
 	  default:
