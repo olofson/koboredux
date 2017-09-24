@@ -107,9 +107,10 @@ class gamecontrol_t
 	static unsigned _released[BTN__COUNT];	// Released during this frame
 	static int direction, new_direction;
 	static int latch_timer;
-	static int movekey_pressed;
+	static bool movekey_pressed, key_sprint, mouse_sprint;
 	static void change();
 	static gc_targets_t mapsrc(SDL_Keysym sym, int &src);
+	static void reset_flanks();	// Reset the pressed()/released() state
   public:
 	gamecontrol_t();
 	static void init();
@@ -124,9 +125,8 @@ class gamecontrol_t
 	static void press(SDL_Keysym sym);
 	static void release(SDL_Keysym sym);
 	static void mouse_position(int h, int v);
-	static void post_process(); // Call after processing input!
 	static int dir()			{ return direction; }
-	static int dir_push()			{ return movekey_pressed; }
+	static bool dir_push();
 	static bool down(gc_targets_t b)	{ return state[b]; }
 	static bool pressed(gc_targets_t b)	{ return _pressed[b]; }
 	static bool released(gc_targets_t b)	{ return _released[b]; }
@@ -138,7 +138,7 @@ class gamecontrol_t
 	{
 		return down(BTN_SECONDARY) || pressed(BTN_SECONDARY);
 	}
-	static void reset();	// Reset the pressed()/released() state
+	static void frame(); // Call after processing game logic frame!
 };
 
 extern gamecontrol_t gamecontrol;

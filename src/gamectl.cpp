@@ -25,12 +25,15 @@
 #include "kobo.h"
 #include "gamectl.h"
 #include "myship.h"
+#include "mathutil.h"
 
 
 int gamecontrol_t::direction = 1;
 int gamecontrol_t::new_direction = 0;
 int gamecontrol_t::latch_timer = 0;
-int gamecontrol_t::movekey_pressed;
+bool gamecontrol_t::movekey_pressed = false;
+bool gamecontrol_t::key_sprint = false;
+bool gamecontrol_t::mouse_sprint = false;
 unsigned gamecontrol_t::state[BTN__COUNT];
 unsigned gamecontrol_t::_pressed[BTN__COUNT];
 unsigned gamecontrol_t::_released[BTN__COUNT];
@@ -41,7 +44,8 @@ void gamecontrol_t::init()
 	memset(state, 0, sizeof(state));
 	memset(_pressed, 0, sizeof(_pressed));
 	memset(_released, 0, sizeof(_released));
-	movekey_pressed = 0;
+	movekey_pressed = key_sprint = mouse_sprint = false;
+	latch_timer = 0;
 }
 
 
@@ -54,6 +58,7 @@ gamecontrol_t::gamecontrol_t()
 void gamecontrol_t::clear()
 {
 	direction = 1;
+	movekey_pressed = key_sprint = mouse_sprint = false;
 }
 
 
@@ -219,52 +224,18 @@ void gamecontrol_t::mouse_position(int h, int v)
 		// Insert delta pos sensitivity filter here
 		break;
 	}
-	if(h > 0)
-	{
-		if(v > 0)
-		{
-			if(h > (v << 1))
-				direction = 3;
-			else if(v > (h << 1))
-				direction = 5;
-			else
-				direction = 4;
-		}
-		else if(v <= 0)
-		{
-			if(h > ((-v) << 1))
-				direction = 3;
-			else if((-v) > (h << 1))
-				direction = 1;
-			else
-				direction = 2;
-		}
-		else
-			direction = 3;
-	}
-	else if(h <= 0)
-	{
-		if(v > 0)
-		{
-			if((-h) > (v << 1))
-				direction = 7;
-			else if(v > ((-h) << 1))
-				direction = 5;
-			else
-				direction = 6;
-		}
-		else if(v <= 0)
-		{
-			if((-h) > ((-v) << 1))
-				direction = 7;
-			else if((-v) > ((-h) << 1))
-				direction = 1;
-			else
-				direction = 8;
-		}
-		else
-			direction = 7;
-	}
+
+	// Determine direction
+	int newdir = speed2dir(h, v, 8);
+
+	// Determine whether or not we're "pushing". Note that we need to
+	// "blip" movekey_pressed for every change regardless, as the ship will
+	// not latch new directions otherwise!
+	mouse_sprint = (v * v + h * h >=
+			prefs->mouse_threshold * prefs->mouse_threshold ||
+			newdir != direction);
+
+	direction = newdir;
 }
 
 
@@ -336,20 +307,33 @@ void gamecontrol_t::change()
 	else if(new_direction)
 		direction = new_direction;
 
-	movekey_pressed = (new_direction != 0);
+	if(new_direction)
+		movekey_pressed = true;
+
+	key_sprint = (new_direction != 0);
 }
 
 
-void gamecontrol_t::reset()
+bool gamecontrol_t::dir_push()
+{
+	return movekey_pressed || key_sprint ||
+			(prefs->mouse && (!prefs->mouse_threshold ||
+			mouse_sprint));
+}
+
+
+void gamecontrol_t::reset_flanks()
 {
 	memset(_pressed, 0, sizeof(_pressed));
 	memset(_released, 0, sizeof(_released));
 }
 
 
-void gamecontrol_t::post_process()
+void gamecontrol_t::frame()
 {
 	if(latch_timer)
 		if(!--latch_timer)
 			direction = new_direction;
+	movekey_pressed = false;
+	reset_flanks();
 }

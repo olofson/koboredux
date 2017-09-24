@@ -64,6 +64,8 @@ void prefs_t::init()
 	key("joystick_index", joystick_index, 0); desc("Joystick Number");
 	yesno("mouse", mouse, 0); desc("Enable Mouse");
 	key("mousemode", mousemode, MMD_CROSSHAIR); desc("Mouse Control Mode");
+	key("mouse_threshold", mouse_threshold, 32);
+			desc("Mouse Push Threshold");
 	yesno("broken_numdia", broken_numdia, 0);
 			desc("Broken NumPad Diagonals");
 	key("dia_emphasis", dia_emphasis, 1);

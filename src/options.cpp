@@ -253,9 +253,20 @@ void controls_options_t::build()
 	yesno("Use Mouse", &prf->mouse, OS_RESTART_INPUT | OS_REBUILD);
 	if(prf->mouse)
 	{
+#if 0
+		// Only MMD_CROSSHAIR is implemented, and MMD_OFF... well, that
+		// just turns mouse control off, so...
 		list("Mouse Control Mode", &prf->mousemode, OS_RESTART_INPUT);
 			item("Disabled", MMD_OFF);
 			item("Crosshair", MMD_CROSSHAIR);
+#endif
+		list("Mouse Sprint Threshold", &prf->mouse_threshold,
+				OS_RESTART_INPUT);
+			item("Always Sprint", 0);
+			item("Hyper", 8);
+			item("High", 16);
+			item("Normal", 32);
+			item("Low", 64);
 	}
 	yesno("In-game Mouse Capture", &prf->mousecapture, 0);
 

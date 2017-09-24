@@ -2015,7 +2015,7 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 	if(mouse_middle)
 		gamecontrol.pressbtn(BTN_SECONDARY, GC_SRC_MOUSE0);
 	if(mouse_right)
-		gamecontrol.pressbtn(BTN_SECONDARY, GC_SRC_MOUSE1);
+		gamecontrol.pressbtn(BTN_TERTIARY, GC_SRC_MOUSE1);
 }
 
 
@@ -2059,7 +2059,7 @@ void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
 	if(!mouse_middle)
 		gamecontrol.releasebtn(BTN_SECONDARY, GC_SRC_MOUSE0);
 	if(!mouse_right)
-		gamecontrol.releasebtn(BTN_SECONDARY, GC_SRC_MOUSE1);
+		gamecontrol.releasebtn(BTN_TERTIARY, GC_SRC_MOUSE1);
 }
 
 
@@ -2270,8 +2270,6 @@ void kobo_gfxengine_t::input(float fractional_frame)
 			break;
 		}
 	}
-	gamecontrol.post_process();
-
 }
 
 
@@ -2332,9 +2330,8 @@ void kobo_gfxengine_t::frame()
 		}
 	}
 
-	// Reset pressed()/released() state, to capture events of interest
-	// until the next logic frame.
-	gamecontrol.reset();
+	// Run filter timers, reset pressed()/released() triggering etc
+	gamecontrol.frame();
 }
 
 
@@ -2467,7 +2464,12 @@ void kobo_gfxengine_t::post_render()
 
 	// Mouse cursor
 	if(prefs->mouse && mouse_visible)
+	{
+		if(prefs->debug)
+			wmain->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,
+					B_CROSSHAIR, 0);
 		wscreen->sprite(mouse_x, mouse_y, B_CROSSHAIR, 0);
+	}
 
 	// Screenshot video - frame rates in Hz; 999 ==> every rendered frame
 	if((prefs->cmd_autoshot > 0) && (manage.game_in_progress() ||

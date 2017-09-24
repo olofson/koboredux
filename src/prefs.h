@@ -58,6 +58,7 @@ class prefs_t : public config_parser_t
 	int	joystick_index;	//which joystick to use
 	int	mouse;
 	int	mousemode;
+	int	mouse_threshold;
 	int	broken_numdia;
 	int	dia_emphasis;
 	int	mousecapture;
