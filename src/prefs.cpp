@@ -58,6 +58,8 @@ void prefs_t::init()
 	yesno("vsync", vsync, 1); desc("Enable Vertical Sync");
 	key("filter", filter, 2); desc("Logic-to-Video Motion Filter Mode");
 	key("timefilter", timefilter, 50); desc("Time Filter");
+	key("mouse_hidetime", mouse_hidetime, 2000);
+			desc("Mouse Hide Timeout");
 
 	section("Controls");
 	yesno("joystick", joystick, 0); desc("Enable Joystick");

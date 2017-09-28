@@ -52,6 +52,7 @@ class prefs_t : public config_parser_t
 	int	vsync;		//Vertical (retrace) sync
 	int	filter;		//Use motion filtering
 	int	timefilter;	//Delta time filter
+	int	mouse_hidetime;	//Timeout for hiding cursor (ms)
 
 	// Controls
 	int	joystick;

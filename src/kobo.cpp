@@ -108,6 +108,7 @@ int mouse_left = 0;
 int mouse_middle = 0;
 int mouse_right = 0;
 bool mouse_visible = false;
+int mouse_timer = 0;
 
 
 /*----------------------------------------------------------
@@ -1878,6 +1879,9 @@ void kobo_gfxengine_t::mouse_motion(SDL_Event &ev)
 	mouse_x = (int)(ev.motion.x / gengine->xscale()) - km.xoffs;
 	mouse_y = (int)(ev.motion.y / gengine->yscale()) - km.yoffs;
 	mouse_visible = true;
+	mouse_timer = SDL_GetTicks();
+
+	gsm.pos(mouse_x, mouse_y);
 
 	if(!prefs->mouse)
 		return;
@@ -1963,8 +1967,16 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 	  }
 	}
 
-	if(!prefs->mouse)
-		return;
+	// Ingame mouse control, if enabled
+	if(manage.game_in_progress() && prefs->mouse)
+	{
+		if(mouse_left)
+			gamecontrol.pressbtn(BTN_PRIMARY, GC_SRC_MOUSE0);
+		if(mouse_middle)
+			gamecontrol.pressbtn(BTN_SECONDARY, GC_SRC_MOUSE0);
+		if(mouse_right)
+			gamecontrol.pressbtn(BTN_TERTIARY, GC_SRC_MOUSE0);
+	}
 
 #ifdef ENABLE_TOUCHSCREEN
 	if(ev.button.x <= pointer_margin_width_min)
@@ -2008,14 +2020,13 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 	if(!pointer_margin_used)
 		gsm.pressbtn(BTN_FIRE);
 #else
-	gsm.pressbtn(BTN_PRIMARY);
-#endif
 	if(mouse_left)
-		gamecontrol.pressbtn(BTN_PRIMARY, GC_SRC_MOUSE0);
+		gsm.pressbtn(BTN_PRIMARY);
 	if(mouse_middle)
-		gamecontrol.pressbtn(BTN_SECONDARY, GC_SRC_MOUSE0);
+		gsm.pressbtn(BTN_SECONDARY);
 	if(mouse_right)
-		gamecontrol.pressbtn(BTN_TERTIARY, GC_SRC_MOUSE1);
+		gsm.pressbtn(BTN_TERTIARY);
+#endif
 }
 
 
@@ -2036,9 +2047,21 @@ void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
 		break;
 	}
 
-	if(!prefs->mouse)
-		return;
+	// Ingame mouse control, if enabled
+	if(manage.game_in_progress() && prefs->mouse)
+	{
+		if(!mouse_left)
+		{
+			gamecontrol.releasebtn(BTN_PRIMARY, GC_SRC_MOUSE0);
+			gsm.releasebtn(BTN_PRIMARY);
+		}
+		if(!mouse_middle)
+			gamecontrol.releasebtn(BTN_SECONDARY, GC_SRC_MOUSE0);
+		if(!mouse_right)
+			gamecontrol.releasebtn(BTN_TERTIARY, GC_SRC_MOUSE0);
+	}
 
+	// GUI mouse control
 #ifdef ENABLE_TOUCHSCREEN
 	// Resets all kinds of buttons that might have been activated by
 	// clicking in the pointer margin.
@@ -2052,14 +2075,13 @@ void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
 		pointer_margin_used = false;
 	}
 #else
-	gsm.releasebtn(BTN_PRIMARY);
-#endif
 	if(!mouse_left)
-		gamecontrol.releasebtn(BTN_PRIMARY, GC_SRC_MOUSE0);
+		gsm.releasebtn(BTN_PRIMARY);
 	if(!mouse_middle)
-		gamecontrol.releasebtn(BTN_SECONDARY, GC_SRC_MOUSE0);
+		gsm.releasebtn(BTN_SECONDARY);
 	if(!mouse_right)
-		gamecontrol.releasebtn(BTN_TERTIARY, GC_SRC_MOUSE1);
+		gsm.releasebtn(BTN_TERTIARY);
+#endif
 }
 
 
@@ -2157,6 +2179,7 @@ void kobo_gfxengine_t::input(float fractional_frame)
 				break;
 			  case SDL_WINDOWEVENT_ENTER:
 				mouse_visible = true;
+				mouse_timer = SDL_GetTicks();
 				break;
 			  case SDL_WINDOWEVENT_LEAVE:
 				mouse_visible = false;
@@ -2332,6 +2355,16 @@ void kobo_gfxengine_t::frame()
 
 	// Run filter timers, reset pressed()/released() triggering etc
 	gamecontrol.frame();
+
+	// Hide mouse cursor after some time, unless we're ingame and using
+	// mouse control.
+	if(mouse_visible && !prefs->mouse && !manage.game_in_progress() &&
+			prefs->mouse_hidetime)
+	{
+		if(SDL_TICKS_PASSED(SDL_GetTicks(), mouse_timer +
+				prefs->mouse_hidetime))
+			mouse_visible = false;
+	}
 }
 
 
@@ -2463,7 +2496,7 @@ void kobo_gfxengine_t::post_render()
 	++km.fps_count;
 
 	// Mouse cursor
-	if(prefs->mouse && mouse_visible)
+	if(mouse_visible)
 	{
 		if(prefs->debug)
 			wmain->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,

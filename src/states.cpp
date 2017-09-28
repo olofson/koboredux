@@ -1219,6 +1219,12 @@ void st_menu_base_t::enter()
 	form = open();
 	if(sounds)
 		sound.ui_play(S_UI_OPEN);
+
+	// If the mouse cursor is visible when entering a menu, and it happens
+	// to land on an interactive widget, we want that to be selected.
+	// TODO: Maybe even select the nearest widget in this case...?
+	if(mouse_visible)
+		gsm.pos(mouse_x, mouse_y);
 }
 
 
@@ -1264,6 +1270,13 @@ int st_menu_base_t::translate(int tag, int button)
 	  default:
 		return tag ? tag : -1;
 	}
+}
+
+
+void st_menu_base_t::pos(int x, int y)
+{
+	if(form)
+		form->select(x, y);
 }
 
 
@@ -1317,11 +1330,11 @@ void st_menu_base_t::press(gc_targets_t button)
 			break;
 		  case BTN_DEC:
 		  case BTN_LEFT:
+		  case BTN_SECONDARY:
+		  case BTN_TERTIARY:
 			form->change(-1);
 			break;
 		  case BTN_PRIMARY:
-		  case BTN_SECONDARY:
-		  case BTN_TERTIARY:
 		  case BTN_SELECT:
 			form->change(0);
 			break;

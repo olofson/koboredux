@@ -224,6 +224,7 @@ class ct_form_t : public window_t
 	void clean();
 	virtual void select(ct_widget_t *w);
 	virtual void select(int ind);
+	virtual void select(int x, int y);
 	virtual void next();
 	virtual void prev();
 	ct_widget_t *selected();
