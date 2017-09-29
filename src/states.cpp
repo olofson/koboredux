@@ -573,7 +573,6 @@ void st_game_t::press(gc_targets_t button)
 	  case BTN_CLOSE:
 		gsm.push(&st_ask_exit);
 		break;
-	  case BTN_SELECT:
 	  case BTN_PAUSE:
 		sound.ui_play(S_UI_PAUSE);
 		gsm.push(&st_pause_game);

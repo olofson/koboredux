@@ -2151,19 +2151,6 @@ void kobo_gfxengine_t::input(float fractional_frame)
 			}
 			gamecontrol.release(ev.key.keysym);
 			gsm.release(ev.key.keysym);
-#if 0
-			k = gamecontrol.map(ev.key.keysym.sym);
-			if(k == SDLK_PAUSE)
-			{
-				gamecontrol.press(BTN_PAUSE);
-				gsm.press(BTN_PAUSE);
-			}
-			else
-			{
-				gamecontrol.release(k);
-				gsm.release(k);
-			}
-#endif
 			break;
 		  case SDL_WINDOWEVENT:
 			switch(ev.window.event)
