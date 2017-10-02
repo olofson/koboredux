@@ -67,6 +67,7 @@ class _manage
 
 	// User interface
 	static bool in_background;
+	static bool player_is_ready;
 	static bool show_bars;
 	static float disp_health;
 	static float disp_charge;
@@ -223,10 +224,6 @@ class _manage
 	static int cores_total()	{ return total_cores; }
 	static int cores_remaining()	{ return remaining_cores; }
 	static unsigned current_score()	{ return score; }
-
-	// Player input
-	static void key_down(SDL_Keycode sym);
-	static void key_up(SDL_Keycode sym);
 
 	// Effects
 	static void noise_glitch();

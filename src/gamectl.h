@@ -73,8 +73,7 @@ enum gc_mousemodes_t
 enum gc_sources_t
 {
 	GC_SRC_JOYSTICK = 0,
-	GC_SRC_MOUSE0,
-	GC_SRC_MOUSE1,
+	GC_SRC_MOUSE,
 	GC_SRC_KEY0,
 	GC_SRC_KEY1,
 	GC_SRC_KEY2,
@@ -107,7 +106,7 @@ class gamecontrol_t
 	static unsigned _released[BTN__COUNT];	// Released during this frame
 	static int direction, new_direction;
 	static int latch_timer;
-	static bool movekey_pressed, key_sprint, mouse_sprint;
+	static bool movekey_pressed, key_sprint, mouse_sprint, mouse_muted;
 	static void change();
 	static gc_targets_t mapsrc(SDL_Keysym sym, int &src);
 	static void reset_flanks();	// Reset the pressed()/released() state
@@ -115,6 +114,7 @@ class gamecontrol_t
 	gamecontrol_t();
 	static void init();
 	static void clear();
+	static void mouse_mute(bool m);
 	static gc_targets_t map(SDL_Keysym sym)
 	{
 		int src;

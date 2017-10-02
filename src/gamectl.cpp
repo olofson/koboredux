@@ -34,6 +34,7 @@ int gamecontrol_t::latch_timer = 0;
 bool gamecontrol_t::movekey_pressed = false;
 bool gamecontrol_t::key_sprint = false;
 bool gamecontrol_t::mouse_sprint = false;
+bool gamecontrol_t::mouse_muted = false;
 unsigned gamecontrol_t::state[BTN__COUNT];
 unsigned gamecontrol_t::_pressed[BTN__COUNT];
 unsigned gamecontrol_t::_released[BTN__COUNT];
@@ -44,7 +45,7 @@ void gamecontrol_t::init()
 	memset(state, 0, sizeof(state));
 	memset(_pressed, 0, sizeof(_pressed));
 	memset(_released, 0, sizeof(_released));
-	movekey_pressed = key_sprint = mouse_sprint = false;
+	movekey_pressed = key_sprint = mouse_sprint = mouse_muted = false;
 	latch_timer = 0;
 }
 
@@ -58,7 +59,21 @@ gamecontrol_t::gamecontrol_t()
 void gamecontrol_t::clear()
 {
 	direction = 1;
-	movekey_pressed = key_sprint = mouse_sprint = false;
+	movekey_pressed = key_sprint = mouse_sprint = mouse_muted = false;
+}
+
+
+void gamecontrol_t::mouse_mute(bool m)
+{
+	mouse_muted = m;
+	if(prefs->mouse && mouse_muted)
+	{
+		// Only clear state if actually using mouse input, because this
+		// also kills keyboard/joystick state, which is annoying when
+		// navigating through a campaign replay.
+		direction = 1;
+		mouse_sprint = false;
+	}
 }
 
 
@@ -188,6 +203,8 @@ void gamecontrol_t::release(SDL_Keysym sym)
 
 void gamecontrol_t::pressbtn(gc_targets_t b, gc_sources_t s)
 {
+	if(mouse_muted && (s == GC_SRC_MOUSE))
+		return;
 	if(b < 0 || b >= BTN__COUNT)
 		return;
 	if(s < 0 || s > 31)
@@ -202,6 +219,8 @@ void gamecontrol_t::pressbtn(gc_targets_t b, gc_sources_t s)
 
 void gamecontrol_t::releasebtn(gc_targets_t b, gc_sources_t s)
 {
+	if(mouse_muted && (s == GC_SRC_MOUSE))
+		return;
 	if(b < 0 || b >= BTN__COUNT)
 		return;
 	if(s < 0 || s > 31)
@@ -214,6 +233,9 @@ void gamecontrol_t::releasebtn(gc_targets_t b, gc_sources_t s)
 
 void gamecontrol_t::mouse_position(int h, int v)
 {
+	if(mouse_muted)
+		return;
+
 	switch(prefs->mousemode)
 	{
 	  case MMD_OFF:

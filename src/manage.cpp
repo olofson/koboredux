@@ -57,6 +57,7 @@ KOBO_player_controls _manage::lastctrl = KOBO_PC_FIRE;
 unsigned _manage::ctrltimer = 0;
 
 bool _manage::in_background = false;
+bool _manage::player_is_ready = false;
 bool _manage::show_bars = false;
 float _manage::disp_health;
 float _manage::disp_charge;
@@ -301,6 +302,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	show_bars = true;
 	lastctrl = KOBO_PC_FIRE;
 	retry_skip = 0;
+	player_is_ready = false;
 
 	if(replay && owns_replay)
 		delete replay;
@@ -367,6 +369,8 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 			owns_replay = true;
 	}
 
+	gamecontrol.mouse_mute(replaymode != RPM_PLAY);
+
 	playtime = 0;
 	gengine->period(game.speed);
 	screen.init_stage(selected_stage, true);
@@ -419,12 +423,12 @@ void _manage::finalize_replay()
 
 void _manage::start_new_game()
 {
+	gamecontrol.clear();
 	replaymode = RPM_PLAY;
 	if(campaign)
 		campaign->reset();
 	score = 0;
 	init_game(NULL, true);
-	gamecontrol.clear();
 }
 
 
@@ -437,10 +441,10 @@ bool _manage::continue_game()
 	if(!replay)
 		return false;
 
+	gamecontrol.clear();
 	replaymode = RPM_PLAY;
 	init_game(replay);
 	advance(-KOBO_RETRY_REWIND);
-	gamecontrol.clear();
 	return true;
 }
 
@@ -455,9 +459,9 @@ bool _manage::start_replay(int stage)
 	if(!replay)
 		return false;
 
+	gamecontrol.clear();
 	replaymode = RPM_REPLAY;
 	init_game(replay);
-	gamecontrol.clear();
 	return true;
 }
 
@@ -532,8 +536,7 @@ void _manage::advance(int frame)
 
 void _manage::player_ready()
 {
-	if(gamestate == GS_GETREADY)
-		state(GS_PLAYING);
+	player_is_ready = true;
 }
 
 
@@ -980,12 +983,11 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 	controls_retry_skip(ctrl);
 
 	// Dive back into the game?
-	if(myship.alive() && (ctrl & KOBO_PC_FIRE) &&
-			!(lastctrl & KOBO_PC_FIRE))
+	if(myship.alive() && player_is_ready)
 	{
-		// Player takes over control! Replay recording must be
-		// resumed at exactly this frame, overwriting any
-		// subsequent data.
+		// Player takes over control from rewind/replay. Replay
+		// recording must be resumed at exactly this frame,
+		// overwriting any subsequent data.
 		screen.curtains(false, KOBO_RETRY_SKIP_FXTIME * 0.001f);
 		replay->punchin();
 		replay->write(ctrl);
@@ -994,6 +996,8 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 		gengine->period(game.speed);
 		sound.g_volume(1.0f);
 		sound.g_pitch(0.0f);
+		gamecontrol.mouse_mute(false);
+		player_is_ready = false;
 		return ctrl;
 	}
 
@@ -1139,6 +1143,12 @@ void _manage::run()
 		break;
 	  case GS_GETREADY:
 		update();
+		if(player_is_ready)
+		{
+			state(GS_PLAYING);
+			gamecontrol.mouse_mute(false);
+			player_is_ready = false;
+		}
 		break;
 	  case GS_PLAYING:
 		run_game();

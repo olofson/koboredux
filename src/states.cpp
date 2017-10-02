@@ -688,6 +688,11 @@ void st_rewind_t::press(gc_targets_t button)
 	  case BTN_CLOSE:
 		gsm.push(&st_ask_exit);
 		break;
+	  case BTN_PRIMARY:
+	  case BTN_SECONDARY:
+	  case BTN_TERTIARY:
+		manage.player_ready();
+		break;
 	  case BTN_SELECT:
 	  case BTN_PAUSE:
 		if(manage.paused())

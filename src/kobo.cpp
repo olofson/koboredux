@@ -1971,11 +1971,11 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 	if(manage.game_in_progress() && prefs->mouse)
 	{
 		if(mouse_left)
-			gamecontrol.pressbtn(BTN_PRIMARY, GC_SRC_MOUSE0);
+			gamecontrol.pressbtn(BTN_PRIMARY, GC_SRC_MOUSE);
 		if(mouse_middle)
-			gamecontrol.pressbtn(BTN_SECONDARY, GC_SRC_MOUSE0);
+			gamecontrol.pressbtn(BTN_SECONDARY, GC_SRC_MOUSE);
 		if(mouse_right)
-			gamecontrol.pressbtn(BTN_TERTIARY, GC_SRC_MOUSE0);
+			gamecontrol.pressbtn(BTN_TERTIARY, GC_SRC_MOUSE);
 	}
 
 #ifdef ENABLE_TOUCHSCREEN
@@ -2052,13 +2052,13 @@ void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
 	{
 		if(!mouse_left)
 		{
-			gamecontrol.releasebtn(BTN_PRIMARY, GC_SRC_MOUSE0);
+			gamecontrol.releasebtn(BTN_PRIMARY, GC_SRC_MOUSE);
 			gsm.releasebtn(BTN_PRIMARY);
 		}
 		if(!mouse_middle)
-			gamecontrol.releasebtn(BTN_SECONDARY, GC_SRC_MOUSE0);
+			gamecontrol.releasebtn(BTN_SECONDARY, GC_SRC_MOUSE);
 		if(!mouse_right)
-			gamecontrol.releasebtn(BTN_TERTIARY, GC_SRC_MOUSE0);
+			gamecontrol.releasebtn(BTN_TERTIARY, GC_SRC_MOUSE);
 	}
 
 	// GUI mouse control
