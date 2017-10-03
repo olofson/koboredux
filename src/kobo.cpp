@@ -2345,8 +2345,8 @@ void kobo_gfxengine_t::frame()
 
 	// Hide mouse cursor after some time, unless we're ingame and using
 	// mouse control.
-	if(mouse_visible && !prefs->mouse && !manage.game_in_progress() &&
-			prefs->mouse_hidetime)
+	if(mouse_visible && prefs->mouse_hidetime &&
+			(!prefs->mouse || !manage.game_in_progress()))
 	{
 		if(SDL_TICKS_PASSED(SDL_GetTicks(), mouse_timer +
 				prefs->mouse_hidetime))
