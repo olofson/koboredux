@@ -739,11 +739,42 @@ void st_rewind_t::post_render()
 	px *= px;
 	int p1 = (int)(px * 127.0f);
 	int p2 = (int)(px * 192.0f);
-	woverlay->foreground(woverlay->map_rgb(128 + p1, 192 - p2, 192 - p2));
+
+	// Played
 	woverlay->alphamod(64);
+	woverlay->foreground(woverlay->map_rgb(128 + p1, 192 - p2, 192 - p2));
 	woverlay->fillrect_fxp(0, PIXEL2CS(300),
-			PIXEL2CS((int)(woverlay->width() * p)),
+			PIXEL2CS((int)(woverlay->width() * p) - 1),
 			PIXEL2CS(woverlay->fontheight() + 1));
+
+	// Remaining
+	woverlay->foreground(woverlay->map_rgb(0, 0, 0));
+	woverlay->fillrect_fxp(PIXEL2CS((int)(woverlay->width() * p)),
+			PIXEL2CS(300),
+			PIXEL2CS(woverlay->width()),
+			PIXEL2CS(woverlay->fontheight() + 1));
+
+	// "Bookmarks"
+	woverlay->foreground(woverlay->map_rgb(128, 128, 128));
+	for(int i = 0; ; ++i)
+	{
+		int t = manage.bookmark(i);
+		if(t >= (int)manage.replay_duration())
+			break;
+		int x = woverlay->width() * t / manage.replay_duration();
+		woverlay->fillrect_fxp(PIXEL2CS(x), PIXEL2CS(300),
+				PIXEL2CS(1),
+				PIXEL2CS(woverlay->fontheight() + 1));
+	}
+
+	// Position
+	woverlay->alphamod(128);
+	woverlay->foreground(woverlay->map_rgb(255, 255, 255));
+	woverlay->fillrect_fxp(PIXEL2CS((int)(woverlay->width() * p) - 1),
+			PIXEL2CS(300), PIXEL2CS(1),
+			PIXEL2CS(woverlay->fontheight() + 1));
+
+	// Label
 	woverlay->alphamod(255);
 	if(SDL_GetTicks() & 0x300)
 		woverlay->center_fxp(PIXEL2CS(301), manage.paused() ?

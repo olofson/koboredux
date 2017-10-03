@@ -181,7 +181,9 @@ class _manage
 	// Replays
 	static KOBO_replaymodes replay_mode()	{ return replaymode; }
 	static float replay_progress();
+	static unsigned replay_duration();
 	static int replay_stages();
+	static int bookmark(int bm);
 
 	// Running the game
 	static void run();

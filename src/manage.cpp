@@ -540,6 +540,18 @@ void _manage::player_ready()
 }
 
 
+int _manage::bookmark(int bm)
+{
+	if(bm > 0)
+	{
+		int offset = replay_duration() % KOBO_RETRY_SKIP;
+		return offset + (bm - 1) * KOBO_RETRY_SKIP;
+	}
+	else
+		return 0;
+}
+
+
 void _manage::next_bookmark()
 {
 	if(!replay)
@@ -547,8 +559,15 @@ void _manage::next_bookmark()
 		log_printf(ELOG, "_manage::next_bookmark() with no replay!\n");
 		return;
 	}
+	int offset = replay_duration() % KOBO_RETRY_SKIP;
+	int target = ((int)playtime - offset + KOBO_RETRY_SKIP) /
+			KOBO_RETRY_SKIP;
+	target = target * KOBO_RETRY_SKIP + offset;
+	if(target >= (int)replay_duration())
+		return;
+
 	sound.g_new_scene(100);
-	advance(playtime + KOBO_RETRY_SKIP);
+	advance(target);
 }
 
 
@@ -559,8 +578,10 @@ void _manage::prev_bookmark()
 		log_printf(ELOG, "_manage::prev_bookmark() with no replay!\n");
 		return;
 	}
-	unsigned target = playtime > KOBO_RETRY_SKIP ?
-			playtime - KOBO_RETRY_SKIP : 0;
+	int offset = replay_duration() % KOBO_RETRY_SKIP;
+	int target = ((int)playtime - offset + KOBO_RETRY_SKIP / 2) /
+			KOBO_RETRY_SKIP;
+	target = bookmark(target);
 	init_game(replay);
 	advance(target);
 }
@@ -1214,6 +1235,15 @@ float _manage::replay_progress()
 		return 0.0f;
 
 	return replay->progress();
+}
+
+
+unsigned _manage::replay_duration()
+{
+	if(!replay)
+		return 0;
+
+	return replay->recorded();
 }
 
 
