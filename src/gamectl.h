@@ -109,12 +109,12 @@ class gamecontrol_t
 	static bool movekey_pressed, key_sprint, mouse_sprint, mouse_muted;
 	static void change();
 	static gc_targets_t mapsrc(SDL_Keysym sym, int &src);
-	static void reset_flanks();	// Reset the pressed()/released() state
   public:
 	gamecontrol_t();
 	static void init();
-	static void clear();
-	static void mouse_mute(bool m);
+	static void clear();		// Clear all input state
+	static void reset_flanks();	// Reset the pressed()/released() state
+	static void mouse_mute(bool m);	// Mute mouse motion (not buttons!)
 	static gc_targets_t map(SDL_Keysym sym)
 	{
 		int src;

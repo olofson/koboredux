@@ -67,6 +67,7 @@ class _manage
 
 	// User interface
 	static bool in_background;
+	static bool player_ready_armed;
 	static bool player_is_ready;
 	static bool show_bars;
 	static float disp_health;

@@ -57,6 +57,7 @@ KOBO_player_controls _manage::lastctrl = KOBO_PC_FIRE;
 unsigned _manage::ctrltimer = 0;
 
 bool _manage::in_background = false;
+bool _manage::player_ready_armed = false;
 bool _manage::player_is_ready = false;
 bool _manage::show_bars = false;
 float _manage::disp_health;
@@ -303,6 +304,8 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	lastctrl = KOBO_PC_FIRE;
 	retry_skip = 0;
 	player_is_ready = false;
+	player_ready_armed = false;
+	gamecontrol.reset_flanks();
 
 	if(replay && owns_replay)
 		delete replay;
@@ -924,6 +927,10 @@ void _manage::run_game()
 		ctrl = controls_play(ctrlin);
 		break;
 	  case RPM_RETRY:
+		if(player_ready_armed && gamecontrol.released(BTN_PRIMARY))
+			player_ready();
+		if(gamecontrol.pressed(BTN_PRIMARY))
+			player_ready_armed = true;
 		ctrl = controls_retry(ctrlin);
 		break;
 	  case RPM_REPLAY:
@@ -1019,6 +1026,7 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 		sound.g_pitch(0.0f);
 		gamecontrol.mouse_mute(false);
 		player_is_ready = false;
+		player_ready_armed = false;
 		return ctrl;
 	}
 
@@ -1169,6 +1177,7 @@ void _manage::run()
 			state(GS_PLAYING);
 			gamecontrol.mouse_mute(false);
 			player_is_ready = false;
+			player_ready_armed = false;
 		}
 		break;
 	  case GS_PLAYING:

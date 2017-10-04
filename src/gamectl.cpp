@@ -203,8 +203,10 @@ void gamecontrol_t::release(SDL_Keysym sym)
 
 void gamecontrol_t::pressbtn(gc_targets_t b, gc_sources_t s)
 {
+#if 0
 	if(mouse_muted && (s == GC_SRC_MOUSE))
 		return;
+#endif
 	if(b < 0 || b >= BTN__COUNT)
 		return;
 	if(s < 0 || s > 31)
@@ -219,8 +221,10 @@ void gamecontrol_t::pressbtn(gc_targets_t b, gc_sources_t s)
 
 void gamecontrol_t::releasebtn(gc_targets_t b, gc_sources_t s)
 {
+#if 0
 	if(mouse_muted && (s == GC_SRC_MOUSE))
 		return;
+#endif
 	if(b < 0 || b >= BTN__COUNT)
 		return;
 	if(s < 0 || s > 31)
