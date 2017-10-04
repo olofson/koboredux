@@ -98,6 +98,14 @@ void KOBO_myship::state(KOBO_myship_state s)
 }
 
 
+int KOBO_myship::shield_time()
+{
+	if(_state == SHIP_INVULNERABLE)
+		return MYSHIP_SHIELD_DURATION;
+	else return shield_timer;
+}
+
+
 void KOBO_myship::off()
 {
 	state(SHIP_DEAD);

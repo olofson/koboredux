@@ -692,6 +692,7 @@ void _manage::prev_stage()
 
 void _manage::put_player_stats()
 {
+	// Health/overcharge
 	int h = myship.health();
 	if(h > disp_health)
 	{
@@ -708,6 +709,10 @@ void _manage::put_player_stats()
 	whealth->value((float)disp_health / game.health);
 	whealth->marker((float)myship.regen_next() / game.health);
 
+	// Shield timer (shown by health bar)
+	whealth->timer((float)myship.shield_time() / MYSHIP_SHIELD_DURATION);
+
+	// Weapon charge
 	h = myship.charge();
 	if(h > disp_charge)
 	{

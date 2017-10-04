@@ -110,6 +110,7 @@ class KOBO_myship
 	static void check_base_bolts();
 	static void hit(int dmg);
 	static int health()		{ return _health; }
+	static int shield_time();
 	static void health_bonus(int h);
 	static int regen_next()
 	{

@@ -596,10 +596,11 @@ void plainbar_t::refresh(SDL_Rect *r)
 
 enum shield_colors_t {
 	SCOLORS_OFF = 0,	// Off
-	SCOLORS_RED = 1,	// Almost off to full red gradient
-	SCOLORS_YELLOW = 5,	// Almost off to full yellow gradient
-	SCOLORS_GREEN = 9,	// Almost off to full green gradient
-	SCOLORS_BLUE = 13,	// Green to bright blue gradient
+	SCOLORS_WARN = 1,	// Almost off to full red gradient
+	SCOLORS_OK = 5,		// Almost off to full yellow gradient
+	SCOLORS_HIGH = 9,	// Almost off to full green gradient
+	SCOLORS_OVER = 13,	// Green to bright blue gradient
+	SCOLORS_TIMER = 17,	// Bright blue gradient
 };
 
 
@@ -608,6 +609,7 @@ shieldbar_t::shieldbar_t(gfxengine_t *e) : bargraph_t(e)
 	fvalue = 0.0f;
 	led_bank = 0;
 	_marker = 0.0f;
+	_timer = 0.0f;
 }
 
 
@@ -649,18 +651,18 @@ void shieldbar_t::refresh(SDL_Rect *r)
 	v += (pubrand.get(4) - 7.5f) / 16.0f / (leds * SHIELD_GRADIENT_SIZE);
 #endif
 
-	// Normal/overcharge
+	// Normal/overcharge/timer
 	int marker_pos;
 	if(v <= 1.0f)
 	{
 		// Normal
 		off = SCOLORS_OFF;
 		if(v < 0.25f)
-			c0 = SCOLORS_RED;
+			c0 = SCOLORS_WARN;
 		else if(v < 0.5f)
-			c0 = SCOLORS_YELLOW;
+			c0 = SCOLORS_OK;
 		else
-			c0 = SCOLORS_GREEN;
+			c0 = SCOLORS_HIGH;
 		if(_marker)
 		{
 			marker_pos = _marker * leds - 0.5f;
@@ -670,11 +672,23 @@ void shieldbar_t::refresh(SDL_Rect *r)
 		else
 			marker_pos = -1;
 	}
+#if 1
+	else if(_timer)
+	{
+		// Overcharge; not show, because it gets messy with the timer
+		off = c0 = SCOLORS_HIGH;
+		v = 1.0f;
+		marker_pos = -1;		// No marker!
+	}
+#endif
 	else
 	{
 		// Overcharge
-		off = SCOLORS_GREEN + SHIELD_GRADIENT_SIZE - 1;
-		c0 = SCOLORS_BLUE;
+		if(_timer)
+			off = SCOLORS_HIGH;
+		else
+			off = SCOLORS_HIGH + SHIELD_GRADIENT_SIZE - 1;
+		c0 = SCOLORS_OVER;
 		v -= 1.0f;
 		marker_pos = -1;		// No marker!
 	}
@@ -684,16 +698,23 @@ void shieldbar_t::refresh(SDL_Rect *r)
 
 	// Render!
 	int led = v * leds;
-	int frame = fmod(v * leds, 1.0f) * SHIELD_GRADIENT_SIZE;
+	int frame = _timer ? 0 : (fmod(v * leds, 1.0f) * SHIELD_GRADIENT_SIZE);
 	for(int i = 0; i < leds; ++i)
 	{
 		int c;
-		if(i < led)
-			c = c0 + SHIELD_GRADIENT_SIZE - 1;
+		if(_timer && i < _timer * leds && SDL_GetTicks() % 200 > 75)
+			c = SCOLORS_TIMER + SHIELD_GRADIENT_SIZE - 1;
+		else if(i < led)
+		{
+			if(_timer)
+				c = c0;
+			else
+				c = c0 + SHIELD_GRADIENT_SIZE - 1;
+		}
 		else if(i > led || !frame)
 		{
 			if(i == marker_pos && SDL_GetTicks() % 300 > 200)
-				c = SCOLORS_GREEN;
+				c = SCOLORS_HIGH;
 			else
 				c = off;
 		}
