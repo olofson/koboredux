@@ -558,6 +558,28 @@ int _manage::bookmark(int bm)
 }
 
 
+unsigned _manage::get_next_bookmark()
+{
+	if(!replay)
+		return 0;
+	int offset = replay_duration() % KOBO_RETRY_SKIP;
+	int target = ((int)playtime - offset + KOBO_RETRY_SKIP) /
+			KOBO_RETRY_SKIP;
+	return target * KOBO_RETRY_SKIP + offset;
+}
+
+
+unsigned _manage::get_prev_bookmark()
+{
+	if(!replay)
+		return 0;
+	int offset = replay_duration() % KOBO_RETRY_SKIP;
+	int target = ((int)playtime - offset + KOBO_RETRY_SKIP / 2) /
+			KOBO_RETRY_SKIP;
+	return bookmark(target);
+}
+
+
 void _manage::next_bookmark()
 {
 	if(!replay)
@@ -565,10 +587,7 @@ void _manage::next_bookmark()
 		log_printf(ELOG, "_manage::next_bookmark() with no replay!\n");
 		return;
 	}
-	int offset = replay_duration() % KOBO_RETRY_SKIP;
-	int target = ((int)playtime - offset + KOBO_RETRY_SKIP) /
-			KOBO_RETRY_SKIP;
-	target = target * KOBO_RETRY_SKIP + offset;
+	int target = get_next_bookmark();
 	if(target >= (int)replay_duration())
 		return;
 
@@ -584,10 +603,7 @@ void _manage::prev_bookmark()
 		log_printf(ELOG, "_manage::prev_bookmark() with no replay!\n");
 		return;
 	}
-	int offset = replay_duration() % KOBO_RETRY_SKIP;
-	int target = ((int)playtime - offset + KOBO_RETRY_SKIP / 2) /
-			KOBO_RETRY_SKIP;
-	target = bookmark(target);
+	int target = get_prev_bookmark();
 	init_game(replay);
 	advance(target);
 }
@@ -998,6 +1014,8 @@ void _manage::controls_retry_skip(KOBO_player_controls ctrl)
 		switch(ctrl & KOBO_PC_DIR)
 		{
 		  case 1:	// Up
+			if(get_next_bookmark() >= replay_duration())
+				return;	// No later bookmark!*/
 			++retry_skip;
 			if(retry_skip > 1)
 				retry_skip = 1;

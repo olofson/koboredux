@@ -123,6 +123,8 @@ class _manage
 	static void run_leds();
 	static void set_bars();
 
+	static unsigned get_next_bookmark();
+	static unsigned get_prev_bookmark();
 	static void next_bookmark();
 	static void prev_bookmark();
 	static void find_replay_forward();
