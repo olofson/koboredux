@@ -306,6 +306,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	player_is_ready = false;
 	player_ready_armed = false;
 	gamecontrol.reset_flanks();
+	playtime = 0;
 
 	if(replay && owns_replay)
 		delete replay;
@@ -329,8 +330,11 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		}
 		else
 		{
-			log_printf(ULOG, "Too short replay! Starting from "
-					"level entry point.\n");
+			log_printf(ULOG, "%s replay! Starting from level "
+					"entry point.\n",
+					replay->compatibility() == KOBO_RPCOM_FULL ?
+					"Too short" : "Incompatible");
+			replay->reset();
 			if(replaymode == RPM_REPLAY)
 			{
 				state(GS_REPLAYEND);
@@ -374,7 +378,6 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 
 	gamecontrol.mouse_mute(replaymode != RPM_PLAY);
 
-	playtime = 0;
 	gengine->period(game.speed);
 	screen.init_stage(selected_stage, true);
 	last_stage = selected_stage;

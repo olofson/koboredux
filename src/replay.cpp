@@ -34,30 +34,18 @@ KOBO_replay::KOBO_replay()
 {
 	buffer = NULL;
 	gst_first = gst_last = gst_current = NULL;
-
 	clear();
-
-	version = KOBO_REPLAY_VERSION;
-	gameversion = KOBO_VERSION;
-	config = get_config();
-	endtime = starttime = time(NULL);
-
-	compat = KOBO_RPCOM_FULL;
-	_modified = true;
 }
 
 
 KOBO_replay::~KOBO_replay()
 {
-	clear();
+	reset();
 }
 
 
-void KOBO_replay::clear()
+void KOBO_replay::reset()
 {
-	version = gameversion = 0;
-	config = 0;
-
 	free(buffer);
 	buffer = NULL;
 	bufsize = 0;
@@ -71,7 +59,19 @@ void KOBO_replay::clear()
 	}
 	gst_last = gst_current = NULL;
 
-	starttime = endtime = 0;
+	version = KOBO_REPLAY_VERSION;
+	gameversion = KOBO_VERSION;
+	config = get_config();
+	endtime = starttime = time(NULL);
+	compat = KOBO_RPCOM_FULL;
+	_modified = true;
+}
+
+
+void KOBO_replay::clear()
+{
+	reset();
+
 	stage = type = skill = 0;
 	seed = 0;
 	health = charge = score = 0;

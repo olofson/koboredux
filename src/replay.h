@@ -99,7 +99,6 @@ class KOBO_replay
 
 	uint32_t get_config();
 	void write(uint8_t b);
-	void clear();
 	bool load_reph(pfile_t *pf);
 	bool load_repd(pfile_t *pf);
 	bool load_gstd(pfile_t *pf);
@@ -145,6 +144,12 @@ class KOBO_replay
 	// Punch-in (Start recording at the current playback position,
 	// overwriting any previous data from this point on.)
 	void punchin();
+
+	// Delete replay data and reset version and config data to current
+	void reset();
+
+	// reset() and clear game stats
+	void clear();
 
 	void log_dump(int level, KOBO_replay_logdump rld = KOBO_RLD_ALL);
 
