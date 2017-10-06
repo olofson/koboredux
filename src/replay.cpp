@@ -90,13 +90,16 @@ static inline void rp_get_bool(int v, Uint32 &c)
 Uint32 KOBO_replay::get_config()
 {
 	Uint32 c = 0;
-	rp_get_bool(prefs->cheat_pushmove, c);
-	rp_get_bool(prefs->cheat_freewheel, c);
-	rp_get_bool(prefs->cheat_shield, c);
-	rp_get_bool(prefs->cheat_invulnerability, c);
-	rp_get_bool(prefs->cheat_ceasefire, c);
-	rp_get_bool(prefs->cheat_firepower, c);
-	rp_get_bool(prefs->cheat_brokentrigger, c);
+	if(prefs)
+	{
+		rp_get_bool(prefs->cheat_pushmove, c);
+		rp_get_bool(prefs->cheat_freewheel, c);
+		rp_get_bool(prefs->cheat_shield, c);
+		rp_get_bool(prefs->cheat_invulnerability, c);
+		rp_get_bool(prefs->cheat_ceasefire, c);
+		rp_get_bool(prefs->cheat_firepower, c);
+		rp_get_bool(prefs->cheat_brokentrigger, c);
+	}
 	return c;
 }
 
