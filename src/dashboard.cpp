@@ -499,11 +499,25 @@ void display_t::refresh(SDL_Rect *r)
 	Bar graph display (base)
 ----------------------------------------------------------*/
 
+enum led_colors_t {
+	LCOLORS_OFF = 0,	// Off
+	LCOLORS_WARN = 1,	// Almost off to full red gradient
+	LCOLORS_OK = 5,		// Almost off to full yellow gradient
+	LCOLORS_HIGH = 9,	// Almost off to full green gradient
+	LCOLORS_OVER = 13,	// Green to bright blue gradient
+	LCOLORS_TIMER = 17,	// Bright blue gradient
+};
+
+
 bargraph_t::bargraph_t(gfxengine_t *e) : window_t(e)
 {
 	_value = 0.0f;
+	fvalue = 0.0f;
 	_y = -1000;
 	_enabled = 1;
+	led_bank = 0;
+	_warn_level = 0.25f;
+	_ok_level = 0.5f;
 }
 
 
@@ -528,65 +542,18 @@ void bargraph_t::enable(int ena)
 }
 
 
-/*----------------------------------------------------------
-	Plain bar graph display
-----------------------------------------------------------*/
-
-plainbar_t::plainbar_t(gfxengine_t *e) : bargraph_t(e)
+int bargraph_t::led_count()
 {
-	_redmax = 1;
+	s_bank_t *b = s_get_bank(engine->get_gfx(), led_bank);
+	if(b && b->h)
+		return height() / b->h;
+	else
+		return 0;
 }
 
 
-void plainbar_t::refresh(SDL_Rect *r)
+void bargraph_t::refresh(SDL_Rect *r)
 {
-	if(!_enabled)
-	{
-		clear();
-		return;
-	}
-	float v = _value;
-	int red, green, blue;
-	if(v > 1.0f)
-	{
-		blue = 50 + (v - 1.0f) * 512;
-		if(_redmax)
-		{
-			red = 255;
-			green = blue / 2;
-		}
-		else
-		{
-			green = 255;
-			red = blue / 2;
-		}
-		v = 1.0f;
-	}
-	else
-	{
-		if(_redmax)
-		{
-			red = (int)(v * 300.0);
-			green = (int)((1.0 - v) * 400.0);
-		}
-		else
-		{
-			red = (int)((1.0 - v) * 300.0);
-			green = (int)(v * 400.0);
-		}
-		blue = 50;
-	}
-	if(green > 180)
-		green = 180;
-	if(red > 230)
-		red = 230;
-	if(blue > 255)
-		blue = 255;
-	_y = (int)((height() - 2) * (1.0f - v));
-	foreground(bgcolor);
-	fillrect(0, 0, width(), height());
-	foreground(map_rgb(red, green, blue));
-	fillrect(1, _y + 1, width() - 2, height() - _y - 2);
 }
 
 
@@ -594,32 +561,10 @@ void plainbar_t::refresh(SDL_Rect *r)
 	Health/shield LED bar display with overcharge
 ----------------------------------------------------------*/
 
-enum shield_colors_t {
-	SCOLORS_OFF = 0,	// Off
-	SCOLORS_WARN = 1,	// Almost off to full red gradient
-	SCOLORS_OK = 5,		// Almost off to full yellow gradient
-	SCOLORS_HIGH = 9,	// Almost off to full green gradient
-	SCOLORS_OVER = 13,	// Green to bright blue gradient
-	SCOLORS_TIMER = 17,	// Bright blue gradient
-};
-
-
 shieldbar_t::shieldbar_t(gfxengine_t *e) : bargraph_t(e)
 {
-	fvalue = 0.0f;
-	led_bank = 0;
 	_marker = 0.0f;
 	_timer = 0.0f;
-}
-
-
-int shieldbar_t::led_count()
-{
-	s_bank_t *b = s_get_bank(engine->get_gfx(), led_bank);
-	if(b && b->h)
-		return height() / b->h;
-	else
-		return 0;
 }
 
 
@@ -634,7 +579,7 @@ void shieldbar_t::refresh(SDL_Rect *r)
 	if(!_enabled)
 	{
 		for(int i = 0; i < leds; ++i)
-			sprite(0, i * led_height, led_bank, SCOLORS_OFF);
+			sprite(0, i * led_height, led_bank, LCOLORS_OFF);
 		fvalue = _value;
 		return;
 	}
@@ -656,13 +601,13 @@ void shieldbar_t::refresh(SDL_Rect *r)
 	if(v <= 1.0f)
 	{
 		// Normal
-		off = SCOLORS_OFF;
-		if(v < 0.25f)
-			c0 = SCOLORS_WARN;
-		else if(v < 0.5f)
-			c0 = SCOLORS_OK;
+		off = LCOLORS_OFF;
+		if(v < _warn_level)
+			c0 = LCOLORS_WARN;
+		else if(v < _ok_level)
+			c0 = LCOLORS_OK;
 		else
-			c0 = SCOLORS_HIGH;
+			c0 = LCOLORS_HIGH;
 		if(_marker)
 		{
 			marker_pos = _marker * leds - 0.5f;
@@ -676,7 +621,7 @@ void shieldbar_t::refresh(SDL_Rect *r)
 	else if(_timer)
 	{
 		// Overcharge; not show, because it gets messy with the timer
-		off = c0 = SCOLORS_HIGH;
+		off = c0 = LCOLORS_HIGH;
 		v = 1.0f;
 		marker_pos = -1;		// No marker!
 	}
@@ -685,10 +630,10 @@ void shieldbar_t::refresh(SDL_Rect *r)
 	{
 		// Overcharge
 		if(_timer)
-			off = SCOLORS_HIGH;
+			off = LCOLORS_HIGH;
 		else
-			off = SCOLORS_HIGH + SHIELD_GRADIENT_SIZE - 1;
-		c0 = SCOLORS_OVER;
+			off = LCOLORS_HIGH + SHIELD_GRADIENT_SIZE - 1;
+		c0 = LCOLORS_OVER;
 		v -= 1.0f;
 		marker_pos = -1;		// No marker!
 	}
@@ -703,7 +648,7 @@ void shieldbar_t::refresh(SDL_Rect *r)
 	{
 		int c;
 		if(_timer && i < _timer * leds && SDL_GetTicks() % 200 > 75)
-			c = SCOLORS_TIMER + SHIELD_GRADIENT_SIZE - 1;
+			c = LCOLORS_TIMER + SHIELD_GRADIENT_SIZE - 1;
 		else if(i < led)
 		{
 			if(_timer)
@@ -714,10 +659,73 @@ void shieldbar_t::refresh(SDL_Rect *r)
 		else if(i > led || !frame)
 		{
 			if(i == marker_pos && SDL_GetTicks() % 300 > 200)
-				c = SCOLORS_HIGH;
+				c = LCOLORS_HIGH;
 			else
 				c = off;
 		}
+		else
+			c = c0 + frame - 1;
+		sprite(0, (leds - 1 - i) * led_height, led_bank, c);
+	}
+}
+
+
+/*----------------------------------------------------------
+	Weapon charge LED bar display
+----------------------------------------------------------*/
+
+chargebar_t::chargebar_t(gfxengine_t *e) : bargraph_t(e)
+{
+}
+
+
+void chargebar_t::refresh(SDL_Rect *r)
+{
+	s_bank_t *b = s_get_bank(engine->get_gfx(), led_bank);
+	if(!b)
+		return;
+
+	int led_height = b->h;
+	int leds = height() / led_height;
+	if(!_enabled)
+	{
+		for(int i = 0; i < leds; ++i)
+			sprite(0, i * led_height, led_bank, LCOLORS_OFF);
+		fvalue = _value;
+		return;
+	}
+
+	// Filtering
+	fvalue += (_value - fvalue) * SHIELD_FILTER_COEFF *
+			engine->frame_delta_time();
+	float v = fvalue;
+
+#ifdef	SHIELD_DITHER
+	// Dithering
+	v += (pubrand.get(4) - 7.5f) / 16.0f / (leds * SHIELD_GRADIENT_SIZE);
+#endif
+
+	// Rounding
+	v += 0.5f / (leds * SHIELD_GRADIENT_SIZE);
+
+	// Render!
+	int led = v * leds;
+	int frame = fmod(v * leds, 1.0f) * SHIELD_GRADIENT_SIZE;
+	for(int i = 0; i < leds; ++i)
+	{
+		float iv = (float)i / leds;
+		int c0;
+		if(iv < _warn_level)
+			c0 = LCOLORS_WARN;
+		else if(iv < _ok_level)
+			c0 = LCOLORS_OK;
+		else
+			c0 = LCOLORS_HIGH;
+		int c;
+		if(i < led)
+			c = c0 + SHIELD_GRADIENT_SIZE - 1;
+		else if(i > led || !frame)
+			c = c0;
 		else
 			c = c0 + frame - 1;
 		sprite(0, (leds - 1 - i) * led_height, led_bank, c);

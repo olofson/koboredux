@@ -83,7 +83,7 @@ kobo_gfxengine_t	*gengine = NULL;
 screen_window_t		*wscreen = NULL;
 dashboard_window_t	*wdash = NULL;
 shieldbar_t		*whealth = NULL;
-shieldbar_t		*wcharge = NULL;
+chargebar_t		*wcharge = NULL;
 KOBO_radar_map		*wmap = NULL;
 KOBO_radar_window	*wradar = NULL;
 
@@ -895,7 +895,7 @@ int KOBO_main::init_display(prefs_t *p)
 
 	wdash = new dashboard_window_t(gengine);
 	whealth = new shieldbar_t(gengine);
-	wcharge = new shieldbar_t(gengine);
+	wcharge = new chargebar_t(gengine);
 	wbackdrop = new backdrop_t(gengine);
 	wplanet = new spinplanet_t(gengine);
 	wmain = new engine_window_t(gengine);

@@ -121,6 +121,7 @@ class label_t : public window_t
 // Labeled text display
 class display_t : public label_t
 {
+  protected:
 	char	_text[64];
   public:
 	display_t(gfxengine_t *e);
@@ -134,43 +135,44 @@ class bargraph_t : public window_t
 {
   protected:
 	float	_value;
+	float	fvalue;
 	int	_y;
 	int	_enabled;
+	int	led_bank;
+	float	_warn_level;
+	float	_ok_level;
   public:
 	bargraph_t(gfxengine_t *e);
+	void refresh(SDL_Rect *r);
 	void value(float val);
 	void enable(int ena);
-};
-
-
-// Plain bar graph display
-class plainbar_t : public bargraph_t
-{
-	int	_redmax;
-  public:
-	plainbar_t(gfxengine_t *e);
-	void refresh(SDL_Rect *r);
-	void redmax(int rm)
-	{
-		_redmax = rm;
-	}
+	void set_leds(int _bank)	{ led_bank = _bank; }
+	void warn_level(float l)	{ _warn_level = l; }
+	void ok_level(float l)		{ _ok_level = l; }
+	int led_count();	// Returns number of LEDs with current theme
 };
 
 
 // Health/shield LED bar display with overcharge
 class shieldbar_t : public bargraph_t
 {
-	float	fvalue;
-	int	led_bank;
+  protected:
 	float	_marker;
 	float	_timer;
   public:
 	shieldbar_t(gfxengine_t *e);
-	void set_leds(int _bank)	{ led_bank = _bank; }
+	void refresh(SDL_Rect *r);
 	void marker(float m)		{ _marker = m; }
 	void timer(float t)		{ _timer = t; }
+};
+
+
+// Health/shield LED bar display with overcharge
+class chargebar_t : public bargraph_t
+{
+  public:
+	chargebar_t(gfxengine_t *e);
 	void refresh(SDL_Rect *r);
-	int led_count();	// Returns number of LEDs with current theme
 };
 
 

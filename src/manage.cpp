@@ -746,6 +746,16 @@ void _manage::put_player_stats()
 			disp_charge = h;
 	}
 	wcharge->value((float)disp_charge / game.charge);
+	if(game.blossom_min > game.charged_min)
+	{
+		wcharge->warn_level((float)game.charged_min / game.charge);
+		wcharge->ok_level((float)game.blossom_min / game.charge);
+	}
+	else
+	{
+		wcharge->warn_level((float)game.blossom_min / game.charge);
+		wcharge->ok_level((float)game.charged_min / game.charge);
+	}
 }
 
 

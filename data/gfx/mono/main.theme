@@ -251,7 +251,7 @@ sprites B_BOTTOMLEDS "bottomleds.png" 8 2
 sprites B_LEFTLEDS "leftleds.png" 2 8
 sprites B_RIGHTLEDS "rightleds.png" 2 8
 sprites B_HEALTHLEDS "barleds2.png" 12 4
-sprites B_CHARGELEDS "chargeleds2.png" 12 4
+sprites B_CHARGELEDS "chargeleds3.png" 12 4
 sprites B_LOGO "logo.png" 320 128
 
 
