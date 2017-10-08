@@ -33,8 +33,8 @@ set D_DASH_RIGHTLEDS	484	8	2	344
 
 // Positions of console and radar windows, and health/charge bars
 set D_DASH_CONSOLE	8	52	104	256
-set D_DASH_HEALTH	118	80	12	200
-set D_DASH_CHARGE	486	80	12	200
+set D_DASH_CHARGE	118	80	12	200
+set D_DASH_HEALTH	486	80	12	200
 set D_DASH_RADAR	504	52	128	256
 
 // Positions of elements inside D_DASH_CONSOLE
