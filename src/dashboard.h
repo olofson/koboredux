@@ -233,4 +233,16 @@ class vledbar_t : public hledbar_t
 	void refresh(SDL_Rect *r);
 };
 
+
+// Weapon slot
+class weaponslot_t : public window_t
+{
+  protected:
+	int	_slot;
+  public:
+	weaponslot_t(gfxengine_t *e);
+	void refresh(SDL_Rect *r);
+	void slot(int s)	{ _slot = s; }
+};
+
 #endif /* KOBO_DASHBOARD_H */

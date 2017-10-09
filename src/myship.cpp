@@ -765,9 +765,21 @@ void KOBO_myship::tail_fire()
 }
 
 
+bool KOBO_myship::secondary_available()
+{
+	return !charged_cooltimer && (_charge >= game.charged_min);
+}
+
+
+bool KOBO_myship::tertiary_available()
+{
+	return !blossom_cooltimer && (_charge >= game.blossom_min);
+}
+
+
 void KOBO_myship::charged_fire(int dir)
 {
-	if(charged_cooltimer || _charge < game.charged_min)
+	if(!secondary_available())
 	{
 		sound.g_player_fire_denied();
 		return;
@@ -792,7 +804,7 @@ void KOBO_myship::charged_fire(int dir)
 
 void KOBO_myship::fire_blossom()
 {
-	if(blossom_cooltimer || _charge < game.blossom_min)
+	if(!tertiary_available())
 	{
 		sound.g_player_fire_denied();
 		return;

@@ -274,6 +274,7 @@ extern display_t		*dhigh;
 extern display_t		*dscore;
 extern display_t		*dregion;
 extern display_t		*dlevel;
+extern weaponslot_t		*wslots[4];
 extern hledbar_t		*pxtop;
 extern hledbar_t		*pxbottom;
 extern vledbar_t		*pxleft;

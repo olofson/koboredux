@@ -86,6 +86,7 @@ class KOBO_myship
 	KOBO_myship();
 	static KOBO_player_controls decode_input();
 	static void control(KOBO_player_controls c)	{ ctrl = c; }
+	static KOBO_player_controls control()		{ return ctrl; }
 	static void state(KOBO_myship_state s);
 	static int get_velx()		{ return vx; }
 	static int get_vely()		{ return vy; }
@@ -118,10 +119,12 @@ class KOBO_myship
 				game.regen_step * game.regen_step;
 	}
 	static int charge()		{ return _charge; }
+	static bool secondary_available();
+	static bool tertiary_available();
 	static void set_position(int px, int py);
 	static int alive()		{ return _state != SHIP_DEAD; }
 	static bool in_range(int px, int py, int range, int &dist);
-	static inline int bolt_frame(int dir, int frame)
+	static int bolt_frame(int dir, int frame)
 	{
 		const char animtab[8] = { 0, 1, 2, 3, 2, 1, 2, 1 };
 		if(frame < 4)
@@ -130,7 +133,7 @@ class KOBO_myship
 			return 32 + ((dir - 1) & 3) * 8 +
 					animtab[(frame - 4) & 7];
 	}
-	static inline int bolt_frame_fade(int dir, int frame)
+	static int bolt_frame_fade(int dir, int frame)
 	{
 		return 32 + 4 + ((dir - 1) & 3) * 8;
 	}

@@ -40,8 +40,12 @@ set D_DASH_RADAR	504	52	128	256
 // Positions of elements inside D_DASH_CONSOLE
 set D_DASH_HIGH		0	8	104	18	D_DASH_CONSOLE
 set D_DASH_SCORE	0	32	104	18	D_DASH_CONSOLE
-set D_DASH_REGION	0	88	104	18	D_DASH_CONSOLE
-set D_DASH_LEVEL	0	112	104	18	D_DASH_CONSOLE
+set D_DASH_WSLOT1	0	75	52	52	D_DASH_CONSOLE
+set D_DASH_WSLOT2	52	75	52	52	D_DASH_CONSOLE
+set D_DASH_WSLOT3	0	129	52	52	D_DASH_CONSOLE
+set D_DASH_WSLOT4	52	129	52	52	D_DASH_CONSOLE
+set D_DASH_REGION	0	206	104	18	D_DASH_CONSOLE
+set D_DASH_LEVEL	0	230	104	18	D_DASH_CONSOLE
 
 
 //-----------------------------------------------------------------------------
@@ -252,6 +256,8 @@ sprites B_LEFTLEDS "leftleds.png" 2 8
 sprites B_RIGHTLEDS "rightleds.png" 2 8
 sprites B_HEALTHLEDS "barleds2.png" 12 4
 sprites B_CHARGELEDS "chargeleds3.png" 12 4
+sprites B_WEAPONSLOTS "weaponslots.png" 52 52
+sprites B_WEAPONS "weapons.png" 40 40
 sprites B_LOGO "logo.png" 320 128
 
 

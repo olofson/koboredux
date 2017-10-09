@@ -25,6 +25,7 @@
 #include "random.h"
 #include "logger.h"
 #include "game.h"
+#include "myship.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -943,4 +944,55 @@ void vledbar_t::refresh(SDL_Rect *r)
 {
 	for(int i = 0; i < PROXY_LEDS; ++i)
 		sprite(0, i * PROXY_LED_SIZE, led_bank, leds[i].frame);
+}
+
+
+/*----------------------------------------------------------
+	Weapon slot
+----------------------------------------------------------*/
+
+weaponslot_t::weaponslot_t(gfxengine_t *e) : window_t(e)
+{
+	_slot = 0;
+}
+
+
+void weaponslot_t::refresh(SDL_Rect *r)
+{
+	// Slot label + frame
+	int state = 0;
+	switch(_slot)
+	{
+		case 0:
+		case 1:
+			if(myship.control() & KOBO_PC_PRIMARY)
+				state = 3;
+			else
+				state = 2;
+			break;
+		case 2:
+			if(myship.control() & KOBO_PC_SECONDARY)
+				state = 3;
+			else if(myship.secondary_available())
+				state = 2;
+			else
+				state = 1;
+			break;
+		case 3:
+			if(myship.control() & KOBO_PC_TERTIARY)
+				state = 3;
+			else if(myship.tertiary_available())
+				state = 2;
+			else
+				state = 1;
+			break;
+	}
+	sprite(0, 0, B_WEAPONSLOTS, _slot + state * 4);
+
+	// Weapon icon
+	if(state <= 1)
+		state = 0;
+	else
+		state = 1;
+	sprite(6, 9, B_WEAPONS, _slot + state * 4);
 }
