@@ -959,40 +959,37 @@ weaponslot_t::weaponslot_t(gfxengine_t *e) : window_t(e)
 
 void weaponslot_t::refresh(SDL_Rect *r)
 {
-	// Slot label + frame
 	int state = 0;
+	int istate = 0;
+	int fire = 0;
 	switch(_slot)
 	{
 		case 0:
 		case 1:
 			if(myship.control() & KOBO_PC_PRIMARY)
-				state = 3;
-			else
-				state = 2;
+				fire = 1;
+			state = 2;	// Always available!
+			istate = 1;
 			break;
 		case 2:
 			if(myship.control() & KOBO_PC_SECONDARY)
-				state = 3;
-			else if(myship.secondary_available())
-				state = 2;
-			else
-				state = 1;
+				fire = 1;
+			if(myship.secondary_available())
+				istate = 1;
+			state = 1 + istate;
 			break;
 		case 3:
 			if(myship.control() & KOBO_PC_TERTIARY)
-				state = 3;
-			else if(myship.tertiary_available())
-				state = 2;
-			else
-				state = 1;
+				fire = 1;
+			if(myship.tertiary_available())
+				istate = 1;
+			state = 1 + istate;
 			break;
 	}
-	sprite(0, 0, B_WEAPONSLOTS, _slot + state * 4);
+
+	// Slot label + frame
+	sprite(0, 0, B_WEAPONSLOTS, _slot + state * 8 + fire * 4);
 
 	// Weapon icon
-	if(state <= 1)
-		state = 0;
-	else
-		state = 1;
-	sprite(6, 9, B_WEAPONS, _slot + state * 4);
+	sprite(6, 9, B_WEAPONS, _slot + istate * 4);
 }
