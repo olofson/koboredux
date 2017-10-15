@@ -31,6 +31,8 @@
 class prefs_t : public config_parser_t
 {
   public:
+	int	version;	//Game version that saved this config file
+
 	// System options
 	int	logfile;	//Log messages to log.txt/html
 	int	logformat;	//0: text, 1: ANSI, 2: HTML
@@ -160,6 +162,7 @@ class prefs_t : public config_parser_t
 
 	void init();
 	void postload();
+	void presave();
 
 	// "Commands" - never written to config files
 	int	cmd_showcfg;

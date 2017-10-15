@@ -36,6 +36,7 @@ void prefs_t::init()
 	comment(" Switches - [no]<switch> or <switch> [<value>]");
 	comment(" Values - <key> [<value>|\"<string>\"]");
 	comment("------------------------------------------------");
+	key("version", version, 0); desc("Config File Version");
 
 	section("System");
 	yesno("logfile", logfile, 0); desc("Log To File");
@@ -222,4 +223,10 @@ void prefs_t::postload()
 
 	cmd_warp = 0;
 #endif
+}
+
+
+void prefs_t::presave()
+{
+	version = KOBO_VERSION;
 }
