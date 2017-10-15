@@ -2912,7 +2912,7 @@ int main(int argc, char *argv[])
 
 	// Seems like we got all the way here without crashing, so let's save
 	// the current configuration! :-)
-	if(prefs->changed && prefs->cmd_savecfg)
+	if((prefs->changed && prefs->cmd_savecfg) || prefs->cmd_resaveall)
 	{
 		km.save_config(prefs);
 		prefs->changed = 0;

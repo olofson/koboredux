@@ -123,6 +123,7 @@ class prefs_t : public config_parser_t
 	int	tsdebug;	//Timestamp debugging
 	int	soundtools;
 	int	replaydebug;
+	int	firebench;	//Fire engine benchmark mode (full frame rate)
 	cfg_string_t	toolstheme;
 
 	// Cheat/test

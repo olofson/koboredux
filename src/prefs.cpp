@@ -146,6 +146,7 @@ void prefs_t::init()
 			desc("Force Load Fallback Graphics Theme");
 	yesno("force_fallback_sfxtheme", force_fallback_sfxtheme, 0);
 			desc("Force Load Fallback Sound Theme");
+	yesno("firebench", firebench, 0); desc("Fire FX Benchmark Mode");
 
 	section("Cheat/test");
 	yesno("cheat_pushmove", cheat_pushmove, 0);

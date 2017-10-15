@@ -522,10 +522,13 @@ void _manage::advance(int frame)
 		myship.move();
 		enemies.move();
 		myship.check_base_bolts();
-		if((int)replay->position() + 10 < frame)
-			wfire->update_norender();
-		else
-			wfire->update();
+		if(!prefs->firebench)
+		{
+			if((int)replay->position() + 10 < frame)
+				wfire->update_norender();
+			else
+				wfire->update();
+		}
 		if(prefs->replaydebug)
 			replay->verify_state();
 		++playtime;
@@ -863,7 +866,8 @@ void _manage::run_intro()
 	enemies.move_intro();
 	++playtime;
 	enemies.put();
-	wfire->update();
+	if(!prefs->firebench)
+		wfire->update();
 
 	gengine->scroll(PIXEL2CS(intro_x), PIXEL2CS(intro_y));
 	if(scroll_jump)
@@ -987,7 +991,8 @@ void _manage::run_game()
 			break;
 		}
 	update();
-	wfire->update();
+	if(!prefs->firebench)
+		wfire->update();
 	++playtime;
 	if(lastctrl == ctrlin)
 		++ctrltimer;

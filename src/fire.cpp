@@ -21,6 +21,7 @@
 
 #include "fire.h"
 #include "gfxengine.h"
+#include "kobo.h"
 #include "logger.h"
 
 // Debug: Define to disable "fire effect" filter, to see raw particles
@@ -601,7 +602,7 @@ void KOBO_Fire::update_norender()
 
 void KOBO_Fire::refresh(SDL_Rect *r)
 {
-	if(!need_refresh || !bufw || !bufh || !ncolors)
+	if((!prefs->firebench &&!need_refresh) || !bufw || !bufh || !ncolors)
 		return;
 
 	// Source
