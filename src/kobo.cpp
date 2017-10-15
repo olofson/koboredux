@@ -2873,6 +2873,16 @@ int main(int argc, char *argv[])
 		cmd_exit = 1;
 	}
 
+	// Config and saves were moved to new locations in 0.7.5, so if we get
+	// anything older than that, we should migrate!
+	if(prefs->cmd_resaveall ||
+			(prefs->version < KOBO_MAKE_VERSION(0, 7, 5, 0)))
+	{
+		km.save_config(prefs);
+		prefs->changed = 0;
+		savemanager.resave_all();
+	}
+
 	km.discover_themes();
 	km.list_themes();
 
@@ -2912,7 +2922,7 @@ int main(int argc, char *argv[])
 
 	// Seems like we got all the way here without crashing, so let's save
 	// the current configuration! :-)
-	if((prefs->changed && prefs->cmd_savecfg) || prefs->cmd_resaveall)
+	if(prefs->changed && prefs->cmd_savecfg)
 	{
 		km.save_config(prefs);
 		prefs->changed = 0;

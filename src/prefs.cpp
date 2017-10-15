@@ -187,6 +187,8 @@ void prefs_t::init()
 			desc("Ingame screenshots/movie");
 	key("warp", cmd_warp, 0, false); desc("Warp To Stage");
 	key("skill", cmd_skill, SKILL_NORMAL, false); desc("Warp Skill Level");
+	command("resaveall", cmd_resaveall, 0);
+			desc("Resave Config and Saves");
 }
 
 

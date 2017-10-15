@@ -44,6 +44,7 @@ class KOBO_save_manager
 	KOBO_campaign_info *analysis(int slot = -1, bool force = false);
 	KOBO_campaign *campaign(unsigned slot);
 	bool save(unsigned slot);
+	void resave_all();
 };
 
 #endif // _KOBO_SAVEMANAGER_H_

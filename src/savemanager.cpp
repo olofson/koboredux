@@ -122,3 +122,12 @@ bool KOBO_save_manager::save(unsigned slot)
 
 	return slots[slot].campaign->save();
 }
+
+
+void KOBO_save_manager::resave_all()
+{
+	load(-1);
+	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
+		if(!slots[i].campaign->empty())
+			slots[i].campaign->save(true);
+}

@@ -173,6 +173,7 @@ class prefs_t : public config_parser_t
 	int	cmd_autoshot;	//Take ingame screenshots
 	int	cmd_warp;
 	int	cmd_skill;
+	int	cmd_resaveall;
 };
 
 #endif	//_KOBO_PREFS_H_
