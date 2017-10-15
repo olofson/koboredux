@@ -97,7 +97,7 @@ display_t		*dhigh = NULL;
 display_t		*dscore = NULL;
 display_t		*dregion = NULL;
 display_t		*dlevel = NULL;
-weaponslot_t		*wslots[4] = { NULL, NULL, NULL, NULL };
+weaponslot_t		*wslots[WEAPONSLOTS] = { NULL, NULL, NULL, NULL };
 hledbar_t		*pxtop = NULL;
 hledbar_t		*pxbottom = NULL;
 vledbar_t		*pxleft = NULL;
@@ -659,7 +659,7 @@ void KOBO_main::init_dash_layout()
 	dscore->text("000000000");
 
 	// Console window: Weapon slots
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < WEAPONSLOTS; ++i)
 	{
 		place(wslots[i], (KOBO_TD_Items)(KOBO_D_DASH_WSLOT1 + i));
 		wslots[i]->slot(i);
@@ -912,7 +912,7 @@ int KOBO_main::init_display(prefs_t *p)
 	woverlay = new window_t(gengine);
 	dhigh = new display_t(gengine);
 	dscore = new display_t(gengine);
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < WEAPONSLOTS; ++i)
 		wslots[i] = new weaponslot_t(gengine);
 	wmap = new KOBO_radar_map(gengine);
 	wradar = new KOBO_radar_window(gengine);
@@ -944,7 +944,7 @@ void KOBO_main::close_display()
 	delete dregion;		dregion = NULL;
 	delete wradar;		wradar = NULL;
 	delete wmap;		wmap = NULL;
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < WEAPONSLOTS; ++i)
 	{
 		delete wslots[i];
 		wslots[i] = NULL;

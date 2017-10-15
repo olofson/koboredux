@@ -202,6 +202,8 @@ void dashboard_window_t::mode(dashboard_modes_t m, dashboard_transitions_t tr)
 	wradar->visible(main);
 	dhigh->visible(score);
 	dscore->visible(score);
+	for(int i = 0; i < WEAPONSLOTS; ++i)
+		wslots[i]->visible(ingame);
 	dregion->visible(ingame);
 	dlevel->visible(ingame);
 	pxtop->visible(main);

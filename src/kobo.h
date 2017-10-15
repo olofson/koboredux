@@ -40,6 +40,38 @@
 #include "savemanager.h"
 
 
+  /////////////////////////////////////////////////////////////////////////////
+ //	Constants
+/////////////////////////////////////////////////////////////////////////////
+
+// Number of weapon slots
+#define	WEAPONSLOTS	4
+
+// Sprite priority levels
+#define	LAYER_OVERLAY	0	// Mouse crosshair
+#define	LAYER_BULLETS	1	// Bullets - most important!
+#define	LAYER_FX	2	// Explosions and similar effects
+#define	LAYER_PLAYER	3	// Player and fire bolts
+#define	LAYER_ENEMIES	4	// Enemies
+#define	LAYER_BASES	5	// Bases and stationary enemies
+
+// NOTE: Needs to be a layer with 1:1 scroll ratio!
+#define	LAYER_PLANET	LAYER_BASES	// Spinning planet control
+
+#define	NOALPHA_THRESHOLD	64
+
+typedef enum
+{
+	STARFIELD_NONE = 0,
+	STARFIELD_OLD,
+	STARFIELD_PARALLAX
+} KOBO_StarfieldModes;
+
+
+  /////////////////////////////////////////////////////////////////////////////
+ //	Top level classes
+/////////////////////////////////////////////////////////////////////////////
+
 enum kobo_vmswitch_t {
 	KOBO_VIDEOMODE_TOGGLE,
 	KOBO_VIDEOMODE_WINDOWED,
@@ -274,7 +306,7 @@ extern display_t		*dhigh;
 extern display_t		*dscore;
 extern display_t		*dregion;
 extern display_t		*dlevel;
-extern weaponslot_t		*wslots[4];
+extern weaponslot_t		*wslots[WEAPONSLOTS];
 extern hledbar_t		*pxtop;
 extern hledbar_t		*pxbottom;
 extern vledbar_t		*pxleft;
@@ -283,30 +315,5 @@ extern vledbar_t		*pxright;
 extern int mouse_x, mouse_y;
 extern int mouse_left, mouse_middle, mouse_right;
 extern bool mouse_visible;
-
-
-  /////////////////////////////////////////////////////////////////////////////
- //	Constants
-/////////////////////////////////////////////////////////////////////////////
-
-// Sprite priority levels
-#define	LAYER_OVERLAY	0	// Mouse crosshair
-#define	LAYER_BULLETS	1	// Bullets - most important!
-#define	LAYER_FX	2	// Explosions and similar effects
-#define	LAYER_PLAYER	3	// Player and fire bolts
-#define	LAYER_ENEMIES	4	// Enemies
-#define	LAYER_BASES	5	// Bases and stationary enemies
-
-// NOTE: Needs to be a layer with 1:1 scroll ratio!
-#define	LAYER_PLANET	LAYER_BASES	// Spinning planet control
-
-#define	NOALPHA_THRESHOLD	64
-
-typedef enum
-{
-	STARFIELD_NONE = 0,
-	STARFIELD_OLD,
-	STARFIELD_PARALLAX
-} KOBO_StarfieldModes;
 
 #endif // _KOBO_H_
