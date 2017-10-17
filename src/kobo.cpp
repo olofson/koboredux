@@ -1772,7 +1772,7 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 		return false;	// No qualifiers!
 
 	// CTRL + F1: Restart audio engine
-	if(ms && KMOD_CTRL)
+	if(ms & KMOD_CTRL)
 	{
 		if((ev.type == SDL_KEYDOWN) && (ev.key.keysym.sym == SDLK_F1))
 		{
