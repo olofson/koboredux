@@ -719,12 +719,8 @@ void KOBO_main::init_dash_layout()
 	place(pxbottom, KOBO_D_DASH_BOTTOMLEDS);
 	place(pxleft, KOBO_D_DASH_LEFTLEDS);
 	place(pxright, KOBO_D_DASH_RIGHTLEDS);
-}
 
-
-void KOBO_main::build_soundtools()
-{
-	st_hotkeys = new label_t(gengine);
+	// Sound design tools
 	place(st_hotkeys, KOBO_D_SOUNDTOOLS_HOTKEYS);
 	st_hotkeys->color(wdash->map_rgb(16, 16, 16));
 	st_hotkeys->font(B_TOOL_FONT);
@@ -740,8 +736,6 @@ void KOBO_main::build_soundtools()
 			"F8: Kill all sounds\n"
 			"\r"
 			"F9-F12: Send(2, 0.25-1.0)");
-
-	st_symname = new display_t(gengine);
 	place(st_symname, KOBO_D_SOUNDTOOLS_SYMNAME);
 	st_symname->color(wdash->map_rgb(24, 24, 24));
 	st_symname->font(B_TOOL_FONT);
@@ -922,6 +916,8 @@ int KOBO_main::init_display(prefs_t *p)
 	pxbottom = new hledbar_t(gengine);
 	pxleft = new vledbar_t(gengine);
 	pxright = new vledbar_t(gengine);
+	st_hotkeys = new label_t(gengine);
+	st_symname = new display_t(gengine);
 
 	init_dash_layout();
 	screen.init_graphics();
@@ -1747,8 +1743,6 @@ void kobo_gfxengine_t::st_update_sound_displays()
 	if(!prefs->soundtools)
 		return;
 	log_printf(ULOG, "Selected sound %s\n", sound.symname(st_sound));
-	if(!km.st_symname)
-		km.build_soundtools();
 	km.st_symname->text(sound.symname(st_sound));
 }
 
@@ -2414,9 +2408,7 @@ void kobo_gfxengine_t::post_render()
 
 	if(prefs->soundtools)
 	{
-		// Make sure the GUI is built and visible
-		if(!km.st_symname)
-			km.build_soundtools();
+		// Make sure the GUI is visible
 		km.st_hotkeys->visible(true);
 		km.st_symname->visible(true);
 
@@ -2433,7 +2425,7 @@ void kobo_gfxengine_t::post_render()
 		ssy %= PIXEL2CS(WORLD_SIZEY);
 		wmain->sprite_fxp(ssx, ssy, B_SOUND_ICONS, 0);
 	}
-	else if(km.st_symname)
+	else
 	{
 		// Soundtools enabled and then disabled; hide the GUI!
 		km.st_hotkeys->visible(false);

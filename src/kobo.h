@@ -208,7 +208,6 @@ class KOBO_main
 	static void save_config(prefs_t *p);
 
 	static void init_dash_layout();
-	static void build_soundtools();
 	static int init_display(prefs_t *p);
 	static void close_display();
 
