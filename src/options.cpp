@@ -517,6 +517,11 @@ void interface_options_t::build()
 		item("Low", 50);
 		item("High", 25);
 		item("Silent", 0);
+	list("Shield Sound Suppression", &prf->shieldloud, OS_UPDATE_AUDIO);
+		item("Off", 100);
+		item("Low", 50);
+		item("High", 25);
+		item("Silent", 0);
 
 	xoffs = 0.5;
 	space(2);

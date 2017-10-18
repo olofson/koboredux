@@ -111,6 +111,7 @@ enum KOBO_mixer_group {
 	KOBO_DEFS(PLAYER_DEATH)		\
 	KOBO_DEFS(PLAYER_GUN)		\
 	KOBO_DEFS(PLAYER_FIRE_DENIED)	\
+	KOBO_DEFS(PLAYER_SHIELD)	\
 					\
 	KOBO_DEFS(NO_DAMAGE)		\
 					\
@@ -163,6 +164,9 @@ class KOBO_sound
 	static A2_handle sounds[S__COUNT];	// Sounds, songs etc
 	static unsigned sbank[S__COUNT];	// Bank each sound belongs to
 	static float buffer_latency;
+
+	static bool shield_enabled;
+	static A2_handle shieldhandle;
 
 	// Currently playing song
 	static int current_song;	// enum index
@@ -265,6 +269,7 @@ class KOBO_sound
 	static void g_player_charged_fire(float charge);
 	static void g_player_damage(float level = 1.0f);
 	static void g_player_explo_start();
+	static void g_player_shield(bool enable);
 
 	// Crossfade to a new ingame sfx group, then kill the old group
 	static void g_new_scene(int fadetime = 0);

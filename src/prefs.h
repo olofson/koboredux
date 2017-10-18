@@ -100,6 +100,7 @@ class prefs_t : public config_parser_t
 	int	scrollradar;	//Scrolling radar
 	int	stars;		//Number of parallax stars
 	int	cannonloud;	//Cannon loudness
+	int	shieldloud;	//Shield loudness
 	int	scalemode;	//Scaling filter mode
 	int	alpha;		//Alpha blending
 	int	brightness;	//Graphics brightness

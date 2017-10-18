@@ -117,6 +117,7 @@ void prefs_t::init()
 	yesno("scrollradar", scrollradar, 1); desc("Scrolling Radar");
 	key("stars", stars, 500); desc("Number of Parallax Stars");
 	key("cannonloud", cannonloud, 50); desc("Player Cannons Loudness");
+	key("shieldloud", shieldloud, 50); desc("Player Shield Loudness");
 	key("scalemode", scalemode, 0); desc("Scaling Filter Mode");
 	yesno("alpha", alpha, 1); desc("Use Alpha Blending");
 	key("brightness", brightness, 100); desc("Brightness");

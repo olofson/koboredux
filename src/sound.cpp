@@ -51,6 +51,9 @@ A2_handle KOBO_sound::sounds[S__COUNT];
 unsigned KOBO_sound::sbank[S__COUNT];
 float KOBO_sound::buffer_latency = 0.0f;
 
+bool KOBO_sound::shield_enabled = false;
+A2_handle KOBO_sound::shieldhandle = 0;
+
 int KOBO_sound::current_song = 0;
 bool KOBO_sound::music_is_ingame = false;
 
@@ -158,6 +161,10 @@ bool KOBO_sound::load(unsigned bank, const char *themepath,
 			a2_Kill(iface, gunhandle);
 			gunhandle = 0;
 			break;
+		  case S_PLAYER_SHIELD:
+			a2_Kill(iface, shieldhandle);
+			shieldhandle = 0;
+			break;
 		}
 		for(int j = 0; j < KOBO_MG__COUNT; ++j)
 			if(i == group_programs[j])
@@ -238,6 +245,9 @@ void KOBO_sound::unload(int bank)
 			  case S_PLAYER_GUN:
 				gunhandle = 0;
 				break;
+			  case S_PLAYER_SHIELD:
+				shieldhandle = 0;
+				break;
 			}
 			for(int j = 0; j < KOBO_MG__COUNT; ++j)
 				if(i == group_programs[j])
@@ -300,6 +310,8 @@ void KOBO_sound::prefschange()
 
 	if(gunhandle)
 		start_player_gun();
+	if(shield_enabled)
+		g_player_shield(true);
 }
 
 
@@ -784,7 +796,9 @@ void KOBO_sound::g_player_damage(float level)
 		return;
 	if(!volscale)
 		return;
-	if(checksound(S_PLAYER_DAMAGE, "KOBO_sound::g_player_damage()"))
+	if(shield_enabled)
+		g_control(shieldhandle, 2, level);
+	else if(checksound(S_PLAYER_DAMAGE, "KOBO_sound::g_player_damage()"))
 		a2_Play(iface, groups[KOBO_MG_SFX], sounds[S_PLAYER_DAMAGE],
 				0.0f, level);
 }
@@ -802,6 +816,37 @@ void KOBO_sound::g_player_explo_start()
 }
 
 
+void KOBO_sound::g_player_shield(bool enable)
+{
+	if(!iface)
+		return;
+	if(shieldhandle && !enable)
+	{
+		a2_Send(iface, shieldhandle, 1);
+		a2_Release(iface, shieldhandle);
+		shieldhandle = 0;
+	}
+	else if(enable && !shieldhandle)
+	{
+		if(!checksound(S_PLAYER_SHIELD,
+				"KOBO_sound::g_player_shield()"))
+			return;
+		shieldhandle = a2_Start(iface, groups[KOBO_MG_SFX],
+				sounds[S_PLAYER_SHIELD],
+				0.0f, (prefs->shieldloud << 14) / 6553600.0f);
+		if(shieldhandle < 0)
+		{
+			log_printf(WLOG, "Couldn't start player shield sound! "
+					" (%s)\n",
+					a2_ErrorString(
+					(A2_errors)-shieldhandle));
+			shieldhandle = 0;
+		}
+	}
+	shield_enabled = enable;
+}
+
+
 void KOBO_sound::g_new_scene(int fadetime)
 {
 	if(!iface)
@@ -812,6 +857,7 @@ void KOBO_sound::g_new_scene(int fadetime)
 	// Detach all continuous sounds, as they're now invalid
 	enemies.detach_sounds();
 	gunhandle = 0;
+	shieldhandle = 0;
 
 	// Fade out, then kill the current SFX group
 	a2_Send(iface, groups[KOBO_MG_SFX], 2, 0, (float)fadetime);

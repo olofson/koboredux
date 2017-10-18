@@ -875,6 +875,52 @@ export S_PLAYER_FIRE_DENIED(pP pV=1 pX)
 	a 0;		d 5
 }
 
+export S_PLAYER_SHIELD(pP pV=1 pX)
+{
+	struct { wtosc; panmix }
+	pan pX; vol pV; set
+
+	!damage_amount 0
+	!S 0
+	!A 1
+	@a .25
+
+	while (S > .001 or A) {
+		+S (A - S * .1)
+		w pulse25
+		+a (A * .5 + .5 * .25 + damage_amount - a * .1)
+		@p (rand 5 * damage_amount + 2)
+		p (damage_amount * 3)
+		*damage_amount .8
+		!D (damage_amount * 5 + 1)
+		d D
+
+		w triangle
+		-p 2.1
+		d (S * 15 + 4 - D)
+	}
+
+	a 0;	d 10
+
+	// Stop
+	1() {
+		A 0
+	}
+
+	// Damage
+	2(Dmg) {
+		damage_amount (Dmg * .5 + .5)
+		if (damage_amount > 2) {
+			damage_amount 2
+		}
+	}
+
+	// Positional update
+	3(npP npV npX Dur) {
+		vol npV; pan npX; ramp Dur
+	}
+}
+
 
  // Other sound effects
 ///////////////////////////////////////////////////////////////////////////////

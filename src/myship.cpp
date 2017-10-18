@@ -94,6 +94,17 @@ void KOBO_myship::state(KOBO_myship_state s)
 		}
 		break;
 	}
+	switch (s)
+	{
+	  case SHIP_DEAD:
+	  case SHIP_NORMAL:
+		sound.g_player_shield(false);
+		break;
+	  case SHIP_SHIELD:
+	  case SHIP_INVULNERABLE:
+		sound.g_player_shield(true);
+		break;
+	}
 	_state = s;
 }
 
@@ -410,11 +421,16 @@ void KOBO_myship::hit(int dmg)
 	if(!dmg)
 		return;
 
+	// Always trigger damage sfx; sound layer handles damage/shield
+	if(dmg < game.health / 2)
+		sound.g_player_damage((float)dmg / game.health * 2.0f);
+	else
+		sound.g_player_damage(1.0f);
+
 	switch(_state)
 	{
 	  case SHIP_SHIELD:
 	  case SHIP_INVULNERABLE:
-		sound.g_player_damage(0.5f);
 		return;
 	  default:
 		break;
@@ -436,11 +452,6 @@ void KOBO_myship::hit(int dmg)
 	else
 		log_printf(ULOG, "INVULNERABLE: Ignored %d damage to "
 				"player.\n", dmg);
-
-	if(dmg < game.health / 2)
-		sound.g_player_damage((float)dmg / game.health * 2.0f);
-	else
-		sound.g_player_damage(1.0f);
 
 	if(_health <= 0)
 	{
