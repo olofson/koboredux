@@ -103,7 +103,6 @@ bool KOBO_replay_gst::verify()
 		  case KOBO_EK_BLUEBLTEXPL:
 		  case KOBO_EK_BOLTEXPL:
 		  case KOBO_EK_ROCKEXPL:
-		  case KOBO_EK_BOMBDETO:
 			// These enemies should not affect gameplay!
 			continue;
 		  default:

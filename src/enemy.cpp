@@ -559,7 +559,9 @@ void KOBO_enemy::move_bomb1()
 	}
 	enemies.make(&bullet3, x, y, vx2, vy2);
 	enemies.make(&bullet3, x, y, vx3, vy3);
-	enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
+	KOBO_ParticleFXDef *pfxd = themedata.pfxdef(KOBO_PFX_BOMB1DETO);
+	if(pfxd)
+		wfire->Spawn(x + h, y + v, vx1, vy1, pfxd);
 	playsound(S_BOMB1_DETONATE);
 	release();
 }
@@ -646,7 +648,9 @@ void KOBO_enemy::move_bomb2()
 	enemies.make(&bullet3, x, y, vx3, vy3);
 	enemies.make(&bullet3, x, y, vx4, vy4);
 	enemies.make(&bullet3, x, y, vx5, vy5);
-	enemies.make(&bombdeto, x, y, -vx1 >> 2, -vy1 >> 2);
+	KOBO_ParticleFXDef *pfxd = themedata.pfxdef(KOBO_PFX_BOMB2DETO);
+	if(pfxd)
+		wfire->Spawn(x + h, y + v, vx1, vy1, pfxd);
 	playsound(S_BOMB2_DETONATE);
 	release();
 }
@@ -821,27 +825,6 @@ const KOBO_enemy_kind rockexpl = {
 	LAYER_FX,
 	0,
 	KOBO_EK_FX(ROCKEXPL)
-};
-
-
-/*
- * ===========================================================================
- *                                 bombdeto
- *                  Bomb detonation (not really an explosion!)
- * ===========================================================================
- */
-
-const KOBO_enemy_kind bombdeto = {
-	KOBO_EK_BOMBDETO,
-	0,
-	&KOBO_enemy::make_expl,
-	&KOBO_enemy::move_expl,
-	&KOBO_enemy::kill_unused,
-	-1,
-	B_BOMBDETO, 0,
-	LAYER_ENEMIES,
-	0,
-	KOBO_EK_FX(BOMBDETO)
 };
 
 

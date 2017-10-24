@@ -126,6 +126,24 @@ alias PFX_ENEMY_M2 PFX_CORE
 alias PFX_ENEMY_M3 PFX_CORE
 alias PFX_ENEMY_M4 PFX_CORE
 
+particles PFX_BOMB1DETO {
+	default
+	count	96
+	radius	3	3	0	1	0
+	speed	3	3	0	1	0
+	drag	.9	.9	1	1	0
+	fade	.9	.9	.7	1	0
+}
+
+particles PFX_BOMB2DETO {
+	default
+	count	128
+	radius	5	5	0	1	0
+	speed	5	5	0	1	0
+	drag	.9	.9	1	1	0
+	fade	.9	.9	.7	1	0
+}
+
 palette P_PLANET_R1 P_MAIN 0 0  1 1 9 9 5
 palette P_PLANET_R2 P_PLANET_R1
 palette P_PLANET_R3 P_PLANET_R1

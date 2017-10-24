@@ -50,7 +50,6 @@
 	KOBO_DEFS(ENEMY7, enemy7)		\
 	KOBO_DEFS(BOMB1, bomb1)			\
 	KOBO_DEFS(BOMB2, bomb2)			\
-	KOBO_DEFS(BOMBDETO, bombdeto)		\
 	KOBO_DEFS(CANNON, cannon)		\
 	KOBO_DEFS(PIPEIN, pipein)		\
 	KOBO_DEFS(CORE, core)			\
