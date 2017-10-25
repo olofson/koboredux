@@ -54,15 +54,16 @@ int KOBO_myship::nose_reload_timer;
 int KOBO_myship::tail_reload_timer;
 KOBO_player_bolt KOBO_myship::bolts[MAX_BOLTS];
 cs_obj_t *KOBO_myship::object;
+_shipTurr *KOBO_myship::shipTurr;
 
 
 KOBO_myship::KOBO_myship()
 {
 	memset(bolts, 0, sizeof(bolts));
 	object = NULL;
+	
 	init(true);
 }
-
 
 void KOBO_myship::state(KOBO_myship_state s)
 {
@@ -75,6 +76,7 @@ void KOBO_myship::state(KOBO_myship_state s)
 			gengine->free_obj(object);
 		object = NULL;
 		shield_timer = 0;
+					
 		break;
 	  case SHIP_SHIELD:
 		shield_timer += MYSHIP_SHIELD_DURATION;
@@ -92,6 +94,7 @@ void KOBO_myship::state(KOBO_myship_state s)
 			cs_obj_show(object);
 			cs_obj_hide(object);
 		}
+				
 		break;
 	}
 	switch (s)
@@ -119,6 +122,16 @@ int KOBO_myship::shield_time()
 
 void KOBO_myship::off()
 {
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	/// THIS IS A HACK TO ALLOCATE AT THE GAME START SINCE THE CONSTRUCTOR FUNCTION OF MYSHIP DOESN'T WORK
+	/// BLOODY HELL OLOFSON!!!
+	// allocate for the turret
+	if(!shipTurr) {
+		shipTurr = (_shipTurr *)malloc(sizeof(_shipTurr));
+		// set the initial angle
+		shipTurr->angle = 0.0;
+	}
+	
 	state(SHIP_DEAD);
 	int i;
 	for(i = 0; i < MAX_BOLTS; i++)
@@ -166,7 +179,8 @@ void KOBO_myship::init(bool newship)
 		if(bolts[i].object)
 			gengine->free_obj(bolts[i].object);
 	memset(bolts, 0, sizeof(bolts));
-
+	
+	// now you can jump to the other functions
 	state(SHIP_NORMAL);
 	apply_position();
 }
@@ -603,8 +617,22 @@ void KOBO_myship::update_position()
 
 	// Deal velocity based damage to the ship
 	hit(game.scale_vel_damage(impact, game.crash_damage));
+	
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	updateTurr();
+	
 }
 
+// TODO-IMAZIGHEN | to find what I added and not get lost
+// set the angle property of the turret
+void KOBO_myship::setTurrAng(const int argAngle) {
+	//
+	shipTurr->angle = argAngle;
+}
+void KOBO_myship::updateTurr() {
+	// update rotation later on and stuff, bloody hell olofson
+	
+}
 
 int KOBO_myship::hit_bolt(int ex, int ey, int hitsize, int health)
 {
@@ -676,7 +704,7 @@ void KOBO_myship::render()
 {
 	if(!myship.object)
 		return;
-
+	
 	// Render player ship
 	int maxd = dframes << 8;
 	int tdi = ((di - 1) * dframes << 8) / 8 + 127;
@@ -698,10 +726,35 @@ void KOBO_myship::render()
 	{
 		if(!bolts[i].state || !bolts[i].object)
 			continue;
-		wmain->sprite_fxp(bolts[i].object->point.gx,
-				bolts[i].object->point.gy, B_BOLT,
-				bolt_frame(bolts[i].dir, bolts[i].state - 2));
+			
+// TODO-IMAZIGHEN | to find what I added and not get lost
+		// HACK - to shoot a one frame bold from the turret
+		// scale the bolt a bit
+		if(bolts[i].dir > 150 && prefs->mouse)
+			wmain->sprite_fxp_scale(bolts[i].object->point.gx,
+					bolts[i].object->point.gy, B_BOLT,
+					66, 0.6, 0.6);
+		else
+			wmain->sprite_fxp(bolts[i].object->point.gx,
+					bolts[i].object->point.gy, B_BOLT,
+					bolt_frame(bolts[i].dir, bolts[i].state - 2));
 	}
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	// check if we're using the mouse and that it's not muted
+	if(!prefs->mouse)
+		KOBO_myship::setTurrAng((int)((di - 1) * 64 / 8));
+	// fire back force
+ 	if(nose_reload_timer <= 0) {
+ 		// calculate the angle's vector
+ 		float tempAng = (float)shipTurr->angle;
+ 		float tempX = sin(tempAng);
+ 		float tempY = cos(tempAng);
+ 		//
+		wmain->sprite_fxp_scale(object->point.gx, object->point.gy,
+				B_PTURRET1, shipTurr->angle % TURR_FRAMES, 1.0, 1.0);
+	} else
+		wmain->sprite_fxp_scale(object->point.gx, object->point.gy,
+				B_PTURRET1, shipTurr->angle % TURR_FRAMES, 1.0, 1.0);
 
 	// Render shield
 	switch(_state)
@@ -728,10 +781,13 @@ void KOBO_myship::render()
 		wmain->circle_fxp(object->point.gx, object->point.gy, r);
 		wmain->blendmode();
 	}
+	//				
+
 }
 
-
-void KOBO_myship::shot_single(float dir, int loffset, int hoffset, int speed)
+// TODO-IMAZIGHEN | to find what I added and not get lost
+// added direction number, for framed direction
+void KOBO_myship::shot_single(float dir, int dirNum, int loffset, int hoffset, int speed)
 {
 	int i;
 	for(i = 0; i < MAX_BOLTS && bolts[i].state; i++)
@@ -742,12 +798,22 @@ void KOBO_myship::shot_single(float dir, int loffset, int hoffset, int speed)
 		return;
 	}
 	bolts[i].state = 1;
-	bolts[i].dir = dir + .5f;
-	int sdi = sin(M_PI * (dir - 1) / 4) * 256.0f;
-	int cdi = cos(M_PI * (dir - 1) / 4) * 256.0f;
+	
+	// direction of the bol
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	// HACK - for shooting a still sprite
+	if(dirNum > 7)
+		bolts[i].dir = 200;
+	else
+		bolts[i].dir = dir + .5f;
+
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	int sdi = sin(M_PI * (dir - 1) / dirNum) * 256.0f;
+	int cdi = cos(M_PI * (dir - 1) / dirNum) * 256.0f;
 	bolts[i].x = x - vx + loffset * sdi + hoffset * cdi;
 	bolts[i].y = y - vy - loffset * cdi + hoffset * sdi;
 	int sp = game.bolt_speed * speed;
+	//
 	bolts[i].dx = vx + (sp * sdi >> 16);
 	bolts[i].dy = vy - (sp * cdi >> 16);
 	if(!bolts[i].object)
@@ -764,14 +830,21 @@ void KOBO_myship::shot_single(float dir, int loffset, int hoffset, int speed)
 
 void KOBO_myship::nose_fire()
 {
-	shot_single(di + GUN_NOSE_DIR - 1, GUN_NOSE_Y, GUN_NOSE_X);
+
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	if(prefs->mouse)
+		shot_single(shipTurr->angle + TURR_NOSE_DIR - 1, TURR_FRAMES / 2, TURR_NOSE_Y, TURR_NOSE_X);
+	else
+		shot_single(di + GUN_NOSE_DIR - 1, 4, GUN_NOSE_Y, GUN_NOSE_X);
+		
+	// reload timer
 	nose_reload_timer = game.noseloadtime;
 }
 
 
 void KOBO_myship::tail_fire()
 {
-	shot_single((di + GUN_TAIL_DIR - 1) % 8 + 1, GUN_TAIL_Y, GUN_TAIL_X);
+	shot_single((di + GUN_TAIL_DIR - 1) % 8 + 1, 4, GUN_TAIL_Y, GUN_TAIL_X);
 	tail_reload_timer = game.tailloadtime;
 }
 
@@ -806,7 +879,7 @@ void KOBO_myship::charged_fire(int dir)
 		float spread = gamerand.get(16) * (8.0f / 65536.0f) - 4.0f;
 		spread *= game.charged_spread * (1.0f / 360.0f);
 		int cx = gamerand.get(3) - 4;
-		shot_single(dir + spread, GUN_NOSE_Y - labs(cx), cx,
+		shot_single(dir + spread, 4, GUN_NOSE_Y - labs(cx), cx,
 				(b + maxbolts * 2) * 16384 / maxbolts);
 	}
 	charged_cooltimer = game.charged_cooldown;
@@ -833,7 +906,7 @@ void KOBO_myship::fire_blossom()
 	float dir = 1.0f;
 	float spread = 8.0f / n;
 	for(int b = 0; b < n; ++b, dir += spread)
-		shot_single(dir, GUN_BLOSSOM_R, 0,
+		shot_single(dir, 4, GUN_BLOSSOM_R, 0,
 				(gamerand.get(3) + 8) << 12);
 	_charge -= game.blossom_drain * n;
 	blossom_cooltimer = game.blossom_cooldown;
@@ -844,12 +917,12 @@ void KOBO_myship::set_position(int px, int py)
 {
 	x = PIXEL2CS(px);
 	y = PIXEL2CS(py);
-
+			
 	if(object)
 	{
 		apply_position();
 		cs_point_force(&object->point);
-	}
+	}	
 }
 
 
@@ -873,4 +946,16 @@ bool KOBO_myship::in_range(int px, int py, int range, int &dist)
 		return false;
 	dist = sqrt(dx*dx + dy*dy);
 	return dist <= range;
+}
+
+//
+void KOBO_myship::freeTurr() {
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	/// VERY DANGEROUS HACK DON'T DO IT AT HOME OLOFSON!!!!
+	// check the turret object, since most of the time we start dead and the turret is not allocated
+	if(shipTurr) {
+		// now deallocate the turret and null it
+		free(shipTurr);
+	}
+	shipTurr = NULL;
 }

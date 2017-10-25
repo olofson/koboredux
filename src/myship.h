@@ -44,7 +44,15 @@ struct KOBO_player_bolt
 	int dir, state;
 	cs_obj_t *object;
 };
-
+// TODO-IMAZIGHEN | to find what I added and not get lost
+// the top ship turret structure
+struct _shipTurr {
+	// orientation
+	int angle;
+	// type of turret, for upgrades
+	unsigned int type;
+};
+// main ship class
 class KOBO_myship
 {
 	static KOBO_myship_state _state;
@@ -70,8 +78,10 @@ class KOBO_myship
 	// For the gfxengine connection
 	static cs_obj_t *object;
 
-	static void shot_single(float dir, int loffset, int hoffset,
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	static void shot_single(float dir, int dirNum, int loffset, int hoffset,
 			int speed = 65536);
+			
 	static void nose_fire();
 	static void tail_fire();
 	static void charged_fire(int dir);
@@ -82,8 +92,21 @@ class KOBO_myship
 	static void handle_controls();
 	static void update_position();
 	static void kill_bolt(int bolt, bool impact);
+
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	/// i had to make it public due to the way the code handles the ship creation and deletion, it will be freed in kobo.cpp
+	// the turret
+	static _shipTurr *shipTurr;	
+	static void updateTurr();
+
   public:
 	KOBO_myship();
+	
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	static void freeTurr();
+	static void setTurrAng(const int argAngle);
+	static int getTurrAng() { return shipTurr->angle; };
+	
 	static KOBO_player_controls decode_input();
 	static void control(KOBO_player_controls c)	{ ctrl = c; }
 	static KOBO_player_controls control()		{ return ctrl; }

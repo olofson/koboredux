@@ -186,6 +186,11 @@ static int main_init()
 
 static void main_cleanup()
 {
+
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	// never forget the turret
+	KOBO_myship::freeTurr();
+	
 	km.close_logging(true);
 	delete gengine;
 	gengine = NULL;
@@ -1894,9 +1899,10 @@ void kobo_gfxengine_t::mouse_motion(SDL_Event &ev)
 	gsm.pos(mouse_x, mouse_y);
 
 	if(prefs->mouse)
+		// pass the real mouse coordinates too
 		gamecontrol.mouse_position(
 				mouse_x - DASHX(MAIN) - DASHW(MAIN) / 2,
-				mouse_y - DASHY(MAIN) - DASHH(MAIN) / 2);
+				mouse_y - DASHY(MAIN) - DASHH(MAIN) / 2, 1);
 }
 
 

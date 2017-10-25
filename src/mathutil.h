@@ -47,6 +47,12 @@ static inline int mod(int a, int b)
  * FIXME: Better version?
  *	a = 84 * q / 256 - 95 * q*q / 524288 - 8 * q*q*q / 16777216
  */
+ 
+// TODO-IMAZIGHEN | to find what I added and not get lost
+inline float RadToDeg(float radians) {
+    return radians * (180.0 / M_PI);
+}
+ 
 static inline int fastatan(int q)
 {
 	int q2 = q * q;

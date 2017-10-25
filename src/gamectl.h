@@ -115,6 +115,10 @@ class gamecontrol_t
 	static void clear();		// Clear all input state
 	static void reset_flanks();	// Reset the pressed()/released() state
 	static void mouse_mute(bool m);	// Mute mouse motion (not buttons!)
+	
+// TODO-IMAZIGHEN | to find what I added and not get lost
+	static bool isMouseMuted() { return mouse_muted; };
+
 	static gc_targets_t map(SDL_Keysym sym)
 	{
 		int src;
@@ -124,7 +128,7 @@ class gamecontrol_t
 	static void releasebtn(gc_targets_t b, gc_sources_t s);
 	static void press(SDL_Keysym sym);
 	static void release(SDL_Keysym sym);
-	static void mouse_position(int h, int v);
+	static void mouse_position(int h, int v, int menabled);
 	static int dir()			{ return direction; }
 	static bool dir_push();
 	static bool down(gc_targets_t b)	{ return state[b]; }

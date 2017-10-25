@@ -234,8 +234,9 @@ void gamecontrol_t::releasebtn(gc_targets_t b, gc_sources_t s)
 	gamecontrol_t::change();
 }
 
-
-void gamecontrol_t::mouse_position(int h, int v)
+// TODO-IMAZIGHEN | to find what I added and not get lost
+// pass the real mouse values too
+void gamecontrol_t::mouse_position(int h, int v, int menabled)
 {
 	if(mouse_muted)
 		return;
@@ -251,17 +252,20 @@ void gamecontrol_t::mouse_position(int h, int v)
 		break;
 	}
 
+// TODO-IMAZIGHEN | to find what I added and not get lost
 	// Determine direction
-	int newdir = speed2dir(h, v, 8);
+	//int newdir = speed2dir(h, v, 8);
 
 	// Determine whether or not we're "pushing". Note that we need to
 	// "blip" movekey_pressed for every change regardless, as the ship will
 	// not latch new directions otherwise!
-	mouse_sprint = (v * v + h * h >=
+	/*mouse_sprint = (v * v + h * h >=
 			prefs->mouse_threshold * prefs->mouse_threshold ||
-			newdir != direction);
+			newdir != direction);*/
 
-	direction = newdir;
+	//direction = newdir;
+	// set the angle
+	KOBO_myship::setTurrAng((int)speed2dir(h, v, TURR_FRAMES));
 }
 
 

@@ -225,6 +225,12 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	GUN_NOSE_X		0
 #define	GUN_NOSE_Y		15
 
+// TODO-IMAZIGHEN | to find what I added and not get lost
+#define TURR_NOSE_DIR	1
+#define TURR_NOSE_X		0
+#define TURR_NOSE_Y		15
+#define TURR_FRAMES		64
+
 #define	GUN_TAIL_DIR		4
 #define	GUN_TAIL_X		0
 #define	GUN_TAIL_Y		15

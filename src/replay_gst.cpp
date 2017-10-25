@@ -42,6 +42,7 @@ bool KOBO_replay_gst::record()
 	score = manage.current_score();
 	player.x = myship.get_csx();
 	player.y = myship.get_csy();
+	player.turrAngle = myship.getTurrAng();
 	player.health = myship.health();
 	player.charge = myship.charge();
 	for(int i = 0; i < KOBO_EK__COUNT; ++i)
@@ -91,6 +92,7 @@ bool KOBO_replay_gst::verify()
 	verify("score", "", score, manage.current_score());
 	verify("player.x", "", player.x, myship.get_csx());
 	verify("player.y", "", player.y, myship.get_csy());
+	verify("player.turrAngle", "", player.turrAngle, myship.getTurrAng());
 	verify("player.health", "", player.health, myship.health());
 	verify("player.charge", "", player.charge, myship.charge());
 	for(int i = 0; i < KOBO_EK__COUNT; ++i)
@@ -131,6 +133,7 @@ bool KOBO_replay_gst::save(pfile_t *pf)
 	pf->write(score);
 	pf->write(player.x);
 	pf->write(player.y);
+	pf->write(player.turrAngle);
 	pf->write(player.health);
 	pf->write(player.charge);
 
@@ -157,6 +160,7 @@ bool KOBO_replay_gst::load(pfile_t *pf)
 	pf->read(score);
 	pf->read(player.x);
 	pf->read(player.y);
+	pf->read(player.turrAngle);
 	pf->read(player.health);
 	pf->read(player.charge);
 

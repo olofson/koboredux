@@ -50,7 +50,7 @@
 // Sprite priority levels
 #define	LAYER_OVERLAY	0	// Mouse crosshair
 #define	LAYER_BULLETS	1	// Bullets - most important!
-#define	LAYER_FX	2	// Explosions and similar effects
+#define	LAYER_FX		2	// Explosions and similar effects
 #define	LAYER_PLAYER	3	// Player and fire bolts
 #define	LAYER_ENEMIES	4	// Enemies
 #define	LAYER_BASES	5	// Bases and stationary enemies
