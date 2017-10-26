@@ -30,6 +30,7 @@
 
 int gamecontrol_t::direction = 1;
 int gamecontrol_t::new_direction = 0;
+int gamecontrol_t::turret_dir = 0;
 int gamecontrol_t::latch_timer = 0;
 bool gamecontrol_t::movekey_pressed = false;
 bool gamecontrol_t::key_sprint = false;
@@ -59,6 +60,7 @@ gamecontrol_t::gamecontrol_t()
 void gamecontrol_t::clear()
 {
 	direction = 1;
+	turret_dir = 0;
 	movekey_pressed = key_sprint = mouse_sprint = mouse_muted = false;
 }
 
@@ -72,6 +74,7 @@ void gamecontrol_t::mouse_mute(bool m)
 		// also kills keyboard/joystick state, which is annoying when
 		// navigating through a campaign replay.
 		direction = 1;
+		turret_dir = 0;
 		mouse_sprint = false;
 	}
 }
@@ -234,38 +237,40 @@ void gamecontrol_t::releasebtn(gc_targets_t b, gc_sources_t s)
 	gamecontrol_t::change();
 }
 
-// TODO-IMAZIGHEN | to find what I added and not get lost
-// pass the real mouse values too
-void gamecontrol_t::mouse_position(int h, int v, int menabled)
+
+void gamecontrol_t::mouse_position(int h, int v)
 {
 	if(mouse_muted)
 		return;
 
 	switch(prefs->mousemode)
 	{
-	  case MMD_OFF:
-		return;
-	  case MMD_CROSSHAIR:
+	  case MMD_SHIP:
+	  {
+		// Determine new heading for the ship
+		int newdir = speed2dir(h, v, 8);
+
+		// Determine whether or not we're "pushing". Note that we need
+		// to "blip" movekey_pressed for every change regardless, as
+		// the ship will not latch new directions otherwise!
+		mouse_sprint = (v * v + h * h >=
+				prefs->mouse_threshold *
+				prefs->mouse_threshold ||
+				newdir != direction);
+
+		direction = newdir;
+		turret_dir = (direction - 1) * AIM_RESOLUTION / 8;
 		break;
-	  case MMD_RELATIVE:
-		// Insert delta pos sensitivity filter here
+	  }
+	  case MMD_TURRET:
+	  {
+		// Determine direction of the turret
+		int newdir = speed2dir(h, v, AIM_RESOLUTION);
+		if(newdir)
+			turret_dir = newdir - 1;
 		break;
+	  }
 	}
-
-// TODO-IMAZIGHEN | to find what I added and not get lost
-	// Determine direction
-	//int newdir = speed2dir(h, v, 8);
-
-	// Determine whether or not we're "pushing". Note that we need to
-	// "blip" movekey_pressed for every change regardless, as the ship will
-	// not latch new directions otherwise!
-	/*mouse_sprint = (v * v + h * h >=
-			prefs->mouse_threshold * prefs->mouse_threshold ||
-			newdir != direction);*/
-
-	//direction = newdir;
-	// set the angle
-	KOBO_myship::setTurrAng((int)speed2dir(h, v, TURR_FRAMES));
 }
 
 

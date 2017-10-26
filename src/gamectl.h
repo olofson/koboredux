@@ -64,9 +64,8 @@ enum gc_targets_t
 
 enum gc_mousemodes_t
 {
-	MMD_OFF = 0,
-	MMD_CROSSHAIR,
-	MMD_RELATIVE
+	MMD_SHIP = 1,
+	MMD_TURRET
 };
 
 
@@ -82,11 +81,11 @@ enum gc_sources_t
 };
 
 
+#define	AIM_RESOLUTION			256
+
 enum KOBO_player_controls
 {
 	KOBO_PC_NONE =			0,
-
-	KOBO_PC_DIR =			0x0f,	// Dirs 1..8; 0 is "neutral"
 
 	KOBO_PC_PRIMARY =		0x10,	// Fire primary weapon
 	KOBO_PC_SECONDARY =		0x20,	// Fire secondary weapon
@@ -95,16 +94,19 @@ enum KOBO_player_controls
 	KOBO_PC_FIRE =		KOBO_PC_PRIMARY | KOBO_PC_SECONDARY |
 				KOBO_PC_TERTIARY | KOBO_PC_QUATERNARY,
 
-	KOBO_PC_END =			0xff00	// End-of-replay
+	KOBO_PC_END =			0xffff	// End-of-replay
 };
 
+#define	KOBO_PC_DIR(x)	((x) & 0x0f)
+#define	KOBO_PC_AIM(x)	(((x) & 0xff00) >> 8)
 
 class gamecontrol_t
 {
 	static unsigned state[BTN__COUNT];	// Current state
 	static unsigned _pressed[BTN__COUNT];	// Pressed during this frame
 	static unsigned _released[BTN__COUNT];	// Released during this frame
-	static int direction, new_direction;
+	static int direction, new_direction;	// [1..8; 0 means undefined]
+	static int turret_dir;			// [0..255]
 	static int latch_timer;
 	static bool movekey_pressed, key_sprint, mouse_sprint, mouse_muted;
 	static void change();
@@ -115,10 +117,6 @@ class gamecontrol_t
 	static void clear();		// Clear all input state
 	static void reset_flanks();	// Reset the pressed()/released() state
 	static void mouse_mute(bool m);	// Mute mouse motion (not buttons!)
-	
-// TODO-IMAZIGHEN | to find what I added and not get lost
-	static bool isMouseMuted() { return mouse_muted; };
-
 	static gc_targets_t map(SDL_Keysym sym)
 	{
 		int src;
@@ -128,9 +126,10 @@ class gamecontrol_t
 	static void releasebtn(gc_targets_t b, gc_sources_t s);
 	static void press(SDL_Keysym sym);
 	static void release(SDL_Keysym sym);
-	static void mouse_position(int h, int v, int menabled);
+	static void mouse_position(int h, int v);
 	static int dir()			{ return direction; }
 	static bool dir_push();
+	static int aim()			{ return turret_dir; }
 	static bool down(gc_targets_t b)	{ return state[b]; }
 	static bool pressed(gc_targets_t b)	{ return _pressed[b]; }
 	static bool released(gc_targets_t b)	{ return _released[b]; }

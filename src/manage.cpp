@@ -1024,9 +1024,9 @@ KOBO_player_controls _manage::controls_play(KOBO_player_controls ctrl)
 //
 void _manage::controls_retry_skip(KOBO_player_controls ctrl)
 {
-	if((ctrl & KOBO_PC_DIR) != (lastctrl & KOBO_PC_DIR))
+	if(KOBO_PC_DIR(ctrl) != KOBO_PC_DIR(lastctrl))
 	{
-		switch(ctrl & KOBO_PC_DIR)
+		switch(KOBO_PC_DIR(ctrl))
 		{
 		  case 1:	// Up
 			if(get_next_bookmark() >= replay_duration())
@@ -1088,7 +1088,7 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 	float rps = KOBO_REPLAY_NORMAL_RATE;
 	float vol = KOBO_REPLAY_NORMAL_VOL;
 	float pch = KOBO_REPLAY_NORMAL_PITCH;
-	switch(ctrl & KOBO_PC_DIR)
+	switch(KOBO_PC_DIR(ctrl))
 	{
 	  case 3:	// Right
 		rps = KOBO_REPLAY_FAST_RATE;
@@ -1117,8 +1117,8 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 {
 	// Playback skip controls
-	if((ctrl & KOBO_PC_DIR) != (lastctrl & KOBO_PC_DIR))
-		switch(ctrl & KOBO_PC_DIR)
+	if(KOBO_PC_DIR(ctrl) != KOBO_PC_DIR(lastctrl))
+		switch(KOBO_PC_DIR(ctrl))
 		{
 		  case 1:	// Up
 			if(campaign->get_replay(selected_stage + 1))
@@ -1144,7 +1144,7 @@ KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 	float rps = KOBO_REPLAY_NORMAL_RATE;
 	float vol = KOBO_REPLAY_NORMAL_VOL;
 	float pch = KOBO_REPLAY_NORMAL_PITCH;
-	switch(ctrl & KOBO_PC_DIR)
+	switch(KOBO_PC_DIR(ctrl))
 	{
 	  case 3:	// Right
 		rps = KOBO_REPLAY_FAST_RATE;

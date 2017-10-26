@@ -44,15 +44,7 @@ struct KOBO_player_bolt
 	int dir, state;
 	cs_obj_t *object;
 };
-// TODO-IMAZIGHEN | to find what I added and not get lost
-// the top ship turret structure
-struct _shipTurr {
-	// orientation
-	int angle;
-	// type of turret, for upgrades
-	unsigned int type;
-};
-// main ship class
+
 class KOBO_myship
 {
 	static KOBO_myship_state _state;
@@ -60,7 +52,9 @@ class KOBO_myship
 	static KOBO_player_controls ctrl;
 	static int di;		// Direction (1: N, 2: NE, 3: W etc)
 	static int fdi;		// Filtered direction (sprite frames, 24:8)
-	static int dframes;	// Number of sprite rotation frames
+	static int turret_di;	// Turret aim direction ([0, 255])
+	static int dframes;	// Number of ship sprite rotation frames
+	static int tframes;	// Number of turret sprite rotation frames
 	static int x, y;	// Position
 	static int vx, vy;	// Velocity
 	static int ax, ay;	// Acceleration
@@ -78,10 +72,8 @@ class KOBO_myship
 	// For the gfxengine connection
 	static cs_obj_t *object;
 
-// TODO-IMAZIGHEN | to find what I added and not get lost
-	static void shot_single(float dir, int dirNum, int loffset, int hoffset,
-			int speed = 65536);
-			
+	static void shot_single(float doffset, int loffset, int hoffset,
+			float boltdir = -1.0f, int boltspeed = 65536);
 	static void nose_fire();
 	static void tail_fire();
 	static void charged_fire(int dir);
@@ -93,20 +85,9 @@ class KOBO_myship
 	static void update_position();
 	static void kill_bolt(int bolt, bool impact);
 
-// TODO-IMAZIGHEN | to find what I added and not get lost
-	/// i had to make it public due to the way the code handles the ship creation and deletion, it will be freed in kobo.cpp
-	// the turret
-	static _shipTurr *shipTurr;	
-	static void updateTurr();
-
   public:
 	KOBO_myship();
-	
-// TODO-IMAZIGHEN | to find what I added and not get lost
-	static void freeTurr();
-	static void setTurrAng(const int argAngle);
-	static int getTurrAng() { return shipTurr->angle; };
-	
+
 	static KOBO_player_controls decode_input();
 	static void control(KOBO_player_controls c)	{ ctrl = c; }
 	static KOBO_player_controls control()		{ return ctrl; }

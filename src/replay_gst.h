@@ -54,7 +54,6 @@ class KOBO_replay_gst
 		int32_t		x, y;
 		int16_t		health;
 		int16_t		charge;
-		int16_t		turrAngle;
 	} player;
 	KOBO_enemystats	enemystats[KOBO_EK__COUNT];
 };
