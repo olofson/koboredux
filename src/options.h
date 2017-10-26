@@ -63,7 +63,11 @@ class audio_options_t : public config_form_t
 	int driver;
 	const char *drivers[MAX_AUDIO_DRIVERS];
   public:
-	audio_options_t(gfxengine_t *e) : config_form_t(e) { }
+	audio_options_t(gfxengine_t *e) : config_form_t(e)
+	{
+		driver = -1;
+		memset(drivers, 0, sizeof(drivers));
+	}
 	void build();
 	void prepare_to_apply();
 };
