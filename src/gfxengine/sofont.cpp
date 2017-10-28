@@ -350,8 +350,10 @@ void SoFont::PutString(int x, int y, const char *text, SDL_Rect *clip)
 	int ofs, i = 0;
 	SDL_Rect srcrect, dstrect;
 	int targetw;
-	if(!clip)
-		SDL_GetRendererOutputSize(target, &targetw, NULL);
+	if(clip)
+		targetw = clip->x + clip->w;
+	else
+		SDL_RenderGetLogicalSize(target, &targetw, NULL);
 	while(text[i] != '\0')
 	{
 		if(text[i] == ' ')
@@ -391,22 +393,14 @@ void SoFont::PutString(int x, int y, const char *text, SDL_Rect *clip)
 		else
 			i++;	// other chars are ignored
 
-		// Coarse clipping
-		if(clip)
-		{
-			if(x > clip->x + clip->w)
-				return;
-		}
-		else
-		{
-			if(x > targetw)
-				return;
-		}
+		// Culling
+		if(x > targetw)
+			break;
 	}
 }
 
 void SoFont::PutStringWithCursor(int xs, int y,
-		const char *text, int cursPos, SDL_Rect * clip,
+		const char *text, int cursPos, SDL_Rect *clip,
 		bool showCurs)
 {
 	if((!glyphs) || (!text))
@@ -503,7 +497,7 @@ int SoFont::TextWidth(const char *text, int min, int max)
 void SoFont::XCenteredString(int y, const char *text, SDL_Rect *clip)
 {
 	int targetw;
-	SDL_GetRendererOutputSize(target, &targetw, NULL);
+	SDL_RenderGetLogicalSize(target, &targetw, NULL);
 	PutString(targetw / 2 - TextWidth(text) / 2, y, text, clip);
 }
 
@@ -515,7 +509,7 @@ void SoFont::CenteredString(int x, int y, const char *text, SDL_Rect *clip)
 void SoFont::CenteredString(const char *text, SDL_Rect *clip)
 {
 	int targetw, targeth;
-	SDL_GetRendererOutputSize(target, &targetw, &targeth);
+	SDL_RenderGetLogicalSize(target, &targetw, &targeth);
 	CenteredString(targetw / 2, targeth / 2, text, clip);
 }
 
