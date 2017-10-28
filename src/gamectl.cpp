@@ -71,7 +71,7 @@ void gamecontrol_t::mouse_mute(bool m)
 		// Only clear state if actually using mouse input, because this
 		// also kills keyboard/joystick state, which is annoying when
 		// navigating through a campaign replay.
-		direction = 1;
+		direction = 0;
 		mouse_sprint = false;
 	}
 }
