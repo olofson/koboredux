@@ -54,6 +54,7 @@ int KOBO_myship::nose_reload_timer;
 int KOBO_myship::tail_reload_timer;
 KOBO_player_bolt KOBO_myship::bolts[MAX_BOLTS];
 cs_obj_t *KOBO_myship::object = NULL;
+bool KOBO_myship::_visible = true;
 
 
 void KOBO_myship::state(KOBO_myship_state s)
@@ -666,7 +667,7 @@ void KOBO_myship::force_position()
 
 void KOBO_myship::render()
 {
-	if(!myship.object)
+	if(!myship.object || !_visible)
 		return;
 
 	// Render player ship

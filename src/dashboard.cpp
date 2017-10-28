@@ -198,6 +198,7 @@ void dashboard_window_t::mode(dashboard_modes_t m, dashboard_transitions_t tr)
 	wlowsprites->visible(main);
 	wfire->visible(main);
 	whighsprites->visible(main);
+	myship.visible(ingame);
 	whealth->visible(main);
 	wcharge->visible(main);
 	wradar->visible(main);

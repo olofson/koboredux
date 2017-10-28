@@ -69,6 +69,7 @@ class KOBO_myship
 
 	// For the gfxengine connection
 	static cs_obj_t *object;
+	static bool _visible;
 
 	static void shot_single(float dir, int loffset, int hoffset,
 			int speed = 65536);
@@ -136,6 +137,7 @@ class KOBO_myship
 	{
 		return 32 + 4 + ((dir - 1) & 3) * 8;
 	}
+	static void visible(bool vis)	{ _visible = vis; }
 };
 
 extern KOBO_myship myship;
