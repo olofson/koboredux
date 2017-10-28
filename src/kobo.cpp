@@ -2518,7 +2518,8 @@ void kobo_gfxengine_t::post_render()
 		if(prefs->debug)
 			woverlay->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,
 					B_CROSSHAIR, 0);
-		wscreen->sprite(mouse_x, mouse_y, B_CROSSHAIR, 0);
+		wscreen->sprite(mouse_x + km.xoffs, mouse_y + km.yoffs,
+				B_CROSSHAIR, 0);
 	}
 
 	// Screenshot video - frame rates in Hz; 999 ==> every rendered frame
