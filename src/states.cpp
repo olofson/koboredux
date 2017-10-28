@@ -585,6 +585,10 @@ void st_game_t::press(gc_targets_t button)
 
 void st_game_t::frame()
 {
+	// Check mouse capture state here, as video restarts will reset it!
+	if(prefs->mousecapture)
+		if(!SDL_GetRelativeMouseMode())
+			SDL_SetRelativeMouseMode(SDL_TRUE);
 	if(prefs->debug)
 		info = enumstr(manage.state());
 	switch(manage.state())
