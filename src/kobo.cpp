@@ -1897,7 +1897,8 @@ void kobo_gfxengine_t::mouse_motion(SDL_Event &ev)
 	mouse_visible = true;
 	mouse_timer = SDL_GetTicks();
 
-	gsm.pos(mouse_x, mouse_y);
+	// The GUI expects absolute screen coordinates; not dashboard relative!
+	gsm.pos(mouse_x + km.xoffs, mouse_y + km.yoffs);
 
 	if(prefs->mouse)
 		gamecontrol.mouse_position(

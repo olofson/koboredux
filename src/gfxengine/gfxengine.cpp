@@ -912,7 +912,7 @@ int gfxengine_t::show()
 	SDL_RenderSetLogicalSize(sdlrenderer, _width, _height);
 
 	SDL_SetWindowTitle(sdlwindow, _title);
-	SDL_ShowCursor(1/*_cursor*/);
+	SDL_ShowCursor(_cursor);
 
 	cs_engine_set_size(csengine, _width, _height);
 	csengine->filter = motion_filter_mode;
