@@ -737,21 +737,15 @@ void cs_engine_tween(cs_engine_t *e, float fractional_frame)
 }
 
 
-void cs_engine_render(cs_engine_t *e)
+void cs_engine_render(cs_engine_t *e, int layer)
 {
-	cs_obj_t *o;
-	int i;
-
-	for(i = CS_LAYERS - 1; i >= 0; --i)
+	cs_obj_t *o = e->objects[layer];
+	while(o)
 	{
-		o = e->objects[i];
-		while(o)
-		{
-			if(o->flags & CS_OBJ_VISIBLE)
-				if(o->render)
-					if(__onscreen(e, o))
-						o->render(o);
-			o = o->next;
-		}
+		if(o->flags & CS_OBJ_VISIBLE)
+			if(o->render)
+				if(__onscreen(e, o))
+					o->render(o);
+		o = o->next;
 	}
 }

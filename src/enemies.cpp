@@ -158,10 +158,10 @@ void KOBO_enemies::force_positions()
 
 void KOBO_enemies::render_hit_zones()
 {
-	wmain->blendmode(GFX_BLENDMODE_ADD);
+	woverlay->blendmode(GFX_BLENDMODE_ADD);
 	for(KOBO_enemy *e = NULL; (e = next(e)); )
 		e->render_hit_zone();
-	wmain->blendmode();
+	woverlay->blendmode();
 }
 
 KOBO_enemy *KOBO_enemies::make(const KOBO_enemy_kind *ek,

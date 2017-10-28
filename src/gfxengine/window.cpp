@@ -872,19 +872,26 @@ void window_t::blit(int dx, int dy, window_t *src)
 
 
   /////////////////////////////////////////////////////////////////////////////
- // Engine output window
+ // Engine output windows
 /////////////////////////////////////////////////////////////////////////////
 
-engine_window_t::engine_window_t(gfxengine_t *e) : window_t(e)
+// Lower level; below the fire/explosion effect layer
+void lowsprites_t::refresh(SDL_Rect *r)
 {
-	e->_target = this;
+	engine->target(this);
+	engine->pre_sprite_render();
+	select();
+	for(int i = CS_LAYERS - 1; i >= last_layer; --i)
+		cs_engine_render(engine->cs(), i);
 }
 
 
-void engine_window_t::refresh(SDL_Rect *r)
+// Lower level; below the fire/explosion effect layer
+void highsprites_t::refresh(SDL_Rect *r)
 {
-	engine->pre_sprite_render();
+	engine->target(this);
 	select();
-	cs_engine_render(engine->csengine);
+	for(int i = first_layer; i >= 0; --i)
+		cs_engine_render(engine->cs(), i);
 	engine->post_sprite_render();
 }

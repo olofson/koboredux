@@ -53,15 +53,7 @@ int KOBO_myship::health_time;
 int KOBO_myship::nose_reload_timer;
 int KOBO_myship::tail_reload_timer;
 KOBO_player_bolt KOBO_myship::bolts[MAX_BOLTS];
-cs_obj_t *KOBO_myship::object;
-
-
-KOBO_myship::KOBO_myship()
-{
-	memset(bolts, 0, sizeof(bolts));
-	object = NULL;
-	init(true);
-}
+cs_obj_t *KOBO_myship::object = NULL;
 
 
 void KOBO_myship::state(KOBO_myship_state s)
@@ -689,7 +681,7 @@ void KOBO_myship::render()
 		ddi -= maxd;
 	fdi += ddi * gengine->frame_delta_time() * 0.02f;
 	fdi = (fdi + maxd) % maxd;
-	wmain->sprite_fxp(object->point.gx, object->point.gy,
+	whighsprites->sprite_fxp(object->point.gx, object->point.gy,
 			B_PLAYER, fdi >> 8);
 
 	// Render bolts
@@ -698,7 +690,7 @@ void KOBO_myship::render()
 	{
 		if(!bolts[i].state || !bolts[i].object)
 			continue;
-		wmain->sprite_fxp(bolts[i].object->point.gx,
+		whighsprites->sprite_fxp(bolts[i].object->point.gx,
 				bolts[i].object->point.gy, B_BOLT,
 				bolt_frame(bolts[i].dir, bolts[i].state - 2));
 	}
@@ -712,7 +704,7 @@ void KOBO_myship::render()
 				break;
 		// Fall-through
 	  case SHIP_INVULNERABLE:
-		wmain->sprite_fxp(object->point.gx, object->point.gy,
+		whighsprites->sprite_fxp(object->point.gx, object->point.gy,
 				B_SHIELDFX, manage.game_time() % 8);
 	  default:
 		break;
@@ -721,12 +713,13 @@ void KOBO_myship::render()
 	if(prefs->show_hit)
 	{
 		int r = PIXEL2CS(hitsize);
-		wmain->foreground(wmain->map_rgb(128, 0, 128));
-		wmain->blendmode(GFX_BLENDMODE_ADD);
-		wmain->hairrect_fxp(object->point.gx - r,
+		whighsprites->foreground(whighsprites->map_rgb(128, 0, 128));
+		whighsprites->blendmode(GFX_BLENDMODE_ADD);
+		whighsprites->hairrect_fxp(object->point.gx - r,
 				object->point.gy - r, 2 * r, 2 * r);
-		wmain->circle_fxp(object->point.gx, object->point.gy, r);
-		wmain->blendmode();
+		whighsprites->circle_fxp(object->point.gx, object->point.gy,
+				r);
+		whighsprites->blendmode();
 	}
 }
 

@@ -83,7 +83,6 @@ class KOBO_myship
 	static void update_position();
 	static void kill_bolt(int bolt, bool impact);
   public:
-	KOBO_myship();
 	static KOBO_player_controls decode_input();
 	static void control(KOBO_player_controls c)	{ ctrl = c; }
 	static KOBO_player_controls control()		{ return ctrl; }

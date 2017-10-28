@@ -55,7 +55,6 @@ class gfxengine_t
 {
 	friend class window_t;
 	friend class windowbase_t;
-	friend class engine_window_t;
 	friend class stream_window_t;
 	int video_flags();
   public:
@@ -64,6 +63,7 @@ class gfxengine_t
 
 	window_t *screen()	{ return fullwin; }
 	window_t *target()	{ return _target; }
+	void target(window_t *w)	{ _target = w; }
 
 	void messagebox(const char *message);
 

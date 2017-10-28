@@ -539,10 +539,25 @@ class window_t : public windowbase_t
   /////////////////////////////////////////////////////////////////////////////
  // Engine output window
 /////////////////////////////////////////////////////////////////////////////
-class engine_window_t : public window_t
+class lowsprites_t : public window_t
 {
+	int last_layer;
   public:
-	engine_window_t(gfxengine_t *e);
+	lowsprites_t(gfxengine_t *e, int last) : window_t(e)
+	{
+		last_layer = last;
+	}
+	void refresh(SDL_Rect *r);
+};
+
+class highsprites_t : public window_t
+{
+	int first_layer;
+  public:
+	highsprites_t(gfxengine_t *e, int first) : window_t(e)
+	{
+		first_layer = first;
+	}
 	void refresh(SDL_Rect *r);
 };
 

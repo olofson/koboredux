@@ -290,16 +290,16 @@ void KOBO_enemy::render_hit_zone()
 	if(physics)
 	{
 		if(contact)
-			wmain->foreground(wmain->map_rgb(255, 128, 0));
+			woverlay->foreground(woverlay->map_rgb(255, 128, 0));
 		else
-			wmain->foreground(wmain->map_rgb(128, 0, 128));
-		wmain->circle_fxp(object->point.gx, object->point.gy, r);
+			woverlay->foreground(woverlay->map_rgb(128, 0, 128));
+		woverlay->circle_fxp(object->point.gx, object->point.gy, r);
 	}
 	else
 	{
-		wmain->foreground(wmain->map_rgb(128, 0, 128));
-		wmain->hairrect_fxp(object->point.gx - r, object->point.gy - r,
-				2 * r, 2 * r);
+		woverlay->foreground(woverlay->map_rgb(128, 0, 128));
+		woverlay->hairrect_fxp(object->point.gx - r,
+				object->point.gy - r, 2 * r, 2 * r);
 	}
 }
 

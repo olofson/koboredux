@@ -89,8 +89,9 @@ KOBO_radar_window	*wradar = NULL;
 
 backdrop_t		*wbackdrop = NULL;
 spinplanet_t		*wplanet = NULL;
-engine_window_t		*wmain = NULL;
+lowsprites_t		*wlowsprites = NULL;
 KOBO_Fire		*wfire = NULL;
+highsprites_t		*whighsprites = NULL;
 window_t		*woverlay = NULL;
 
 display_t		*dhigh = NULL;
@@ -690,13 +691,16 @@ void KOBO_main::init_dash_layout()
 	// Spinning planet backdrop (placed by dashboard_window_t::mode())
 	wplanet->track_layer(LAYER_PLANET);
 
-	// Main playfield layer
-	place(wmain, KOBO_D_DASH_MAIN);
+	// Low sprite layer
+	place(wlowsprites, KOBO_D_DASH_MAIN);
 
 	// Fire/smoke overlay
 	wfire->SetWorldSize(WORLD_SIZEX, WORLD_SIZEY);
 	wfire->SetViewMargin(FIRE_VIEW_MARGIN);
 	place(wfire, KOBO_D_DASH_MAIN);
+
+	// High sprite layer
+	place(whighsprites, KOBO_D_DASH_MAIN);
 
 	// Playfield overlay
 	place(woverlay, KOBO_D_DASH_MAIN);
@@ -901,8 +905,9 @@ int KOBO_main::init_display(prefs_t *p)
 	wcharge = new chargebar_t(gengine);
 	wbackdrop = new backdrop_t(gengine);
 	wplanet = new spinplanet_t(gengine);
-	wmain = new engine_window_t(gengine);
+	wlowsprites = new lowsprites_t(gengine, LAYER_ENEMIES);
 	wfire = new KOBO_Fire(gengine);
+	whighsprites = new highsprites_t(gengine, LAYER_PLAYER);
 	woverlay = new window_t(gengine);
 	dhigh = new display_t(gengine);
 	dscore = new display_t(gengine);
@@ -948,8 +953,9 @@ void KOBO_main::close_display()
 	delete dscore;		dscore = NULL;
 	delete dhigh;		dhigh = NULL;
 	delete woverlay;	woverlay = NULL;
+	delete whighsprites;	whighsprites = NULL;
 	delete wfire;		wfire = NULL;
-	delete wmain;		wmain = NULL;
+	delete wlowsprites;	wlowsprites = NULL;
 	delete wplanet;		wplanet = NULL;
 	delete wbackdrop;	wbackdrop = NULL;
 	delete wcharge;		wcharge = NULL;
@@ -2413,7 +2419,7 @@ void kobo_gfxengine_t::post_render()
 		km.st_symname->visible(true);
 
 		// Ear (listener position)
-		wmain->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,
+		woverlay->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,
 				B_SOUND_ICONS, 1);
 
 		// Speaker (sound source position)
@@ -2423,7 +2429,7 @@ void kobo_gfxengine_t::post_render()
 		ssy += PIXEL2CS(WORLD_SIZEY);
 		ssx %= PIXEL2CS(WORLD_SIZEX);
 		ssy %= PIXEL2CS(WORLD_SIZEY);
-		wmain->sprite_fxp(ssx, ssy, B_SOUND_ICONS, 0);
+		woverlay->sprite_fxp(ssx, ssy, B_SOUND_ICONS, 0);
 	}
 	else
 	{
@@ -2510,7 +2516,7 @@ void kobo_gfxengine_t::post_render()
 	if(mouse_visible)
 	{
 		if(prefs->debug)
-			wmain->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,
+			woverlay->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,
 					B_CROSSHAIR, 0);
 		wscreen->sprite(mouse_x, mouse_y, B_CROSSHAIR, 0);
 	}

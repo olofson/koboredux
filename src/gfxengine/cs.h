@@ -477,7 +477,7 @@ void cs_engine_delete(cs_engine_t *e);
 void cs_engine_reset(cs_engine_t *e);
 void cs_engine_advance(cs_engine_t *e);
 void cs_engine_tween(cs_engine_t *e, float fractional_frame);
-void cs_engine_render(cs_engine_t *e);
+void cs_engine_render(cs_engine_t *e, int layer);
 
 cs_obj_t *cs_engine_get_obj(cs_engine_t *e);
 

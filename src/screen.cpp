@@ -67,8 +67,8 @@ int KOBO_screen::long_credits_wrap = 0;
 
 void KOBO_screen::init_graphics()
 {
-	stars.set_target(wmain, KOBO_P_MAIN_STARS);
-	gridtfx.Target(wmain);
+	stars.set_target(wlowsprites, KOBO_P_MAIN_STARS);
+	gridtfx.Target(whighsprites);
 	gridtfx.Tiles(B_GRIDTFXTILES, themedata.get(KOBO_D_GRIDTFXLEVELS));
 	noise_h = DASHH(MAIN);
 	highlight_y = DASHH(MAIN) / 2;
@@ -704,7 +704,7 @@ void KOBO_screen::render_noise()
 		float lv = np * noise_depth * (1.0f - noise_bright) / 255.0f +
 				noise_bright;
 		for(int x = 0; x < xmax; ++x)
-			wmain->sprite_fxp(
+			woverlay->sprite_fxp(
 					PIXEL2CS(x << NOISE_SIZEX_LOG2) - xo,
 					PIXEL2CS((int)fy),
 					noise_source, (int)(lv * 15.0f +
@@ -742,11 +742,11 @@ void KOBO_screen::render_curtains()
 {
 	if(!curtains_below)
 	{
-		wmain->resetmod();
+		whighsprites->resetmod();
 		int cm = 255.0f * themedata.get(KOBO_D_GRIDTFX_COLORMOD, 0);
-		wmain->colormod(cm, cm, cm);
+		whighsprites->colormod(cm, cm, cm);
 		gridtfx.Render();
-		wmain->resetmod();
+		whighsprites->resetmod();
 	}
 }
 
@@ -754,7 +754,7 @@ void KOBO_screen::render_curtains()
 void KOBO_screen::render_highlight()
 {
 	if(!highlight_h)
-		highlight_y = wmain->height() / 2;
+		highlight_y = whighsprites->height() / 2;
 
 	static float ypos = -50;
 	static float hf = 0;
@@ -785,7 +785,7 @@ void KOBO_screen::render_highlight()
 
 	// Render!
 	int y = (int)((ypos - hf / 2.0f) * 256.0f);
-	int x0 = wmain->phys_rect.x;
+	int x0 = whighsprites->phys_rect.x;
 	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), B_FOCUSFX);
 	if(!b)
 		return;
@@ -793,16 +793,17 @@ void KOBO_screen::render_highlight()
 	if(!s || !s->texture)
 		return;
 	SDL_Renderer *r = gengine->renderer();
-	y = (int)((y * gengine->yscale() + 128) / 256) + wmain->phys_rect.y;
+	y = (int)((y * gengine->yscale() + 128) / 256) +
+			whighsprites->phys_rect.y;
 	int h = (int)(hf * gengine->yscale());
-	wmain->select();
+	whighsprites->select();
 	int c = 240 - hf;
 	if(c < 128)
 		c = 128;
 	else if(c > 255)
 		c = 255;
 	SDL_SetTextureColorMod(s->texture, c, c, c);
-	int xc = (b->w - wmain->phys_rect.w / gengine->xscale()) / 2;
+	int xc = (b->w - whighsprites->phys_rect.w / gengine->xscale()) / 2;
 	for(int ty = 0; ty < h; ty += gengine->yscale())
 	{
 		int i = b->h * ty / h;
@@ -821,7 +822,7 @@ void KOBO_screen::render_highlight()
 			sr.h = 1;
 			dr.x = x0 + (int)(x * b->w - xc + xop) *
 					gengine->xscale();
-			if(dr.x > x0 + wmain->phys_rect.w)
+			if(dr.x > x0 + whighsprites->phys_rect.w)
 				break;
 			dr.y = y + ty;
 			dr.w = sr.w * gengine->xscale();
@@ -991,16 +992,16 @@ void KOBO_screen::render_bases(KOBO_map &map, int tileset, int vx, int vy)
 			}
 			else
 				tile = MAP_TILE(n);
-			wmain->sprite_fxp(PIXEL2CS(x * b->w) - xo,
+			wlowsprites->sprite_fxp(PIXEL2CS(x * b->w) - xo,
 					PIXEL2CS(y * b->h) - yo,
 					tileset, tile);
 		}
 	if(prefs->show_map_border)
 	{
-		wmain->foreground(wmain->map_rgb(0, 100, 200));
-		wmain->fillrect_fxp(PIXEL2CS(MAP_SIZEX * b->w) - vx,
+		wlowsprites->foreground(wlowsprites->map_rgb(0, 100, 200));
+		wlowsprites->fillrect_fxp(PIXEL2CS(MAP_SIZEX * b->w) - vx,
 				0, PIXEL2CS(1), PIXEL2CS((int)DASHH(MAIN)));
-		wmain->fillrect_fxp(0, PIXEL2CS(MAP_SIZEY * b->h) - vy,
+		wlowsprites->fillrect_fxp(0, PIXEL2CS(MAP_SIZEY * b->h) - vy,
 				PIXEL2CS((int)DASHW(MAIN)), PIXEL2CS(1));
 	}
 }
@@ -1020,27 +1021,27 @@ void KOBO_screen::render_background()
 	if(bg_clouds)
 	{
 //TODO:
-		wmain->resetmod();
-		wmain->alphamod(128);
-//		wmain->sprite_fxp(vx, vy, bg_clouds + region, 0);
+		wlowsprites->resetmod();
+		wlowsprites->alphamod(128);
+//		wlowsprites->sprite_fxp(vx, vy, bg_clouds + region, 0);
 	}
 
 	// Render parallax starfield
 	if(bg_altitude >= 96)
 	{
-		wmain->resetmod();
-		wmain->alphamod(128);
+		wlowsprites->resetmod();
+		wlowsprites->alphamod(128);
 		stars.render(vx, vy);
 	}
 
 	// Render parallax level (upcoming) bases
-	wmain->resetmod();
+	wlowsprites->resetmod();
 	for(int m = KOBO_BG_MAP_LEVELS - 1; m >= 0; --m)
 	{
 		if(level + m >= 10)
 			continue;
 		cm = 255.0f * themedata.get(KOBO_D_BASES_COLORMOD, m);
-		wmain->colormod(cm, cm, cm);
+		wlowsprites->colormod(cm, cm, cm);
 		int tiles = region;
 		if(bg_altitude > 100)
 			switch(m)
@@ -1065,9 +1066,9 @@ void KOBO_screen::render_background()
 
 	// Render the bases of the current level
 	cm = 255.0f * themedata.get(KOBO_D_BASES_COLORMOD, show_title ? 3 : 2);
-	wmain->colormod(cm, cm, cm);
+	wlowsprites->colormod(cm, cm, cm);
 	render_bases(map[0], B_R1_TILES + region, vx, vy);
-	wmain->resetmod();
+	wlowsprites->resetmod();
 
 	// Adjust scroll position for fire/explosions layer
 	wfire->scroll(vx, vy, true);
@@ -1076,7 +1077,7 @@ void KOBO_screen::render_background()
 
 void KOBO_screen::render_fx()
 {
-	wmain->resetmod();
+	woverlay->resetmod();
 	render_noise();
 
 	// Gray overlay when in rewind/retry mode
@@ -1092,9 +1093,9 @@ void KOBO_screen::render_fx()
 	if(curtains_below)
 	{
 		int cm = 255.0f * themedata.get(KOBO_D_GRIDTFX_COLORMOD, 1);
-		wmain->colormod(cm, cm, cm);
+		whighsprites->colormod(cm, cm, cm);
 		gridtfx.Render();
-		wmain->resetmod();
+		whighsprites->resetmod();
 	}
 
 	render_highlight();

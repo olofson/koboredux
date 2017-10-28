@@ -297,7 +297,8 @@ extern KOBO_radar_window	*wradar;
 
 extern backdrop_t		*wbackdrop;
 extern spinplanet_t		*wplanet;
-extern engine_window_t		*wmain;
+extern lowsprites_t		*wlowsprites;
+extern highsprites_t		*whighsprites;
 extern KOBO_Fire		*wfire;
 extern window_t			*woverlay;
 

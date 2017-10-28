@@ -166,7 +166,7 @@ void _manage::run_noise()
 		return;
 	}
 
-	wmain->background(wmain->map_rgb(0x00000));
+	woverlay->background(woverlay->map_rgb(0x00000));
 
 	// Noise/interference
 	int noise;
