@@ -166,6 +166,7 @@ KOBO_ThemeData::KOBO_ThemeData()
 	memset(strings, 0, sizeof(strings));
 	memset(pfxdefs, 0, sizeof(pfxdefs));
 	memset(pfxaliases, -1, sizeof(pfxaliases));
+	memset(pfxflags, 0, sizeof(pfxflags));
 }
 
 
@@ -1198,6 +1199,7 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_alias_pfx(int pfx)
 	}
 
 	themedata->pfxalias((KOBO_ParticleFX)pfx, (KOBO_ParticleFX)orig);
+	themedata->pfxflags[pfx] = flags;
 
 	return KTK_KW_ALIAS;
 }
@@ -1411,7 +1413,6 @@ KOBO_TP_Tokens KOBO_ThemeParser::handle_particles()
 
 	int pfxi = iv;
 
-	// TODO: Warn only if overwriting a def or alias not from a fallback.
 	if((themedata->pfxdefs[pfxi] || (themedata->pfxaliases[pfxi] >= 0)) &&
 			!(themedata->pfxflags[pfxi] & KOBO_FALLBACK))
 	{
