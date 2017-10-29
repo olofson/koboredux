@@ -300,6 +300,7 @@ extern spinplanet_t		*wplanet;
 extern lowsprites_t		*wlowsprites;
 extern highsprites_t		*whighsprites;
 extern KOBO_Fire		*wfire;
+extern KOBO_Fire		*wmenufire;
 extern window_t			*woverlay;
 
 extern display_t		*dhigh;

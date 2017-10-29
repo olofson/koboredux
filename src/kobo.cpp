@@ -91,6 +91,7 @@ backdrop_t		*wbackdrop = NULL;
 spinplanet_t		*wplanet = NULL;
 lowsprites_t		*wlowsprites = NULL;
 KOBO_Fire		*wfire = NULL;
+KOBO_Fire		*wmenufire = NULL;
 highsprites_t		*whighsprites = NULL;
 window_t		*woverlay = NULL;
 
@@ -694,13 +695,18 @@ void KOBO_main::init_dash_layout()
 	// Low sprite layer
 	place(wlowsprites, KOBO_D_DASH_MAIN);
 
-	// Fire/smoke overlay
+	// Fire/smoke layer
 	wfire->SetWorldSize(WORLD_SIZEX, WORLD_SIZEY);
 	wfire->SetViewMargin(FIRE_VIEW_MARGIN);
 	place(wfire, KOBO_D_DASH_MAIN);
 
 	// High sprite layer
 	place(whighsprites, KOBO_D_DASH_MAIN);
+
+	// Menu focus fire effect layer
+	wmenufire->SetWorldSize(DASHW(MAIN), DASHH(MAIN));
+	wmenufire->SetViewMargin(32);
+	place(wmenufire, KOBO_D_DASH_MAIN);
 
 	// Playfield overlay
 	place(woverlay, KOBO_D_DASH_MAIN);
@@ -908,6 +914,7 @@ int KOBO_main::init_display(prefs_t *p)
 	wlowsprites = new lowsprites_t(gengine, LAYER_ENEMIES);
 	wfire = new KOBO_Fire(gengine);
 	whighsprites = new highsprites_t(gengine, LAYER_PLAYER);
+	wmenufire = new KOBO_Fire(gengine);
 	woverlay = new window_t(gengine);
 	dhigh = new display_t(gengine);
 	dscore = new display_t(gengine);
@@ -953,6 +960,7 @@ void KOBO_main::close_display()
 	delete dscore;		dscore = NULL;
 	delete dhigh;		dhigh = NULL;
 	delete woverlay;	woverlay = NULL;
+	delete wmenufire;	wmenufire = NULL;
 	delete whighsprites;	whighsprites = NULL;
 	delete wfire;		wfire = NULL;
 	delete wlowsprites;	wlowsprites = NULL;
@@ -2459,6 +2467,12 @@ void kobo_gfxengine_t::post_render()
 				wfire->StatPSystems(),
 				wfire->StatParticles());
 		woverlay->string(120, 10, buf);
+
+		// Menu focus fx particles
+		snprintf(buf, sizeof(buf), "M.PS: %d/%d",
+				wmenufire->StatPSystems(),
+				wmenufire->StatParticles());
+		woverlay->string(120, 20, buf);
 
 		// Cores; left/total
 		snprintf(buf, sizeof(buf), "Cores: %d/%d",

@@ -57,8 +57,12 @@ class KOBO_screen
 	static float noise_fade;
 	static float noise_bright;
 	static float noise_depth;
+
 	static int highlight_y;
 	static int highlight_h;
+	static KOBO_ParticleFXDef highlight_fxd;
+	static Uint32 highlight_time;
+
 	static int hi_sc[10];
 	static int hi_st[10];
 	static char hi_nm[10][20];

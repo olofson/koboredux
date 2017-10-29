@@ -59,6 +59,8 @@ float KOBO_screen::noise_bright = 0.0f;
 float KOBO_screen::noise_depth = 0.0f;
 int KOBO_screen::highlight_y = 0;
 int KOBO_screen::highlight_h = 0;
+KOBO_ParticleFXDef KOBO_screen::highlight_fxd;
+Uint32 KOBO_screen::highlight_time = 0;
 KOBO_Starfield KOBO_screen::stars;
 KOBO_GridTFX KOBO_screen::gridtfx;
 bool KOBO_screen::curtains_below = true;
@@ -72,6 +74,8 @@ void KOBO_screen::init_graphics()
 	gridtfx.Tiles(B_GRIDTFXTILES, themedata.get(KOBO_D_GRIDTFXLEVELS));
 	noise_h = DASHH(MAIN);
 	highlight_y = DASHH(MAIN) / 2;
+	highlight_fxd.Default();
+	highlight_time = SDL_GetTicks();
 }
 
 
@@ -365,7 +369,7 @@ void KOBO_screen::help(int t)
 
 	// Control
 	if(t < 0 + INST_TIME_IN)
-		screen.set_highlight(112, 80);
+		screen.set_highlight(112, 120);
 	else if(t < INST_TIME_CONTROL - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_CONTROL - INST_TIME_HL_OUT)
@@ -380,7 +384,7 @@ void KOBO_screen::help(int t)
 
 	// Fire
 	else if(t < INST_TIME_CONTROL + INST_TIME_IN)
-		screen.set_highlight(112, 100);
+		screen.set_highlight(112, 120);
 	else if(t < INST_TIME_FIRE - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_FIRE - INST_TIME_HL_OUT)
@@ -454,7 +458,7 @@ void KOBO_screen::help(int t)
 
 	// Bases
 	else if(t < INST_TIME_FIRE + INST_TIME_IN)
-		screen.set_highlight(112, 65);
+		screen.set_highlight(112, 120);
 	else if(t < INST_TIME_BASES - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_BASES - INST_TIME_HL_OUT)
@@ -476,7 +480,7 @@ void KOBO_screen::help(int t)
 
 	// Shoot everything!
 	else if(t < INST_TIME_BASES + INST_TIME_IN)
-		screen.set_highlight(112, 95);
+		screen.set_highlight(112, 120);
 	else if(t < INST_TIME_ENEMIES - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_ENEMIES - INST_TIME_HL_OUT)
@@ -500,7 +504,7 @@ void KOBO_screen::help(int t)
 
 	// Tough or indestructible objects
 	else if(t < INST_TIME_ENEMIES + INST_TIME_IN)
-		screen.set_highlight(112, 110);
+		screen.set_highlight(112, 120);
 	else if(t < INST_TIME_TOUGH - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_TOUGH - INST_TIME_HL_OUT)
@@ -783,55 +787,37 @@ void KOBO_screen::render_highlight()
 	// Scale to new height
 	hf += ((float)highlight_h - hf) * (float)dt * 0.01f;
 
+	// Bail of if we're not supposed to be visible!
+	if(hf < 5.0f)
+		return;
+
 	// Render!
-	int y = (int)((ypos - hf / 2.0f) * 256.0f);
-	int x0 = whighsprites->phys_rect.x;
-	s_bank_t *b = s_get_bank(gfxengine->get_gfx(), B_FOCUSFX);
-	if(!b)
-		return;
-	s_sprite_t *s = s_get_sprite_b(b, 0);
-	if(!s || !s->texture)
-		return;
-	SDL_Renderer *r = gengine->renderer();
-	y = (int)((y * gengine->yscale() + 128) / 256) +
-			whighsprites->phys_rect.y;
-	int h = (int)(hf * gengine->yscale());
-	whighsprites->select();
-	int c = 240 - hf;
-	if(c < 128)
-		c = 128;
-	else if(c > 255)
-		c = 255;
-	SDL_SetTextureColorMod(s->texture, c, c, c);
-	int xc = (b->w - whighsprites->phys_rect.w / gengine->xscale()) / 2;
-	for(int ty = 0; ty < h; ty += gengine->yscale())
+	float weight = hf > 5.0f ? hf - 5.0f : 0.0f;
+	float wscale = weight / 100.0f;
+	if(wscale > 1.0f)
+		wscale = 1.0f;
+	int y = (int)((ypos - weight / 2.0f) * 256.0f);
+	if(weight < 20)
+		highlight_fxd.init_count = 2 + weight / 2;
+	else
+		highlight_fxd.init_count = 11 + weight / 20;
+	float speed = 0.75f + 1.5f * wscale;
+	highlight_fxd.radius.Set(speed, speed * 3.0f, 0.75f);
+	highlight_fxd.speed.Set(speed * 0.2f, speed * 1.5f, 0.75f);
+	highlight_fxd.fade.Set(0.65f + 0.05f * wscale,
+			0.91f + 0.05f * wscale, 0.75f);
+	for(int i = 0; i < dt * (20 + weight / 3) / 10; ++i)
 	{
-		int i = b->h * ty / h;
-		float xo = fmod(t * 0.001f, 1.0f);
-		SDL_SetTextureAlphaMod(s->texture, 255 * themedata.lerp(
-				KOBO_D_FOCUSFX_ALPHA, (float)ty / h *
-				(themedata.length(KOBO_D_FOCUSFX_ALPHA) - 1)));
-		for(int x = 0; ; ++x)
-		{
-			SDL_Rect sr, dr;
-			int xop = xo * (THD(FOCUSFX_GRID, 0) * (h - ty) / h +
-					THD(FOCUSFX_GRID, 1) * ty / h);
-			sr.x = 0;
-			sr.y = i;
-			sr.w = b->w;
-			sr.h = 1;
-			dr.x = x0 + (int)(x * b->w - xc + xop) *
-					gengine->xscale();
-			if(dr.x > x0 + whighsprites->phys_rect.w)
-				break;
-			dr.y = y + ty;
-			dr.w = sr.w * gengine->xscale();
-			dr.h = sr.h * gengine->yscale();
-			SDL_RenderCopy(r, s->texture, &sr, &dr);
-		}
+		int xr = pubrand.get(8) * DASHW(MAIN);
+		int yr = pubrand.get(8) * weight;
+		float xs = sin((float)xr / DASHW(MAIN) / 256.0f * M_PI);
+		float ys = sin((float)yr / weight / 256.0f * M_PI);
+		int vx = (xr - DASHW(MAIN) * 128) / 100;
+		int vy = (yr - weight * 128) / 50;
+		highlight_fxd.heat.Set(0.05f + xs * ys * 0.2f,
+				0.1f + xs * ys * (1.6f - wscale));
+		wmenufire->Spawn(xr, y + yr, vx, vy, &highlight_fxd);
 	}
-	SDL_SetTextureAlphaMod(s->texture, 255);
-	SDL_SetTextureColorMod(s->texture, 255, 255, 255);
 }
 
 
@@ -941,6 +927,11 @@ void KOBO_screen::init_background()
 		wfire->SetDither((gfx_dither_t)themedata.get(
 				KOBO_D_FIRE_DITHERMODE));
 	wfire->Clear(true, true);
+
+	wmenufire->SetPalette(KOBO_P_FOCUSFX);
+	wmenufire->SetDither((gfx_dither_t)themedata.get(
+				KOBO_D_FOCUSFX_DITHERMODE));
+	wmenufire->Clear(true, true);
 }
 
 
@@ -1099,6 +1090,16 @@ void KOBO_screen::render_fx()
 	}
 
 	render_highlight();
+
+	// Update highlight fire fx engine at ~30 fps
+	int t = (int)SDL_GetTicks();
+	if(labs(highlight_time - t) > 100)
+		highlight_time = t;	// Way off! Resync.
+	while(SDL_TICKS_PASSED(t, highlight_time))
+	{
+		wmenufire->update();
+		highlight_time += 33;
+	}
 }
 
 

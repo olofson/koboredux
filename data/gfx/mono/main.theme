@@ -300,10 +300,6 @@ sprites B_NOISE "noise.png" 256 1
 sprites B_HITNOISE "hitnoise.png" 256 1
 sprites B_SHIELDFX "shieldfx3.png" 32 32 CENTER
 
-image B_FOCUSFX "gridfx2.png"
-set D_FOCUSFX_GRID	65	205	// horizon near
-set D_FOCUSFX_ALPHA	1
-
 // Fullscreen grid transition effect
 set D_FS_GRIDTFXLEVELS	32
 set D_FS_GRIDTFX_SLOW	2.5
@@ -314,3 +310,7 @@ sprites B_FS_GRIDTFXTILES "fs-gridtfx-tiles.png" 40 40
 set D_GRIDTFXLEVELS	16
 sprites B_GRIDTFXTILES "gridtfx-tiles-blue.png" 16 16
 set D_GRIDTFX_COLORMOD	1 .5	// front/below
+
+// Menu focus fire effect
+set D_FOCUSFX_DITHERMODE NOISE
+palette P_FOCUSFX P_MAIN 1 9 3 3 11 11 7
