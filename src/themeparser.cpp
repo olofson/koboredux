@@ -172,6 +172,12 @@ KOBO_ThemeData::KOBO_ThemeData()
 
 KOBO_ThemeData::~KOBO_ThemeData()
 {
+	reset();
+}
+
+
+void KOBO_ThemeData::reset()
+{
 	for(int i = 0; i < KOBO_D__COUNT; ++i)
 	{
 		free(items[i]);
@@ -179,6 +185,12 @@ KOBO_ThemeData::~KOBO_ThemeData()
 	}
 	for(int i = 0; i < KOBO_PFX__COUNT; ++i)
 		delete pfxdefs[i];
+	memset(sizes, 0, sizeof(sizes));
+	memset(items, 0, sizeof(items));
+	memset(strings, 0, sizeof(strings));
+	memset(pfxdefs, 0, sizeof(pfxdefs));
+	memset(pfxaliases, -1, sizeof(pfxaliases));
+	memset(pfxflags, 0, sizeof(pfxflags));
 }
 
 

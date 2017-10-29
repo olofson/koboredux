@@ -1106,6 +1106,7 @@ void KOBO_main::list_themes()
 
 int KOBO_main::load_graphics()
 {
+	themedata.reset();
 	KOBO_ThemeParser tp(themedata);
 
 	clear_messages();

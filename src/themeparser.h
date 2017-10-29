@@ -39,10 +39,11 @@ class KOBO_ThemeData
 	int pfxaliases[KOBO_PFX__COUNT];
 	unsigned pfxflags[KOBO_PFX__COUNT];
   public:
-	KOBO_ThemeData *next;
+	KOBO_ThemeData *next;	// User field; not used by this class.
 
 	KOBO_ThemeData();
 	~KOBO_ThemeData();
+	void reset();
 
 	void clear(KOBO_TD_Items item)
 	{
