@@ -428,7 +428,10 @@ KOBO_ParticleSystem *KOBO_Fire::NewPSystem(int x, int y, int vx, int vy,
 		ps->x = x >> 8;
 		ps->y = y >> 8;
 
-		ps->threshold = fxd->threshold / ncolors;
+		if(ncolors)
+			ps->threshold = fxd->threshold / ncolors;
+		else
+			ps->threshold = 0;
 		if(ps->threshold < threshold)
 			ps->threshold = threshold;
 		ps->nparticles = nparticles;
