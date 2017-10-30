@@ -146,23 +146,30 @@ void ct_widget_t::render_text_aligned(const char *buf)
 		yy = (height() - fontheight()) / 2 + yoffs();
 		break;
 	}
-	switch(_halign)
+	for(int i = 0; i < 2; ++i)
 	{
-	  case ALIGN_DEFAULT:	//dummy
-	  case ALIGN_NONE:
-	  case ALIGN_LEFT:
-		string(xoffs(), yy, buf);
-		break;
-	  case ALIGN_RIGHT:
-		center_token(width() - xoffs(), yy, buf);
-		break;
-	  case ALIGN_CENTER:
-		center_token(xoffs(), yy, buf, -1);
-		break;
-	  case ALIGN_CENTER_TOKEN:
-		center_token(xoffs(), yy, buf, _token);
-		break;
+		switch(_halign)
+		{
+		  case ALIGN_DEFAULT:	//dummy
+		  case ALIGN_NONE:
+		  case ALIGN_LEFT:
+			string(xoffs(), yy, buf);
+			break;
+		  case ALIGN_RIGHT:
+			center_token(width() - xoffs(), yy, buf);
+			break;
+		  case ALIGN_CENTER:
+			center_token(xoffs(), yy, buf, -1);
+			break;
+		  case ALIGN_CENTER_TOKEN:
+			center_token(xoffs(), yy, buf, _token);
+			break;
+		}
+		if(highlighted)
+			blendmode(GFX_BLENDMODE_ADD);
 	}
+	if(highlighted)
+		blendmode();
 }
 
 
