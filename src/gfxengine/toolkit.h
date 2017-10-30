@@ -222,7 +222,7 @@ class ct_form_t : public window_t
 	virtual ~ct_form_t();
 	void add(ct_widget_t *w);
 	void clean();
-	virtual void select(ct_widget_t *w);
+	virtual bool select(ct_widget_t *w);
 	virtual void select(int ind);
 	virtual void select(int x, int y);
 	virtual void next();

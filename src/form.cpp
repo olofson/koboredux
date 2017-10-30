@@ -172,19 +172,15 @@ void kobo_form_t::update_help()
 }
 
 
-void kobo_form_t::next()
+bool kobo_form_t::select(ct_widget_t *w)
 {
-	sound.ui_play(S_UI_MOVE);
-	ct_form_t::next();
-	update_help();
-}
-
-
-void kobo_form_t::prev()
-{
-	sound.ui_play(S_UI_MOVE);
-	ct_form_t::prev();
-	update_help();
+	if(ct_form_t::select(w))
+	{
+		sound.ui_play(S_UI_MOVE);
+		update_help();
+		return true;
+	}
+	return false;
 }
 
 

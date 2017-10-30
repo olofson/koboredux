@@ -723,8 +723,11 @@ void ct_form_t::clean()
 }
 
 
-void ct_form_t::select(ct_widget_t *widget)
+bool ct_form_t::select(ct_widget_t *widget)
 {
+	if(_selected == widget)
+		return false;
+
 	if(_selected)
 		_selected->highlight(0);
 	_selected = widget;
@@ -734,6 +737,7 @@ void ct_form_t::select(ct_widget_t *widget)
 		if(!_selected->transparent)
 			_selected->render();
 	}
+	return true;
 }
 
 

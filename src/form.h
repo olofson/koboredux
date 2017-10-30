@@ -82,8 +82,8 @@ class kobo_form_t : public ct_form_t
   public:
 	kobo_form_t(gfxengine_t *e);
 	virtual ~kobo_form_t();
-	void next();
-	void prev();
+	using ct_form_t::select;
+	bool select(ct_widget_t *w);
 	void rebuild();
 	void apply_change(ct_widget_t *w);
 	virtual void build();
