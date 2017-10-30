@@ -232,6 +232,7 @@ enum gfx_dither_t
 class windowbase_t
 {
 	friend class gfxengine_t;
+	SDL_BlendMode	saved_texture_blendmode;
   public:
 	windowbase_t(gfxengine_t *e);
 	virtual ~windowbase_t();
@@ -314,8 +315,11 @@ class windowbase_t
 	void set_texture_params(SDL_Texture *tx)
 	{
 		if(_blendmode != GFX_DEFAULT_BLENDMODE)
+		{
+			SDL_GetTextureBlendMode(tx, &saved_texture_blendmode);
 			SDL_SetTextureBlendMode(tx,
 					(SDL_BlendMode)_blendmode);
+		}
 		if(_alphamod != GFX_DEFAULT_ALPHAMOD)
 			SDL_SetTextureAlphaMod(tx, _alphamod);
 		if(_colormod != GFX_DEFAULT_COLORMOD)
@@ -325,8 +329,7 @@ class windowbase_t
 	void restore_texture_params(SDL_Texture *tx)
 	{
 		if(_blendmode != GFX_DEFAULT_BLENDMODE)
-			SDL_SetTextureBlendMode(tx,
-					(SDL_BlendMode)GFX_DEFAULT_BLENDMODE);
+			SDL_SetTextureBlendMode(tx, saved_texture_blendmode);
 		if(_alphamod != GFX_DEFAULT_ALPHAMOD)
 			SDL_SetTextureAlphaMod(tx, GFX_DEFAULT_ALPHAMOD);
 		if(_colormod != GFX_DEFAULT_COLORMOD)
