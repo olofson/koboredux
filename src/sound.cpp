@@ -453,9 +453,10 @@ void KOBO_sound::timestamp_bump(float ms)
 	a2_SetStateProperty(iface, A2_PTSMARGINAVG, 0);
 	if(min < 0)
 	{
-		log_printf(WLOG, "Late audio API messages. (Up to %f ms.) "
-				"Timestamp bumped 1 ms.\n",
-				-a2_Timestamp2ms(iface, min));
+		if(prefs->soundtools)
+			log_printf(WLOG, "Late audio API messages. (Up to %f "
+					"ms.) Timestamp bumped 1 ms.\n",
+					-a2_Timestamp2ms(iface, min));
 		ms += 1.0f;
 	}
 	a2_TimestampBump(iface, a2_ms2Timestamp(iface, ms));
