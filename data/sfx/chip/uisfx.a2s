@@ -35,11 +35,13 @@ export S_UI_OK()
 export S_UI_MOVE()
 {
 	struct { wtosc }
+	w square
+	@p 4;	@a .03
+	p 4;	a 0;	d 5
 	w noise
-	a .1
-	@p 2
-	d 100
-	a 0; d 10
+	@p 0;
+	p 1;	a .005;	d 100
+	p 0;	a 0;	d 200
 }
 
 export S_UI_TICK()
