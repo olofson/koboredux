@@ -765,15 +765,27 @@ void KOBO_screen::render_highlight()
 	static int ot = 0;
 	int t = (int)SDL_GetTicks();
 	int dt = t - ot;
+	if(km.fps_last < 30)
+		dt = 20;	// Don't try to catch up if we're too slow!
 	ot = t;
-	if(dt > 1000)
-		dt = 100;
 
-	//Spring + friction style velocity component
-	if(dt < 500)
-		ypos += ((float)highlight_y - ypos) * (float)dt * 0.005f;
-	else
+	if(dt > 100)
+	{
+		// If stalled for > 0.1 s, reset!
+		dt = 100;
 		ypos = (float)highlight_y;
+	}
+	else
+	{
+		// We're supposed to maintain exactly 30 ms/frame, but if we
+		// drop much below that (slow machine, Valgrind...), just roll
+		// with it, so we don't die in a loop trying to catch up!
+		if(dt > 40)
+			dt = 40;
+
+		//Spring + friction style velocity component
+		ypos += ((float)highlight_y - ypos) * (float)dt * 0.005f;
+	}
 
 	//Constant velocity component
 	float v = (float)dt * 0.2f;
@@ -1091,11 +1103,12 @@ void KOBO_screen::render_fx()
 
 	render_highlight();
 
-	// Update highlight fire fx engine at ~30 fps
+	// Update highlight fire fx engine at ~30 fps. If rendering is too
+	// slow, fire fx updates are restricted to one update per frame.
 	int t = (int)SDL_GetTicks();
-	if(labs(highlight_time - t) > 100)
-		highlight_time = t;	// Way off! Resync.
-	while(SDL_TICKS_PASSED(t, highlight_time))
+	if(labs((int)highlight_time - t) > 1000)
+		highlight_time = t;	// Out of sync! Reset.
+	if(SDL_TICKS_PASSED(t, highlight_time))
 	{
 		wmenufire->update();
 		highlight_time += 33;
