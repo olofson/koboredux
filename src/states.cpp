@@ -843,6 +843,7 @@ void st_replay_t::press(gc_targets_t button)
 	switch (button)
 	{
 	  case BTN_EXIT:
+	  case BTN_PRIMARY:
 		gsm.push(&st_main_menu);
 		break;
 	  case BTN_CLOSE:
@@ -850,6 +851,8 @@ void st_replay_t::press(gc_targets_t button)
 		break;
 	  case BTN_SELECT:
 	  case BTN_PAUSE:
+	  case BTN_SECONDARY:
+	  case BTN_TERTIARY:
 		if(manage.paused())
 			sound.ui_play(S_UI_PLAY);
 		else
