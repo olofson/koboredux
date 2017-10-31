@@ -151,6 +151,15 @@ kobo_form_t::~kobo_form_t()
 }
 
 
+void kobo_form_t::clean()
+{
+	current_widget = NULL;
+	current_list = NULL;
+	help_bar = NULL;
+	ct_form_t::clean();
+}
+
+
 void kobo_form_t::update_help()
 {
 	if(!help_bar)
@@ -422,6 +431,12 @@ void kobo_form_t::space(float lines)
 
 void kobo_form_t::help()
 {
+	if(help_bar)
+	{
+		log_printf(ELOG, "kobo_form_t: Tried to create more than one "
+				"help bar!\n");
+		return;
+	}
 	help_bar = new ct_label_t(engine, "");
 	help_bar->offset(0.5, 0);
 	init_widget(help_bar, B_SMALL_FONT);

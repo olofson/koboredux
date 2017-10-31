@@ -221,7 +221,7 @@ class ct_form_t : public window_t
 	ct_form_t(gfxengine_t *e);
 	virtual ~ct_form_t();
 	void add(ct_widget_t *w);
-	void clean();
+	virtual void clean();
 	virtual bool select(ct_widget_t *w);
 	virtual void select(int ind);
 	virtual void select(int x, int y);
