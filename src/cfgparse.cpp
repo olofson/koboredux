@@ -413,9 +413,10 @@ config_parser_t &config_parser_t::operator = (config_parser_t &from)
 			if(!strcmp(fk->name, k->name))
 			{
 				if(k->copy(fk) < 0)
-					log_printf(ELOG, "config_parser_t: Tried"
-							" to copy from incompatible"
-							" source!\n");
+					log_printf(ELOG, "config_parser_t: "
+							"Tried to copy from "
+							"incompatible "
+							"source!\n");
 				break;
 			}
 			fk = fk->next;
@@ -873,25 +874,27 @@ void config_parser_t::set(int symbol, int value)
 	  case CFG_BOOL:
 		{
 			cfg_switch_t *k = (cfg_switch_t *)table[symbol];
-			*(k->value) = value ? 1 : 0;
+			*k->value = value ? 1 : 0;
 		}
 		break;
 	  case CFG_INT:
 		{
 			cfg_key_int_t *k = (cfg_key_int_t *)table[symbol];
-			*(k->value) = value;
+			*k->value = value;
 		}
 		break;
 	  case CFG_FLOAT:
 		{
 			cfg_key_float_t *k = (cfg_key_float_t *)table[symbol];
-			*(k->value) = (float)value;
+			*k->value = (float)value;
 		}
 		break;
 	  case CFG_STRING:
 		{
-			cfg_key_string_t *k = (cfg_key_string_t *)table[symbol];
-			snprintf(*(k->value), CFG_STRING_LENGTH-1, "%d", value);
+			cfg_key_string_t *k = (cfg_key_string_t *)
+					table[symbol];
+			snprintf(*k->value, CFG_STRING_LENGTH - 1, "%d",
+					value);
 		}
 		break;
 	}
@@ -912,25 +915,27 @@ void config_parser_t::set(int symbol, float value)
 	  case CFG_BOOL:
 		{
 			cfg_switch_t *k = (cfg_switch_t *)table[symbol];
-			*(k->value) = value ? 1 : 0;
+			*k->value = value ? 1 : 0;
 		}
 		break;
 	  case CFG_INT:
 		{
 			cfg_key_int_t *k = (cfg_key_int_t *)table[symbol];
-			*(k->value) = (int)value;
+			*k->value = (int)value;
 		}
 		break;
 	  case CFG_FLOAT:
 		{
 			cfg_key_float_t *k = (cfg_key_float_t *)table[symbol];
-			*(k->value) = value;
+			*k->value = value;
 		}
 		break;
 	  case CFG_STRING:
 		{
-			cfg_key_string_t *k = (cfg_key_string_t *)table[symbol];
-			snprintf(*(k->value), CFG_STRING_LENGTH-1, "%f", value);
+			cfg_key_string_t *k = (cfg_key_string_t *)
+					table[symbol];
+			snprintf(*k->value, CFG_STRING_LENGTH - 1, "%f",
+					value);
 		}
 		break;
 	}
@@ -959,32 +964,36 @@ void config_parser_t::set(int symbol, const char *text)
 			for(int i = 0; i < 15; ++i)
 				buf[i] = tolower(buf[i]);
 			cfg_switch_t *k = (cfg_switch_t *)table[symbol];
-			if( strncmp(buf, "yes", 3) || strncmp(buf, "true", 4) ||
-					strcmp(buf, "on") || strncmp(buf, "enable", 6) ||
+			if( strncmp(buf, "yes", 3) ||
+					strncmp(buf, "true", 4) ||
+					strcmp(buf, "on") ||
+					strncmp(buf, "enable", 6) ||
 					strncmp(buf, "activ", 5) ||
-					strcmp(buf, "one") || strcmp(buf, "1") )
-				*(k->value) = 1;
+					strcmp(buf, "one") ||
+					strcmp(buf, "1") )
+				*k->value = 1;
 			else
-				*(k->value) = 0;
+				*k->value = 0;
 		}
 		break;
 	  case CFG_INT:
 		{
 			cfg_key_int_t *k = (cfg_key_int_t *)table[symbol];
-			*(k->value) = atoi(text);
+			*k->value = atoi(text);
 		}
 		break;
 	  case CFG_FLOAT:
 		{
 			cfg_key_float_t *k = (cfg_key_float_t *)table[symbol];
-			*(k->value) = atof(text);
+			*k->value = atof(text);
 		}
 		break;
 	  case CFG_STRING:
 		{
-			cfg_key_string_t *k = (cfg_key_string_t *)table[symbol];
-			strncpy(*(k->value), text, CFG_STRING_LENGTH-1);
-			*(k->value)[CFG_STRING_LENGTH-1] = 0;
+			cfg_key_string_t *k = (cfg_key_string_t *)
+					table[symbol];
+			strncpy(*k->value, text, CFG_STRING_LENGTH - 1);
+			(*k->value)[CFG_STRING_LENGTH - 1] = 0;
 		}
 		break;
 	}
@@ -1005,22 +1014,23 @@ int config_parser_t::get_i(int symbol)
 	  case CFG_BOOL:
 		{
 			cfg_switch_t *k = (cfg_switch_t *)table[symbol];
-			return *(k->value) ? 1 : 0;
+			return *k->value ? 1 : 0;
 		}
 	  case CFG_INT:
 		{
 			cfg_key_int_t *k = (cfg_key_int_t *)table[symbol];
-			return *(k->value);
+			return *k->value;
 		}
 	  case CFG_FLOAT:
 		{
 			cfg_key_float_t *k = (cfg_key_float_t *)table[symbol];
-			return (int)*(k->value);
+			return (int)*k->value;
 		}
 	  case CFG_STRING:
 		{
-			cfg_key_string_t *k = (cfg_key_string_t *)table[symbol];
-			return atoi(*(k->value));
+			cfg_key_string_t *k = (cfg_key_string_t *)
+					table[symbol];
+			return atoi(*k->value);
 		}
 	}
 	return 0;
@@ -1040,22 +1050,23 @@ float config_parser_t::get_f(int symbol)
 	  case CFG_BOOL:
 		{
 			cfg_switch_t *k = (cfg_switch_t *)table[symbol];
-			return *(k->value) ? 1.0 : 0.0;
+			return *k->value ? 1.0 : 0.0;
 		}
 	  case CFG_INT:
 		{
 			cfg_key_int_t *k = (cfg_key_int_t *)table[symbol];
-			return (float)*(k->value);
+			return (float)*k->value;
 		}
 	  case CFG_FLOAT:
 		{
 			cfg_key_float_t *k = (cfg_key_float_t *)table[symbol];
-			return *(k->value);
+			return *k->value;
 		}
 	  case CFG_STRING:
 		{
-			cfg_key_string_t *k = (cfg_key_string_t *)table[symbol];
-			return atof(*(k->value));
+			cfg_key_string_t *k = (cfg_key_string_t *)
+					table[symbol];
+			return atof(*k->value);
 		}
 	}
 	return 0.0;
@@ -1075,24 +1086,25 @@ const char *config_parser_t::get_s(int symbol)
 	  case CFG_BOOL:
 		{
 			cfg_switch_t *k = (cfg_switch_t *)table[symbol];
-			return *(k->value) ? "On" : "Off";
+			return *k->value ? "On" : "Off";
 		}
 	  case CFG_INT:
 		{
 			cfg_key_int_t *k = (cfg_key_int_t *)table[symbol];
-			snprintf(retbuf, sizeof(retbuf)-1, "%d", *(k->value));
+			snprintf(retbuf, sizeof(retbuf) - 1, "%d", *k->value);
 			return retbuf;
 		}
 	  case CFG_FLOAT:
 		{
 			cfg_key_float_t *k = (cfg_key_float_t *)table[symbol];
-			snprintf(retbuf, sizeof(retbuf)-1, "%f", *(k->value));
+			snprintf(retbuf, sizeof(retbuf) - 1, "%f", *k->value);
 			return retbuf;
 		}
 	  case CFG_STRING:
 		{
-			cfg_key_string_t *k = (cfg_key_string_t *)table[symbol];
-			return *(k->value);
+			cfg_key_string_t *k = (cfg_key_string_t *)
+					table[symbol];
+			return *k->value;
 		}
 		break;
 	}
@@ -1127,7 +1139,8 @@ int config_parser_t::get_default_i(int symbol)
 		}
 	  case CFG_STRING:
 		{
-			cfg_key_string_t *k = (cfg_key_string_t *)table[symbol];
+			cfg_key_string_t *k = (cfg_key_string_t *)
+					table[symbol];
 			return atoi(k->default_value);
 		}
 	}
@@ -1162,7 +1175,8 @@ float config_parser_t::get_default_f(int symbol)
 		}
 	  case CFG_STRING:
 		{
-			cfg_key_string_t *k = (cfg_key_string_t *)table[symbol];
+			cfg_key_string_t *k = (cfg_key_string_t *)
+					table[symbol];
 			return atof(k->default_value);
 		}
 	}
@@ -1188,18 +1202,21 @@ const char *config_parser_t::get_default_s(int symbol)
 	  case CFG_INT:
 		{
 			cfg_key_int_t *k = (cfg_key_int_t *)table[symbol];
-			snprintf(retbuf, sizeof(retbuf)-1, "%d", k->default_value);
+			snprintf(retbuf, sizeof(retbuf) - 1, "%d",
+					k->default_value);
 			return retbuf;
 		}
 	  case CFG_FLOAT:
 		{
 			cfg_key_float_t *k = (cfg_key_float_t *)table[symbol];
-			snprintf(retbuf, sizeof(retbuf)-1, "%f", k->default_value);
+			snprintf(retbuf, sizeof(retbuf) - 1, "%f",
+					k->default_value);
 			return retbuf;
 		}
 	  case CFG_STRING:
 		{
-			cfg_key_string_t *k = (cfg_key_string_t *)table[symbol];
+			cfg_key_string_t *k = (cfg_key_string_t *)
+					table[symbol];
 			return k->default_value;
 		}
 		break;
