@@ -112,6 +112,7 @@ KOBO_Fire::KOBO_Fire(gfxengine_t *e) : stream_window_t(e)
 	xmargin = ymargin = 0;
 	bufw = bufh = 0;
 	ncolors = 0;
+	threshold = 0;
 	buffers[0] = buffers[1] = NULL;
 	current_buffer = 0;
 	noisestate = 16576;
