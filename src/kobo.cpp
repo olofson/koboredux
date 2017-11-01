@@ -1394,8 +1394,12 @@ void KOBO_main::pause_game()
 
 static void kobo_render_highlight(ct_widget_t *wg)
 {
-	screen.set_highlight(wg->py() + wg->height() / 2 - woverlay->py(),
-			wg->height());
+	if(wg)
+		screen.set_highlight(
+				wg->py() + wg->height() / 2 - woverlay->py(),
+				wg->height());
+	else
+		screen.set_highlight();
 }
 
 

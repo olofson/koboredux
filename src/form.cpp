@@ -162,8 +162,9 @@ void kobo_form_t::clean()
 
 void kobo_form_t::update_help()
 {
-	if(!help_bar)
+	if(!help_bar || !selected())
 		return;
+
 	if(!selected()->user)
 	{
 		help_bar->caption("");
@@ -195,7 +196,7 @@ bool kobo_form_t::select(ct_widget_t *w)
 
 void kobo_form_t::apply_change(ct_widget_t *w)
 {
-	if(!w->user)
+	if(!w->user || !selected())
 		return;
 
 	int handle = prefs->get(selected()->user);

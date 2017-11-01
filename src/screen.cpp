@@ -179,7 +179,7 @@ void KOBO_screen::credits(int t)
 	if((t % 4000 < 3600) && (t / 4000 <= 1))
 		screen.set_highlight(102, 70);
 	else
-		screen.set_highlight(0, 0);
+		screen.set_highlight();
 	int t2 = 10 * (t % 4000) / 3700;
 	if(t % 4000 < 3700)
 		switch(t / 4000)
@@ -287,7 +287,7 @@ void KOBO_screen::long_credits(int t)
 	t *= 10;
 	if(long_credits_wrap)
 		t %= long_credits_wrap;
-	screen.set_highlight(0, 0);
+	screen.set_highlight();
 	for(int i = 0; kobo_credits[i]; ++i)
 	{
 		const char *s = kobo_credits[i];
@@ -373,7 +373,7 @@ void KOBO_screen::help(int t)
 	else if(t < INST_TIME_CONTROL - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_CONTROL - INST_TIME_HL_OUT)
-			screen.set_highlight(0, 0);
+			screen.set_highlight();
 		woverlay->font(B_MEDIUM_FONT);
 		render_anim(cx, 105, B_PLAYER, 0, -1, 30, t);
 		woverlay->center(130, "Use directional controls");
@@ -388,7 +388,7 @@ void KOBO_screen::help(int t)
 	else if(t < INST_TIME_FIRE - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_FIRE - INST_TIME_HL_OUT)
-			screen.set_highlight(0, 0);
+			screen.set_highlight();
 
 		// Primary guns
 		int cx1 = cx + 20;
@@ -462,7 +462,7 @@ void KOBO_screen::help(int t)
 	else if(t < INST_TIME_BASES - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_BASES - INST_TIME_HL_OUT)
-			screen.set_highlight(0, 0);
+			screen.set_highlight();
 		woverlay->font(B_MEDIUM_FONT);
 		int i;
 		for(i = 0; i < 5; ++i)
@@ -484,7 +484,7 @@ void KOBO_screen::help(int t)
 	else if(t < INST_TIME_ENEMIES - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_ENEMIES - INST_TIME_HL_OUT)
-			screen.set_highlight(0, 0);
+			screen.set_highlight();
 		woverlay->font(B_MEDIUM_FONT);
 		render_anim(cx - 100, 95, B_RING,	0, -1, -.5, t);
 		render_anim(cx - 85, 120, B_BOMB,	0, 32, -.5, t);
@@ -508,7 +508,7 @@ void KOBO_screen::help(int t)
 	else if(t < INST_TIME_TOUGH - INST_TIME_OUT)
 	{
 		if(t > INST_TIME_TOUGH - INST_TIME_HL_OUT)
-			screen.set_highlight(0, 0);
+			screen.set_highlight();
 		woverlay->font(B_MEDIUM_FONT);
 		woverlay->center(75, "Some objects are indestructible...");
 		int i;
@@ -757,9 +757,6 @@ void KOBO_screen::render_curtains()
 
 void KOBO_screen::render_highlight()
 {
-	if(!highlight_h)
-		highlight_y = whighsprites->height() / 2;
-
 	static float ypos = -50;
 	static float hf = 0;
 	static int ot = 0;
@@ -837,6 +834,12 @@ void KOBO_screen::set_highlight(int y, int h)
 {
 	highlight_y = y;
 	highlight_h = h * 1.25f;
+}
+
+
+void KOBO_screen::set_highlight()
+{
+	highlight_h = 0.0f;
 }
 
 

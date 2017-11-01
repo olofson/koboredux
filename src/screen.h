@@ -108,6 +108,7 @@ class KOBO_screen
 		clean_scrap_tile(x, y);
 	}
 	static void set_highlight(int y, int h);
+	static void set_highlight();
 	static void set_noise(int source, float fade, float bright,
 			float depth);
 	static void render_background();

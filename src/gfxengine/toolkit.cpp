@@ -224,6 +224,9 @@ bool ct_widget_t::rawevent(SDL_Event *ev)
 
 static void default_render_highlight(ct_widget_t *wg)
 {
+	if(!wg)
+		return;
+
 	Uint32 hlc[6];
 	hlc[0] = wg->map_rgb(0x440000);
 	hlc[1] = wg->map_rgb(0x660000);
@@ -780,6 +783,8 @@ void ct_form_t::select(int x, int y)
 		select(w);
 		return;
 	}
+	// Miss! Deselect.
+	select((ct_widget_t *)0);
 }
 
 
@@ -871,6 +876,8 @@ void ct_form_t::render()
 		if(w == widgets)
 			break;	//Done!
 	}
+	if(!_selected)
+		ct_engine.render_highlight(NULL);
 }
 
 
