@@ -2053,18 +2053,30 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 	if(!pointer_margin_used)
 		gsm.pressbtn(BTN_FIRE);
 #else
-	switch(ev.button.button)
-	{
-	  case SDL_BUTTON_LEFT:
-		gsm.pressbtn(BTN_PRIMARY);
-		break;
-	  case SDL_BUTTON_MIDDLE:
-		gsm.pressbtn(BTN_SECONDARY);
-		break;
-	  case SDL_BUTTON_RIGHT:
-		gsm.pressbtn(BTN_TERTIARY);
-		break;
-	}
+	if(prefs->mouse)
+		switch(ev.button.button)
+		{
+		  case SDL_BUTTON_LEFT:
+			gsm.pressbtn(BTN_LMB);
+			break;
+		  case SDL_BUTTON_MIDDLE:
+			gsm.pressbtn(BTN_MMB);
+			break;
+		  case SDL_BUTTON_RIGHT:
+			gsm.pressbtn(BTN_RMB);
+			break;
+		}
+	else
+		switch(ev.button.button)
+		{
+		  case SDL_BUTTON_LEFT:
+			gsm.pressbtn(BTN_SELECT);
+			break;
+		  case SDL_BUTTON_MIDDLE:
+		  case SDL_BUTTON_RIGHT:
+			gsm.pressbtn(BTN_MENU);
+			break;
+		}
 #endif
 }
 
@@ -2115,18 +2127,30 @@ void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
 		pointer_margin_used = false;
 	}
 #else
-	switch(ev.button.button)
-	{
-	  case SDL_BUTTON_LEFT:
-		gsm.releasebtn(BTN_PRIMARY);
-		break;
-	  case SDL_BUTTON_MIDDLE:
-		gsm.releasebtn(BTN_SECONDARY);
-		break;
-	  case SDL_BUTTON_RIGHT:
-		gsm.releasebtn(BTN_TERTIARY);
-		break;
-	}
+	if(prefs->mouse)
+		switch(ev.button.button)
+		{
+		  case SDL_BUTTON_LEFT:
+			gsm.releasebtn(BTN_LMB);
+			break;
+		  case SDL_BUTTON_MIDDLE:
+			gsm.releasebtn(BTN_MMB);
+			break;
+		  case SDL_BUTTON_RIGHT:
+			gsm.releasebtn(BTN_RMB);
+			break;
+		}
+	else
+		switch(ev.button.button)
+		{
+		  case SDL_BUTTON_LEFT:
+			gsm.releasebtn(BTN_SELECT);
+			break;
+		  case SDL_BUTTON_MIDDLE:
+		  case SDL_BUTTON_RIGHT:
+			gsm.releasebtn(BTN_MENU);
+			break;
+		}
 #endif
 }
 

@@ -341,14 +341,15 @@ void st_intro_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
-	  case BTN_EXIT:
+	  case BTN_MENU:
 	  case BTN_CLOSE:
-		gsm.push(&st_main_menu);
-		break;
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
 	  case BTN_TERTIARY:
 	  case BTN_SELECT:
+	  case BTN_LMB:
+	  case BTN_MMB:
+	  case BTN_RMB:
 		gsm.push(&st_main_menu);
 		break;
 	  case BTN_UP:
@@ -452,12 +453,15 @@ void st_long_credits_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
-	  case BTN_EXIT:
+	  case BTN_MENU:
 	  case BTN_CLOSE:
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
 	  case BTN_TERTIARY:
 	  case BTN_SELECT:
+	  case BTN_LMB:
+	  case BTN_MMB:
+	  case BTN_RMB:
 		transition_pop(KOBO_TRS_GAME_SLOW);
 		break;
 	  default:
@@ -567,7 +571,8 @@ void st_game_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
-	  case BTN_EXIT:
+	  case BTN_SELECT:
+	  case BTN_MENU:
 		gsm.push(&st_main_menu);
 		break;
 	  case BTN_CLOSE:
@@ -686,13 +691,16 @@ void st_rewind_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
-	  case BTN_EXIT:
+	  case BTN_MENU:
+	  case BTN_RMB:
+	  case BTN_MMB:
 		gsm.push(&st_main_menu);
 		break;
 	  case BTN_CLOSE:
 		gsm.push(&st_ask_exit);
 		break;
 	  case BTN_SELECT:
+	  case BTN_LMB:
 	  case BTN_PAUSE:
 		if(manage.paused())
 			sound.ui_play(S_UI_PLAY);
@@ -842,7 +850,9 @@ void st_replay_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
-	  case BTN_EXIT:
+	  case BTN_MENU:
+	  case BTN_MMB:
+	  case BTN_RMB:
 	  case BTN_PRIMARY:
 		gsm.push(&st_main_menu);
 		break;
@@ -853,6 +863,7 @@ void st_replay_t::press(gc_targets_t button)
 	  case BTN_PAUSE:
 	  case BTN_SECONDARY:
 	  case BTN_TERTIARY:
+	  case BTN_LMB:
 		if(manage.paused())
 			sound.ui_play(S_UI_PLAY);
 		else
@@ -946,7 +957,9 @@ void st_pause_game_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
-	  case BTN_EXIT:
+	  case BTN_MENU:
+	  case BTN_MMB:
+	  case BTN_RMB:
 		gsm.change(&st_main_menu);
 		break;
 	  default:
@@ -1008,7 +1021,8 @@ void st_get_ready_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
-	  case BTN_EXIT:
+	  case BTN_MENU:
+	  case BTN_RMB:
 	  case BTN_NO:
 		gsm.change(&st_main_menu);
 		break;
@@ -1023,6 +1037,7 @@ void st_get_ready_t::press(gc_targets_t button)
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
 	  case BTN_TERTIARY:
+	  case BTN_LMB:
 	  case BTN_YES:
 		if(frame_time < 500)
 			break;
@@ -1032,6 +1047,7 @@ void st_get_ready_t::press(gc_targets_t button)
 		pop();
 		break;
 	  case BTN_SELECT:
+	  case BTN_MMB:
 	  case BTN_PAUSE:
 		sound.ui_play(S_UI_PAUSE);
 		manage.player_ready();
@@ -1133,7 +1149,9 @@ void st_game_over_t::press(gc_targets_t button)
 {
 	switch (button)
 	{
-	  case BTN_EXIT:
+	  case BTN_MENU:
+	  case BTN_MMB:
+	  case BTN_RMB:
 	  case BTN_NO:
 		gsm.push(&st_main_menu);
 		break;
@@ -1149,6 +1167,7 @@ void st_game_over_t::press(gc_targets_t button)
 	  case BTN_SECONDARY:
 	  case BTN_TERTIARY:
 	  case BTN_SELECT:
+	  case BTN_LMB:
 	  case BTN_YES:
 		if(frame_time < 500)
 			break;
@@ -1259,7 +1278,6 @@ void st_menu_base_t::enter()
 
 	// If the mouse cursor is visible when entering a menu, and it happens
 	// to land on an interactive widget, we want that to be selected.
-	// TODO: Maybe even select the nearest widget in this case...?
 	if(mouse_visible)
 		gsm.pos(mouse_x, mouse_y);
 }
@@ -1328,12 +1346,13 @@ void st_menu_base_t::press(gc_targets_t button)
 	// Translate
 	switch(button)
 	{
-	  case BTN_EXIT:
+	  case BTN_MENU:
 	  case BTN_CLOSE:
 		selection = 0;
 		break;
 	  case BTN_UP:
 	  case BTN_DOWN:
+	  case BTN_MMB:
 		selection = -1;
 		break;
 	  case BTN_INC:
@@ -1344,6 +1363,7 @@ void st_menu_base_t::press(gc_targets_t button)
 	  case BTN_SECONDARY:
 	  case BTN_TERTIARY:
 	  case BTN_SELECT:
+	  case BTN_LMB:
 		if(form->selected())
 			selection = translate(form->selected()->tag, button);
 		else
@@ -1358,7 +1378,8 @@ void st_menu_base_t::press(gc_targets_t button)
 	if(do_default_action)
 		switch(button)
 		{
-		  case BTN_EXIT:
+		  case BTN_MENU:
+		  case BTN_RMB:
 			escape();
 			break;
 		  case BTN_INC:
@@ -1373,6 +1394,8 @@ void st_menu_base_t::press(gc_targets_t button)
 			break;
 		  case BTN_PRIMARY:
 		  case BTN_SELECT:
+		  case BTN_LMB:
+		  case BTN_MMB:
 			form->change(0);
 			break;
 		  case BTN_UP:
@@ -1435,7 +1458,6 @@ void st_error_t::press(gc_targets_t button)
 
 	switch (button)
 	{
-	  case BTN_EXIT:
 	  case BTN_NO:
 	  case BTN_LEFT:
 	  case BTN_RIGHT:
@@ -1449,6 +1471,7 @@ void st_error_t::press(gc_targets_t button)
 	  case BTN_SECONDARY:
 	  case BTN_TERTIARY:
 	  case BTN_SELECT:
+	  case BTN_LMB:
 	  case BTN_YES:
 		sound.ui_play(S_UI_OK);
 		pop();
@@ -1608,7 +1631,9 @@ void st_main_menu_t::press(gc_targets_t button)
 {
 	switch(button)
 	{
-	  case BTN_EXIT:
+	  case BTN_MENU:
+	  case BTN_MMB:
+	  case BTN_RMB:
 	  case BTN_CLOSE:
 		// We want to treat these the same as "Return to game"
 		select(MENU_TAG_OK);
@@ -1738,6 +1763,8 @@ void campaign_menu_t::colonalign()
 void campaign_menu_t::build()
 {
 	title(header);
+	button("Return to Intro", MENU_TAG_OK);
+	space(1);
 	xoffs = 0.1;
 	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
 	{
@@ -1833,6 +1860,10 @@ void st_campaign_menu_t::press(gc_targets_t button)
 		manage.select_slot(menu->selected()->tag - 10);
 		menu->rebuild();
 		break;
+	  case BTN_MMB:
+	  case BTN_RMB:
+		select(MENU_TAG_OK);
+		break;
 	  default:
 		break;
 	}
@@ -1841,6 +1872,12 @@ void st_campaign_menu_t::press(gc_targets_t button)
 
 void st_campaign_menu_t::select(int tag)
 {
+	if(tag == MENU_TAG_OK)
+	{
+		sound.ui_play(S_UI_CANCEL);
+		transition_pop(KOBO_TRS_GAME_FAST);
+		return;
+	}
 	int slot = tag - 10;
 	if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS))
 	{

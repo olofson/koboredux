@@ -53,10 +53,17 @@ enum gc_targets_t
 	BTN_PRIMARY,	// Primary fire (ctrl, fire button, LMB,...)
 	BTN_SECONDARY,	// Secondary fire (shift, space, mouse button,...
 	BTN_TERTIARY,	// Tertiary fire
-	BTN_SELECT,	// Return, enter,...
-	BTN_EXIT,	// ESC
+	BTN_SELECT,	// Return, enter, LMB, ...
+	BTN_MENU,	// ESC, RMB, ...
 	BTN_PAUSE,	// Pause or P; also used as an internal event.
 	BTN_CLOSE,	// Window close button, ALT-F4,...
+
+	// When using ingame mouse control, these are passed to the GUI, so we
+	// can trap them explicitly where desired. When not using ingame mouse
+	// control, mouse buttons generate BTN_SELECT or BTN_EXIT instead.
+	BTN_LMB,	// Left
+	BTN_MMB,	// Middle
+	BTN_RMB,	// Right
 
 	BTN__COUNT
 };
