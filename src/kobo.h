@@ -98,14 +98,15 @@ class kobo_gfxengine_t : public gfxengine_t
 	int pointer_margin_height_min;
 	int pointer_margin_height_max;
 #endif
-	int st_sound;
-	int st_handle;
-	int st_x;
-	int st_y;
+	int sfxt_sound;
+	int sfxt_handle;
+	int sfxt_x;
+	int sfxt_y;
 	void pre_loop();
 	void input(float fractional_frame);
 	void pre_advance(float fractional_frame);
-	void st_update_sound_displays();
+	void sfxt_update();
+	void pfxt_update();
 	bool soundtools_event(SDL_Event &ev);
 	void mouse_motion(SDL_Event &ev);
 	void mouse_button_down(SDL_Event &ev);
@@ -179,11 +180,13 @@ class KOBO_main
 	static prefs_t		safe_prefs;
 
 	// Sound design tools
-	static label_t		*st_hotkeys;
-	static display_t	*st_symname;
+	static label_t		*sfxt_hotkeys;
+	static display_t	*sfxt_symname;
 
 	// Particle effect design tools
 	static int 		pfxt_select;
+	static label_t		*pfxt_hotkeys;
+	static display_t	*pfxt_symname;
 
 	// Themes
 	static KOBO_ThemeData	*themes;

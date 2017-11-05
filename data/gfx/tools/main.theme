@@ -1,5 +1,5 @@
 message "Kobo Redux Tools Theme"
-message "Copyright 2016 David Olofson"
+message "Copyright 2016-2017 David Olofson"
 message "CC BY-SA 4.0 (http://creativecommons.org/licenses/by-sa/4.0/)"
 
 //-----------------------------------------------------------------------------
@@ -13,3 +13,6 @@ sfont B_TOOL_FONT "microfont3.png"
 
 set D_SOUNDTOOLS_HOTKEYS	0	155	104	81	D_DASH_CONSOLE
 set D_SOUNDTOOLS_SYMNAME	0	237	104	19	D_DASH_CONSOLE
+
+set D_PFXTOOLS_HOTKEYS		0	155	128	81	D_DASH_RADAR
+set D_PFXTOOLS_SYMNAME		0	237	128	19	D_DASH_RADAR
