@@ -182,6 +182,9 @@ class KOBO_main
 	static label_t		*st_hotkeys;
 	static display_t	*st_symname;
 
+	// Particle effect design tools
+	static int 		pfxt_select;
+
 	// Themes
 	static KOBO_ThemeData	*themes;
 

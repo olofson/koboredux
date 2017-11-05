@@ -313,6 +313,8 @@ int		KOBO_main::smsg_stage = 0;
 char		*KOBO_main::smsg_header = NULL;
 char		*KOBO_main::smsg_message = NULL;
 
+int		KOBO_main::pfxt_select = 0;
+
 KOBO_main km;
 
 
@@ -1922,7 +1924,6 @@ void kobo_gfxengine_t::mouse_motion(SDL_Event &ev)
 
 void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 {
-	static int explo_debug_mode = 0;
 	mouse_x = (int)(ev.button.x / gengine->xscale()) - km.xoffs;
 	mouse_y = (int)(ev.button.y / gengine->yscale()) - km.yoffs;
 	switch(ev.button.button)
@@ -1941,18 +1942,19 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 			break;
 		}
 		KOBO_ParticleFXDef *fxd = NULL;
-		switch(explo_debug_mode++)
+		bool fxd_is_temp = false;
+		switch(km.pfxt_select)
 		{
-		  default:
-			explo_debug_mode = 1;
-		  case 0:
+		  case -1:
 			// Basic default; single system
 			fxd = new KOBO_ParticleFXDef;
+			fxd_is_temp = true;
 			fxd->Default();
 			break;
-		  case 1:
+		  case -2:
 			// Cluster of systems
 			fxd = new KOBO_ParticleFXDef;
+			fxd_is_temp = true;
 			fxd->Default();
 			fxd->init_count = 1024;
 			fxd->radius.Set(15.0f, 20.0f, 0.0f);
@@ -1971,10 +1973,11 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 				fxd2->yoffs.Set(-20.0f, 20.0f);
 			}
 			break;
-		  case 2:
+		  case -3:
 		  {
 			// Nested systems
 			fxd = new KOBO_ParticleFXDef;
+			fxd_is_temp = true;
 			fxd->Reset();
 			fxd->init_count = 10;
 			fxd->radius.Set(10.0f, 10.0f, 0.0f);
@@ -1985,13 +1988,19 @@ void kobo_gfxengine_t::mouse_button_down(SDL_Event &ev)
 			fxd2->radius.Set(1.0f, 2.0f, 0.0f);
 			break;
 		  }
+		  default:
+			fxd = themedata.pfxdef(
+					(KOBO_ParticleFX)km.pfxt_select);
+			break;
 		}
-		wfire->Spawn(PIXEL2CS(mouse_x - DASHX(MAIN)) +
-				gengine->xoffs(LAYER_BASES),
-				PIXEL2CS(mouse_y - DASHY(MAIN)) +
-				gengine->yoffs(LAYER_BASES),
-				0, -300, fxd);
-		delete fxd;
+		if(fxd)
+			wfire->Spawn(PIXEL2CS(mouse_x - DASHX(MAIN)) +
+					gengine->xoffs(LAYER_BASES),
+					PIXEL2CS(mouse_y - DASHY(MAIN)) +
+					gengine->yoffs(LAYER_BASES),
+					0, -300, fxd);
+		if(fxd_is_temp)
+			delete fxd;
 		return;
 	  }
 	}
@@ -2161,6 +2170,30 @@ void kobo_gfxengine_t::mouse_wheel(SDL_Event &ev)
 		gsm.pressbtn(BTN_INC);
 	else if(ev.wheel.y == -1)
 		gsm.pressbtn(BTN_DEC);
+
+	if(!prefs->debug || prefs->soundtools)
+		return;
+
+	if(ev.wheel.y == 1)
+	{
+		++km.pfxt_select;
+		if(km.pfxt_select >= KOBO_PFX__COUNT)
+			km.pfxt_select = -3;
+	}
+	else if(ev.wheel.y == -1)
+	{
+		--km.pfxt_select;
+		if(km.pfxt_select < -3)
+			km.pfxt_select = KOBO_PFX__COUNT - 1;
+	}
+	else
+		return;
+
+	if(km.pfxt_select >= 0)
+		log_printf(ULOG, "Selected PFX %s\n",
+				kobo_pfxnames[km.pfxt_select]);
+	else
+		log_printf(ULOG, "Selected PFX %d\n", km.pfxt_select);
 }
 
 
