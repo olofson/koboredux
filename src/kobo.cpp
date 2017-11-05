@@ -2155,6 +2155,15 @@ void kobo_gfxengine_t::mouse_button_up(SDL_Event &ev)
 }
 
 
+void kobo_gfxengine_t::mouse_wheel(SDL_Event &ev)
+{
+	if(ev.wheel.y == 1)
+		gsm.pressbtn(BTN_INC);
+	else if(ev.wheel.y == -1)
+		gsm.pressbtn(BTN_DEC);
+}
+
+
 void kobo_gfxengine_t::input(float fractional_frame)
 {
 	SDL_Event ev;
@@ -2347,6 +2356,9 @@ void kobo_gfxengine_t::input(float fractional_frame)
 			break;
 		  case SDL_MOUSEBUTTONUP:
 			mouse_button_up(ev);
+			break;
+		  case SDL_MOUSEWHEEL:
+			mouse_wheel(ev);
 			break;
 		}
 	}

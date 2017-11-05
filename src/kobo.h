@@ -110,6 +110,7 @@ class kobo_gfxengine_t : public gfxengine_t
 	void mouse_motion(SDL_Event &ev);
 	void mouse_button_down(SDL_Event &ev);
 	void mouse_button_up(SDL_Event &ev);
+	void mouse_wheel(SDL_Event &ev);
 	void frame();
 	void pre_render();
 	void pre_sprite_render();
