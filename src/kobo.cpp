@@ -2202,6 +2202,19 @@ void kobo_gfxengine_t::input(float fractional_frame)
 				manage.start_replay();
 				break;
 #endif
+			  case SDLK_F5:
+				if(prefs->debug && !prefs->soundtools)
+				{
+					wdash->progress_done();
+					dashboard_modes_t dmd = wdash->mode();
+					wdash->mode(DASHBOARD_BLACK);
+					km.reload_graphics();
+					km.pause_game();
+					manage.reenter();
+					wdash->fade(1.0f);
+					wdash->mode(dmd);
+					wradar->mode(RM__REINIT);
+				}
 			  default:
 				break;
 			}
