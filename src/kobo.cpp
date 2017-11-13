@@ -1785,7 +1785,6 @@ void kobo_gfxengine_t::sfxt_update()
 	if(!prefs->soundtools)
 		return;
 
-	log_printf(ULOG, "Selected sound %s\n", sound.symname(sfxt_sound));
 	km.sfxt_symname->text(sound.symname(sfxt_sound));
 }
 
