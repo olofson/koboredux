@@ -623,7 +623,7 @@ void debug_options_t::build()
 #endif
 	yesno("Timestamp Debug Output", &prf->tsdebug, 0);
 #ifndef KOBO_DEMO
-	yesno("Sound Design Tools", &prf->soundtools, 0);
+	yesno("Sound Design Tools", &prf->soundtools, OS_UPDATE_AUDIO);
 #endif
 	yesno("Replay Debug Data (Huge Saves!)", &prf->replaydebug, 0);
 #ifndef KOBO_DEMO

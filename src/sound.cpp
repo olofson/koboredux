@@ -291,10 +291,27 @@ void KOBO_sound::init_mixer_group(KOBO_mixer_group grp)
 }
 
 
+void KOBO_sound::logsetup()
+{
+	if(!iface)
+		return;
+
+	// Set up log filter
+	int ll = A2_LOGM_CRITICAL;
+	if(prefs->debug || prefs->soundtools)
+		ll |= A2_LOGM_NORMAL;
+	if(prefs->soundtools)
+		ll |= A2_LOGM_DEBUG;
+	a2_SetStateProperty(iface, A2_PLOGLEVELS, ll);
+}
+
+
 void KOBO_sound::prefschange()
 {
 	if(!iface)
 		return;
+
+	logsetup();
 
 	a2_Send(iface, groups[KOBO_MG_MASTER], 3, (float)prefs->vol_boost);
 	a2_Send(iface, groups[KOBO_MG_MASTER], 2, pref2vol(prefs->volume));
@@ -361,6 +378,8 @@ int KOBO_sound::open()
 				" disabling sound effects.\n");
 		return -3;
 	}
+
+	logsetup();
 
 	log_printf(ULOG, "  Actual sample rate: %d Hz\n", cfg->samplerate);
 	log_printf(ULOG, "         Buffer size: %d frames\n", cfg->buffer);

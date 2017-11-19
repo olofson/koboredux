@@ -177,6 +177,7 @@ class KOBO_sound
 	static bool checksound(int wid, const char *where);
 	static void update_music(bool newsong);
 	static void start_player_gun();
+	static void logsetup();
 
 	static inline float pref2vol(int v)
 	{
