@@ -413,6 +413,8 @@ class campaign_menu_t : public menu_base_t
 	void setup(const char *hdr, bool new_game, bool view);
 	void build();
 	void rebuild();
+	using kobo_form_t::select;
+	bool select(ct_widget_t *w);
 };
 
 class st_campaign_menu_t : public st_menu_base_t

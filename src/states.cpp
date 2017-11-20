@@ -1832,6 +1832,25 @@ void campaign_menu_t::rebuild()
 }
 
 
+bool campaign_menu_t::select(ct_widget_t *w)
+{
+	if(kobo_form_t::select(w))
+	{
+		if(!selected())
+			return true;
+		int slot = selected()->tag - 10;
+		if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS) &&
+				(slot != manage.current_slot()))
+		{
+			manage.select_slot(slot);
+			rebuild();
+		}
+		return true;
+	}
+	return false;
+}
+
+
 kobo_form_t *st_campaign_menu_t::open()
 {
 	menu = new campaign_menu_t(gengine);
