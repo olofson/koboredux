@@ -652,7 +652,7 @@ bool KOBO_sound::eval_pos(int x, int y, float *vol, float *pan)
 	vx = (65536 - vx) >> 1;
 	vy = (65536 - vy) >> 1;
 	int v = vx * vy >> 14;
-	v = (v >> 1) * (v >> 1) >> 14;
+	v = ((v >> 2) * v >> 14) * (v >> 2) >> 14;
 
 	int p = x * panscale;
 	if(p < -65536)
