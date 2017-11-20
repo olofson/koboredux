@@ -779,7 +779,7 @@ void KOBO_sound::g_player_fire_denied()
 		return;
 	if(checksound(S_PLAYER_FIRE_DENIED,
 			"KOBO_sound::g_player_fire_denied()"))
-		a2_Play(iface, groups[KOBO_MG_SFX],
+		a2_Play(iface, groups[KOBO_MG_UI],
 				sounds[S_PLAYER_FIRE_DENIED]);
 }
 
