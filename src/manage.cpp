@@ -55,6 +55,7 @@ KOBO_replay *_manage::replay = NULL;
 bool _manage::owns_replay = false;
 KOBO_player_controls _manage::lastctrl = KOBO_PC_FIRE;
 unsigned _manage::ctrltimer = 0;
+int _manage::valid_replays = 0;
 
 bool _manage::in_background = false;
 bool _manage::player_ready_armed = false;
@@ -327,6 +328,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 			state(GS_PLAYING);
 			if(replaymode == RPM_PLAY)
 				replaymode = RPM_RETRY;
+			++valid_replays;
 		}
 		else
 		{
@@ -457,6 +459,8 @@ bool _manage::continue_game()
 
 bool _manage::start_replay(int stage)
 {
+	valid_replays = 0;
+
 	if(!campaign)
 		return false;
 
@@ -1233,7 +1237,7 @@ void _manage::run()
 			switch(replaymode)
 			{
 			  case RPM_REPLAY:
-				if(prefs->loopreplays)
+				if(prefs->loopreplays && valid_replays)
 				{
 					start_replay(1);
 					screen.curtains(false,

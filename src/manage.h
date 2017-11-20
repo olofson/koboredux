@@ -64,6 +64,7 @@ class _manage
 	static bool owns_replay;
 	static KOBO_player_controls lastctrl;	// Previous control input state
 	static unsigned ctrltimer;	// Frames since last input change
+	static int valid_replays;	// Prevent infinite loop w/ bad replays
 
 	// User interface
 	static bool in_background;
