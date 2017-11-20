@@ -1857,9 +1857,15 @@ void st_campaign_menu_t::press(gc_targets_t button)
 	{
 	  case BTN_UP:
 	  case BTN_DOWN:
-		manage.select_slot(menu->selected()->tag - 10);
-		menu->rebuild();
+	  {
+		int slot = menu->selected()->tag - 10;
+		if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS))
+		{
+			manage.select_slot(slot);
+			menu->rebuild();
+		}
 		break;
+	  }
 	  case BTN_MMB:
 	  case BTN_RMB:
 		select(MENU_TAG_OK);
