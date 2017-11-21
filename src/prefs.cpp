@@ -131,6 +131,8 @@ void prefs_t::init()
 	section("Game");
 	key("countdown", countdown, 5); desc("Get Ready Countdown");
 	key("cont_countdown", cont_countdown, 9); desc("Continue Countdown");
+	key("autocontinue", autocontinue, 5);
+			desc("Automatic Continue Timeout");
 
 	section("Debug");
 	yesno("debug", debug, 0); desc("Enable Debug Features");

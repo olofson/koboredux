@@ -1141,7 +1141,10 @@ void st_game_over_t::reenter()
 	}
 	start_time = (int)SDL_GetTicks();
 	frame_time = 0;
-	countdown = prefs->cont_countdown;
+	if(prefs->autocontinue)
+		countdown = prefs->autocontinue;
+	else
+		countdown = prefs->cont_countdown;
 }
 
 
@@ -1163,13 +1166,21 @@ void st_game_over_t::press(gc_targets_t button)
 	  case BTN_UR:
 	  case BTN_DL:
 	  case BTN_DR:
+		// We don't want these in autocontinue mode.
+		if(prefs->autocontinue)
+			break;
 	  case BTN_PRIMARY:
 	  case BTN_SECONDARY:
 	  case BTN_TERTIARY:
 	  case BTN_SELECT:
 	  case BTN_LMB:
 	  case BTN_YES:
-		if(frame_time < 500)
+		if(prefs->autocontinue)
+		{
+			if(frame_time < prefs->autocontinue * 500)
+				break;
+		}
+		else if(frame_time < 500)
 			break;
 		sound.ui_play(S_UI_OK);
 		manage.rewind();
@@ -1183,7 +1194,20 @@ void st_game_over_t::press(gc_targets_t button)
 void st_game_over_t::frame()
 {
 	frame_time = (int)SDL_GetTicks() - start_time;
-	if(!prefs->cont_countdown)
+	if(prefs->autocontinue)
+	{
+		if(prefs->autocontinue <= 9)
+		{
+			countdown = prefs->autocontinue - frame_time / 1000;
+			if(countdown < 1)
+			{
+				sound.ui_play(S_UI_OK);
+				manage.rewind();
+				gsm.change(&st_rewind);
+			}
+		}
+	}
+	else if(!prefs->cont_countdown)
 	{
 		if(frame_time > 700)
 		{
@@ -1198,7 +1222,6 @@ void st_game_over_t::frame()
 		countdown = prefs->cont_countdown - frame_time / 1000;
 		if(prevcount != countdown)
 			sound.ui_countdown(countdown);
-
 		if(countdown < 1)
 		{
 			sound.ui_play(S_UI_CANCEL);
@@ -1213,13 +1236,16 @@ void st_game_over_t::post_render()
 {
 	kobo_basestate_t::post_render();
 
-	float ft = SDL_GetTicks() * 0.001;
-	woverlay->font(B_BIG_FONT);
-	int y = PIXEL2CS(100) + (int)floor(PIXEL2CS(15)*sin(ft * 6));
-	woverlay->center_fxp(y, "CONTINUE?");
-	screen.render_countdown(y + PIXEL2CS(60),
-			(int)SDL_GetTicks() - start_time,
-			prefs->cont_countdown, countdown);
+	if(!prefs->autocontinue)
+	{
+		float ft = SDL_GetTicks() * 0.001;
+		woverlay->font(B_BIG_FONT);
+		int y = PIXEL2CS(100) + (int)floor(PIXEL2CS(15)*sin(ft * 6));
+		woverlay->center_fxp(y, "CONTINUE?");
+		screen.render_countdown(y + PIXEL2CS(60),
+				(int)SDL_GetTicks() - start_time,
+				prefs->cont_countdown, countdown);
+	}
 
 	wradar->frame();
 }

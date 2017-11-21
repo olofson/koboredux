@@ -113,6 +113,7 @@ class prefs_t : public config_parser_t
 	// Game
 	int	countdown;	//"Get Ready" countdown
 	int	cont_countdown;	//"Continue?" countdown
+	int	autocontinue;	//Turn "Continue?" into delay-to-replay
 
 	// Debug
 	int	debug;

@@ -549,8 +549,8 @@ void game_options_t::build()
 		item("8 seconds", 8);
 		item("9 seconds", 9);
 		item("Wait Forever", 10);
-	list("\"Continue?\" Countdown", &prf->cont_countdown, 0);
-		item("Quick Continue", 0);
+	list("Death To Rewind/Retry Delay", &prf->autocontinue, OS_REBUILD);
+		item("No Delay", 0);
 		item("1 second", 1);
 		item("2 seconds", 2);
 		item("3 seconds", 3);
@@ -560,7 +560,23 @@ void game_options_t::build()
 		item("7 seconds", 7);
 		item("8 seconds", 8);
 		item("9 seconds", 9);
-		item("Wait Forever", 10);
+		item("Wait For Player", 10);
+	if(!prf->autocontinue)
+	{
+		list("\"Continue?\" Countdown", &prf->cont_countdown, 0);
+			// Made redundant by autocontinue!
+			// item("Quick Continue", 0);
+			item("1 second", 1);
+			item("2 seconds", 2);
+			item("3 seconds", 3);
+			item("4 seconds", 4);
+			item("5 seconds", 5);
+			item("6 seconds", 6);
+			item("7 seconds", 7);
+			item("8 seconds", 8);
+			item("9 seconds", 9);
+			item("Wait Forever", 10);
+	}
 
 	xoffs = 0.5;
 	space(2);
