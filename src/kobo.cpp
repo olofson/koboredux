@@ -2639,6 +2639,37 @@ void kobo_gfxengine_t::post_render()
 		woverlay->string(4, DASHH(MAIN) - 10, buf);
 	}
 
+	if(prefs->firebench)
+	{
+		char buf[40];
+		woverlay->font(B_SMALL_FONT);
+
+		woverlay->string(4, DASHH(MAIN) - 50,
+				"FireFX\tms/frame\tsamples");
+
+		snprintf(buf, sizeof(buf), "Particles:\t%f\t%d",
+				wfire->particle_prof.AverageTime(),
+				wfire->particle_prof.Samples());
+		woverlay->string(4, DASHH(MAIN) - 40, buf);
+
+		snprintf(buf, sizeof(buf), "Filter:\t%f\t%d",
+				wfire->filter_prof.AverageTime(),
+				wfire->filter_prof.Samples());
+		woverlay->string(4, DASHH(MAIN) - 30, buf);
+
+		snprintf(buf, sizeof(buf), "Render:\t%f\t%d",
+				wfire->render_prof.AverageTime(),
+				wfire->render_prof.Samples());
+		woverlay->string(4, DASHH(MAIN) - 20, buf);
+
+		if(wfire->render_prof.PeriodDuration() >= 1.0f)
+		{
+			wfire->particle_prof.Period();
+			wfire->filter_prof.Period();
+			wfire->render_prof.Period();
+		}
+	}
+
 	// Frame rate counter
 	int nt = (int)SDL_GetTicks();
 	int tt = nt - km.fps_starttime;

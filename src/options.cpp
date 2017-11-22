@@ -631,6 +631,7 @@ void debug_options_t::build()
 	xoffs = 0.6;
 	yesno("General Debug Features", &prf->debug, 0);
 	yesno("Show FPS Counter", &prf->show_fps, 0);
+	yesno("Fire FX Benchmarking", &prf->firebench, 0);
 #ifndef KOBO_DEMO
 	yesno("Show Map Border", &prf->show_map_border, 0);
 	yesno("Show Coordinates", &prf->show_coordinates, 0);

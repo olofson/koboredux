@@ -51,6 +51,7 @@
 
 #include "window.h"
 #include "mathutil.h"
+#include "profiler.h"
 
 // Maximum number of particles in one particle system
 #define	FIRE_MAX_PARTICLES	1024
@@ -279,6 +280,11 @@ class KOBO_Fire : public stream_window_t
 
 	int StatPSystems()	{ return pscount; }
 	int StatParticles()	{ return pcount; }
+
+	// Benchmarking
+	KOBO_Profiler	particle_prof;	// Particles (update + render)
+	KOBO_Profiler	filter_prof;	// Filter (fade, blur)
+	KOBO_Profiler	render_prof;	// Render (dither + palette lookup)
 };
 
 #endif // KOBO_FIRE_H

@@ -547,11 +547,20 @@ void KOBO_Fire::update()
 	if(!bufw || !bufh)
 		return;
 
+	if(prefs->firebench)
+		particle_prof.SampleBegin();
+
 	// Run particle systems
 #ifdef FIRE_NOFILTER
 	memset(buffers[current_buffer], 0, bufw * bufh * sizeof(Uint32));
 #endif
 	RunParticles();
+
+	if(prefs->firebench)
+	{
+		particle_prof.SampleEnd();
+		filter_prof.SampleBegin();
+	}
 
 	Uint32 *src = buffers[current_buffer];
 	Uint32 *dst = buffers[!current_buffer];
@@ -591,6 +600,9 @@ void KOBO_Fire::update()
 	current_buffer = !current_buffer;
 
 	need_refresh = true;
+
+	if(prefs->firebench)
+		filter_prof.SampleEnd();
 }
 
 
@@ -606,7 +618,7 @@ void KOBO_Fire::update_norender()
 
 void KOBO_Fire::refresh(SDL_Rect *r)
 {
-	if((!prefs->firebench &&!need_refresh) || !bufw || !bufh || !ncolors)
+	if(!need_refresh || !bufw || !bufh || !ncolors)
 		return;
 
 	// Source
@@ -621,6 +633,9 @@ void KOBO_Fire::refresh(SDL_Rect *r)
 				"buffer!\n");
 		return;
 	}
+
+	if(prefs->firebench)
+		render_prof.SampleBegin();
 
 	// Render!
 	for(unsigned y = 0; y < bufh; ++y)
@@ -682,6 +697,10 @@ void KOBO_Fire::refresh(SDL_Rect *r)
 			break;
 		}
 	}
+
+	if(prefs->firebench)
+		render_prof.SampleEnd();
+
 	unlock();
 
 	need_refresh = false;
