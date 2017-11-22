@@ -74,6 +74,8 @@ class KOBO_Profiler
 			r_average_time = 0.0f;
 		}
 		period_start = t;
+		samples = 0;
+		total = 0;
 	}
 
 	float PeriodDuration()
