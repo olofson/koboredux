@@ -124,6 +124,7 @@ KOBO_Fire::KOBO_Fire(gfxengine_t *e) : stream_window_t(e)
 	psystems = NULL;
 	psystempool = NULL;
 	pscount = pcount = 0;
+	standby_timer = FIRE_STANDBY_DELAY;
 }
 
 
@@ -256,6 +257,8 @@ void KOBO_Fire::Clear(bool buffer, bool particles)
 			ps->next = psystempool;
 			psystempool = ps;
 		}
+
+	standby_timer = 0;
 }
 
 
@@ -557,10 +560,19 @@ void KOBO_Fire::update()
 	RunParticles();
 
 	if(prefs->firebench)
-	{
 		particle_prof.SampleEnd();
-		filter_prof.SampleBegin();
+
+	if(pcount)
+		standby_timer = FIRE_STANDBY_DELAY;
+	else
+	{
+		if(!standby_timer)
+			return;
+		--standby_timer;
 	}
+
+	if(prefs->firebench)
+		filter_prof.SampleBegin();
 
 	Uint32 *src = buffers[current_buffer];
 	Uint32 *dst = buffers[!current_buffer];

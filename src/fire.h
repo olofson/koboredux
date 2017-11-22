@@ -70,6 +70,12 @@
 //	is preferably set well below that.
 #define	FIRE_HEAT_THRESHOLD	32768
 
+// Number of frames to keep updating after all particles have died, to ensure
+// that we always enter "standby mode" with a clean buffer. Note that this is a
+// bit of a hack, and should really be scaled with palette size, and would also
+// need to be updated if the filter parameters are changed...
+#define	FIRE_STANDBY_DELAY	10
+
 // Particle effect definition
 struct KOBO_RangeSpec
 {
@@ -187,6 +193,7 @@ class KOBO_Fire : public stream_window_t
 	unsigned	bufw, bufh, current_buffer;
 	Uint32		*buffers[2];
 	bool		need_refresh;	// Buffer needs refresh to texture
+	int		standby_timer;	// Delay before entering standby!
 
 	void UpdateViewSize();
 
