@@ -5,7 +5,7 @@
  * Copyright ???? Karl Bartel
  * Copyright ???? Luc-Olivier de Charriere
  * Copyright 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -58,6 +58,9 @@
 		  spacing in their encoding!
 		* Added GetGlyphs() to allow the application to access SDL2
 		  blending parameters.
+
+	David Olofson 2017:
+		* Added TabSize() and '\t' tab support.
 */
 
 #ifndef __SOFONT_H
@@ -111,6 +114,7 @@ public:
 	int GetMaxChar()	{ return max_i; }
 
 	void ExtraSpace(int xs)	{ xspace = xs; }
+	void TabSize(int ts)	{ tabsize = ts; }
 
 	SDL_Texture *GetGlyphs()	{ return glyphs; }
 
@@ -123,6 +127,7 @@ protected:
 	int *Spacing;
 	int xspace;
 	int max_i, spacew, cursShift;
+	int tabsize;
 	Uint32 background;
 	int xscale, yscale;
 	bool DoStartNewChar(SDL_Surface *surface, Sint32 x);

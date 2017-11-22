@@ -5,7 +5,7 @@
  * Copyright ???? Karl Bartel
  * Copyright ???? Luc-Olivier de Charriere
  * Copyright 2009 David Olofson
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -39,6 +39,7 @@ SoFont::SoFont(SDL_Renderer *_target)
 	cursShift = 0;
 	background = 0;
 	xspace = 0;
+	tabsize = 64;
 	xscale = yscale = 256;
 }
 
@@ -361,6 +362,14 @@ void SoFont::PutString(int x, int y, const char *text, SDL_Rect *clip)
 			x += spacew * xscale >> 8;
 			i++;
 		}
+		else if(text[i] == '\t')
+		{
+			x -= x0;
+			x += tabsize * xscale >> 8;
+			x -= x % (tabsize * xscale >> 8);
+			x += x0;
+			i++;
+		}
 		else if(text[i] == '\n')
 		{
 			x = x0;
@@ -422,6 +431,14 @@ void SoFont::PutStringWithCursor(int xs, int y,
 				x += spacew * xscale >> 8;
 				i++;
 			}
+			else if(text[i] == '\t')
+			{
+				x -= xs;
+				x += tabsize * xscale >> 8;
+				x -= x % (tabsize * xscale >> 8);
+				x += xs;
+				i++;
+			}
 			else if(text[i] == '\n')
 			{
 				x = xs;
@@ -471,6 +488,12 @@ int SoFont::TextWidth(const char *text, int min, int max)
 		if(text[i] == ' ')
 		{
 			x += spacew;
+			i++;
+		}
+		else if(text[i] == '\t')
+		{
+			x += tabsize * xscale >> 8;
+			x -= x % (tabsize * xscale >> 8);
 			i++;
 		}
 		else if((text[i] == '\n') || (text[i] == '\r'))
@@ -545,6 +568,12 @@ int SoFont::TextCursorAt(const char *text, int px)
 		if(text[i] == ' ')
 		{
 			x += spacew * xscale >> 8;
+			i++;
+		}
+		else if(text[i] == '\t')
+		{
+			x += tabsize * xscale >> 8;
+			x -= x % (tabsize * xscale >> 8);
 			i++;
 		}
 		else if((text[i] >= START_CHAR) && (text[i] <= max_i))
