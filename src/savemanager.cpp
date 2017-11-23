@@ -20,14 +20,34 @@
  */
 
 #include "savemanager.h"
+#include "random.h"
+
+
+char *KOBO_campaign::construct_path(unsigned slot, const char *ext)
+{
+	char buf[64];
+	snprintf(buf, sizeof(buf), "SAVES>>campaign_slot_%d.%s", slot, ext);
+	return strdup(buf);
+}
 
 
 KOBO_save_manager::KOBO_save_manager()
 {
 	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
 	{
-		slots[i].campaign = new KOBO_campaign(i);
+		char dat[64];
+		char bak[64];
+
+		// Save slot
+		snprintf(dat, sizeof(dat), "SAVES>>campaign_slot_%d.dat", i);
+		snprintf(bak, sizeof(bak), "SAVES>>campaign_slot_%d.bak", i);
+		slots[i].campaign = new KOBO_campaign(dat, bak);
 		slots[i].cinfo = NULL;
+
+		// Demo slot (read-only)
+		snprintf(dat, sizeof(dat), "DEMOS>>demo_%d.dat", i);
+		demos[i].campaign = new KOBO_campaign(dat, NULL);
+		demos[i].cinfo = NULL;
 	}
 }
 
@@ -40,6 +60,10 @@ KOBO_save_manager::~KOBO_save_manager()
 			delete slots[i].campaign;
 		if(slots[i].cinfo)
 			delete slots[i].cinfo;
+		if(demos[i].campaign)
+			delete demos[i].campaign;
+		if(demos[i].cinfo)
+			delete demos[i].cinfo;
 	}
 }
 
@@ -106,12 +130,53 @@ KOBO_campaign_info *KOBO_save_manager::analysis(int slot, bool force)
 }
 
 
+bool KOBO_save_manager::load_demos()
+{
+	bool loaded = false;
+	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
+	{
+		if(demos[i].cinfo)
+		{
+			delete demos[i].cinfo;
+			demos[i].cinfo = NULL;
+		}
+		if(demos[i].campaign->load())
+		{
+			loaded = true;
+			demos[i].cinfo = demos[i].campaign->analyze();
+		}
+	}
+	return loaded;
+}
+
+
 KOBO_campaign *KOBO_save_manager::campaign(unsigned slot)
 {
 	if(slot >= KOBO_MAX_CAMPAIGN_SLOTS)
 		return NULL;
 
 	return slots[slot].campaign;
+}
+
+
+KOBO_campaign *KOBO_save_manager::demo(int slot)
+{
+	if(slot < 0)
+	{
+		slot = pubrand.get() % KOBO_MAX_CAMPAIGN_SLOTS;
+		for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
+		{
+			KOBO_campaign *k = demo((slot + i) %
+					KOBO_MAX_CAMPAIGN_SLOTS);
+			if(k && k->last_stage())
+				return k;
+		}
+		return NULL;
+	}
+	if(slot >= KOBO_MAX_CAMPAIGN_SLOTS)
+		return NULL;
+
+	return demos[slot].campaign;
 }
 
 

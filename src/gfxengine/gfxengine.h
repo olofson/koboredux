@@ -193,6 +193,7 @@ class gfxengine_t
 	SDL_Renderer *renderer()	{ return sdlrenderer; }
 	cs_engine_t *cs()		{ return csengine; }
 	void present();		// Render all visible windows to display
+	void render_window(windowbase_t *win);
 	void stop();
 	cs_obj_t *get_obj(int layer);
 	void free_obj(cs_obj_t *obj);

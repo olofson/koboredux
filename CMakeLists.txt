@@ -94,6 +94,10 @@ install(DIRECTORY data/sfx "${EXT_DATA_DIR}/sfx"
 	${DEMO_EXCLUDE_SFX}
 	PATTERN "*.a2s"
 	PATTERN "*.theme")
+install(DIRECTORY data/demos "${EXT_DATA_DIR}/demos"
+	DESTINATION "${KOBO_SHARE_DIR}"
+	FILES_MATCHING
+	PATTERN "*.dat")
 
 # Documentation
 file(GLOB doc_files

@@ -41,12 +41,11 @@ KOBO_campaign_info::~KOBO_campaign_info()
 }
 
 
-
-KOBO_campaign::KOBO_campaign(unsigned slot)
+KOBO_campaign::KOBO_campaign(const char *dat, const char *bak)
 {
 	clear(false);
-	dat_path = construct_path(slot, "dat");
-	bak_path = construct_path(slot, "bak");
+	dat_path = strdup(dat);
+	bak_path = bak ? strdup(bak) : NULL;
 }
 
 
@@ -77,14 +76,6 @@ void KOBO_campaign::clear(bool to_load)
 	}
 	_modified = false;
 	_empty = true;
-}
-
-
-char *KOBO_campaign::construct_path(unsigned slot, const char *ext)
-{
-	char buf[64];
-	snprintf(buf, sizeof(buf), "SAVES>>campaign_slot_%d.%s", slot, ext);
-	return strdup(buf);
 }
 
 

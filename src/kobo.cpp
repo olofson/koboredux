@@ -222,6 +222,7 @@ static void setup_dirs(char *xpath)
 	// Directory layout within a DATA directory
 	fmap->addpath("GFX", "DATA>>gfx");
 	fmap->addpath("SFX", "DATA>>sfx");
+	fmap->addpath("DEMOS", "DATA>>demos");
 
 	// Configuration files
 	if((p = SDL_GetPrefPath(KOBO_ORGANIZATION, KOBO_APPLICATION)))
@@ -711,6 +712,7 @@ void KOBO_main::init_dash_layout()
 	wmenufire->SetWorldSize(DASHW(MAIN), DASHH(MAIN));
 	wmenufire->SetViewMargin(32);
 	place(wmenufire, KOBO_D_DASH_MAIN);
+	wmenufire->visible(false); // (See KOBO_screen::render_highlight()!)
 
 	// Playfield overlay
 	place(woverlay, KOBO_D_DASH_MAIN);

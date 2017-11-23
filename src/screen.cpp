@@ -57,6 +57,9 @@ int KOBO_screen::noise_source = B_NOISE;
 float KOBO_screen::noise_fade = 0.0f;
 float KOBO_screen::noise_bright = 0.0f;
 float KOBO_screen::noise_depth = 0.0f;
+float KOBO_screen::fade_level = 0.0f;
+float KOBO_screen::fade_target = 0.0f;
+Uint32 KOBO_screen::fade_time;
 int KOBO_screen::highlight_y = 0;
 int KOBO_screen::highlight_h = 0;
 KOBO_ParticleFXDef KOBO_screen::highlight_fxd;
@@ -75,7 +78,8 @@ void KOBO_screen::init_graphics()
 	noise_h = DASHH(MAIN);
 	highlight_y = DASHH(MAIN) / 2;
 	highlight_fxd.Default();
-	highlight_time = SDL_GetTicks();
+	fade_time = highlight_time = SDL_GetTicks();
+	set_fade(0.0f);
 }
 
 
@@ -136,6 +140,8 @@ void KOBO_screen::title(int t, float fade)
 				B_LOGO, frame, 1.0f, fade);
 		break;
 	}
+
+	set_fade(fade > 0.5f ? 0.5f : 0.0f);
 
 	if(fade > 0.9)
 	{
@@ -738,12 +744,23 @@ void KOBO_screen::curtains(bool st, float dur, bool on_top)
 
 bool KOBO_screen::curtains()
 {
-	return gridtfx.State();
+	return gridtfx.State() && gridtfx.Done();
 }
 
 
 void KOBO_screen::render_curtains()
 {
+	switch(wdash->mode())
+	{
+	  case DASHBOARD_OFF:
+	  case DASHBOARD_BLACK:
+	  case DASHBOARD_NOISE:
+	  case DASHBOARD_LOADING:
+	  case DASHBOARD_JINGLE:
+		return;
+	  default:
+		break;
+	}
 	if(!curtains_below)
 	{
 		whighsprites->resetmod();
@@ -827,6 +844,10 @@ void KOBO_screen::render_highlight()
 				0.1f + xs * ys * (1.6f - wscale));
 		wmenufire->Spawn(xr, y + yr, vx, vy, &highlight_fxd);
 	}
+
+	// We need to render this manually here, as it needs to be in between
+	// stuff that's rendered by the game engine...
+	gengine->render_window(wmenufire);
 }
 
 
@@ -834,12 +855,17 @@ void KOBO_screen::set_highlight(int y, int h)
 {
 	highlight_y = y;
 	highlight_h = h * 1.25f;
+	if(highlight_h)
+		set_fade(0.5f);
+	else
+		set_fade(0.0f);
 }
 
 
 void KOBO_screen::set_highlight()
 {
 	highlight_h = 0.0f;
+	set_fade(0.0f);
 }
 
 
@@ -1083,6 +1109,20 @@ void KOBO_screen::render_background()
 
 void KOBO_screen::render_fx()
 {
+	switch(wdash->mode())
+	{
+	  case DASHBOARD_OFF:
+	  case DASHBOARD_BLACK:
+	  case DASHBOARD_NOISE:
+	  case DASHBOARD_LOADING:
+	  case DASHBOARD_JINGLE:
+		return;
+	  default:
+		break;
+	}
+
+	int t = (int)SDL_GetTicks();
+
 	woverlay->resetmod();
 	render_noise();
 
@@ -1091,6 +1131,30 @@ void KOBO_screen::render_fx()
 	{
 		woverlay->foreground(woverlay->map_rgb(48, 48, 48));
 		woverlay->alphamod(128);
+		woverlay->fillrect(0, 0, woverlay->width(),
+				woverlay->height());
+		woverlay->alphamod(255);
+	}
+
+	// Black fade for demo/intro, menus etc
+	int dt = t - fade_time;
+	fade_time = t;
+	if(fade_level > fade_target)
+	{
+		fade_level -= dt * 0.001f;
+		if(fade_level < fade_target)
+			fade_level = fade_target;
+	}
+	else if(fade_level < fade_target)
+	{
+		fade_level += dt * 0.001f;
+		if(fade_level > fade_target)
+			fade_level = fade_target;
+	}
+	if(fade_level)
+	{
+		woverlay->foreground(woverlay->map_rgb(0, 0, 0));
+		woverlay->alphamod((int)(255.0f * fade_level));
 		woverlay->fillrect(0, 0, woverlay->width(),
 				woverlay->height());
 		woverlay->alphamod(255);
@@ -1108,7 +1172,6 @@ void KOBO_screen::render_fx()
 
 	// Update highlight fire fx engine at ~30 fps. If rendering is too
 	// slow, fire fx updates are restricted to one update per frame.
-	int t = (int)SDL_GetTicks();
 	if(labs((int)highlight_time - t) > 1000)
 		highlight_time = t;	// Out of sync! Reset.
 	if(SDL_TICKS_PASSED(t, highlight_time))

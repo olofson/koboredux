@@ -127,6 +127,7 @@ void prefs_t::init()
 	yesno("playerhitfx", playerhitfx, 0);
 			desc("Use visual player hit effects");
 	key("screenshake", screenshake, 3); desc("Screen Shake");
+	yesno("titledemos", titledemos, 1); desc("Play Demos On Title Screen");
 
 	section("Game");
 	key("countdown", countdown, 5); desc("Get Ready Countdown");

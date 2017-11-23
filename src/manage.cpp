@@ -48,7 +48,15 @@
 
 KOBO_gamestates _manage::gamestate = GS_NONE;
 KOBO_replaymodes _manage::replaymode = RPM_PLAY;
+bool _manage::demo_mode = false;
 bool _manage::is_paused = false;
+
+int _manage::delayed_stage = -1;
+KOBO_gamestates _manage::delayed_gamestate = GS_NONE;
+bool _manage::delayed_demo = false;
+
+int _manage::retry_skip = 0;
+bool _manage::retry_rewind = false;
 
 KOBO_campaign *_manage::campaign = NULL;
 KOBO_replay *_manage::replay = NULL;
@@ -84,12 +92,6 @@ int _manage::noise_flash = 500;
 int _manage::noise_duration = 0;
 int _manage::noise_timer = 0;
 float _manage::noise_level = 0.0f;
-
-int _manage::delayed_stage = -1;
-KOBO_gamestates _manage::delayed_gamestate = GS_NONE;
-
-int _manage::retry_skip = 0;
-bool _manage::retry_rewind = false;
 
 int _manage::cam_lead_x = 0;
 int _manage::cam_lead_y = 0;
@@ -241,7 +243,9 @@ void _manage::select_slot(int sl)
 
 void _manage::select_stage(int stage, KOBO_gamestates gs)
 {
+	demo_mode = false;
 	delayed_stage = -1;	// Cancel any pending stage change!
+	delayed_demo = false;
 	selected_stage = stage;
 	gamerand.init();
 	screen.init_stage(stage, false);
@@ -283,7 +287,75 @@ void _manage::show_stage(int stage, KOBO_gamestates gs)
 	{
 		delayed_stage = stage;
 		delayed_gamestate = gs;
+		delayed_demo = false;
 		screen.curtains(true, KOBO_ENTER_STAGE_FXTIME * 0.001f);
+	}
+}
+
+
+void _manage::show_demo(bool instant, bool force)
+{
+	if(demo_mode && !force)
+		return;
+
+	if(!instant)
+	{
+		if(delayed_demo)
+			return;
+		delayed_demo = true;
+		delayed_stage = -1;
+		screen.curtains(true, KOBO_DEMO_FADE_FXTIME * 0.001f);
+		return;
+	}
+
+	delayed_demo = false;
+	delayed_stage = -1;
+
+	if(!prefs->titledemos)
+	{
+		// Arcade demo mode disabled.
+		selected_stage = -1;	// Make it instant!
+		show_stage(KOBO_TITLE_LEVEL, GS_TITLE);
+		return;
+	}
+
+	demo_mode = true;
+	valid_replays = 0;
+	campaign = savemanager.demo(-1);
+	if(!campaign)
+	{
+		if(prefs->debug)
+			log_printf(ULOG, "Could not get demo!\n");
+		show_stage(KOBO_TITLE_LEVEL, GS_TITLE);
+		return;
+	}
+	if(!campaign->last_stage())
+	{
+		if(prefs->debug)
+			log_printf(ULOG, "Demo has no replays!\n");
+		show_stage(KOBO_TITLE_LEVEL, GS_TITLE);
+		return;
+	}
+
+	selected_stage = 1 + pubrand.get() % campaign->last_stage();
+	find_replay_forward();
+	if(!replay)
+	{
+		if(prefs->debug)
+			log_printf(ULOG, "Could not find valid replay in "
+					"demo!\n");
+		show_stage(KOBO_TITLE_LEVEL, GS_TITLE);
+		return;
+	}
+
+	gamecontrol.clear();
+	replaymode = RPM_REPLAY;
+	init_game(replay);
+	if((state() != GS_PLAYING) || !demo_mode)
+	{
+		if(prefs->debug)
+			log_printf(ULOG, "Failed to start demo replay!\n");
+		show_stage(KOBO_TITLE_LEVEL, GS_TITLE);
 	}
 }
 
@@ -292,7 +364,8 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 {
 	sound.timestamp_reset();
 	sound.g_new_scene(100);
-	sound.g_music(selected_stage);
+	if(demo_mode)
+		sound.g_volume(0.0f);
 	stop_screenshake();
 
 	disp_health = 0.0f;
@@ -330,7 +403,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 				replaymode = RPM_RETRY;
 			++valid_replays;
 		}
-		else
+		else if(!demo_mode)
 		{
 			log_printf(ULOG, "%s replay! Starting from level "
 					"entry point.\n",
@@ -347,6 +420,12 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 				replaymode = RPM_PLAY;
 				state(GS_GETREADY);
 			}
+		}
+		else
+		{
+			// Failed to start demo! Use the old title mode.
+			show_stage(KOBO_TITLE_LEVEL, GS_TITLE);
+			return;
 		}
 
 		if(prefs->debug)
@@ -384,7 +463,10 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	screen.init_stage(selected_stage, true);
 	last_stage = selected_stage;
 	is_paused = false;
-	wradar->mode(RM_RADAR);
+	if(demo_mode)
+		wradar->mode(RM_OFF);
+	else
+		wradar->mode(RM_RADAR);
 	enemies.init();
 	if(rp)
 	{
@@ -401,17 +483,27 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	}
 	total_cores = remaining_cores = screen.prepare();
 	screen.generate_fixed_enemies();
-	put_info();
-	put_score();
 	gengine->camfilter(KOBO_CAM_FILTER);
-	set_bars();
-	put_player_stats();
-	pxtop->fx(PFX_OFF);
-	pxbottom->fx(PFX_OFF);
-	pxleft->fx(PFX_OFF);
-	pxright->fx(PFX_OFF);
-	wdash->fade(1.0f);
-	wdash->mode(DASHBOARD_GAME);
+	if(demo_mode)
+	{
+		wdash->fade(1.0f);
+		wdash->mode(DASHBOARD_DEMO);
+	}
+	else
+	{
+		put_info();
+		put_score();
+		set_bars();
+		put_player_stats();
+		pxtop->fx(PFX_OFF);
+		pxbottom->fx(PFX_OFF);
+		pxleft->fx(PFX_OFF);
+		pxright->fx(PFX_OFF);
+		wdash->fade(1.0f);
+		wdash->mode(DASHBOARD_GAME);
+		sound.g_volume(1.0f);
+		sound.g_music(selected_stage);
+	}
 	if(prefs->debug)
 		replay->log_dump(ULOG);
 }
@@ -431,6 +523,7 @@ void _manage::finalize_replay()
 
 void _manage::start_new_game()
 {
+	demo_mode = false;
 	gamecontrol.clear();
 	replaymode = RPM_PLAY;
 	if(campaign)
@@ -449,6 +542,7 @@ bool _manage::continue_game()
 	if(!replay)
 		return false;
 
+	demo_mode = false;
 	gamecontrol.clear();
 	replaymode = RPM_PLAY;
 	init_game(replay);
@@ -469,6 +563,7 @@ bool _manage::start_replay(int stage)
 	if(!replay)
 		return false;
 
+	demo_mode = false;
 	gamecontrol.clear();
 	replaymode = RPM_REPLAY;
 	init_game(replay);
@@ -765,6 +860,9 @@ void _manage::put_player_stats()
 
 void _manage::put_info()
 {
+	if(demo_mode)
+		return;
+
 	static char s[16];
 
 	snprintf(s, 16, "%d", highscore);
@@ -787,6 +885,9 @@ void _manage::put_info()
 
 void _manage::put_score()
 {
+	if(demo_mode)
+		return;
+
 	if(score_changed)
 	{
 		static char s[32];
@@ -807,6 +908,9 @@ void _manage::put_score()
 
 void _manage::flash_score()
 {
+	if(demo_mode)
+		return;
+
 	flash_score_count--;
 	if(flash_score_count & 1)
 		return;
@@ -826,6 +930,7 @@ void _manage::init()
 	flash_score_count = 0;
 	delay_count = 0;
 	state(GS_NONE);
+	savemanager.load_demos();
 }
 
 
@@ -972,7 +1077,10 @@ void _manage::run_game()
 		ctrl = controls_retry(ctrlin);
 		break;
 	  case RPM_REPLAY:
-		ctrl = controls_replay(ctrlin);
+		if(demo_mode)
+			ctrl = controls_demo(ctrlin);
+		else
+			ctrl = controls_replay(ctrlin);
 		break;
 	}
 	myship.control(ctrl);
@@ -1075,7 +1183,7 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 	if(rpctrl == KOBO_PC_END)
 	{
 		rpctrl = KOBO_PC_NONE;
-		if(myship.alive())
+		if(myship.alive() && (state() != GS_REPLAYEND))
 		{
 			state(GS_REPLAYEND);
 			delay_count = KOBO_REPLAYEND_TIMEOUT;
@@ -1132,7 +1240,7 @@ KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 	if(rpctrl == KOBO_PC_END)
 	{
 		rpctrl = KOBO_PC_NONE;
-		if(myship.alive())
+		if(myship.alive() && (state() != GS_REPLAYEND))
 		{
 			state(GS_REPLAYEND);
 			delay_count = KOBO_REPLAYEND_TIMEOUT;
@@ -1164,6 +1272,24 @@ KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 }
 
 
+// Control input handling: Demo replay - no interaction at all possible
+KOBO_player_controls _manage::controls_demo(KOBO_player_controls ctrl)
+{
+	KOBO_player_controls rpctrl = replay ? replay->read() : KOBO_PC_END;
+	if(rpctrl == KOBO_PC_END)
+	{
+		rpctrl = KOBO_PC_NONE;
+		if(myship.alive() && (state() != GS_REPLAYEND))
+		{
+			screen.curtains(true, KOBO_DEMO_FADE_FXTIME * 0.001f);
+			state(GS_REPLAYEND);
+			delay_count = KOBO_REPLAYEND_TIMEOUT;
+		}
+	}
+	return rpctrl;
+}
+
+
 void _manage::run()
 {
 	if(screen.curtains())
@@ -1175,6 +1301,11 @@ void _manage::run()
 			screen.curtains(false,
 					KOBO_ENTER_STAGE_FXTIME * 0.001f);
 			scroll_jump = true;
+		}
+		else if(delayed_demo)
+		{
+			show_demo(true, true);
+			screen.curtains(false, KOBO_DEMO_FADE_FXTIME * 0.001f);
 		}
 		if(retry_skip)
 		{
@@ -1225,6 +1356,14 @@ void _manage::run()
 		break;
 	  case GS_GAMEOVER:
 	  case GS_REPLAYEND:
+		if(demo_mode)
+		{
+			show_demo(false, true);
+			run_game();
+			break;
+		}
+
+		// Non-demo modes
 		if((replaymode == RPM_REPLAY) && prefs->loopreplays &&
 				(time_remaining() <= KOBO_ENTER_TITLE_FXTIME))
 			screen.curtains(true, KOBO_RETRY_SKIP_FXTIME * 0.001f);
@@ -1264,6 +1403,15 @@ void _manage::run()
 		}
 		break;
 	  case GS_LEVELDONE:
+		if(demo_mode)
+		{
+			if(!enemies.exist_pipe())
+				show_demo(false, true);
+			run_game();
+			break;
+		}
+
+		// Non-demo modes
 		if(delay_count && !enemies.exist_pipe())
 			delay_count--;
 		if(delay_count == 1)
@@ -1416,6 +1564,9 @@ void _manage::destroyed_a_core()
 		{
 			state(GS_LEVELDONE);
 			delay_count = KOBO_LEVELDONE_TIMEOUT;
+			if(demo_mode)
+				screen.curtains(true, KOBO_DEMO_FADE_FXTIME *
+						0.001f);
 		}
 	}
 	else

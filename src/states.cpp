@@ -85,8 +85,18 @@ void kobo_basestate_t::post_render()
 	// Debug overlay
 	if(prefs->debug)
 	{
-		// State stack
 		int y = 1;
+
+		// Game manager state
+		woverlay->string(4, y, enumstr(manage.state()));
+		y += woverlay->fontheight();
+
+		// Arcade style title screen demo mode
+		if(manage.demo())
+			woverlay->string(4, y, "[DEMO]");
+		y += woverlay->fontheight();
+
+		// UI state stack
 		gamestate_t *s = this;
 		while(s)
 		{
@@ -290,6 +300,7 @@ st_intro_t::st_intro_t()
 	duration = 0;
 	timer = 0;
 	song = S_TITLESONG;
+	boot = true;
 }
 
 
@@ -308,7 +319,14 @@ void st_intro_t::init_page()
 void st_intro_t::enter()
 {
 	kobo_basestate_t::enter();
-	manage.show_stage(KOBO_TITLE_LEVEL, GS_TITLE);
+	// Instant transition to demo/title mode if we're already hidden
+	if(screen.curtains() || wdash->closed() || boot)
+	{
+		manage.show_demo(true, true);
+		boot = false;
+	}
+	else
+		manage.show_demo();
 	if(!km.quitting())
 		sound.music(song);
 	init_page();
@@ -415,7 +433,10 @@ void st_intro_t::post_render()
 		}
 	}
 	else
+	{
 		screen.set_highlight(0, 0);
+		screen.set_fade(0.0f);
+	}
 }
 
 
@@ -594,8 +615,6 @@ void st_game_t::frame()
 	if(prefs->mousecapture)
 		if(!SDL_GetRelativeMouseMode())
 			SDL_SetRelativeMouseMode(SDL_TRUE);
-	if(prefs->debug)
-		info = enumstr(manage.state());
 	switch(manage.state())
 	{
 	  case GS_GETREADY:
@@ -716,8 +735,6 @@ void st_rewind_t::press(gc_targets_t button)
 
 void st_rewind_t::frame()
 {
-	if(prefs->debug)
-		info = enumstr(manage.state());
 	if((manage.replay_mode() != RPM_RETRY) &&
 			(manage.state() == GS_PLAYING ||
 			manage.state() == GS_GETREADY))
@@ -878,8 +895,6 @@ void st_replay_t::press(gc_targets_t button)
 
 void st_replay_t::frame()
 {
-	if(prefs->debug)
-		info = enumstr(manage.state());
 	if(km.quitting())
 		pop();
 	switch(manage.state())
@@ -948,7 +963,7 @@ void st_pause_game_t::enter()
 {
 	// We should only ever pause if there's an actual game in progress
 	if((manage.state() != GS_PLAYING) ||
-			(manage.replay_mode() != RPM_PLAY))
+			(manage.replay_mode() != RPM_PLAY) || manage.demo())
 		pop();
 }
 
@@ -1567,25 +1582,17 @@ void main_menu_t::buildStartLevel()
 
 void main_menu_t::build()
 {
-	if(manage.ok_to_switch())
-	{
-		int sc;
-		if(prefs->cheat_startlevel)
-		{
-			sc = manage.last_played_stage();
-			if(sc < 1)
-				sc = 1;
-		}
-		else
-			sc = 1;
+	int sc = manage.last_played_stage();
+	if(sc < 1)
+		sc = 1;
+	if(prefs->cheat_startlevel && manage.ok_to_switch())
 		manage.show_stage(sc, GS_SHOW);
-		st_game.set_stage(sc);
-	}
+	st_game.set_stage(sc);
 
 	space(2);
 	if(manage.game_in_progress())
 		button("Return to Game", MENU_TAG_OK);
-	else if(manage.replay_mode() == RPM_REPLAY)
+	else if((manage.replay_mode() == RPM_REPLAY) && !manage.demo())
 		button("Return to Replay", MENU_TAG_OK);
 	else
 	{
@@ -1618,7 +1625,7 @@ void main_menu_t::build()
 	space(2);
 	if(manage.game_in_progress())
 		button("Abort Current Game", 101);
-	else if(manage.replay_mode() == RPM_REPLAY)
+	else if((manage.replay_mode() == RPM_REPLAY) && !manage.demo())
 		button("Stop Replay", 102);
 	else
 	{

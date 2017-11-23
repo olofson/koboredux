@@ -56,7 +56,17 @@ class _manage
 	// Engine state
 	static KOBO_gamestates gamestate;
 	static KOBO_replaymodes replaymode;
+	static bool demo_mode;
 	static bool is_paused;
+
+	// Asynchronous stage selection with transition effect
+	static int delayed_stage;
+	static KOBO_gamestates delayed_gamestate;
+	static bool delayed_demo;
+
+	// Delayed skips and rewinds with transition effect
+	static int retry_skip;	// -1/0/+1
+	static bool retry_rewind;
 
 	// Campaign and current replay
 	static KOBO_campaign *campaign;
@@ -96,14 +106,6 @@ class _manage
 	static int noise_duration;
 	static int noise_timer;
 	static float noise_level;
-
-	// Asynchronous stage selection with transition effect
-	static int delayed_stage;
-	static KOBO_gamestates delayed_gamestate;
-
-	// Delayed skips and rewinds with transition effect
-	static int retry_skip;	// -1/0/+1
-	static bool retry_rewind;
 
 	// Camera lead
 	static int cam_lead_x, cam_lead_y;
@@ -146,6 +148,7 @@ class _manage
 	static void controls_retry_skip(KOBO_player_controls ctrl);
 	static KOBO_player_controls controls_retry(KOBO_player_controls ctrl);
 	static KOBO_player_controls controls_replay(KOBO_player_controls ctrl);
+	static KOBO_player_controls controls_demo(KOBO_player_controls ctrl);
   public:
 
 	static void init();
@@ -160,6 +163,7 @@ class _manage
 	static int current_slot()	{ return selected_slot; }
 	static void start_intro();
 	static void show_stage(int stage, KOBO_gamestates gs);
+	static void show_demo(bool instant = false, bool force = false);
 	static void select_stage(int stage, KOBO_gamestates gs);
 	static void select_skill(int skill)
 	{
@@ -181,6 +185,7 @@ class _manage
 	static bool background()	{ return in_background; }
 
 	static KOBO_gamestates state()	{ return gamestate; }
+	static bool demo()		{ return demo_mode; }
 
 	// Replays
 	static KOBO_replaymodes replay_mode()	{ return replaymode; }
@@ -196,6 +201,8 @@ class _manage
 	static bool game_in_progress()
 	{
 		// Return true only if an ACTUAL, live game is in progress!
+		if(demo_mode)
+			return false;
 		if(replaymode == RPM_REPLAY)
 			return false;
 		switch(state())
@@ -213,6 +220,8 @@ class _manage
 	static bool ok_to_switch()
 	{
 		// Return true if it's OK to switch level for the nice scenery
+		if(demo_mode)
+			return true;
 		if(replaymode == RPM_REPLAY)
 			return false;
 		switch(state())

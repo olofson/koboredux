@@ -34,6 +34,7 @@ struct KOBO_save_slot
 class KOBO_save_manager
 {
 	KOBO_save_slot	slots[KOBO_MAX_CAMPAIGN_SLOTS];
+	KOBO_save_slot	demos[KOBO_MAX_CAMPAIGN_SLOTS];
   public:
 	KOBO_save_manager();
 	virtual ~KOBO_save_manager();
@@ -45,6 +46,10 @@ class KOBO_save_manager
 	KOBO_campaign *campaign(unsigned slot);
 	bool save(unsigned slot);
 	void resave_all();
+
+	// Demos
+	bool load_demos();
+	KOBO_campaign *demo(int slot = -1);
 };
 
 #endif // _KOBO_SAVEMANAGER_H_

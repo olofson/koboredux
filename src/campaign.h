@@ -67,7 +67,7 @@ class KOBO_campaign
 	bool backup();
 	bool load_header(pfile_t *pf);
   public:
-	KOBO_campaign(unsigned slot);
+	KOBO_campaign(const char *dat, const char *bak);
 	virtual ~KOBO_campaign();
 
 	// Status

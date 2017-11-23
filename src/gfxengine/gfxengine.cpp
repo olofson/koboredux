@@ -4,7 +4,7 @@
 ----------------------------------------------------------------------
  * Copyright 2001-2003, 2006-2007, 2009 David Olofson
  * Copyright 2008 Robert Schuster
- * Copyright 2015-2016 David Olofson (Kobo Redux)
+ * Copyright 2015-2017 David Olofson (Kobo Redux)
  *
  * This library is free software;  you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -1298,6 +1298,12 @@ void gfxengine_t::present()
 	post_render();
 
 	SDL_RenderPresent(sdlrenderer);
+}
+
+
+void gfxengine_t::render_window(windowbase_t *win)
+{
+	win->render(NULL);
 }
 
 

@@ -44,6 +44,7 @@ enum dashboard_modes_t {
 	DASHBOARD_BLACK,
 	DASHBOARD_NOISE,
 	DASHBOARD_TITLE,
+	DASHBOARD_DEMO,
 	DASHBOARD_GAME,
 	DASHBOARD_LOADING,
 	DASHBOARD_JINGLE
@@ -82,6 +83,7 @@ class dashboard_window_t : public window_t
 			dashboard_transitions_t tr = DASHBOARD_INSTANT);
 	dashboard_modes_t mode()	{ return _mode; }
 	bool busy(bool trans = false);
+	bool closed();
 	void fade(float f)
 	{
 		if(f <= 0.0f)

@@ -40,6 +40,7 @@ const char *enumstr(dashboard_modes_t dbm)
 	  case DASHBOARD_BLACK:		return "DASHBOARD_BLACK";
 	  case DASHBOARD_NOISE:		return "DASHBOARD_NOISE";
 	  case DASHBOARD_TITLE:		return "DASHBOARD_TITLE";
+	  case DASHBOARD_DEMO:		return "DASHBOARD_DEMO";
 	  case DASHBOARD_GAME:		return "DASHBOARD_GAME";
 	  case DASHBOARD_LOADING:	return "DASHBOARD_LOADING";
 	  case DASHBOARD_JINGLE:	return "DASHBOARD_JINGLE";
@@ -179,13 +180,17 @@ void dashboard_window_t::mode(dashboard_modes_t m, dashboard_transitions_t tr)
 	int main = 0;
 	int score = 0;
 	int ingame = 0;
+	int player = 0;
 	switch(m)
 	{
 	  case DASHBOARD_TITLE:
 		main = score = 1;
 		break;
+	  case DASHBOARD_DEMO:
+		main = score = player = 1;
+		break;
 	  case DASHBOARD_GAME:
-		main = ingame = score = 1;
+		main = ingame = player = score = 1;
 		break;
 	  default:
 		break;
@@ -198,10 +203,10 @@ void dashboard_window_t::mode(dashboard_modes_t m, dashboard_transitions_t tr)
 	wlowsprites->visible(main);
 	wfire->visible(main);
 	whighsprites->visible(main);
-	myship.visible(ingame);
+	myship.visible(player);
 	wmenufire->visible(main);
-	whealth->visible(main);
-	wcharge->visible(main);
+	whealth->visible(ingame);
+	wcharge->visible(ingame);
 	wradar->visible(main);
 	dhigh->visible(score);
 	dscore->visible(score);
@@ -257,6 +262,12 @@ bool dashboard_window_t::busy(bool trans)
 		return transitioning || !gridtfx.Done();
 	else
 		return transitioning;
+}
+
+
+bool dashboard_window_t::closed()
+{
+	return gridtfx.State() && gridtfx.Done();
 }
 
 
@@ -383,6 +394,7 @@ void dashboard_window_t::refresh(SDL_Rect *r)
 	  }
 	  case DASHBOARD_TITLE:
 	  case DASHBOARD_GAME:
+	  case DASHBOARD_DEMO:
 		colormod(map_gray(_fade));
 		sprite(0, 0, B_SCREEN, 0);
 		break;

@@ -108,6 +108,7 @@ class st_intro_t : public kobo_basestate_t
 	int	page;
 	int	timer, start_time;
 	int	duration;
+	bool	boot;
 	void init_page();
   public:
 	st_intro_t();

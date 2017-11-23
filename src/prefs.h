@@ -109,6 +109,7 @@ class prefs_t : public config_parser_t
 	int	firedither;	//Fire effect dither mode
 	int	playerhitfx;	//Use visual effects when player takes damage
 	int	screenshake;	//Screen shake amount
+	int	titledemos;	//Play demos behind intro and (some) menus
 
 	// Game
 	int	countdown;	//"Get Ready" countdown

@@ -177,10 +177,7 @@ void KOBO_GridTFX::State(bool st, float dur)
 
 bool KOBO_GridTFX::State()
 {
-	if(Done())
-		return target_state;
-	else
-		return !target_state;
+	return target_state;
 }
 
 

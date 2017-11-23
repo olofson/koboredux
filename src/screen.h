@@ -58,6 +58,10 @@ class KOBO_screen
 	static float noise_bright;
 	static float noise_depth;
 
+	static float fade_level;
+	static float fade_target;
+	static Uint32 fade_time;
+
 	static int highlight_y;
 	static int highlight_h;
 	static KOBO_ParticleFXDef highlight_fxd;
@@ -111,6 +115,7 @@ class KOBO_screen
 	static void set_highlight();
 	static void set_noise(int source, float fade, float bright,
 			float depth);
+	static void set_fade(float ft)	{ fade_target = ft; }
 	static void render_background();
 	static void render_fx();
 	static void title(int t, float fade);
