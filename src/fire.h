@@ -61,7 +61,7 @@
 #define	FIRE_TILE_SIZE		32
 
 // Maximum colors supported, including transparency
-#define	FIRE_MAX_COLORS		16
+#define	FIRE_MAX_COLORS		32
 
 // Minimum heat threshold for particles. (16:16)
 //	1.0 (65536) would kill particles as soon as they translate to color

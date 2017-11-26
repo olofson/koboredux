@@ -961,7 +961,7 @@ void KOBO_screen::init_background()
 	wplanet->set_mode(md);
 	stars.init(prefs->stars, bg_altitude, psize, true);
 
-	wfire->SetPalette(KOBO_P_FIRE);
+	wfire->SetPalette(KOBO_P_FIRE_L1 + level - 1);
 	if(prefs->firedither >= 0)
 		wfire->SetDither((gfx_dither_t)prefs->firedither);
 	else
