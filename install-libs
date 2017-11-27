@@ -90,15 +90,14 @@ else
 		git pull
 	fi
 	git checkout v${A2RELEASE}
-	mkdir -p build
-	cd build
-	cmake -DCMAKE_INSTALL_PREFIX=/usr ${CMAKE_EXTRA} -DUSE_ALSA=NO -DUSE_JACK=NO ..
+	./configure static
+	cd build/static
 	make
 	sudo make install
 	if [ ! "${KOBO_STATIC_LINUX}" = true ] ; then
 		cp -L build/src/libaudiality2-*.so.0 "${WORKDIR}/linux-bundle-lib"
 	fi
-	cd ..
+	cd ../..
 fi
 
 if [ ! "${KOBO_STATIC_LINUX}" = true ] ; then
