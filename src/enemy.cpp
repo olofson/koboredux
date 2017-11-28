@@ -907,6 +907,17 @@ void KOBO_enemy::move_core()
 	c &= b;
 	if(c == a && mindiff < ((VIEWLIMIT >> 1) + 8))
 		this->launch(enemies.ek2());
+	unsigned hf = (health << 4) / game.core_health;
+	if((hf < 16) && (pubrand.get(5) > 15 + hf))
+	{
+		int xo = pubrand.get(12) - (1 << 11);
+		int yo = pubrand.get(12) - (1 << 11);
+		KOBO_ParticleFXDef *pfxd = themedata.pfxdef(
+				KOBO_PFX_CORE_FIRE);
+		if(pfxd)
+			wfire->Spawn(x + xo, y + yo, xo >> 4, yo >> 4, pfxd);
+		controlsound(2, 0.1f);
+	}
 }
 
 void KOBO_enemy::kill_core()

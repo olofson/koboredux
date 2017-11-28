@@ -135,6 +135,16 @@ alias PFX_ENEMY_M2 PFX_CORE
 alias PFX_ENEMY_M3 PFX_CORE
 alias PFX_ENEMY_M4 PFX_CORE
 
+particles PFX_CORE_FIRE {
+	default
+	count	16
+	radius	2	2	0	1	0
+	speed	1	1	0	1	0
+	drag	.9	.9	1	1	0
+	heat	1	1	1	1	0
+	fade	.8	.8	1	1	0
+}
+
 particles PFX_BOMB1DETO {
 	default
 	count	96
