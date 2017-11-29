@@ -521,20 +521,24 @@ void _manage::finalize_replay()
 }
 
 
-void _manage::start_new_game()
+void _manage::start_new_game(int slot, int stage, int skill)
 {
 	demo_mode = false;
 	gamecontrol.clear();
 	replaymode = RPM_PLAY;
+	select_slot(slot);
+	select_stage(stage, GS_NONE);
+	selected_skill = (skill_levels_t)skill;
+	score = 0;
 	if(campaign)
 		campaign->reset();
-	score = 0;
 	init_game(NULL, true);
 }
 
 
-bool _manage::continue_game()
+bool _manage::continue_game(int slot)
 {
+	select_slot(slot);
 	if(!campaign)
 		return false;
 
@@ -551,10 +555,11 @@ bool _manage::continue_game()
 }
 
 
-bool _manage::start_replay(int stage)
+bool _manage::start_replay(int slot, int stage)
 {
 	valid_replays = 0;
 
+	select_slot(slot);
 	if(!campaign)
 		return false;
 
@@ -1373,7 +1378,7 @@ void _manage::run()
 			  case RPM_REPLAY:
 				if(prefs->loopreplays && valid_replays)
 				{
-					start_replay(1);
+					start_replay(selected_slot, 1);
 					screen.curtains(false,
 							KOBO_RETRY_SKIP_FXTIME
 							* 0.001f);

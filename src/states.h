@@ -137,7 +137,6 @@ class st_long_credits_t : public kobo_basestate_t
   public:
 	st_long_credits_t();
 	void enter();
-	void leave();
 	void press(gc_targets_t button);
 	void pre_render();
 	void post_render();
@@ -408,6 +407,8 @@ class campaign_menu_t : public menu_base_t
 	bool			view_replay;
 	char			tdbuf[128];
   public:
+	int			selected_slot;
+
 	campaign_menu_t(gfxengine_t *e);
 	const char *timedate(time_t *t);
 	void colonalign();

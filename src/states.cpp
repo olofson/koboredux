@@ -458,17 +458,11 @@ st_long_credits_t::st_long_credits_t()
 void st_long_credits_t::enter()
 {
 	kobo_basestate_t::enter();
-	manage.select_stage(KOBO_CREDITS_BACKGROUND_LEVEL, GS_TITLE);
+	manage.show_stage(KOBO_CREDITS_BACKGROUND_LEVEL, GS_TITLE);
 	start_time = (int)SDL_GetTicks() + INTRO_BLANK_TIME;
 	timer = 0;
 }
 
-
-void st_long_credits_t::leave()
-{
-	// Avoid the st_intro show_stage()! (Different transition effect.)
-	manage.select_stage(KOBO_TITLE_LEVEL, GS_TITLE);
-}
 
 void st_long_credits_t::press(gc_targets_t button)
 {
@@ -524,10 +518,7 @@ void st_game_t::enter()
 {
 	if(!manage.game_in_progress())
 	{
-		manage.select_slot(g_slot);
-		manage.select_stage(g_stage, GS_NONE);
-		manage.select_skill(g_skill);
-		manage.start_new_game();
+		manage.start_new_game(g_slot, g_stage, g_skill);
 	}
 	else
 	{
@@ -830,8 +821,7 @@ st_replay_t::st_replay_t()
 
 void st_replay_t::enter()
 {
-	manage.select_slot(rp_slot);
-	if(!manage.start_replay(rp_stage))
+	if(!manage.start_replay(rp_slot, rp_stage))
 	{
 		sound.ui_play(S_UI_ERROR);
 		st_error.message("Campaign Replay Problem!",
@@ -1757,6 +1747,7 @@ campaign_menu_t::campaign_menu_t(gfxengine_t *e) : menu_base_t(e)
 	header = NULL;
 	newgame = false;
 	view_replay = false;
+	selected_slot = 1;
 }
 
 
@@ -1765,6 +1756,7 @@ void campaign_menu_t::setup(const char *hdr, bool new_game, bool replay)
 	header = hdr;
 	newgame = new_game;
 	view_replay = replay;
+	selected_slot = 1;
 	savemanager.load(-1);
 	savemanager.analysis(-1, true);
 
@@ -1818,7 +1810,7 @@ void campaign_menu_t::build()
 	space(1);
 
 	xoffs = 0.3;
-	KOBO_campaign_info *ci = savemanager.analysis(manage.current_slot());
+	KOBO_campaign_info *ci = savemanager.analysis(selected_slot);
 	if(ci)
 	{
 		char buf[128];
@@ -1873,9 +1865,9 @@ bool campaign_menu_t::select(ct_widget_t *w)
 			return true;
 		int slot = selected()->tag - 10;
 		if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS) &&
-				(slot != manage.current_slot()))
+				(slot != selected_slot))
 		{
-			manage.select_slot(slot);
+			selected_slot = slot;
 			rebuild();
 		}
 		return true;
@@ -1913,7 +1905,7 @@ void st_campaign_menu_t::press(gc_targets_t button)
 		int slot = menu->selected()->tag - 10;
 		if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS))
 		{
-			manage.select_slot(slot);
+			menu->selected_slot = slot;
 			menu->rebuild();
 		}
 		break;
@@ -1939,6 +1931,7 @@ void st_campaign_menu_t::select(int tag)
 	int slot = tag - 10;
 	if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS))
 	{
+		menu->selected_slot = slot;
 		if(view_replay)
 		{
 			st_replay.setup(slot, 1);
@@ -1954,8 +1947,7 @@ void st_campaign_menu_t::select(int tag)
 		}
 		else
 		{
-			manage.select_slot(slot);
-			if(manage.continue_game())
+			if(manage.continue_game(slot))
 				gsm.change(&st_rewind);
 			else
 			{
