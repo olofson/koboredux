@@ -2016,6 +2016,8 @@ void st_skill_menu_t::enter()
 	st_game.set_skill(KOBO_DEMO_SKILL);
 	gsm.change(&st_game);
 #else
+	if(!prefs->cheat_startlevel)
+		st_game.set_stage(1);
 	st_menu_base_t::enter();
 #endif
 }
