@@ -1290,7 +1290,6 @@ void menu_base_t::close()
 st_menu_base_t::st_menu_base_t()
 {
 	name = "(menu_base derivate)";
-	sounds = 1;
 	form = NULL;
 }
 
@@ -1304,8 +1303,7 @@ st_menu_base_t::~st_menu_base_t()
 void st_menu_base_t::enter()
 {
 	form = open();
-	if(sounds)
-		sound.ui_play(S_UI_OPEN);
+	sound.ui_play(S_UI_OPEN);
 
 	// If the mouse cursor is visible when entering a menu, and it happens
 	// to land on an interactive widget, we want that to be selected.
@@ -1362,7 +1360,8 @@ int st_menu_base_t::translate(int tag, int button)
 void st_menu_base_t::pos(int x, int y)
 {
 	if(form)
-		form->select(x, y);
+		if(form->select(x, y))
+			sound.ui_play(S_UI_MOVE);
 }
 
 
@@ -1372,7 +1371,7 @@ void st_menu_base_t::press(gc_targets_t button)
 	if(!form)
 		return;
 
-	do_default_action = 1;
+	do_default_action = true;
 
 	// Translate
 	switch(button)
@@ -1431,9 +1430,11 @@ void st_menu_base_t::press(gc_targets_t button)
 			break;
 		  case BTN_UP:
 			form->prev();
+			sound.ui_play(S_UI_MOVE);
 			break;
 		  case BTN_DOWN:
 			form->next();
+			sound.ui_play(S_UI_MOVE);
 			break;
 		  default:
 			break;
@@ -1444,8 +1445,6 @@ void st_menu_base_t::press(gc_targets_t button)
 	  case -1:
 		break;
 	  case 0:
-		if(sounds)
-			sound.ui_play(S_UI_CANCEL);
 		select(0);
 		pop();
 		break;
@@ -1504,7 +1503,6 @@ void st_error_t::press(gc_targets_t button)
 	  case BTN_SELECT:
 	  case BTN_LMB:
 	  case BTN_YES:
-		sound.ui_play(S_UI_OK);
 		pop();
 		break;
 	  default:
@@ -1931,6 +1929,7 @@ void st_campaign_menu_t::select(int tag)
 	int slot = tag - 10;
 	if((slot >= 0) && (slot < KOBO_MAX_CAMPAIGN_SLOTS))
 	{
+		sound.ui_play(S_UI_OK);
 		menu->selected_slot = slot;
 		if(view_replay)
 		{
@@ -2071,6 +2070,7 @@ void st_skill_menu_t::select(int tag)
 {
 	if((tag >= 10) && (tag <= 20))
 	{
+		sound.ui_play(S_UI_OK);
 		st_game.set_skill(menu->selected()->tag - 10);
 		transition_change(&st_game, KOBO_TRS_GAME_SLOW);
 	}
@@ -2180,7 +2180,6 @@ st_options_main_t st_options_main;
 
 kobo_form_t *st_options_base_t::open()
 {
-	sounds = 0;
 	cfg_form = oopen();
 	cfg_form->open(prefs);
 	return cfg_form;
@@ -2197,7 +2196,6 @@ void st_options_base_t::close()
 
 void st_options_base_t::enter()
 {
-	sound.ui_play(S_UI_OPEN);
 	st_menu_base_t::enter();
 }
 
@@ -2223,6 +2221,7 @@ void st_options_base_t::select(int tag)
 {
 	if(cfg_form->status() & OS_CANCEL)
 	{
+		sound.ui_play(S_UI_CANCEL);
 		cfg_form->undo();
 		check_update();
 		pop();
@@ -2288,8 +2287,7 @@ void options_more_t::build()
 	space();
 	button("It is. :-)", 1);
 	space(2);
-	button("ACCEPT", MENU_TAG_OK);
-	button("CANCEL", MENU_TAG_CANCEL);
+	button("BACK", MENU_TAG_OK);
 }
 
 
@@ -2368,6 +2366,7 @@ void st_demo_over_t::select(int tag)
 		break;
 	  case MENU_TAG_OK:
 	  case MENU_TAG_CANCEL:
+		sound.ui_play(S_UI_OK);
 		transition_pop(KOBO_TRS_GAME_SLOW);
 		break;
 	}
@@ -2529,6 +2528,7 @@ void st_ask_abort_game_t::select(int tag)
 		transition_pop(KOBO_TRS_GAME_SLOW);
 		break;
 	  case MENU_TAG_CANCEL:
+		sound.ui_play(S_UI_CANCEL);
 		gsm.change(&st_pause_game);
 		break;
 	}
@@ -2564,6 +2564,7 @@ void st_ask_overwrite_campaign_t::select(int tag)
 #endif
 		break;
 	  case MENU_TAG_CANCEL:
+		sound.ui_play(S_UI_CANCEL);
 		pop();
 		break;
 	}

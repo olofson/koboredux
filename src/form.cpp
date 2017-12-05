@@ -186,7 +186,6 @@ bool kobo_form_t::select(ct_widget_t *w)
 {
 	if(ct_form_t::select(w))
 	{
-		sound.ui_play(S_UI_MOVE);
 		update_help();
 		return true;
 	}

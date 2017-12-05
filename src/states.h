@@ -299,9 +299,6 @@ extern st_game_over_t st_game_over;
  *   just as with the normal Kobo forms and states this
  *   wrapper inherits from - just keep in mind to call the
  *   inherited versions to keep things working!
- *
- *   If you want to control event sounds yourself, set the
- *   'sounds' field to 0. (Inside open() is soon enough.)
  */
 class menu_base_t : public kobo_form_t
 {
@@ -346,8 +343,7 @@ class st_menu_base_t : public kobo_basestate_t
 {
   protected:
 	kobo_form_t	*form;
-	int		sounds;
-	int		do_default_action;
+	bool		do_default_action;
   public:
 	st_menu_base_t();
 	~st_menu_base_t();

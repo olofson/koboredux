@@ -597,24 +597,6 @@ void KOBO_sound::g_music(unsigned scene)
 }
 
 
-void KOBO_sound::ui_play(unsigned wid, int vol, int pitch, int pan)
-{
-	if(!iface)
-		return;
-	if(wid < 0 || wid >= S__COUNT)
-	{
-		log_printf(ELOG, "KOBO_sound::up_play(): Sound index %d is "
-				"out of range!\n", wid);
-		return;
-	}
-	if(!sounds[wid])
-		return;
-	a2_Play(iface, groups[KOBO_MG_UI],
-			sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
-			vol / 65536.0f, pan / 65536.0f);
-}
-
-
 void KOBO_sound::g_position(int x, int y)
 {
 	listener_x = x;
@@ -942,6 +924,24 @@ void KOBO_sound::g_pitch(float pitch)
 /*--------------------------------------------------
 	UI sound effects
 --------------------------------------------------*/
+
+void KOBO_sound::ui_play(unsigned wid, int vol, int pitch, int pan)
+{
+	if(!iface)
+		return;
+	if(wid < 0 || wid >= S__COUNT)
+	{
+		log_printf(ELOG, "KOBO_sound::up_play(): Sound index %d is "
+				"out of range!\n", wid);
+		return;
+	}
+	if(!sounds[wid])
+		return;
+	a2_Play(iface, groups[KOBO_MG_UI],
+			sounds[wid], (pitch / 65536.0f - 60.0f)  / 12.0f,
+			vol / 65536.0f, pan / 65536.0f);
+}
+
 
 void KOBO_sound::ui_noise(int h)
 {

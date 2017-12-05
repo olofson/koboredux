@@ -226,10 +226,6 @@ class KOBO_sound
 	// Play sound/jingle directly through the master group
 	static void jingle(int sng);
 
-	// Play a user interface sound
-	static void ui_play(unsigned wid, int vol = 65536, int pitch = 60<<16,
-			int pan = 0);
-
 	/*--------------------------------------------------
 		In-game sound
 	--------------------------------------------------*/
@@ -293,6 +289,10 @@ class KOBO_sound
 	/*--------------------------------------------------
 		UI sound effects
 	--------------------------------------------------*/
+
+	// Play a user interface sound
+	static void ui_play(unsigned wid, int vol = 65536, int pitch = 60<<16,
+			int pan = 0);
 
 	// Various UI effects
 	static void ui_noise(int h);

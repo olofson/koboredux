@@ -744,10 +744,10 @@ bool ct_form_t::select(ct_widget_t *widget)
 }
 
 
-void ct_form_t::select(int ind)
+bool ct_form_t::select(int ind)
 {
 	if(!widgets)
-		return;
+		return false;
 
 	ct_widget_t *sel = widgets;
 	for(int i = 0; i < ind; ++i)
@@ -760,17 +760,17 @@ void ct_form_t::select(int ind)
 			break;
 		sel = sel->next;
 	}
-	select(sel);
+	return select(sel);
 }
 
 
-void ct_form_t::select(int x, int y)
+bool ct_form_t::select(int x, int y)
 {
 	for(ct_widget_t *w = widgets; w;
 			w = (w == widgets->prev) ? NULL : w->next)
 	{
 		if(!w)
-			return;		// All done!
+			return !!_selected;	// All done!
 
 		if(!w->interactive)
 			continue;	// Not interactive. Skip!
@@ -780,11 +780,10 @@ void ct_form_t::select(int x, int y)
 			continue;	// Outside. Skip!
 
 		// Hit! Select this widget.
-		select(w);
-		return;
+		return select(w);
 	}
 	// Miss! Deselect.
-	select((ct_widget_t *)0);
+	return select((ct_widget_t *)0);
 }
 
 
