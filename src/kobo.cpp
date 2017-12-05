@@ -304,6 +304,7 @@ prefs_t		KOBO_main::safe_prefs;
 
 label_t		*KOBO_main::sfxt_hotkeys = NULL;
 display_t	*KOBO_main::sfxt_symname = NULL;
+display_t	*KOBO_main::sfxt_grpname = NULL;
 
 KOBO_ThemeData	*KOBO_main::themes = NULL;
 
@@ -743,19 +744,22 @@ void KOBO_main::init_dash_layout()
 	sfxt_hotkeys->caption(
 			"F1: Reload sounds\n"
 			"CTRL+F1: Audio restart\n"
-			"F1/F2/MW: Select SFX\n"
-			"\r"
+			"F2/F3/MW: Select SFX\n"
+			"CTRL+F2/F3: Sel. output\n"
 			"F4: Play detached\n"
 			"F5: Play while holding\n"
 			"F6: Start\n"
 			"F7: Stop\n"
 			"F8: Kill all sounds\n"
-			"\r"
 			"F9-F12: Send(2, 0.25-1.0)");
 	place(sfxt_symname, KOBO_D_SOUNDTOOLS_SYMNAME);
-	sfxt_symname->color(wdash->map_rgb(24, 24, 24));
+	sfxt_symname->color(wdash->map_rgb(32, 32, 32));
 	sfxt_symname->font(B_TOOL_FONT);
 	sfxt_symname->caption("Selected SFX");
+	place(sfxt_grpname, KOBO_D_SOUNDTOOLS_GRPNAME);
+	sfxt_grpname->color(wdash->map_rgb(24, 24, 24));
+	sfxt_grpname->font(B_TOOL_FONT);
+	sfxt_grpname->caption("Selected output");
 
 	// Particle effect design tools
 	place(pfxt_hotkeys, KOBO_D_PFXTOOLS_HOTKEYS);
@@ -950,6 +954,7 @@ int KOBO_main::init_display(prefs_t *p)
 	pxright = new vledbar_t(gengine);
 	sfxt_hotkeys = new label_t(gengine);
 	sfxt_symname = new display_t(gengine);
+	sfxt_grpname = new display_t(gengine);
 	pfxt_hotkeys = new label_t(gengine);
 	pfxt_symname = new display_t(gengine);
 
@@ -968,6 +973,7 @@ void KOBO_main::close_display()
 
 	delete sfxt_hotkeys;	sfxt_hotkeys = NULL;
 	delete sfxt_symname;	sfxt_symname = NULL;
+	delete sfxt_grpname;	sfxt_grpname = NULL;
 
 	delete pxright;		pxright = NULL;
 	delete pxleft;		pxleft = NULL;
@@ -1678,6 +1684,7 @@ kobo_gfxengine_t::kobo_gfxengine_t()
 #endif
 	sfxt_sound = 0;
 	sfxt_handle = 0;
+	sfxt_output = KOBO_MG_MASTER;
 	sfxt_x = sfxt_y = 0;
 }
 
@@ -1786,6 +1793,7 @@ void kobo_gfxengine_t::sfxt_update()
 		return;
 
 	km.sfxt_symname->text(sound.symname(sfxt_sound));
+	km.sfxt_grpname->text(sound.grpname(sfxt_output));
 }
 
 
@@ -1825,16 +1833,30 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 	// CTRL + F1: Restart audio engine
 	if(ms & KMOD_CTRL)
 	{
-		if((ev.type == SDL_KEYDOWN) && (ev.key.keysym.sym == SDLK_F1))
+		if(ev.type != SDL_KEYDOWN)
+			return false;
+
+		switch(ev.key.keysym.sym)
 		{
+		  case SDLK_F1:
 			if(ev.key.repeat)
 				return true;
 			global_status |= OS_RESTART_AUDIO;
 			stop();
 			return true;
-		}
-		else
+		  case SDLK_F2:		// Select prev output group
+			--sfxt_output;
+			if(sfxt_output < 0)
+				sfxt_output = KOBO_MG__COUNT - 1;
+			return true;
+		  case SDLK_F3:		// Select next output group
+			++sfxt_output;
+			if(sfxt_output >= KOBO_MG__COUNT)
+				sfxt_output = 0;
+			return true;
+		  default:
 			return false;
+		}
 	}
 
 	switch (ev.type)
@@ -1863,9 +1885,14 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 				sound.g_stop(sfxt_handle);
 				sfxt_handle = 0;
 			}
-			sfxt_x = myship.get_x();
-			sfxt_y = myship.get_y();
-			sound.g_play(sfxt_sound, sfxt_x, sfxt_y);
+			if(sfxt_output == KOBO_MG_SFX)
+			{
+				sfxt_x = myship.get_x();
+				sfxt_y = myship.get_y();
+				sound.g_play(sfxt_sound, sfxt_x, sfxt_y);
+			}
+			else
+				sound.play(sfxt_output, sfxt_sound);
 			return true;
 		  case SDLK_F5:		// Play while holding key; press
 			if(ev.key.repeat)
@@ -1874,10 +1901,16 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 		  case SDLK_F6:		// Start
 			if(sfxt_handle)
 				sound.g_stop(sfxt_handle);
-			sfxt_x = myship.get_x();
-			sfxt_y = myship.get_y();
-			sfxt_handle = sound.g_start(sfxt_sound,
-					sfxt_x, sfxt_y);
+			if(sfxt_output == KOBO_MG_SFX)
+			{
+				sfxt_x = myship.get_x();
+				sfxt_y = myship.get_y();
+				sfxt_handle = sound.g_start(sfxt_sound,
+						sfxt_x, sfxt_y);
+			}
+			else
+				sfxt_handle = sound.start(sfxt_output,
+						sfxt_sound);
 			return true;
 		  case SDLK_F7:		// Stop
 			if(ev.key.repeat)
@@ -1891,7 +1924,10 @@ bool kobo_gfxengine_t::soundtools_event(SDL_Event &ev)
 		  case SDLK_F8:		// Kill all sounds
 			if(ev.key.repeat)
 				return true;
-			sound.g_new_scene();
+			if(sfxt_output == KOBO_MG_SFX)
+				sound.g_new_scene();
+			else
+				sound.kill_all(sfxt_output);
 			return true;
 		  case SDLK_F9:		// Deal 25% damage
 			sound.g_control(sfxt_handle, 2, .25f);
@@ -2470,7 +2506,7 @@ void kobo_gfxengine_t::frame()
 {
 	sound.frame();
 
-	if(prefs->soundtools && sfxt_handle)
+	if(prefs->soundtools && sfxt_handle && (sfxt_output == KOBO_MG_SFX))
 		sound.g_move(sfxt_handle, sfxt_x, sfxt_y);
 
 	if(!gsm.current())
@@ -2559,6 +2595,7 @@ void kobo_gfxengine_t::post_render()
 		// Make sure the GUI is visible
 		km.sfxt_hotkeys->visible(true);
 		km.sfxt_symname->visible(true);
+		km.sfxt_grpname->visible(true);
 
 		// Ear (listener position)
 		woverlay->sprite(DASHW(MAIN) / 2, DASHH(MAIN) / 2,
@@ -2580,6 +2617,7 @@ void kobo_gfxengine_t::post_render()
 		// Soundtools enabled and then disabled; hide the GUI!
 		km.sfxt_hotkeys->visible(false);
 		km.sfxt_symname->visible(false);
+		km.sfxt_grpname->visible(false);
 	}
 
 	// Particle effect design tools panel

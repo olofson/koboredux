@@ -430,6 +430,23 @@ const char *KOBO_sound::symname(unsigned wid)
 }
 
 
+const char *KOBO_sound::grpname(unsigned grp)
+{
+	switch((KOBO_mixer_group)grp)
+	{
+	  case KOBO_MG_ALL:	return "ALL";
+	  case KOBO_MG_MASTER:	return "MASTER";
+	  case KOBO_MG_UI:	return "UI";
+	  case KOBO_MG_SFX:	return "SFX";
+	  case KOBO_MG_MUSIC:	return "MUSIC";
+	  case KOBO_MG_TITLE:	return "TITLE";
+	  case KOBO_MG__COUNT:
+		break;
+	}
+	return "<OUT OF RANGE>";
+}
+
+
 /*--------------------------------------------------
 	Main controls
 --------------------------------------------------*/
@@ -949,4 +966,55 @@ void KOBO_sound::ui_noise(int h)
 void KOBO_sound::ui_countdown(int remain)
 {
 	ui_play(S_UI_CDTICK, 32768, (60 - remain)<<16);
+}
+
+
+/*--------------------------------------------------
+	Low level API
+--------------------------------------------------*/
+
+void KOBO_sound::play(int grp, unsigned wid)
+{
+	if(!iface)
+		return;
+	if(grp < 0 || grp >= KOBO_MG__COUNT)
+	{
+		log_printf(ELOG, "Invalid sound group %d!\n", grp);
+		return;
+	}
+	if(!checksound(wid, "KOBO_sound::play()"))
+		return;
+	a2_Play(iface, groups[grp], sounds[wid], 0.0f, 1.0f, 0.0f);
+}
+
+
+int KOBO_sound::start(int grp, unsigned wid)
+{
+	if(!iface)
+		return -1;
+	if(grp < 0 || grp >= KOBO_MG__COUNT)
+	{
+		log_printf(ELOG, "Invalid sound group %d!\n", grp);
+		return -1;
+	}
+	if(!checksound(wid, "KOBO_sound::start()"))
+		return -1;
+	return a2_Start(iface, groups[grp], sounds[wid], 0.0f, 1.0f, 0.0f);
+}
+
+
+void KOBO_sound::kill_all(int grp)
+{
+	if(!iface)
+		return;
+
+	if(grp == KOBO_MG_MASTER)
+	{
+		a2_KillSub(iface, rootvoice);
+		memset(groups, 0, sizeof(groups));
+		init_mixer_group(KOBO_MG_ALL);
+		prefschange();
+	}
+	else
+		a2_KillSub(iface, groups[grp]);
 }

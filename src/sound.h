@@ -210,6 +210,7 @@ class KOBO_sound
 	--------------------------------------------------*/
 	static inline float latency()	{ return buffer_latency; }
 	static const char *symname(unsigned wid);
+	static const char *grpname(unsigned grp);
 
 	/*--------------------------------------------------
 		Main controls
@@ -296,6 +297,20 @@ class KOBO_sound
 	// Various UI effects
 	static void ui_noise(int h);
 	static void ui_countdown(int remain);
+
+	/*--------------------------------------------------
+		Low level API
+	--------------------------------------------------*/
+
+	// Play a sound at a specific location on the map
+	static void play(int grp, unsigned wid);
+
+	// Start a sound at a specific location on the map. Returns handle.
+	static int start(int grp, unsigned wid);
+
+	// Kill all sounds on the specified group. If this is the master group,
+	// the whole mixer graph will be reinitialized.
+	void kill_all(int grp);
 };
 
 #endif /* KOBO_SOUND_H */

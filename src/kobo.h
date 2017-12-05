@@ -100,6 +100,7 @@ class kobo_gfxengine_t : public gfxengine_t
 #endif
 	int sfxt_sound;
 	int sfxt_handle;
+	int sfxt_output;
 	int sfxt_x;
 	int sfxt_y;
 	void pre_loop();
@@ -182,6 +183,7 @@ class KOBO_main
 	// Sound design tools
 	static label_t		*sfxt_hotkeys;
 	static display_t	*sfxt_symname;
+	static display_t	*sfxt_grpname;
 
 	// Particle effect design tools
 	static int 		pfxt_select;
