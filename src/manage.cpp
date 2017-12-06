@@ -47,7 +47,7 @@
 #define GIGA             1000000000
 
 KOBO_gamestates _manage::gamestate = GS_NONE;
-KOBO_replaymodes _manage::replaymode = RPM_PLAY;
+KOBO_replaymodes _manage::replaymode = RPM_NONE;
 bool _manage::demo_mode = false;
 bool _manage::is_paused = false;
 
@@ -110,6 +110,7 @@ const char *enumstr(KOBO_replaymodes rpm)
 {
 	switch(rpm)
 	{
+	  case RPM_NONE:	return "RPM_NONE";
 	  case RPM_PLAY:	return "RPM_PLAY";
 	  case RPM_RETRY:	return "RPM_RETRY";
 	  case RPM_REPLAY:	return "RPM_REPLAY";
@@ -276,6 +277,7 @@ void _manage::select_stage(int stage, KOBO_gamestates gs)
 	}
 	put_info();
 	state(gs);
+	replaymode = RPM_NONE;
 }
 
 
@@ -441,6 +443,7 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 	{
 		// No replay! Start from parameters.
 		state(GS_GETREADY);
+		replaymode = RPM_PLAY;
 		log_printf(ULOG, "Starting new level, stage %d!\n",
 				selected_stage);
 		game.set(GAME_SINGLE, selected_skill);
@@ -753,6 +756,7 @@ void _manage::next_stage()
 		selected_stage = GIGA - 2;
 	switch(replaymode)
 	{
+	  case RPM_NONE:
 	  case RPM_PLAY:
 		init_game();
 		if(campaign)
@@ -935,6 +939,7 @@ void _manage::init()
 	flash_score_count = 0;
 	delay_count = 0;
 	state(GS_NONE);
+	replaymode = RPM_NONE;
 	savemanager.load_demos();
 }
 
@@ -1087,6 +1092,8 @@ void _manage::run_game()
 		else
 			ctrl = controls_replay(ctrlin);
 		break;
+	  case RPM_NONE:
+		break;
 	}
 	myship.control(ctrl);
 	myship.move();
@@ -1101,6 +1108,8 @@ void _manage::run_game()
 		  case RPM_RETRY:
 		  case RPM_REPLAY:
 			replay->verify_state();
+			break;
+		  case RPM_NONE:
 			break;
 		}
 	update();
@@ -1386,6 +1395,7 @@ void _manage::run()
 				else
 				{
 					state(GS_NONE);
+					replaymode = RPM_NONE;
 					gengine->period(game.speed);
 					sound.g_volume(1.0f);
 					sound.g_pitch(0.0f);
@@ -1483,7 +1493,7 @@ void _manage::abort_game()
 	replay = NULL;
 	owns_replay = false;
 	state(GS_NONE);
-	replaymode = RPM_PLAY;
+	replaymode = RPM_NONE;
 	is_paused = false;
 }
 

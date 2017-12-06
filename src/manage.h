@@ -31,6 +31,7 @@
 
 enum KOBO_replaymodes
 {
+	RPM_NONE,	// No game or replay in progress
 	RPM_PLAY,	// Playing!
 	RPM_RETRY,	// Rewind and retry
 	RPM_REPLAY	// Pure replay
