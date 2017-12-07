@@ -145,6 +145,8 @@ void prefs_t::init()
 	yesno("show_hit", show_hit, 0); desc("Show Hit Zones");
 	yesno("tsdebug", tsdebug, 0); desc("Timestamp Debug Output");
 	yesno("soundtools", soundtools, 0); desc("Sound Design Tools");
+	yesno("st_missing", st_missing, 0); desc("Log Missing Sound Effects");
+	yesno("st_played", st_played, 0); desc("Log Played Sound Effects");
 	yesno("replaydebug", replaydebug, 0); desc("Replay Debug Data");
 	key("toolstheme", toolstheme, ""); desc("Authoring Tools Theme");
 	yesno("force_fallback_gfxtheme", force_fallback_gfxtheme, 0);

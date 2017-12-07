@@ -582,7 +582,7 @@ bool KOBO_sound::checksound(int wid, const char *where)
 		return false;	// This is not an error...
 	if(!sounds[wid])
 	{
-		if(prefs->soundtools)
+		if(prefs->soundtools && prefs->st_missing)
 			log_printf(WLOG, "%s: Sound %s (%d) not loaded!\n",
 					where, kobo_soundnames[wid], wid);
 		return false;
@@ -674,10 +674,15 @@ void KOBO_sound::g_play(unsigned wid, int x, int y)
 
 	float vol, pan;
 	if(!eval_pos(x, y, &vol, &pan))
+	{
 		return;	// We don't start "short" sounds that are out of range!
+	}
 
 	a2_Play(iface, groups[KOBO_MG_SFX], sounds[wid],
 			pitchshift, vol, pan);
+	if(prefs->soundtools && prefs->st_played)
+		log_printf(ULOG, "Playing %s (%d)\n", kobo_soundnames[wid],
+				wid);
 }
 
 
@@ -692,8 +697,16 @@ int KOBO_sound::g_start(unsigned wid, int x, int y)
 
 	float vol, pan;
 	eval_pos(x, y, &vol, &pan);
-	return a2_Start(iface, groups[KOBO_MG_SFX], sounds[wid],
+	A2_handle h = a2_Start(iface, groups[KOBO_MG_SFX], sounds[wid],
 			pitchshift, vol, pan);
+	if(h < 0)
+		log_printf(WLOG, "Couldn't start %s (%d)! (%s)\n",
+				kobo_soundnames[wid], wid,
+				a2_ErrorString((A2_errors)-h));
+	else if(prefs->soundtools && prefs->st_played)
+		log_printf(ULOG, "Started %s (%d); handle: %d\n",
+				kobo_soundnames[wid], wid, h);
+	return h;
 }
 
 
@@ -754,6 +767,9 @@ void KOBO_sound::start_player_gun()
 				a2_ErrorString((A2_errors)-gunhandle));
 		gunhandle = 0;
 	}
+	else if(prefs->soundtools && prefs->st_played)
+		log_printf(ULOG, "Started player gun SFX; handle: %d\n",
+				gunhandle);
 }
 
 
@@ -778,8 +794,14 @@ void KOBO_sound::g_player_fire_denied()
 		return;
 	if(checksound(S_PLAYER_FIRE_DENIED,
 			"KOBO_sound::g_player_fire_denied()"))
+	{
 		a2_Play(iface, groups[KOBO_MG_UI],
 				sounds[S_PLAYER_FIRE_DENIED]);
+		if(prefs->soundtools && prefs->st_played)
+			log_printf(ULOG, "Playing %s (%d)\n",
+				kobo_soundnames[S_PLAYER_FIRE_DENIED],
+				S_PLAYER_FIRE_DENIED);
+	}
 }
 
 
@@ -818,8 +840,14 @@ void KOBO_sound::g_player_damage(float level)
 	if(shield_enabled)
 		g_control(shieldhandle, 2, level);
 	else if(checksound(S_PLAYER_DAMAGE, "KOBO_sound::g_player_damage()"))
+	{
 		a2_Play(iface, groups[KOBO_MG_SFX], sounds[S_PLAYER_DAMAGE],
-				0.0f, level);
+				pitchshift, level);
+		if(prefs->soundtools && prefs->st_played)
+			log_printf(ULOG, "Playing %s (%d)\n",
+				kobo_soundnames[S_PLAYER_DAMAGE],
+				S_PLAYER_DAMAGE);
+	}
 }
 
 
@@ -831,7 +859,14 @@ void KOBO_sound::g_player_explo_start()
 	if(!iface)
 		return;
 	if(checksound(S_PLAYER_DEATH, "KOBO_sound::g_player_explo_start()"))
-		a2_Play(iface, groups[KOBO_MG_SFX], sounds[S_PLAYER_DEATH]);
+	{
+		a2_Play(iface, groups[KOBO_MG_SFX], sounds[S_PLAYER_DEATH],
+				pitchshift);
+		if(prefs->soundtools && prefs->st_played)
+			log_printf(ULOG, "Playing %s (%d)\n",
+				kobo_soundnames[S_PLAYER_DEATH],
+				S_PLAYER_DEATH);
+	}
 }
 
 
@@ -861,6 +896,9 @@ void KOBO_sound::g_player_shield(bool enable)
 					(A2_errors)-shieldhandle));
 			shieldhandle = 0;
 		}
+		else if(prefs->soundtools && prefs->st_played)
+			log_printf(ULOG, "Started shield SFX; handle: %d\n",
+					shieldhandle);
 	}
 	shield_enabled = enable;
 }
@@ -872,6 +910,9 @@ void KOBO_sound::g_new_scene(int fadetime)
 		return;
 	if(!fadetime)
 		fadetime = KOBO_SFX_XFADE_TIME;
+
+	if(prefs->soundtools)
+		log_printf(ULOG, "--- g_new_scene() ---\n");
 
 	// Detach all continuous sounds, as they're now invalid
 	enemies.detach_sounds();
@@ -896,6 +937,8 @@ void KOBO_sound::g_new_scene(int fadetime)
 
 void KOBO_sound::g_volume(float volume)
 {
+	if(prefs->soundtools)
+		log_printf(ULOG, "--- g_volume(%f) ---\n", volume);
 	if(volume && !volscale)
 	{
 		// This is a bit ugly... Only the game logic can "restart"

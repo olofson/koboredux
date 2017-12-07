@@ -639,15 +639,22 @@ void debug_options_t::build()
 	yesno("Show Hit Zones", &prf->show_hit, 0);
 #endif
 	yesno("Timestamp Debug Output", &prf->tsdebug, 0);
-#ifndef KOBO_DEMO
-	yesno("Sound Design Tools", &prf->soundtools, OS_UPDATE_AUDIO);
-#endif
 	yesno("Replay Debug Data (Huge Saves!)", &prf->replaydebug, 0);
 #ifndef KOBO_DEMO
 	yesno("Force Fallback Graphics theme", &prf->force_fallback_gfxtheme,
 			OS_RELOAD_GRAPHICS);
 	yesno("Force Fallback Sound Theme", &prf->force_fallback_sfxtheme,
 			OS_RELOAD_SOUNDS);
+#endif
+#ifndef KOBO_DEMO
+	space(1);
+	yesno("Sound Design Tools", &prf->soundtools,
+			OS_UPDATE_AUDIO | OS_REBUILD);
+	if(prf->soundtools)
+	{
+		yesno("Log Missing Sound Effects", &prf->st_missing, 0);
+		yesno("Log Played Sound Effects", &prf->st_played, 0);
+	}
 #endif
 
 	xoffs = 0.5;
