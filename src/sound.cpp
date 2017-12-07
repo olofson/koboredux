@@ -690,9 +690,13 @@ int KOBO_sound::g_start(unsigned wid, int x, int y)
 {
 	if(!iface)
 		return -1;
-	if(!checksound(wid, "KOBO_sound::g_start()"))
-		return -1;
+	// We don't start continuous sounds when muted, as they'll be started
+	// as needed if/when sound is unmuted. This differs from distance
+	// attenuation, as we don't have enough context to start individual
+	// sounds automatically.
 	if(!volscale)
+		return -1;
+	if(!checksound(wid, "KOBO_sound::g_start()"))
 		return -1;
 
 	float vol, pan;
@@ -712,7 +716,7 @@ int KOBO_sound::g_start(unsigned wid, int x, int y)
 
 void KOBO_sound::g_move(int h, int x, int y)
 {
-	if(!iface || h <= 0)
+	if(!iface || h <= 0 || !volscale)
 		return;
 	float vol, pan;
 	eval_pos(x, y, &vol, &pan);
@@ -722,7 +726,7 @@ void KOBO_sound::g_move(int h, int x, int y)
 
 void KOBO_sound::g_control(int h, int c, float v)
 {
-	if(!iface || h <= 0)
+	if(!iface || h <= 0 || !volscale)
 		return;
 	a2_Send(iface, h, c, v);
 }
@@ -874,6 +878,8 @@ void KOBO_sound::g_player_shield(bool enable)
 {
 	if(!iface)
 		return;
+	if(!volscale)
+		return;
 	if(shieldhandle && !enable)
 	{
 		a2_Send(iface, shieldhandle, 1);
@@ -937,6 +943,8 @@ void KOBO_sound::g_new_scene(int fadetime)
 
 void KOBO_sound::g_volume(float volume)
 {
+	if(volume == volscale)
+		return;
 	if(prefs->soundtools)
 		log_printf(ULOG, "--- g_volume(%f) ---\n", volume);
 	if(volume && !volscale)

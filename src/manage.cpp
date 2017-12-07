@@ -105,6 +105,9 @@ int _manage::shake_fade_y = 0;
 
 int _manage::delay_count;
 
+float _manage::sfx_volume = 1.0f;
+bool _manage::sfx_mute = false;
+
 
 const char *enumstr(KOBO_replaymodes rpm)
 {
@@ -362,12 +365,26 @@ void _manage::show_demo(bool instant, bool force)
 }
 
 
+void _manage::set_mute(bool mute)
+{
+	sfx_mute = mute;
+	sound.g_volume(sfx_mute ? 0.0f : sfx_volume);
+}
+
+
+void _manage::set_volume(float vol)
+{
+	sfx_volume = vol;
+	sound.g_volume(sfx_mute ? 0.0f : sfx_volume);
+}
+
+
 void _manage::init_game(KOBO_replay *rp, bool newship)
 {
+	set_mute(true);
+	set_volume(1.0f);
 	sound.timestamp_reset();
 	sound.g_new_scene(100);
-	if(demo_mode)
-		sound.g_volume(0.0f);
 	stop_screenshake();
 
 	disp_health = 0.0f;
@@ -504,7 +521,6 @@ void _manage::init_game(KOBO_replay *rp, bool newship)
 		pxright->fx(PFX_OFF);
 		wdash->fade(1.0f);
 		wdash->mode(DASHBOARD_GAME);
-		sound.g_volume(1.0f);
 		sound.g_music(selected_stage);
 	}
 	if(prefs->debug)
@@ -536,6 +552,7 @@ void _manage::start_new_game(int slot, int stage, int skill)
 	if(campaign)
 		campaign->reset();
 	init_game(NULL, true);
+	set_mute(false);
 }
 
 
@@ -554,6 +571,7 @@ bool _manage::continue_game(int slot)
 	replaymode = RPM_PLAY;
 	init_game(replay);
 	advance(-KOBO_RETRY_REWIND);
+	set_mute(false);
 	return true;
 }
 
@@ -575,6 +593,7 @@ bool _manage::start_replay(int slot, int stage)
 	gamecontrol.clear();
 	replaymode = RPM_REPLAY;
 	init_game(replay);
+	set_mute(false);
 	return true;
 }
 
@@ -616,8 +635,6 @@ void _manage::advance(int frame)
 
 	KOBO_replaymodes replaymode_save = replaymode;
 	replaymode = RPM_REPLAY;
-	float volume_save = sound.g_volume();
-	sound.g_volume(0.0f);
 	if((int)replay->position() + 10 < frame)
 		wfire->Clear(true, false);
 	while((int)replay->position() < frame)
@@ -642,7 +659,6 @@ void _manage::advance(int frame)
 	scroll_jump = true;
 	update();
 	sound.timestamp_reset();
-	sound.g_volume(volume_save);
 	replaymode = replaymode_save;
 }
 
@@ -698,8 +714,10 @@ void _manage::next_bookmark()
 	if(target >= (int)replay_duration())
 		return;
 
+	set_mute(true);
 	sound.g_new_scene(100);
 	advance(target);
+	set_mute(false);
 }
 
 
@@ -711,8 +729,10 @@ void _manage::prev_bookmark()
 		return;
 	}
 	int target = get_prev_bookmark();
+	set_mute(true);
 	init_game(replay);
 	advance(target);
+	set_mute(false);
 }
 
 
@@ -780,7 +800,10 @@ void _manage::next_stage()
 		// Full replay! Move to next stage.
 		find_replay_forward();
 		if(replay)
+		{
 			init_game(replay);
+			set_mute(false);
+		}
 		else
 		{
 			state(GS_REPLAYEND);
@@ -813,6 +836,7 @@ void _manage::prev_stage()
 	{
 		noise_glitch();
 		init_game(replay);
+		set_mute(false);
 	}
 }
 
@@ -1184,7 +1208,7 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 		replaymode = RPM_PLAY;
 		sound.ui_countdown(0);
 		gengine->period(game.speed);
-		sound.g_volume(1.0f);
+		set_mute(false);
 		sound.g_pitch(0.0f);
 		gamecontrol.mouse_mute(false);
 		player_is_ready = false;
@@ -1223,7 +1247,7 @@ KOBO_player_controls _manage::controls_retry(KOBO_player_controls ctrl)
 		break;
 	}
 	gengine->period(game.speed * rps);
-	sound.g_volume(vol);
+	set_volume(vol);
 	sound.g_pitch(pch);
 
 	return rpctrl;
@@ -1279,7 +1303,7 @@ KOBO_player_controls _manage::controls_replay(KOBO_player_controls ctrl)
 		break;
 	}
 	gengine->period(game.speed * rps);
-	sound.g_volume(vol);
+	set_volume(vol);
 	sound.g_pitch(pch);
 
 	return rpctrl;
@@ -1335,8 +1359,10 @@ void _manage::run()
 		if(retry_rewind)
 		{
 			// Delayed rewind
+			set_mute(true);
 			init_game(replay);
 			advance(-KOBO_RETRY_REWIND);
+			set_mute(false);
 			retry_rewind = false;
 			screen.curtains(false,
 					KOBO_RETRY_SKIP_FXTIME * 0.001f);
@@ -1397,9 +1423,9 @@ void _manage::run()
 					state(GS_NONE);
 					replaymode = RPM_NONE;
 					gengine->period(game.speed);
-					sound.g_volume(1.0f);
 					sound.g_pitch(0.0f);
 				}
+				set_mute(false);
 				break;
 			  case RPM_RETRY:
 				rewind();

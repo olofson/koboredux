@@ -119,6 +119,10 @@ class _manage
 	// Timing
 	static int delay_count;
 
+	// Sound
+	static float sfx_volume;
+	static bool sfx_mute;
+
 	static void put_player_stats();
 	static void put_info();
 	static void put_score();
@@ -126,6 +130,8 @@ class _manage
 	static void run_noise();
 	static void run_leds();
 	static void set_bars();
+	static void set_mute(bool mute);
+	static void set_volume(float vol);
 
 	static unsigned get_next_bookmark();
 	static unsigned get_prev_bookmark();
