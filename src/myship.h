@@ -138,6 +138,7 @@ class KOBO_myship
 		return 32 + 4 + ((dir - 1) & 3) * 8;
 	}
 	static void visible(bool vis)	{ _visible = vis; }
+	static void restart_sounds();
 };
 
 extern KOBO_myship myship;

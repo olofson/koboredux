@@ -102,6 +102,22 @@ void KOBO_myship::state(KOBO_myship_state s)
 }
 
 
+void KOBO_myship::restart_sounds()
+{
+	switch (_state)
+	{
+	  case SHIP_DEAD:
+	  case SHIP_NORMAL:
+		sound.g_player_shield(false);
+		break;
+	  case SHIP_SHIELD:
+	  case SHIP_INVULNERABLE:
+		sound.g_player_shield(true);
+		break;
+	}
+}
+
+
 int KOBO_myship::shield_time()
 {
 	if(_state == SHIP_INVULNERABLE)

@@ -324,9 +324,7 @@ void KOBO_sound::prefschange()
 	a2_Send(iface, groups[KOBO_MG_MUSIC], 2, pref2vol(prefs->music_vol));
 	a2_Send(iface, groups[KOBO_MG_TITLE], 2, pref2vol(prefs->title_vol));
 	update_music(false);
-
-	if(gunhandle)
-		start_player_gun();
+	start_player_gun();
 	if(shield_enabled)
 		g_player_shield(true);
 }
@@ -952,7 +950,7 @@ void KOBO_sound::g_volume(float volume)
 		// This is a bit ugly... Only the game logic can "restart"
 		// sounds that were dropped or killed when sound was muted.
 		volscale = volume;
-		enemies.restart_sounds();
+		g_restart_sounds();
 	}
 	else
 		volscale = volume;
@@ -961,6 +959,16 @@ void KOBO_sound::g_volume(float volume)
 	a2_Send(iface, groups[KOBO_MG_SFX], 2,
 			pref2vol(prefs->sfx_vol) * volscale,
 			KOBO_SOUND_UPDATE_PERIOD);
+}
+
+
+void KOBO_sound::g_restart_sounds()
+{
+	if(prefs->soundtools)
+		log_printf(ULOG, "--- g_restart_sounds() ---\n");
+	enemies.restart_sounds();
+	start_player_gun();
+	myship.restart_sounds();
 }
 
 

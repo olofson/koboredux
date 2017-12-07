@@ -1529,7 +1529,7 @@ int KOBO_main::restart_audio()
 	wdash->fade(1.0f);
 	wdash->mode(dmd);
 	wradar->mode(RM__REINIT);
-	enemies.restart_sounds();
+	sound.g_restart_sounds();
 	return 0;
 }
 
@@ -1581,7 +1581,7 @@ int KOBO_main::reload_sounds()
 	sound.unload(KOBO_SB_ALL);
 	load_sounds(false);
 	log_printf(ULOG, "--- Sounds reloaded.\n");
-	enemies.restart_sounds();
+	sound.g_restart_sounds();
 	return 0;
 }
 

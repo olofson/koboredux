@@ -272,6 +272,9 @@ class KOBO_sound
 	// Crossfade to a new ingame sfx group, then kill the old group
 	static void g_new_scene(int fadetime = 0);
 
+	// Restart any continuous sound effects that are supposed to be playing
+	static void g_restart_sounds();
+
 	// Control volume and pitch of all sound effects. g_volume() takes a
 	// linear gain argument, where 1.0 is unity/unaffected. g_pitch()
 	// takes 1.0/octave linear pitch, where 0.0 is nominal pitch.
