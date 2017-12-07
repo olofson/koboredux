@@ -304,7 +304,8 @@ extern const char *kobo_datanames[];
 	KOBO_DEFS(ENEMY_M2)	\
 	KOBO_DEFS(ENEMY_M3)	\
 	KOBO_DEFS(ENEMY_M4)	\
-	KOBO_DEFS(PLAYER_DEATH)
+	KOBO_DEFS(PLAYER_DEATH)	\
+	KOBO_DEFS(FIRE_BLOSSOM)
 
 #define	KOBO_DEFS(x)	KOBO_PFX_##x,
 enum KOBO_ParticleFX

@@ -847,6 +847,10 @@ void KOBO_myship::fire_blossom()
 				(gamerand.get(3) + 8) << 12);
 	_charge -= game.blossom_drain * n;
 	blossom_cooltimer = game.blossom_cooldown;
+
+	KOBO_ParticleFXDef *pfxd = themedata.pfxdef(KOBO_PFX_FIRE_BLOSSOM);
+	if(pfxd)
+		wfire->Spawn(x + vx, y + vy, vx >> 2, vy >> 2, pfxd);
 }
 
 
