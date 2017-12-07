@@ -791,6 +791,7 @@ void _manage::next_stage()
 		if(selected_stage >= (KOBO_DEMO_LAST_STAGE + 1))
 			gsm.change(&st_demo_over);
 #endif
+		set_mute(false);
 		break;
 	  case RPM_RETRY:
 		// Wut? We're not supposed to get GS_LEVELDONE in this mode!
