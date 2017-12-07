@@ -283,8 +283,8 @@ bool KOBO_Fire::RunPSystem(KOBO_ParticleSystem *ps)
 		}
 		p->x += p->dx;
 		p->y += p->dy;
-		p->dx = p->dx * p->drag >> 12;
-		p->dy = p->dy * p->drag >> 12;
+		p->dx = (p->dx >> 2) * p->drag >> 10;
+		p->dy = (p->dy >> 2) * p->drag >> 10;
 
 		// Render
 		dst[bufw * ((p->y >> 16) & ymask) +
@@ -352,8 +352,8 @@ bool KOBO_Fire::RunPSystemNR(KOBO_ParticleSystem *ps)
 		}
 		p->x += p->dx;
 		p->y += p->dy;
-		p->dx = p->dx * p->drag >> 12;
-		p->dy = p->dy * p->drag >> 12;
+		p->dx = (p->dx >> 2) * p->drag >> 10;
+		p->dy = (p->dy >> 2) * p->drag >> 10;
 	}
 	return ps->nparticles > 0;
 }
