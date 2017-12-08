@@ -74,7 +74,7 @@
 // that we always enter "standby mode" with a clean buffer. Note that this is a
 // bit of a hack, and should really be scaled with palette size, and would also
 // need to be updated if the filter parameters are changed...
-#define	FIRE_STANDBY_DELAY	10
+#define	FIRE_STANDBY_DELAY	20
 
 // Particle effect definition
 struct KOBO_RangeSpec
