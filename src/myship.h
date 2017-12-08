@@ -79,6 +79,8 @@ class KOBO_myship
 	static void fire_blossom();
 	static void apply_position();
 	static void explode();
+	static void thruster(int xo, int yo, int vel,
+			KOBO_ParticleFXDef *pfxd);
 	static void fire_control();
 	static void handle_controls();
 	static void update_position();

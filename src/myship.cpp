@@ -228,6 +228,20 @@ KOBO_player_controls KOBO_myship::decode_input()
 }
 
 
+void KOBO_myship::thruster(int xo, int yo, int vel, KOBO_ParticleFXDef *pfxd)
+{
+	// HAX: We use fdi here, to match ship rendering
+	float d = fdi / 256.0f / dframes;
+	int sdi = sin(M_PI * 2.0f * d) * 256.0f;
+	int cdi = cos(M_PI * 2.0f * d) * 256.0f;
+	int px = vx + xo * cdi - yo * sdi;
+	int py = vy + xo * sdi + yo * cdi;
+	int pvx = vx - sdi * vel;
+	int pvy = vy + cdi * vel;
+	wfire->Spawn(x + px, y + py, pvx, pvy, pfxd);
+}
+
+
 void KOBO_myship::handle_controls()
 {
 	int v;
@@ -267,6 +281,24 @@ void KOBO_myship::handle_controls()
 	}
 	else
 		ax = ay = 0;
+
+	KOBO_ParticleFXDef *pfxd = themedata.pfxdef((ctrl & KOBO_PC_DIR) ?
+			KOBO_PFX_AFTERBURNER : KOBO_PFX_THRUSTER);
+	if(pfxd)
+	{
+		if(ctrl & KOBO_PC_DIR)
+		{
+			thruster(-7, 8, 6, pfxd);
+			thruster(-7, 10, 6, pfxd);
+			thruster(7, 8, 6, pfxd);
+			thruster(7, 10, 6, pfxd);
+		}
+		else
+		{
+			thruster(-7, 10, 2, pfxd);
+			thruster(7, 10, 2, pfxd);
+		}
+	}
 }
 
 
