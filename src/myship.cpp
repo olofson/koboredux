@@ -820,6 +820,16 @@ void KOBO_myship::charged_fire(int dir)
 				(b + maxbolts * 2) * 16384 / maxbolts);
 	}
 	charged_cooltimer = game.charged_cooldown;
+
+	KOBO_ParticleFXDef *pfxd = themedata.pfxdef(KOBO_PFX_CHARGED_BLAST);
+	if(pfxd)
+	{
+		int sdi = sin(M_PI * (dir - 1) / 4) * 256.0f;
+		int cdi = cos(M_PI * (dir - 1) / 4) * 256.0f;
+		int pvx = vx + sdi * game.bolt_speed;
+		int pvy = vy - cdi * game.bolt_speed;
+		wfire->Spawn(x + pvx, y + pvy, pvx, pvy, pfxd);
+	}
 }
 
 
