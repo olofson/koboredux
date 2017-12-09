@@ -79,7 +79,7 @@ int _manage::intro_y = TILE_SIZEY * (64 - 7);
 int _manage::game_seed;
 int _manage::total_cores;
 int _manage::remaining_cores;
-int _manage::selected_slot = 0;
+int _manage::selected_slot = -1;
 int _manage::selected_stage = -1;
 int _manage::last_stage;	// HAX for the start stage selector
 skill_levels_t _manage::selected_skill = KOBO_DEFAULT_SKILL;
@@ -234,14 +234,21 @@ void _manage::state(KOBO_gamestates gst)
 void _manage::select_slot(int sl)
 {
 	selected_slot = sl;
-	if(selected_slot < 0)
+	if(sl < 0)
 	{
 		campaign = NULL;
 		return;
 	}
-	campaign = savemanager.campaign(selected_slot);
+	campaign = savemanager.campaign(sl);
 	log_printf(ULOG, "Selected%s campaign slot %d.\n",
-			!campaign->exists() ? " empty" : "", selected_slot);
+			!campaign->exists() ? " empty" : "", sl);
+}
+
+
+void _manage::select_campaign(KOBO_campaign *cmp)
+{
+	selected_slot = -1;
+	campaign = cmp;
 }
 
 
@@ -578,11 +585,11 @@ bool _manage::continue_game(int slot)
 }
 
 
-bool _manage::start_replay(int slot, int stage)
+bool _manage::start_replay(KOBO_campaign *cmp, int stage)
 {
 	valid_replays = 0;
 
-	select_slot(slot);
+	select_campaign(cmp);
 	if(!campaign)
 		return false;
 
@@ -1416,7 +1423,7 @@ void _manage::run()
 			  case RPM_REPLAY:
 				if(prefs->loopreplays && valid_replays)
 				{
-					start_replay(selected_slot, 1);
+					start_replay(campaign, 1);
 					screen.curtains(false,
 							KOBO_RETRY_SKIP_FXTIME
 							* 0.001f);

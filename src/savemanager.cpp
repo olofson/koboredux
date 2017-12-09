@@ -85,6 +85,23 @@ bool KOBO_save_manager::exists(int slot)
 }
 
 
+bool KOBO_save_manager::demo_exists(int slot)
+{
+	if(slot < 0)
+	{
+		for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
+			if(demo_exists(i))
+				return true;
+		return false;
+	}
+	if(slot >= KOBO_MAX_CAMPAIGN_SLOTS)
+		return false;
+
+	return demos[slot].campaign->exists() ||
+			!demos[slot].campaign->empty();
+}
+
+
 bool KOBO_save_manager::load(int slot)
 {
 	if(slot < 0)
@@ -107,26 +124,31 @@ bool KOBO_save_manager::load(int slot)
 }
 
 
-KOBO_campaign_info *KOBO_save_manager::analysis(int slot, bool force)
+void KOBO_save_manager::analyze()
 {
-	if(slot < 0)
+	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
 	{
-		for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
-			analysis(i, force);
-		return NULL;
-	}
+		delete slots[i].cinfo;
+		slots[i].cinfo = NULL;
+		if(slots[i].campaign)
+			slots[i].cinfo = slots[i].campaign->analyze();
 
-	if(slot >= KOBO_MAX_CAMPAIGN_SLOTS)
-		return NULL;
-
-	if(force && slots[slot].cinfo)
-	{
-		delete slots[slot].cinfo;
-		slots[slot].cinfo = NULL;
+		delete demos[i].cinfo;
+		demos[i].cinfo = NULL;
+		if(demos[i].campaign)
+			demos[i].cinfo = demos[i].campaign->analyze();
 	}
-	if(!slots[slot].cinfo)
-		slots[slot].cinfo = slots[slot].campaign->analyze();
-	return slots[slot].cinfo;
+}
+
+
+KOBO_campaign_info *KOBO_save_manager::analysis(KOBO_campaign *campaign)
+{
+	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
+		if(slots[i].campaign == campaign)
+			return slots[i].cinfo;
+		else if(demos[i].campaign == campaign)
+			return demos[i].cinfo;
+	return NULL;
 }
 
 

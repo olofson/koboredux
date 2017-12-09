@@ -151,6 +151,7 @@ class _manage
 	static void run_game();
 	static void finalize_replay();
 
+	static void select_campaign(KOBO_campaign *cmp);
 	static void select_slot(int sl);
 	static void select_stage(int stage, KOBO_gamestates gs);
 
@@ -165,11 +166,11 @@ class _manage
 	static void reenter();
 
 	// Map management
+	static int current_slot()	{ return selected_slot; }
 	static int current_stage()	{ return selected_stage; }
 	static int last_played_stage()	{ return last_stage; }
 
 	// State management
-	static int current_slot()	{ return selected_slot; }
 	static int current_skill()	{ return (int)selected_skill; }
 
 	static void start_intro();
@@ -177,7 +178,7 @@ class _manage
 	static void show_demo(bool instant = false, bool force = false);
 	static void start_new_game(int slot, int stage, int skill);
 	static bool continue_game(int slot);
-	static bool start_replay(int slot, int stage);
+	static bool start_replay(KOBO_campaign *cmp, int stage);
 	static void rewind();
 	static void advance(int frame);
 	static void player_ready();

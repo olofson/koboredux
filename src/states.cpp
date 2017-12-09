@@ -814,14 +814,14 @@ st_rewind_t st_rewind;
 st_replay_t::st_replay_t()
 {
 	name = "replay";
-	rp_slot = 0;
+	rp_campaign = NULL;
 	rp_stage = 1;
 }
 
 
 void st_replay_t::enter()
 {
-	if(!manage.start_replay(rp_slot, rp_stage))
+	if(!manage.start_replay(rp_campaign, rp_stage))
 	{
 		sound.ui_play(S_UI_ERROR);
 		st_error.message("Campaign Replay Problem!",
@@ -1594,10 +1594,15 @@ void main_menu_t::build()
 		if(prefs->cheat_startlevel)
 			buildStartLevel();
 
-		if(savemanager.exists(-1))
+		bool have_saves = savemanager.exists(-1);
+		bool have_demos = savemanager.demo_exists(-1);
+		if(have_saves || have_demos)
 		{
 			space();
-			button("View Replay", 60);
+			if(have_saves)
+				button("View Replay", 60);
+			if(have_demos)
+				button("View Demo", 61);
 		}
 	}
 #ifdef KOBO_DEMO
@@ -1683,7 +1688,8 @@ void st_main_menu_t::select(int tag)
 	switch(tag)
 	{
 	  case 1:
-		st_campaign_menu.setup("Select Save Slot for Campaign", true);
+		st_campaign_menu.setup("Select Save Slot for Campaign",
+				CSM_NEW);
 		gsm.change(&st_campaign_menu);
 		break;
 	  case 2:
@@ -1709,11 +1715,16 @@ void st_main_menu_t::select(int tag)
 		kobo_OpenURL("https://olofson.itch.io/kobo-redux");
 		break;
 	  case 51:	// Continue Campaign
-		st_campaign_menu.setup("Select Campaign to Continue", false);
+		st_campaign_menu.setup("Select Campaign to Continue",
+				CSM_CONTINUE);
 		gsm.change(&st_campaign_menu);
 		break;
 	  case 60:	// View Replay
-		st_campaign_menu.setup("Select Campaign to View", false, true);
+		st_campaign_menu.setup("Select Campaign to View", CSM_VIEW);
+		gsm.change(&st_campaign_menu);
+		break;
+	  case 61:	// View Demo
+		st_campaign_menu.setup("Select Demo to View", CSM_DEMO);
 		gsm.change(&st_campaign_menu);
 		break;
 	  case 101:
@@ -1743,21 +1754,21 @@ st_main_menu_t st_main_menu;
 campaign_menu_t::campaign_menu_t(gfxengine_t *e) : menu_base_t(e)
 {
 	header = NULL;
-	newgame = false;
-	view_replay = false;
+	mode = CSM_CONTINUE;
 	selected_slot = 1;
 }
 
 
-void campaign_menu_t::setup(const char *hdr, bool new_game, bool replay)
+void campaign_menu_t::setup(const char *hdr, campaign_selector_mode_t csm)
 {
 	header = hdr;
-	newgame = new_game;
-	view_replay = replay;
+	mode = csm;
 	selected_slot = 1;
-	savemanager.load(-1);
-	savemanager.analysis(-1, true);
-
+	if(mode != CSM_DEMO)
+	{
+		savemanager.load(-1);
+		savemanager.analyze();
+	}
 	// Timestamp reset, because loading might take a few frames.
 	// Or much longer than that, if debug log output is enabled!
 	sound.timestamp_reset();
@@ -1791,11 +1802,28 @@ void campaign_menu_t::build()
 	xoffs = 0.1;
 	for(int i = 0; i < KOBO_MAX_CAMPAIGN_SLOTS; ++i)
 	{
-		if((view_replay || !newgame) && !savemanager.exists(i))
-			continue;
+		KOBO_campaign *c = NULL;
+		switch(mode)
+		{
+		  case CSM_NEW:
+			// Include empty slots if starting new game!
+			c = savemanager.campaign(i);
+			break;
+		  case CSM_CONTINUE:
+		  case CSM_VIEW:
+			if(!savemanager.exists(i))
+				continue;
+			c = savemanager.campaign(i);
+			break;
+		  case CSM_DEMO:
+			if(!savemanager.demo_exists(i))
+				continue;
+			c = savemanager.demo(i);
+			break;
+		}
 
 		char buf[128];
-		KOBO_campaign_info *ci = savemanager.analysis(i);
+		KOBO_campaign_info *ci = savemanager.analysis(c);
 		if(ci)
 			snprintf(buf, sizeof(buf), "%d: %s", i,
 					timedate(&ci->starttime));
@@ -1808,7 +1836,19 @@ void campaign_menu_t::build()
 	space(1);
 
 	xoffs = 0.3;
-	KOBO_campaign_info *ci = savemanager.analysis(selected_slot);
+	KOBO_campaign *c = NULL;
+	switch(mode)
+	{
+	  case CSM_NEW:
+	  case CSM_CONTINUE:
+	  case CSM_VIEW:
+		c = savemanager.campaign(selected_slot);
+		break;
+	  case CSM_DEMO:
+		c = savemanager.demo(selected_slot);
+		break;
+	}
+	KOBO_campaign_info *ci = savemanager.analysis(c);
 	if(ci)
 	{
 		char buf[128];
@@ -1878,17 +1918,16 @@ kobo_form_t *st_campaign_menu_t::open()
 {
 	menu = new campaign_menu_t(gengine);
 	menu->open();
-	menu->setup(header, newgame, view_replay);
+	menu->setup(header, mode);
 	menu->rebuild();
 	return menu;
 }
 
 
-void st_campaign_menu_t::setup(const char *hdr, bool new_game, bool replay)
+void st_campaign_menu_t::setup(const char *hdr, campaign_selector_mode_t csm)
 {
 	header = hdr;
-	newgame = new_game;
-	view_replay = replay;
+	mode = csm;
 }
 
 
@@ -1931,21 +1970,16 @@ void st_campaign_menu_t::select(int tag)
 	{
 		sound.ui_play(S_UI_OK);
 		menu->selected_slot = slot;
-		if(view_replay)
+		switch(mode)
 		{
-			st_replay.setup(slot, 1);
-			transition_change(&st_replay, KOBO_TRS_GAME_FAST);
-		}
-		else if(newgame)
-		{
+		  case CSM_NEW:
 			st_game.set_slot(slot);
 			if(savemanager.exists(slot))
 				gsm.change(&st_ask_overwrite_campaign);
 			else
 				gsm.change(&st_skill_menu);
-		}
-		else
-		{
+			break;
+		  case CSM_CONTINUE:
 			if(manage.continue_game(slot))
 				gsm.change(&st_rewind);
 			else
@@ -1955,6 +1989,15 @@ void st_campaign_menu_t::select(int tag)
 					"Could not continue Campaign.");
 				gsm.push(&st_error);
 			}
+			break;
+		  case CSM_VIEW:
+			st_replay.setup(savemanager.campaign(slot), 1);
+			transition_change(&st_replay, KOBO_TRS_GAME_FAST);
+			break;
+		  case CSM_DEMO:
+			st_replay.setup(savemanager.demo(slot), 1);
+			transition_change(&st_replay, KOBO_TRS_GAME_FAST);
+			break;
 		}
 	}
 }

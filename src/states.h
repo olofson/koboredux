@@ -189,13 +189,13 @@ extern st_rewind_t st_rewind;
 
 class st_replay_t : public kobo_basestate_t
 {
-	int	rp_slot;
-	int	rp_stage;
+	KOBO_campaign	*rp_campaign;
+	int		rp_stage;
   public:
 	st_replay_t();
-	void setup(int slot, int stage)
+	void setup(KOBO_campaign *campaign, int stage)
 	{
-		rp_slot = slot;
+		rp_campaign = campaign;
 		rp_stage = stage;
 	}
 	void enter();
@@ -396,19 +396,25 @@ extern st_main_menu_t st_main_menu;
 	Campaign Selector
 ----------------------------------------------------------*/
 
+enum campaign_selector_mode_t {
+	CSM_NEW,
+	CSM_CONTINUE,
+	CSM_VIEW,
+	CSM_DEMO
+};
+
 class campaign_menu_t : public menu_base_t
 {
-	const char		*header;
-	bool			newgame;
-	bool			view_replay;
-	char			tdbuf[128];
+	const char			*header;
+	char				tdbuf[128];
+	campaign_selector_mode_t	mode;
   public:
 	int			selected_slot;
 
 	campaign_menu_t(gfxengine_t *e);
 	const char *timedate(time_t *t);
 	void colonalign();
-	void setup(const char *hdr, bool new_game, bool view);
+	void setup(const char *hdr, campaign_selector_mode_t csm);
 	void build();
 	void rebuild();
 	using kobo_form_t::select;
@@ -417,14 +423,13 @@ class campaign_menu_t : public menu_base_t
 
 class st_campaign_menu_t : public st_menu_base_t
 {
-	campaign_menu_t	*menu;
-	const char	*header;
-	bool		newgame;
-	bool		view_replay;
+	campaign_menu_t			*menu;
+	const char			*header;
+	campaign_selector_mode_t	mode;
   public:
 	st_campaign_menu_t()	{	name = "campaign_selector"; }
 	kobo_form_t *open();
-	void setup(const char *header, bool new_game, bool view = false);
+	void setup(const char *header, campaign_selector_mode_t csm);
 	void press(gc_targets_t button);
 	void select(int tag);
 };

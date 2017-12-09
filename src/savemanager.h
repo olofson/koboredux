@@ -42,7 +42,6 @@ class KOBO_save_manager
 	// Load/analyze/save
 	bool exists(int slot = -1);	// File exists or there's recorded data
 	bool load(int slot = -1);	// (Re)load specified, or all
-	KOBO_campaign_info *analysis(int slot = -1, bool force = false);
 	KOBO_campaign *campaign(unsigned slot);
 	bool save(unsigned slot);
 	void resave_all();
@@ -50,6 +49,11 @@ class KOBO_save_manager
 	// Demos
 	bool load_demos();
 	KOBO_campaign *demo(int slot = -1);
+	bool demo_exists(int slot = -1);
+
+	// Campaign and demo analysis
+	void analyze();
+	KOBO_campaign_info *analysis(KOBO_campaign *campaign);
 };
 
 #endif // _KOBO_SAVEMANAGER_H_
