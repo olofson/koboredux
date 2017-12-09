@@ -334,7 +334,9 @@ void _manage::show_demo(bool instant, bool force)
 		show_stage(KOBO_TITLE_LEVEL, GS_TITLE);
 		return;
 	}
-	if(!campaign->last_stage())
+
+	// NOTE: We're not using the last stage, as it's normally incomplete.
+	if(campaign->last_stage() <= 1)
 	{
 		if(prefs->debug)
 			log_printf(ULOG, "Demo has no replays!\n");
@@ -342,7 +344,7 @@ void _manage::show_demo(bool instant, bool force)
 		return;
 	}
 
-	selected_stage = 1 + pubrand.get() % campaign->last_stage();
+	selected_stage = 1 + pubrand.get() % (campaign->last_stage() - 1);
 	find_replay_forward();
 	if(!replay)
 	{
