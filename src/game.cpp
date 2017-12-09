@@ -49,6 +49,7 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	speed = 30;
 	if(prefs && prefs->cheat_speed)
 		speed /= prefs->cheat_speed;
+	splash_damage_multiplier = 2;
 
 	// Player ship: Health and damage
 	top_speed = PIXEL2CS(4);
@@ -57,6 +58,9 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	health = 100;
 	regen_step = 20;
 	health_fade = 10;
+
+	// Player guns
+	bolt_damage = 40;
 
 	// Player guns: Accumulator
 	initial_charge = level_charge = charge = 1000;
@@ -67,6 +71,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	vdmg_maxvel = PIXEL2CS(5);
 	vdmg_linear = 128;
 	vdmg_quadratic = 128;
+	ram_damage = 100;
+	crash_damage = 30;
 
 	// Player guns: Primary (Nose + Tail)
 	bolt_speed = 12;
@@ -90,6 +96,12 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 	blossom_drain = 5;
 	blossom_cooldown = 10;
 
+	// Enemies
+	rock_health = 3000;
+	rock_damage = 40;
+	core_health = 1000;
+	node_health = 40;
+
 	switch(skill)
 	{
 	  case SKILL_NEWBIE:
@@ -108,10 +120,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		bolt_damage = 50;
 
 		// Enemies
-		rock_health = 1000;
+		rock_health = 500;
 		rock_damage = 20;
-		core_health = 1000;
-		node_health = 40;
 		enemy_m_health = 2000;
 		bomb_delay = 12;
 		break;
@@ -122,7 +132,6 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		bullet_speed = 224;	// 0.875
 		core_destroyed_health_bonus = 35;
 		stage_cleared_health_bonus = 35;
-		splash_damage_multiplier = 2;
 
 		// Player ship: Velocity dependent damage
 		ram_damage = 100;
@@ -132,10 +141,8 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		bolt_damage = 45;
 
 		// Enemies
-		rock_health = 2000;
+		rock_health = 1000;
 		rock_damage = 30;
-		core_health = 1000;
-		node_health = 40;
 		enemy_m_health = 2500;
 		bomb_delay = 10;
 		break;
@@ -146,71 +153,35 @@ void game_t::set(game_types_t tp, skill_levels_t sk)
 		bullet_speed = 256;	// 1.0
 		core_destroyed_health_bonus = 25;
 		stage_cleared_health_bonus = 25;
-		splash_damage_multiplier = 2;
-
-		// Player ship: Velocity dependent damage
-		ram_damage = 100;
-		crash_damage = 30;
-
-		// Player guns
-		bolt_damage = 40;
 
 		// Enemies
-		rock_health = 3000;
-		rock_damage = 40;
-		core_health = 1000;
-		node_health = 40;
 		enemy_m_health = 3000;
 		bomb_delay = 8;
 		break;
 
 	  case SKILL_HARD:
 		// Master game parameters
-		launch_speed = 352;	// 1.375
-		bullet_speed = 384;	// 1.5
+		launch_speed = 384;	// 1.5
+		bullet_speed = 448;	// 1.75
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 25;
-		splash_damage_multiplier = 3;
-
-		// Player ship: Velocity dependent damage
-		ram_damage = 50;
-		crash_damage = 40;
-
-		// Player guns
-		bolt_damage = 30;
 
 		// Enemies
-		rock_health = 5000;
-		rock_damage = 60;
-		core_health = 1500;
-		node_health = 50;
 		enemy_m_health = 4000;
-		bomb_delay = 5;
+		bomb_delay = 4;
 		break;
 
 	  case SKILL_INSANE:
 	  default:
 		// Master game parameters
-		launch_speed = 384;	// 1.5
-		bullet_speed = 448;	// 1.75
+		launch_speed = 448;	// 1.75
+		bullet_speed = 512;	// 2.00
 		core_destroyed_health_bonus = 10;
 		stage_cleared_health_bonus = 10;
-		splash_damage_multiplier = 5;
-
-		// Player ship: Velocity dependent damage
-		ram_damage = 30;
-		crash_damage = 50;
-
-		// Player guns
-		bolt_damage = 25;
 
 		// Enemies
-		rock_health = HEALTH_INDESTRUCTIBLE;
-		rock_damage = 80;
-		core_health = 2000;
-		node_health = 60;
 		enemy_m_health = 5000;
-		bomb_delay = 2;
+		bomb_delay = 1;
 		break;
 	}
 }
