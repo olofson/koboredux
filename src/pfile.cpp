@@ -36,9 +36,21 @@ time_t timegm(struct tm *brokentime)
 {
 	time_t t;
 	char *tz = getenv("TZ");
-	_putenv_s("TZ", "UTC");
+	if(tz)
+	{
+		tz = strdup(tz);
+		_putenv_s("TZ", "UTC");
+	}
+	tzset();
 	t = mktime(brokentime);
-	_putenv_s("TZ", tz);
+	if(tz)
+	{
+		_putenv_s("TZ", tz);
+		free(tz);
+	}
+	else
+		putenv("TZ=");
+	tzset();
 	return t;
 }
 #endif
