@@ -22,6 +22,6 @@ rm ${REDISTARCH}
 
 # Grab Audiality2 DLL and COPYING file from GitHub
 wget "${A2REPO}/releases/download/v${A2RELEASE}/libaudiality2.dll"
-wget https://raw.githubusercontent.com/olofson/audiality2/master/COPYING
-awk 'sub("$", "\r")' COPYING > LICENSE-Audiality2.txt
-rm COPYING
+wget https://raw.githubusercontent.com/olofson/audiality2/master/LICENSE.txt
+awk 'sub("$", "\r")' LICENSE.txt > LICENSE-Audiality2.txt
+rm LICENSE.txt

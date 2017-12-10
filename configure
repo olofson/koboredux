@@ -16,7 +16,7 @@ shopt -s nullglob
 
 if [ $# -eq 0 ]; then
 	FILTER=@(release|demo)
-elif [ $1 == all ]; then
+elif [ "$1" == all ]; then
 	FILTER="*"
 else
 	FILTER="$1"

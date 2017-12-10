@@ -7,7 +7,7 @@ shopt -s nullglob
 if [ $# -eq 0 ]; then
 	# Default: Build all native demo and release packages
 	FILTER=@(release|demo)
-elif [ $1 == all ]; then
+elif [ "$1" == all ]; then
 	FILTER="*"
 else
 	FILTER="$1"

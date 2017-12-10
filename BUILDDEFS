@@ -33,7 +33,7 @@ KRREPO="https://github.com/olofson/koboredux"
 KRHOME="http://koboredux.com"
 
 # Archive with Win32 SDL2 redistributables suitable for this release
-REDISTARCH="koboredux-libs-redist-win32.tar.bz2"
+REDISTARCH="koboredux-0.7.5-libs-redist-win32.tar.bz2"
 
 
 #--------------------
