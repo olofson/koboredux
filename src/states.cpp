@@ -151,7 +151,7 @@ st_transition_delay_t::st_transition_delay_t()
 
 void st_transition_delay_t::enter()
 {
-	timeout = SDL_GetTicks() + 10000;
+	timeout = SDL_GetTicks() + KOBO_TRANSITION_FX_TIMEOUT;
 }
 
 

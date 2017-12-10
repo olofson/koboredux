@@ -273,4 +273,7 @@ static inline int kobo_wrapdist(int a, int b, int w)
 #define	KOBO_ENTER_TITLE_FXTIME		1500
 #define	KOBO_DEMO_FADE_FXTIME		1000
 
+/* Timeout, in case conflicting transition effects cause a deadlock */
+#define	KOBO_TRANSITION_FX_TIMEOUT	2000
+
 #endif	/*_KOBO_CONFIG_H_*/
