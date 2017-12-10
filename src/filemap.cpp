@@ -216,11 +216,11 @@ void filemapper_t::sys_format(char *buf)
 }
 
 
-void filemapper_t::exepath(const char *appname)
+void filemapper_t::exepath(const char *appname, bool strip_exe)
 {
 	free(app_path);
 	app_path = strdup(sys2fm(appname));
-	if(app_path)
+	if(strip_exe && app_path)
 	{
 		char *c = strrchr(app_path, '/');
 		if(c)
@@ -231,8 +231,8 @@ void filemapper_t::exepath(const char *appname)
 			app_path = strdup(".");
 		}
 	}
-	else
-		app_path = strdup(".");	
+	else if(!app_path)
+		app_path = strdup(".");
 	addpath("EXE", app_path);
 	log_printf(DLOG, "Application path: '%s'\n", app_path);
 }

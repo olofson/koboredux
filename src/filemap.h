@@ -133,7 +133,7 @@ class filemapper_t
 	//	Note that exepath(<appname>) expects a
 	//	path in the *native system* format,
 	//	while exepath() returns a Unix path.
-	void exepath(const char *syspath);
+	void exepath(const char *syspath, bool strip_exe = false);
 	const char *exepath()	{ return app_path; }
 
 	// Add 'path' to class 'key'.
