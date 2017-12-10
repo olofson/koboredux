@@ -50,6 +50,7 @@ KOBO_gamestates _manage::gamestate = GS_NONE;
 KOBO_replaymodes _manage::replaymode = RPM_NONE;
 bool _manage::demo_mode = false;
 bool _manage::is_paused = false;
+Uint32 _manage::transition_timeout = 0;
 
 int _manage::delayed_stage = -1;
 KOBO_gamestates _manage::delayed_gamestate = GS_NONE;
@@ -301,6 +302,8 @@ void _manage::show_stage(int stage, KOBO_gamestates gs)
 		delayed_gamestate = gs;
 		delayed_demo = false;
 		screen.curtains(true, KOBO_ENTER_STAGE_FXTIME * 0.001f);
+		transition_timeout = SDL_GetTicks() +
+				KOBO_TRANSITION_FX_TIMEOUT;
 	}
 }
 
@@ -317,6 +320,8 @@ void _manage::show_demo(bool instant, bool force)
 		delayed_demo = true;
 		delayed_stage = -1;
 		screen.curtains(true, KOBO_DEMO_FADE_FXTIME * 0.001f);
+		transition_timeout = SDL_GetTicks() +
+				KOBO_TRANSITION_FX_TIMEOUT;
 		return;
 	}
 
@@ -616,6 +621,7 @@ void _manage::rewind()
 	}
 	retry_rewind = true;
 	screen.curtains(true, KOBO_RETRY_SKIP_FXTIME * 0.001f);
+	transition_timeout = SDL_GetTicks() + KOBO_TRANSITION_FX_TIMEOUT;
 }
 
 
@@ -1330,6 +1336,8 @@ KOBO_player_controls _manage::controls_demo(KOBO_player_controls ctrl)
 		if(myship.alive() && (state() != GS_REPLAYEND))
 		{
 			screen.curtains(true, KOBO_DEMO_FADE_FXTIME * 0.001f);
+			transition_timeout = SDL_GetTicks() +
+					KOBO_TRANSITION_FX_TIMEOUT;
 			state(GS_REPLAYEND);
 			delay_count = KOBO_REPLAYEND_TIMEOUT;
 		}
@@ -1340,7 +1348,8 @@ KOBO_player_controls _manage::controls_demo(KOBO_player_controls ctrl)
 
 void _manage::run()
 {
-	if(screen.curtains())
+	bool tmo = SDL_TICKS_PASSED(SDL_GetTicks(), transition_timeout);
+	if(screen.curtains() || tmo)
 	{
 		if(delayed_stage > 0)
 		{
@@ -1416,7 +1425,11 @@ void _manage::run()
 		// Non-demo modes
 		if((replaymode == RPM_REPLAY) && prefs->loopreplays &&
 				(time_remaining() <= KOBO_ENTER_TITLE_FXTIME))
+		{
 			screen.curtains(true, KOBO_RETRY_SKIP_FXTIME * 0.001f);
+			transition_timeout = SDL_GetTicks() +
+					KOBO_TRANSITION_FX_TIMEOUT;
+		}
 		if(delay_count && !--delay_count)
 			switch(replaymode)
 			{
@@ -1616,8 +1629,12 @@ void _manage::destroyed_a_core()
 			state(GS_LEVELDONE);
 			delay_count = KOBO_LEVELDONE_TIMEOUT;
 			if(demo_mode)
+			{
 				screen.curtains(true, KOBO_DEMO_FADE_FXTIME *
 						0.001f);
+				transition_timeout = SDL_GetTicks() +
+						KOBO_TRANSITION_FX_TIMEOUT;
+			}
 		}
 	}
 	else

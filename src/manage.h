@@ -59,6 +59,7 @@ class _manage
 	static KOBO_replaymodes replaymode;
 	static bool demo_mode;
 	static bool is_paused;
+	static Uint32 transition_timeout;
 
 	// Asynchronous stage selection with transition effect
 	static int delayed_stage;
