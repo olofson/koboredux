@@ -356,7 +356,14 @@ void _manage::show_demo(bool instant, bool force)
 		return;
 	}
 
+#ifdef KOBO_DEMO
+	int ls = campaign->last_stage() - 1;
+	if(ls > KOBO_DEMO_LAST_STAGE)
+		ls = KOBO_DEMO_LAST_STAGE;
+	selected_stage = 1 + pubrand.get() % ls;
+#else
 	selected_stage = 1 + pubrand.get() % (campaign->last_stage() - 1);
+#endif
 	find_replay_forward();
 	if(!replay)
 	{

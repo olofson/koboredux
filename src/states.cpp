@@ -1595,6 +1595,13 @@ void main_menu_t::build()
 			buildStartLevel();
 
 		bool have_saves = savemanager.exists(-1);
+#ifdef KOBO_DEMO
+		if(have_saves)
+		{
+			space();
+			button("View Replay", 60);
+		}
+#else
 		bool have_demos = savemanager.demo_exists(-1);
 		if(have_saves || have_demos)
 		{
@@ -1604,6 +1611,7 @@ void main_menu_t::build()
 			if(have_demos)
 				button("View Demo", 61);
 		}
+#endif
 	}
 #ifdef KOBO_DEMO
 	space(2);
