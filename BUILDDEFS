@@ -98,6 +98,5 @@ PKGDIR="${WORKDIR}/packages"
 
 # MinGW32 cross build using MXE (http://mxe.cc/)
 if [ -z $MXEPATH ]; then
-	# This is where Dave keeps his MXE.
-	MXEPATH=~/src/mxe
+	MXEPATH=/usr/lib/mxe/
 fi
