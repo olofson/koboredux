@@ -42,6 +42,7 @@
 #include <fcntl.h>
 #include <math.h>
 
+#include "dbgconsole.h"
 #include "kobolog.h"
 #include "kobo.h"
 #include "states.h"
@@ -3050,12 +3051,18 @@ int main(int argc, char *argv[])
 	++argv;
 
 	if((argc < 1) || (strcmp("-override", argv[0]) != 0))
+	{
 		km.load_config(prefs);
+		if(prefs->debug)
+			open_debug_console();
+	}
 
 	prefs->accept(prefs->width);
 	prefs->accept(prefs->height);
 	if((prefs->parse(argc, argv) < 0) || prefs->cmd_help)
 	{
+		if(prefs->debug)
+			open_debug_console();
 		put_usage();
 		main_cleanup();
 		return 1;
@@ -3066,6 +3073,9 @@ int main(int argc, char *argv[])
 		// specified on the command line.
 		prefs->set(prefs->get(&prefs->videomode), VMID_CUSTOM);
 	}
+
+	if(prefs->debug)
+		open_debug_console();
 
 	if(prefs->cmd_options_man)
 	{

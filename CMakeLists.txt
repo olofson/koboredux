@@ -7,7 +7,7 @@ set(KOBO_ORGANIZATION "OlofsonArcade")
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 7)
 set(VERSION_PATCH 5)
-set(VERSION_BUILD 0)
+set(VERSION_BUILD 1)
 
 option(DEMO_BUILD "Build Kobo Redux demo." OFF)
 option(WIN32_ZIP_BUILD "Build flat Win32 ZIP archive." OFF)

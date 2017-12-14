@@ -34,6 +34,7 @@ set(sources
 	savemanager.cpp
 	openurl.cpp
 	logger.c
+	dbgconsole.cpp
 	gfxengine/gfxengine.cpp
 	gfxengine/sofont.cpp
 	gfxengine/toolkit.cpp
