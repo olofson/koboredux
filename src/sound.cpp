@@ -360,8 +360,9 @@ int KOBO_sound::open()
 			(prefs->audiots ? A2_TIMESTAMP : 0));
 	if(!cfg)
 	{
-		log_printf(ELOG, "Couldn't create audio configuration;"
-				" disabling sound effects.\n");
+		log_printf(ELOG, "Couldn't create audio configuration (%s);"
+				" disabling sound effects.\n",
+				a2_ErrorString(a2_LastError()));
 		return -1;
 	}
 
@@ -372,8 +373,9 @@ int KOBO_sound::open()
 
 	if(!(iface = a2_Open(cfg)))
 	{
-		log_printf(ELOG, "Couldn't create audio engine iface;"
-				" disabling sound effects.\n");
+		log_printf(ELOG, "Couldn't create audio engine iface (%s);"
+				" disabling sound effects.\n",
+				a2_ErrorString(a2_LastError()));
 		return -3;
 	}
 
