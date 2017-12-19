@@ -41,7 +41,7 @@ REDISTARCH="koboredux-0.7.5-libs-redist-win32.tar.bz2"
 #--------------------
 
 # Recommended Audiality 2 version for this Kobo Redux release
-A2RELEASE=1.9.3
+A2RELEASE=1.9.4
 
 # Audiality 2 git repository
 A2REPO="https://github.com/olofson/audiality2"
