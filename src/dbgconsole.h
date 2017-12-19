@@ -22,6 +22,6 @@
 #ifndef	_KOBO_DBGCON_H_
 #define	_KOBO_DBGCON_H_
 
-void open_debug_console();
+void open_debug_console(int force);
 
 #endif // _KOBO_DBGCON_H_

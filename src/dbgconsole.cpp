@@ -30,18 +30,27 @@
 bool debug_console_open = false;
 
 
-void open_debug_console()
+void open_debug_console(int force)
 {
 	if(debug_console_open)
 		return;
 
 #ifdef WIN32
-	// Open or attach to console
-	AllocConsole();
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	if(!h)
+	{
+		if(force)
+		{
+			AllocConsole();
+			h = GetStdHandle(STD_OUTPUT_HANDLE);
+		}
+		else
+			return;
+	}
+
 	SetConsoleTitle("Kobo Redux " KOBO_VERSION_STRING);
 
 	// Redirect stdout
-	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 	int fd = _open_osfhandle((intptr_t)h, _O_TEXT);
 	FILE *fp = _fdopen(fd, "w");
 	*stdout = *fp;
@@ -64,7 +73,9 @@ void open_debug_console()
 	*stderr = *fp;
 	setvbuf(stderr, NULL, _IONBF, 0);
 #else
-	printf("open_debug_console() not implemented on this platform.\n");
+	if(force)
+		printf("open_debug_console() not implemented on this "
+				"platform.\n");
 #endif
 
 	debug_console_open = true;

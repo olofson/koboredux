@@ -3033,6 +3033,9 @@ extern "C" {
 int main(int argc, char *argv[])
 {
 	int cmd_exit = 0;
+
+	open_debug_console(0);
+
 	put_copyright();
 	put_versions();
 
@@ -3057,7 +3060,7 @@ int main(int argc, char *argv[])
 	{
 		km.load_config(prefs);
 		if(prefs->debug)
-			open_debug_console();
+			open_debug_console(1);
 	}
 
 	prefs->accept(prefs->width);
@@ -3065,7 +3068,7 @@ int main(int argc, char *argv[])
 	if((prefs->parse(argc, argv) < 0) || prefs->cmd_help)
 	{
 		if(prefs->debug)
-			open_debug_console();
+			open_debug_console(1);
 		put_usage();
 		main_cleanup();
 		return 1;
@@ -3078,7 +3081,7 @@ int main(int argc, char *argv[])
 	}
 
 	if(prefs->debug)
-		open_debug_console();
+		open_debug_console(1);
 
 	if(prefs->cmd_options_man)
 	{
