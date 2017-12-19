@@ -1630,17 +1630,20 @@ int KOBO_main::run()
 		sound.ui_noise(0);
 		dashboard_modes_t dmd = wdash->mode();
 
-		if(global_status & OS_RESTART_AUDIO)
-			if((res = restart_audio()))
-				return res;
-		if(global_status & OS_RELOAD_SOUNDS)
+		// NOTE: We ignore the returns from restart_audio() and
+		// reload_sounds()! We just run with no sound if they fail.
 #if 0
-// FIXME: This is unreliable! A2 bug? See Kobo Redux issue #370.
-			if((res = reload_sounds()))
+		if(global_status & OS_RESTART_AUDIO)
+			restart_audio();
+		if(global_status & OS_RELOAD_SOUNDS)
+			reload_sounds();
 #else
-			if((res = restart_audio()))
+		// FIXME: reload_sounds() is unreliable, likely due to an A2
+		// bug (see Kobo Redux issue #370), so we're just restarting
+		// the audio engine in both cases for now.
+		if(global_status & (OS_RESTART_AUDIO | OS_RELOAD_SOUNDS))
+				restart_audio();
 #endif
-				return res;
 		if(global_status & OS_RESTART_VIDEO)
 			if((res = restart_video()))
 				return res;
