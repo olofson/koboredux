@@ -544,6 +544,16 @@ class st_options_controls_t : public st_options_base_t
 extern st_options_controls_t st_options_controls;
 
 
+class st_options_bindings_t : public st_options_base_t
+{
+  public:
+	st_options_bindings_t()	{ name = "options_bindings"; }
+	config_form_t *oopen()	{ return new bindings_options_t(gengine); }
+};
+
+extern st_options_bindings_t st_options_bindings;
+
+
 // NOTE: The "Sound" category is covered by the Audio menu
 class st_options_audio_t : public st_options_base_t
 {

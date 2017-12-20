@@ -30,17 +30,39 @@
 
 
 /*----------------------------------------------------------
-	kobo_keybinding_t::
+	kobo_binding_t::
 ----------------------------------------------------------*/
 
-kobo_keybinding_t::kobo_keybinding_t(gfxengine_t *e, const char *cap) :
+kobo_binding_t::kobo_binding_t(gfxengine_t *e, const char *cap,
+		SDL_EventType _evtype) :
 		ct_string_t(e, cap)
 {
 	scanning = false;
+	evtype = _evtype;
+	switch(evtype)
+	{
+	  case SDL_KEYDOWN:
+		hint = "Press key...";
+		break;
+	  case SDL_JOYBUTTONDOWN:
+		hint = "Press button...";
+		break;
+	  case SDL_JOYAXISMOTION:
+		hint = "Move stick...";
+		break;
+	  case SDL_JOYHATMOTION:
+		hint = "Move hat...";
+		break;
+	  default:
+		hint = "<Unsupported binding type>";
+		log_printf(ELOG, "kobo_binding_t::kobo_binding_t: "
+				"Unsupported binding event type!\n");
+		break;
+	}
 }
 
 
-void kobo_keybinding_t::value(double val)
+void kobo_binding_t::value(double val)
 {
 	// NOTE:
 	//	We're displaying the names from the current keyboard layout,
@@ -52,20 +74,29 @@ void kobo_keybinding_t::value(double val)
 	scanning = false;
 	rawcapture(false);
 	ct_string_t::value(v);
-	SDL_Keycode key = SDL_GetKeyFromScancode((SDL_Scancode)v);
-	const char *kn = SDL_GetKeyName(key);
-	if(kn[0] && textwidth(kn))
-		ct_string_t::value(kn);
+	if(evtype == SDL_KEYDOWN)
+	{
+		SDL_Keycode key = SDL_GetKeyFromScancode((SDL_Scancode)v);
+		const char *kn = SDL_GetKeyName(key);
+		if(kn[0] && textwidth(kn))
+			ct_string_t::value(kn);
+		else
+		{
+			char buf[16];
+			snprintf(buf, sizeof(buf), "0x%X", v);
+			ct_string_t::value(buf);
+		}
+	}
 	else
 	{
 		char buf[16];
-		snprintf(buf, sizeof(buf), "0x%X", v);
+		snprintf(buf, sizeof(buf), "%d", v);
 		ct_string_t::value(buf);
 	}
 }
 
 
-void kobo_keybinding_t::change(int delta)
+void kobo_binding_t::change(int delta)
 {
 	if(delta)
 	{
@@ -78,23 +109,41 @@ void kobo_keybinding_t::change(int delta)
 }
 
 
-bool kobo_keybinding_t::rawevent(SDL_Event *ev)
+bool kobo_binding_t::rawevent(SDL_Event *ev)
 {
 	switch (ev->type)
 	{
 	  case SDL_KEYDOWN:
-		switch(ev->key.keysym.sym)
+		if(ev->key.keysym.sym == SDLK_ESCAPE)
 		{
-		  case SDLK_ESCAPE:
+			// Abort scan!
 			scanning = false;
 			rawcapture(false);
 			return true;
-		  default:
-			value(ev->key.keysym.scancode);
-			parent->apply_change(this);
-			return true;
 		}
-		break;
+		// Fall-through!
+	  case SDL_JOYBUTTONDOWN:
+	  case SDL_JOYAXISMOTION:
+	  case SDL_JOYHATMOTION:
+		if(ev->type != evtype)
+			return false;	// Wrong type of event! -->
+		switch(ev->type)
+		{
+		  case SDL_KEYDOWN:
+			value(ev->key.keysym.scancode);
+			break;
+		  case SDL_JOYBUTTONDOWN:
+			value(ev->jbutton.button);
+			break;
+		  case SDL_JOYAXISMOTION:
+			value(ev->jaxis.axis);
+			break;
+		  case SDL_JOYHATMOTION:
+			value(ev->jhat.hat);
+			break;
+		}
+		parent->apply_change(this);
+		return true;
 	  case SDL_WINDOWEVENT:
 		switch(ev->window.event)
 		{
@@ -102,11 +151,12 @@ bool kobo_keybinding_t::rawevent(SDL_Event *ev)
 		  case SDL_WINDOWEVENT_HIDDEN:
 		  case SDL_WINDOWEVENT_MINIMIZED:
 		  case SDL_WINDOWEVENT_FOCUS_LOST:
+			// Abort scan!
 			scanning = false;
 			rawcapture(false);
-			return false;
+			break;
 		}
-		break;
+		return false;
 	  case SDL_QUIT:
 		scanning = false;
 		rawcapture(false);
@@ -116,14 +166,14 @@ bool kobo_keybinding_t::rawevent(SDL_Event *ev)
 }
 
 
-void kobo_keybinding_t::render()
+void kobo_binding_t::render()
 {
 	if(scanning)
 	{
 		char buf[128];
 		ct_widget_t::render();
 		snprintf(buf, sizeof(buf), "%s: %s", caption(),
-				SDL_GetTicks() & 0x100 ? "Press key..." : "");
+				SDL_GetTicks() & 0x100 ? hint : "");
 		render_text_aligned(buf);
 	}
 	else
@@ -403,7 +453,37 @@ void kobo_form_t::enum_list(int first, int last)
 
 void kobo_form_t::keybinding(const char *cap, int *var, int tag)
 {
-	kobo_keybinding_t *k = new kobo_keybinding_t(engine, cap);
+	kobo_binding_t *k = new kobo_binding_t(engine, cap, SDL_KEYDOWN);
+	k->offset(xoffs, 0);
+	k->user = var;
+	k->tag = tag;
+	init_widget(k, B_NORMAL_FONT);
+}
+
+
+void kobo_form_t::axisbinding(const char *cap, int *var, int tag)
+{
+	kobo_binding_t *k = new kobo_binding_t(engine, cap, SDL_JOYAXISMOTION);
+	k->offset(xoffs, 0);
+	k->user = var;
+	k->tag = tag;
+	init_widget(k, B_NORMAL_FONT);
+}
+
+
+void kobo_form_t::buttonbinding(const char *cap, int *var, int tag)
+{
+	kobo_binding_t *k = new kobo_binding_t(engine, cap, SDL_JOYBUTTONDOWN);
+	k->offset(xoffs, 0);
+	k->user = var;
+	k->tag = tag;
+	init_widget(k, B_NORMAL_FONT);
+}
+
+
+void kobo_form_t::hatbinding(const char *cap, int *var, int tag)
+{
+	kobo_binding_t *k = new kobo_binding_t(engine, cap, SDL_JOYHATMOTION);
 	k->offset(xoffs, 0);
 	k->user = var;
 	k->tag = tag;

@@ -59,6 +59,15 @@ class prefs_t : public config_parser_t
 	// Controls
 	int	joystick;
 	int	joystick_index;	//which joystick to use
+	int	js_hat;
+	int	js_horizontal;
+	int	js_vertical;
+	int	js_deadzone;
+	int	js_sprint;
+	int	js_primary;
+	int	js_secondary;
+	int	js_tertiary;
+	int	js_pause;
 	int	mouse;
 	int	mousemode;
 	int	mouse_threshold;

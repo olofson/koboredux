@@ -114,6 +114,8 @@ class gamecontrol_t
 	static int direction, new_direction;
 	static int latch_timer;
 	static bool movekey_pressed, key_sprint, mouse_sprint, mouse_muted;
+	static int js_x, js_y;
+	static bool js_sprint;
 	static void change();
 	static gc_targets_t mapsrc(SDL_Keysym sym, int &src);
   public:
@@ -127,11 +129,14 @@ class gamecontrol_t
 		int src;
 		return mapsrc(sym, src);
 	}
+	static gc_targets_t map_js_button(int button);
 	static void pressbtn(gc_targets_t b, gc_sources_t s);
 	static void releasebtn(gc_targets_t b, gc_sources_t s);
 	static void press(SDL_Keysym sym);
 	static void release(SDL_Keysym sym);
 	static void mouse_position(int h, int v);
+	static void js_axis(int axis, int value);
+	static void js_hat(int value);
 	static int dir()			{ return direction; }
 	static bool dir_push();
 	static bool down(gc_targets_t b)	{ return state[b]; }

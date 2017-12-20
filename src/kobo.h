@@ -148,11 +148,6 @@ class KOBO_main
 	static int		exit_game_fast;
   public:
 	static SDL_Joystick	*joystick;
-	static int		js_lr;
-	static int		js_ud;
-	static int		js_primary;
-	static int		js_secondary;
-	static int		js_start;
 
 	static FILE		*logfile;
 	static FILE		*userlogfile;

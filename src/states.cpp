@@ -2139,8 +2139,9 @@ void options_main_t::build()
 {
 	title("Options");
 	button("Game", 1);
-	button("Controls", 2);
-	button("Interface", 3);
+	button("Control Setup", 2);
+	button("Control Bindings", 3);
+	button("Interface", 4);
 	space();
 	button("Video", 10);
 	button("Audio", 11);
@@ -2179,6 +2180,9 @@ void st_options_main_t::select(int tag)
 		gsm.push(&st_options_controls);
 		break;
 	  case 3:
+		gsm.push(&st_options_bindings);
+		break;
+	  case 4:
 		gsm.push(&st_options_interface);
 		break;
 
@@ -2314,6 +2318,7 @@ void st_options_base_t::escape()
 st_options_system_t st_options_system;
 st_options_video_t st_options_video;
 st_options_controls_t st_options_controls;
+st_options_bindings_t st_options_bindings;
 st_options_audio_t st_options_audio;
 st_options_interface_t st_options_interface;
 st_options_game_t st_options_game;

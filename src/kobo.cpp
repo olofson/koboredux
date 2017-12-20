@@ -58,13 +58,6 @@
 
 #define	MAX_FPS_RESULTS	64
 
-/* Joystick support */
-#define DEFAULT_JOY_LR		0	// Joystick axis left-right default
-#define DEFAULT_JOY_UD		1	// Joystick axis up-down default
-#define DEFAULT_JOY_PRIMARY	0	// Default primary fire button
-#define DEFAULT_JOY_SECONDARY	1	// Default secondary fire button
-#define DEFAULT_JOY_START	2	// Default start/pause/select
-
 
 /*----------------------------------------------------------
 	Singletons
@@ -273,11 +266,6 @@ static void add_dirs(prefs_t *p)
 
 
 SDL_Joystick	*KOBO_main::joystick = NULL;
-int		KOBO_main::js_lr = DEFAULT_JOY_LR;
-int		KOBO_main::js_ud = DEFAULT_JOY_UD;
-int		KOBO_main::js_primary = DEFAULT_JOY_PRIMARY;
-int		KOBO_main::js_secondary = DEFAULT_JOY_SECONDARY;
-int		KOBO_main::js_start = DEFAULT_JOY_START;
 
 FILE		*KOBO_main::logfile = NULL;
 FILE		*KOBO_main::userlogfile = NULL;
@@ -2288,6 +2276,7 @@ void kobo_gfxengine_t::input(float fractional_frame)
 	while(SDL_PollEvent(&ev))
 	{
 		int ms;
+		gc_targets_t tgt;
 		if(ct_engine.rawevent(&ev))
 			continue;
 		if(prefs->soundtools && soundtools_event(ev))
@@ -2394,90 +2383,36 @@ void kobo_gfxengine_t::input(float fractional_frame)
 			km.quit();
 			break;
 		  case SDL_JOYBUTTONDOWN:
-			if(ev.jbutton.button == km.js_primary)
+			if(ev.jbutton.which != prefs->joystick_index)
+				break;
+			tgt = gamecontrol.map_js_button(ev.jbutton.button);
+			if(tgt != BTN_NONE)
 			{
-				gamecontrol.pressbtn(BTN_PRIMARY,
-						GC_SRC_JOYSTICK);
-				gsm.pressbtn(BTN_PRIMARY);
-			}
-			else if(ev.jbutton.button == km.js_secondary)
-			{
-				gamecontrol.pressbtn(BTN_SECONDARY,
-						GC_SRC_JOYSTICK);
-				gsm.pressbtn(BTN_SECONDARY);
-			}
-			else if(ev.jbutton.button == km.js_start)
-			{
-				gamecontrol.pressbtn(BTN_PAUSE,
-						GC_SRC_JOYSTICK);
-				gsm.pressbtn(BTN_PAUSE);
+				gamecontrol.pressbtn(tgt, GC_SRC_JOYSTICK);
+				gsm.pressbtn(tgt);
 			}
 			break;
 		  case SDL_JOYBUTTONUP:
-			if(ev.jbutton.button == km.js_primary)
+			if(ev.jbutton.which != prefs->joystick_index)
+				break;
+			tgt = gamecontrol.map_js_button(ev.jbutton.button);
+			if(tgt != BTN_NONE)
 			{
-				gamecontrol.releasebtn(BTN_PRIMARY,
-						GC_SRC_JOYSTICK);
-				gsm.releasebtn(BTN_PRIMARY);
-			}
-			else if(ev.jbutton.button == km.js_secondary)
-			{
-				gamecontrol.releasebtn(BTN_SECONDARY,
-						GC_SRC_JOYSTICK);
-				gsm.releasebtn(BTN_SECONDARY);
+				gamecontrol.releasebtn(tgt, GC_SRC_JOYSTICK);
+				gsm.releasebtn(tgt);
 			}
 			break;
 		  case SDL_JOYAXISMOTION:
-			// FIXME: We will want to allow these to be
-			// redefined, but for now, this works ;-)
-			if(ev.jaxis.axis == km.js_lr)
-			{
-				if(ev.jaxis.value < -3200)
-				{
-					gamecontrol.pressbtn(BTN_LEFT,
-							GC_SRC_JOYSTICK);
-					gsm.pressbtn(BTN_LEFT);
-				}
-				else if(ev.jaxis.value > 3200)
-				{
-					gamecontrol.pressbtn(BTN_RIGHT,
-							GC_SRC_JOYSTICK);
-					gsm.pressbtn(BTN_RIGHT);
-				}
-				else
-				{
-					gamecontrol.releasebtn(BTN_LEFT,
-							GC_SRC_JOYSTICK);
-					gamecontrol.releasebtn(BTN_RIGHT,
-							GC_SRC_JOYSTICK);
-					gsm.releasebtn(BTN_LEFT);
-					gsm.releasebtn(BTN_RIGHT);
-				}
-			}
-			else if(ev.jaxis.axis == km.js_ud)
-			{
-				if(ev.jaxis.value < -3200)
-				{
-					gamecontrol.pressbtn(BTN_UP,
-							GC_SRC_JOYSTICK);
-					gsm.pressbtn(BTN_UP);
-				}
-				else if(ev.jaxis.value > 3200)
-				{
-					gamecontrol.pressbtn(BTN_DOWN,
-							GC_SRC_JOYSTICK);
-					gsm.pressbtn(BTN_DOWN);
-				}
-				else
-				{
-					gamecontrol.releasebtn(BTN_UP,
-							GC_SRC_JOYSTICK);
-					gamecontrol.releasebtn(BTN_DOWN,
-							GC_SRC_JOYSTICK);
-					gsm.releasebtn(BTN_UP);
-					gsm.releasebtn(BTN_DOWN);
-				}
-			}
+			if(ev.jaxis.which != prefs->joystick_index)
+				break;
+			gamecontrol.js_axis(ev.jaxis.axis, ev.jaxis.value);
+			break;
+		  case SDL_JOYHATMOTION:
+			if(ev.jhat.which != prefs->joystick_index)
+				break;
+			if(ev.jhat.hat != prefs->js_hat)
+				break;
+			gamecontrol.js_hat(ev.jhat.value);
 			break;
 		  case SDL_MOUSEMOTION:
 			mouse_motion(ev);

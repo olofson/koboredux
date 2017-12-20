@@ -217,28 +217,19 @@ void video_options_t::close()
 
 void controls_options_t::build()
 {
-	title("Controls");
+	title("Control Setup");
 
 	xoffs = 0.57;
 
-	// Keyboard
-	keybinding("Up", &prf->keyboard_up);
-	keybinding("Down", &prf->keyboard_down);
-	keybinding("Left", &prf->keyboard_left);
-	keybinding("Right", &prf->keyboard_right);
-	space();
 	yesno("Use Tertiary Fire Button", &prf->tertiary_button, OS_REBUILD);
-	keybinding("Primary Fire", &prf->keyboard_primary);
-	keybinding("Secondary Fire", &prf->keyboard_secondary);
-	if(prf->tertiary_button)
-		keybinding("Tertiary Fire", &prf->keyboard_tertiary);
-	else
+	if(!prf->tertiary_button)
 	{
 		font(B_SMALL_FONT);
 		label("(Tertiary Fire: Secondary Fire while coasting)");
 		font();
 	}
 	space();
+
 	yesno("Broken NumPad Diagonals", &prf->broken_numdia, 0);
 	list("Diagonals Emphasis Filter", &prf->dia_emphasis, 0);
 		item("OFF", 0);
@@ -272,25 +263,71 @@ void controls_options_t::build()
 
 	// Joystick
 	space();
-	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
+	yesno("Use Joystick", &prf->joystick, OS_RESTART_INPUT | OS_REBUILD);
+	if(!prf->joystick)
+		;
+	else if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
 		label("Could not initialize joysticks!");
+	else if(!(prf->number_of_joysticks = SDL_NumJoysticks()))
+		label("No Joysticks Found!");
 	else
 	{
-		prf->number_of_joysticks = SDL_NumJoysticks();
-		yesno("Use Joystick", &prf->joystick,
-				OS_RESTART_INPUT | OS_REBUILD);
-		if(prf->joystick)
-		{
-			if(prf->number_of_joysticks)
-			{
-				list("Joystick Number", &prf->joystick_index,
-						OS_RESTART_INPUT);
-					enum_list(0, prf->number_of_joysticks
-							- 1);
-			}
-			else
-				label("No Joysticks Found!");
-		}
+		list("Joystick Number", &prf->joystick_index,
+				OS_RESTART_INPUT);
+		enum_list(0, prf->number_of_joysticks - 1);
+
+		list("Deadzone Threshold", &prf->js_deadzone, 0);
+			perc_list(0, 100, 10);
+		list("Sprint Threshold", &prf->js_sprint, 0);
+			perc_list(0, 100, 10);
+	}
+
+	xoffs = 0.5;
+	space(2);
+	button("ACCEPT", OS_CLOSE);
+	button("CANCEL", OS_CANCEL);
+	space(2);
+	help();
+}
+
+
+void bindings_options_t::build()
+{
+	title("Keyboard Bindings");
+	xoffs = 0.5;
+	keybinding("Up", &prf->keyboard_up);
+	keybinding("Down", &prf->keyboard_down);
+	keybinding("Left", &prf->keyboard_left);
+	keybinding("Right", &prf->keyboard_right);
+	keybinding("Primary Fire", &prf->keyboard_primary);
+	keybinding("Secondary Fire", &prf->keyboard_secondary);
+	if(prf->tertiary_button)
+		keybinding("Tertiary Fire", &prf->keyboard_tertiary);
+	space(2);
+
+	// Joystick bindings
+	title("Joystick Bindings");
+	xoffs = 0.5;
+	if(!prf->joystick)
+		label("Joystick input disabled!");
+	else if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
+		label("Could not initialize joysticks!");
+	else if(!(prf->number_of_joysticks = SDL_NumJoysticks()))
+		label("No Joysticks Found!");
+	else
+	{
+		// Analog stick
+		axisbinding("Horizontal", &prf->js_horizontal);
+		axisbinding("Vertical", &prf->js_vertical);
+
+		// Hat/digital stick
+		hatbinding("Hat/D-Pad", &prf->js_hat, 0);
+
+		// Buttons
+		buttonbinding("Primary Fire", &prf->js_primary, 0);
+		buttonbinding("Secondary Fire", &prf->js_secondary, 0);
+		buttonbinding("Tertiary Fire", &prf->js_tertiary, 0);
+		buttonbinding("Pause Button", &prf->js_pause, 0);
 	}
 
 	xoffs = 0.5;

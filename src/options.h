@@ -58,6 +58,13 @@ class controls_options_t : public config_form_t
 	void build();
 };
 
+class bindings_options_t : public config_form_t
+{
+  public:
+	bindings_options_t(gfxengine_t *e) : config_form_t(e) { }
+	void build();
+};
+
 class audio_options_t : public config_form_t
 {
 	int driver;

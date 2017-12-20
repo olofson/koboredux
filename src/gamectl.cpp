@@ -35,6 +35,9 @@ bool gamecontrol_t::movekey_pressed = false;
 bool gamecontrol_t::key_sprint = false;
 bool gamecontrol_t::mouse_sprint = false;
 bool gamecontrol_t::mouse_muted = false;
+int gamecontrol_t::js_x = 0;
+int gamecontrol_t::js_y = 0;
+bool gamecontrol_t::js_sprint = false;
 unsigned gamecontrol_t::state[BTN__COUNT];
 unsigned gamecontrol_t::_pressed[BTN__COUNT];
 unsigned gamecontrol_t::_released[BTN__COUNT];
@@ -46,6 +49,8 @@ void gamecontrol_t::init()
 	memset(_pressed, 0, sizeof(_pressed));
 	memset(_released, 0, sizeof(_released));
 	movekey_pressed = key_sprint = mouse_sprint = mouse_muted = false;
+	js_x = js_y = 0;
+	js_sprint = false;
 	latch_timer = 0;
 }
 
@@ -60,6 +65,8 @@ void gamecontrol_t::clear()
 {
 	direction = 1;
 	movekey_pressed = key_sprint = mouse_sprint = mouse_muted = false;
+	js_x = js_y = 0;
+	js_sprint = false;
 }
 
 
@@ -183,6 +190,21 @@ gc_targets_t gamecontrol_t::mapsrc(SDL_Keysym sym, int &src)
 }
 
 
+gc_targets_t gamecontrol_t::map_js_button(int button)
+{
+	if(button == prefs->js_primary)
+		return BTN_PRIMARY;
+	else if(button == prefs->js_secondary)
+		return BTN_SECONDARY;
+	else if(button == prefs->js_tertiary)
+		return BTN_TERTIARY;
+	else if(button == prefs->js_pause)
+		return BTN_PAUSE;
+	else
+		return BTN_NONE;
+}
+
+
 void gamecontrol_t::press(SDL_Keysym sym)
 {
 	int src;
@@ -254,6 +276,66 @@ void gamecontrol_t::mouse_position(int h, int v)
 			newdir != direction);
 
 	direction = newdir;
+}
+
+
+void gamecontrol_t::js_axis(int axis, int value)
+{
+	if(axis == prefs->js_horizontal)
+		js_x = value;
+	else if(axis == prefs->js_vertical)
+		js_y = value;
+
+	int deadzone = prefs->js_deadzone * 32768 / 100;
+	int sprint = prefs->js_sprint * 32768 / 100;
+	int v2 = sqrt(js_x * js_x + js_y * js_y);
+	int newdir = (v2 > deadzone) ? speed2dir(js_x, js_y, 8) : 0;
+	js_sprint = v2 >= sprint || newdir != direction;
+	direction = newdir;
+}
+
+
+void gamecontrol_t::js_hat(int value)
+{
+	switch(value)
+	{
+	  case SDL_HAT_CENTERED:
+		js_sprint = 0;
+		direction = 0;
+		break;
+	  case SDL_HAT_UP:
+		js_sprint = 1;
+		direction = 1;
+		break;
+	  case SDL_HAT_RIGHTUP:
+		js_sprint = 1;
+		direction = 2;
+		break;
+	  case SDL_HAT_RIGHT:
+		js_sprint = 1;
+		direction = 3;
+		break;
+	  case SDL_HAT_RIGHTDOWN:
+		js_sprint = 1;
+		direction = 4;
+		break;
+	  case SDL_HAT_DOWN:
+		js_sprint = 1;
+		direction = 5;
+		break;
+	  case SDL_HAT_LEFTDOWN:
+		js_sprint = 1;
+		direction = 6;
+		break;
+	  case SDL_HAT_LEFT:
+		js_sprint = 1;
+		direction = 7;
+		break;
+	  case SDL_HAT_LEFTUP:
+		js_sprint = 1;
+		direction = 8;
+		break;
+	}
 }
 
 
@@ -334,7 +416,7 @@ void gamecontrol_t::change()
 
 bool gamecontrol_t::dir_push()
 {
-	return movekey_pressed || key_sprint ||
+	return movekey_pressed || key_sprint || js_sprint ||
 			(prefs->mouse && (!prefs->mouse_threshold ||
 			mouse_sprint));
 }
