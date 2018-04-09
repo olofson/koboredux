@@ -31,7 +31,7 @@
 void prefs_t::init()
 {
 	comment("------------------------------------------------");
-	comment(" Kobo Redux "KOBO_VERSION_STRING" Configuration File");
+	comment(" Kobo Redux " KOBO_VERSION_STRING " Configuration File");
 	comment("------------------------------------------------");
 	comment(" Switches - [no]<switch> or <switch> [<value>]");
 	comment(" Values - <key> [<value>|\"<string>\"]");
