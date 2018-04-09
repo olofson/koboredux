@@ -876,7 +876,7 @@ void filemapper_t::print(FILE *f, const char *ref)
 	while(k)
 	{
 		if(strcmp(k->key, key) == 0 || all)
-			fprintf(f, "%s"FM_DEREF_TOKEN" --> \"%s\"\n", k->key, k->path);
+			fprintf(f, "%s" FM_DEREF_TOKEN " --> \"%s\"\n", k->key, k->path);
 		k = k->next;
 	}
 }
